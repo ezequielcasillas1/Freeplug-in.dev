@@ -1,0 +1,24 @@
+---
+description: Supabase Data API + RLS — safe patterns for Freeplug.dev
+globs:
+  - "**/supabase/**"
+  - "**/app/api/**"
+  - "**/*supabase*"
+alwaysApply: false
+---
+
+# Supabase: Data API on + RLS on
+
+Canonical reference: `SafetySecurity/supabase-data-api-and-rls.md` (read when changing auth, DB access, or webhooks).
+
+## Must follow
+
+- **RLS** is the boundary for anything reachable via anon/user JWT. Enable RLS on sensitive tables; avoid broad `USING (true)` for `anon` / `authenticated`.
+- **Service role**: server-only (API routes, webhooks, cron). Never `NEXT_PUBLIC_*`; never import into client components.
+- **Client `supabase.from(...)`**: only against tables with correct, minimal policies (e.g. `auth.uid() = user_id`).
+- **Stripe / system writes**: service role or server DB connection; verify webhook signatures; idempotent handlers.
+- **Storage**: bucket policies / RLS; no public read for sensitive transfer files unless intended; prefer signed URLs.
+
+## Before shipping related changes
+
+Confirm RLS policies for `SELECT`/`INSERT`/`UPDATE`/`DELETE`, no service role in client bundle, webhook signature verification.
