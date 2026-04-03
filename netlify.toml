@@ -1,7 +1,7 @@
 [build]
   base = "freeplug-landing"
   command = "npm run build"
-  publish = "freeplug-landing/.next"
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
