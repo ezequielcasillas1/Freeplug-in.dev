@@ -8,7 +8,7 @@ export function SupportCard() {
       </h2>
       <div className="space-y-3">
         <a
-          href="mailto:support@freeplug.dev"
+          href="mailto:support@freeplug-in.dev"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-50 transition-colors group"
         >
           <div className="rounded-lg bg-blue-50 p-2">
@@ -18,13 +18,13 @@ export function SupportCard() {
             <p className="text-sm font-medium text-gray-900 group-hover:text-[#ba3d3d]">
               Email Support
             </p>
-            <p className="text-xs text-gray-500">support@freeplug.dev</p>
+            <p className="text-xs text-gray-500">support@freeplug-in.dev</p>
           </div>
           <ExternalLink className="h-4 w-4 text-gray-400" />
         </a>
 
         <a
-          href="https://freeplug.dev/faq"
+          href="/dashboard/help"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-50 transition-colors group"
         >
           <div className="rounded-lg bg-purple-50 p-2">
