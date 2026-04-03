@@ -61,9 +61,9 @@ export function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden pt-16 pb-8"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16 pb-8"
     >
-      {/* 3D Character & Effects */}
+      {/* 3D Effects Background */}
       <VideoScene />
 
       {/* Floating accent orbs */}
@@ -72,92 +72,90 @@ export function HeroSection() {
         delay={0.2}
       />
       <FloatingOrb 
-        className="absolute bottom-20 right-1/3 w-96 h-96 bg-[#8a2e2e]/10" 
+        className="absolute bottom-20 right-10 w-96 h-96 bg-[#8a2e2e]/10" 
         delay={0.4}
       />
 
       <FloatingCard 
         icon={Code} 
         label="Clean Code" 
-        className="absolute top-32 left-8 sm:left-16 hidden md:block z-10"
+        className="absolute top-32 left-8 sm:left-16 lg:left-32 hidden md:block z-10"
         delay={0.8}
       />
       <FloatingCard 
         icon={Zap} 
         label="Fast Loading" 
-        className="absolute top-56 left-8 sm:left-24 hidden lg:block z-10"
+        className="absolute top-48 right-8 sm:right-16 lg:right-32 hidden md:block z-10"
         delay={1}
       />
       <FloatingCard 
         icon={Palette} 
         label="Modern Design" 
-        className="absolute bottom-48 left-8 sm:left-16 hidden md:block z-10"
+        className="absolute bottom-48 left-8 sm:left-24 lg:left-48 hidden lg:block z-10"
         delay={1.2}
       />
       
-      {/* Content - Left aligned on larger screens */}
+      {/* Content - Centered */}
       <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
       >
-        <div className="max-w-2xl lg:max-w-xl xl:max-w-2xl text-center lg:text-left">
-          <motion.div variants={heroTextVariants} className="mb-6">
-            <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 backdrop-blur-sm text-[#ba3d3d] text-sm font-medium shadow-lg shadow-[#ba3d3d]/10 border border-[#ba3d3d]/10">
-              <Sparkles size={16} className="animate-pulse" />
-              Free Websites for Local Businesses
+        <motion.div variants={heroTextVariants} className="mb-6">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 backdrop-blur-sm text-[#ba3d3d] text-sm font-medium shadow-lg shadow-[#ba3d3d]/10 border border-[#ba3d3d]/10">
+            <Sparkles size={16} className="animate-pulse" />
+            Free Websites for Local Businesses
+          </span>
+        </motion.div>
+
+        <motion.h1
+          variants={heroTextVariants}
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight"
+        >
+          Your Business Deserves
+          <br />
+          <span className="relative inline-block">
+            <span className="relative z-10 bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
+              A Beautiful Website
             </span>
-          </motion.div>
+            <motion.span
+              initial={{ width: 0 }}
+              animate={{ width: '100%' }}
+              transition={{ duration: 1, delay: 1 }}
+              className="absolute bottom-2 left-0 h-3 bg-[#ba3d3d]/20 -z-0 rounded-full"
+            />
+          </span>
+        </motion.h1>
 
-          <motion.h1
-            variants={heroTextVariants}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6 leading-tight"
-          >
-            Your Business Deserves
-            <br />
-            <span className="relative inline-block">
-              <span className="relative z-10 bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-                A Beautiful Website
-              </span>
-              <motion.span
-                initial={{ width: 0 }}
-                animate={{ width: '100%' }}
-                transition={{ duration: 1, delay: 1 }}
-                className="absolute bottom-1 sm:bottom-2 left-0 h-2 sm:h-3 bg-[#ba3d3d]/20 -z-0 rounded-full"
-              />
-            </span>
-          </motion.h1>
+        <motion.p
+          variants={heroTextVariants}
+          className="text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto mb-10"
+        >
+          We build professional, modern websites for local businesses at{' '}
+          <span className="font-semibold text-[#ba3d3d]">no charge</span>.
+          You only pay for hosting and maintenance.
+        </motion.p>
 
-          <motion.p
-            variants={heroTextVariants}
-            className="text-lg sm:text-xl text-gray-700 mb-10"
-          >
-            We build professional, modern websites for local businesses at{' '}
-            <span className="font-semibold text-[#ba3d3d]">no charge</span>.
-            You only pay for hosting and maintenance.
-          </motion.p>
+        <motion.div
+          variants={fadeInUp}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+        >
+          <Button size="lg" className="group shadow-lg shadow-[#ba3d3d]/30 hover:shadow-xl hover:shadow-[#ba3d3d]/40 transition-all">
+            Get Free Website
+            <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
+          <Button variant="secondary" size="lg" className="backdrop-blur-sm bg-white/90 hover:bg-white">
+            Learn More
+          </Button>
+        </motion.div>
 
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4"
-          >
-            <Button size="lg" className="group shadow-lg shadow-[#ba3d3d]/30 hover:shadow-xl hover:shadow-[#ba3d3d]/40 transition-all">
-              Get Free Website
-              <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="secondary" size="lg" className="backdrop-blur-sm bg-white/90 hover:bg-white">
-              Learn More
-            </Button>
-          </motion.div>
-
-          <motion.p
-            variants={fadeInUp}
-            className="mt-6 text-sm text-gray-600"
-          >
-            *Terms and conditions apply. Create an account to view details.
-          </motion.p>
-        </div>
+        <motion.p
+          variants={fadeInUp}
+          className="mt-6 text-sm text-gray-600"
+        >
+          *Terms and conditions apply. Create an account to view details.
+        </motion.p>
       </motion.div>
 
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-10" />
