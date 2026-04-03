@@ -1,11 +1,12 @@
 'use server'
 
-import { getResend, EMAIL_FROM, isResendConfigured } from './resend'
+import { getResend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from './resend'
 import { WelcomeEmail } from './templates/welcome'
 import { PaymentReceivedEmail } from './templates/payment-received'
 import { RequestStatusUpdateEmail } from './templates/request-status-update'
 import { SubscriptionCancelledEmail } from './templates/subscription-cancelled'
 import { BillingReminderEmail } from './templates/billing-reminder'
+import { PasswordResetEmail } from './templates/password-reset'
 
 type SendResult = { success: true; id: string } | { success: false; error: string }
 
@@ -21,6 +22,7 @@ export async function sendWelcomeEmail(
     const resend = getResend()
     const { data, error } = await resend.emails.send({
       from: EMAIL_FROM,
+      replyTo: EMAIL_REPLY_TO,
       to,
       subject: 'Welcome to Freeplug.dev!',
       react: WelcomeEmail({ userName }),
@@ -57,6 +59,7 @@ export async function sendPaymentReceivedEmail(
     const resend = getResend()
     const { data, error } = await resend.emails.send({
       from: EMAIL_FROM,
+      replyTo: EMAIL_REPLY_TO,
       to,
       subject: `Payment received - ${params.amount}`,
       react: PaymentReceivedEmail(params),
@@ -89,6 +92,7 @@ export async function sendRequestStatusUpdateEmail(
     const resend = getResend()
     const { data, error } = await resend.emails.send({
       from: EMAIL_FROM,
+      replyTo: EMAIL_REPLY_TO,
       to,
       subject: `Request Update: ${params.businessName}`,
       react: RequestStatusUpdateEmail(params),
@@ -121,6 +125,7 @@ export async function sendSubscriptionCancelledEmail(
     const resend = getResend()
     const { data, error } = await resend.emails.send({
       from: EMAIL_FROM,
+      replyTo: EMAIL_REPLY_TO,
       to,
       subject: `Subscription cancelled - ${params.planName}`,
       react: SubscriptionCancelledEmail(params),
@@ -154,9 +159,42 @@ export async function sendBillingReminderEmail(
     const resend = getResend()
     const { data, error } = await resend.emails.send({
       from: EMAIL_FROM,
+      replyTo: EMAIL_REPLY_TO,
       to,
       subject: `Upcoming billing reminder - ${params.amount} on ${params.billingDate}`,
       react: BillingReminderEmail(params),
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, id: data?.id ?? '' }
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+  }
+}
+
+export async function sendPasswordResetEmail(
+  to: string,
+  params: {
+    resetLink: string
+    userName?: string
+    expiresIn?: string
+  }
+): Promise<SendResult> {
+  if (!isResendConfigured()) {
+    return { success: false, error: 'Resend not configured' }
+  }
+
+  try {
+    const resend = getResend()
+    const { data, error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      replyTo: EMAIL_REPLY_TO,
+      to,
+      subject: 'Reset your Freeplug.dev password',
+      react: PasswordResetEmail(params),
     })
 
     if (error) {

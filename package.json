@@ -8,5 +8,13 @@
     "lint": "npm run lint --prefix freeplug-landing",
     "test": "npm run test --prefix freeplug-landing",
     "test:watch": "npm run test:watch --prefix freeplug-landing"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "three": "^0.183.2"
+  },
+  "devDependencies": {
+    "@types/three": "^0.183.1"
   }
 }

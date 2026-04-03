@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@react-email/components": "^1.0.11",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
     "class-variance-authority": "^0.7.1",
@@ -25,6 +27,7 @@
     "resend": "^6.10.0",
     "stripe": "^21.0.1",
     "tailwind-merge": "^3.5.0",
+    "three": "^0.183.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -36,6 +39,7 @@
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.183.1",
     "@vitejs/plugin-react": "^5.1.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",

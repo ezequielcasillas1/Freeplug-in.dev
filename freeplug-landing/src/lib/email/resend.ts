@@ -17,4 +17,5 @@ export function isResendConfigured(): boolean {
   return !!process.env.RESEND_API_KEY?.trim()
 }
 
-export const EMAIL_FROM = process.env.RESEND_FROM_EMAIL || 'Freeplug.dev <noreply@freeplug.dev>'
+export const EMAIL_FROM = process.env.RESEND_FROM_EMAIL || 'Freeplug.dev <noreply@freeplug-in.dev>'
+export const EMAIL_REPLY_TO = 'support@freeplug-in.dev'
