@@ -62,49 +62,36 @@ export function HeroSection() {
     <section
       id="hero"
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16 pb-8"
-      style={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #fff5f5 25%, #ffe8e8 50%, #ffd4d4 100%)',
-      }}
     >
+      {/* Video Background */}
+      <VideoScene />
+
+      {/* Floating accent orbs */}
       <FloatingOrb 
-        className="absolute top-20 left-10 w-72 h-72 bg-[#ba3d3d]/20" 
+        className="absolute top-20 left-10 w-72 h-72 bg-[#ba3d3d]/10" 
         delay={0.2}
       />
       <FloatingOrb 
-        className="absolute bottom-20 right-10 w-96 h-96 bg-[#8a2e2e]/15" 
+        className="absolute bottom-20 right-10 w-96 h-96 bg-[#8a2e2e]/10" 
         delay={0.4}
       />
-      <FloatingOrb 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#ba3d3d]/10" 
-        delay={0.6}
-      />
-      
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(rgba(186, 61, 61, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(186, 61, 61, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px',
-        }} />
-      </div>
 
       <FloatingCard 
         icon={Code} 
         label="Clean Code" 
-        className="absolute top-32 left-8 sm:left-16 lg:left-32 hidden md:block"
+        className="absolute top-32 left-8 sm:left-16 lg:left-32 hidden md:block z-10"
         delay={0.8}
       />
       <FloatingCard 
         icon={Zap} 
         label="Fast Loading" 
-        className="absolute top-48 right-8 sm:right-16 lg:right-32 hidden md:block"
+        className="absolute top-48 right-8 sm:right-16 lg:right-32 hidden md:block z-10"
         delay={1}
       />
       <FloatingCard 
         icon={Palette} 
         label="Modern Design" 
-        className="absolute bottom-48 left-8 sm:left-24 lg:left-48 hidden lg:block"
+        className="absolute bottom-48 left-8 sm:left-24 lg:left-48 hidden lg:block z-10"
         delay={1.2}
       />
       
@@ -115,7 +102,7 @@ export function HeroSection() {
         className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
       >
         <motion.div variants={heroTextVariants} className="mb-6">
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm text-[#ba3d3d] text-sm font-medium shadow-lg shadow-[#ba3d3d]/10 border border-[#ba3d3d]/10">
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 backdrop-blur-sm text-[#ba3d3d] text-sm font-medium shadow-lg shadow-[#ba3d3d]/10 border border-[#ba3d3d]/10">
             <Sparkles size={16} className="animate-pulse" />
             Free Websites for Local Businesses
           </span>
@@ -123,7 +110,7 @@ export function HeroSection() {
 
         <motion.h1
           variants={heroTextVariants}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight drop-shadow-sm"
         >
           Your Business Deserves
           <br />
@@ -142,7 +129,7 @@ export function HeroSection() {
 
         <motion.p
           variants={heroTextVariants}
-          className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto mb-10"
+          className="text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto mb-10 drop-shadow-sm"
         >
           We build professional, modern websites for local businesses at{' '}
           <span className="font-semibold text-[#ba3d3d]">no charge</span>.
@@ -157,22 +144,20 @@ export function HeroSection() {
             Get Free Website
             <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button variant="secondary" size="lg" className="backdrop-blur-sm bg-white/80 hover:bg-white">
+          <Button variant="secondary" size="lg" className="backdrop-blur-sm bg-white/90 hover:bg-white">
             Learn More
           </Button>
         </motion.div>
 
         <motion.p
           variants={fadeInUp}
-          className="mt-6 text-sm text-gray-500"
+          className="mt-6 text-sm text-gray-600"
         >
           *Terms and conditions apply. Create an account to view details.
         </motion.p>
       </motion.div>
 
-      <VideoScene />
-
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-10" />
     </section>
   )
 }
