@@ -73,18 +73,24 @@ export async function getCancelPageData(): Promise<CancelPageData | null> {
         ? await stripe.products.retrieve(price.product)
         : (price.product as Stripe.Product)
 
+    const subAny = sub as Stripe.Subscription & {
+      current_period_end: number
+      cancel_at_period_end: boolean
+      canceled_at: number | null
+    }
+
     const info: SubscriptionInfo = {
       id: sub.id,
       status: sub.status,
       productName: product.name,
       amount: price.unit_amount ?? 0,
       interval: price.recurring?.interval ?? 'month',
-      currentPeriodEnd: new Date(sub.current_period_end * 1000),
-      cancelAtPeriodEnd: sub.cancel_at_period_end,
-      canceledAt: sub.canceled_at ? new Date(sub.canceled_at * 1000) : null,
+      currentPeriodEnd: new Date(subAny.current_period_end * 1000),
+      cancelAtPeriodEnd: subAny.cancel_at_period_end,
+      canceledAt: subAny.canceled_at ? new Date(subAny.canceled_at * 1000) : null,
     }
 
-    if (sub.status === 'canceled' || sub.cancel_at_period_end) {
+    if (sub.status === 'canceled' || subAny.cancel_at_period_end) {
       canceledSubscriptions.push(info)
     } else if (sub.status === 'active' || sub.status === 'trialing') {
       subscriptions.push(info)

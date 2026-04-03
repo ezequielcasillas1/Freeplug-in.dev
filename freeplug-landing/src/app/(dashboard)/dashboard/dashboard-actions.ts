@@ -108,16 +108,23 @@ export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData 
           ? await stripe.products.retrieve(price.product)
           : (price.product as Stripe.Product)
 
+      const subAny = sub as Stripe.Subscription & {
+        current_period_end: number
+        current_period_start: number
+        cancel_at_period_end: boolean
+        created: number
+      }
+
       subscriptions.push({
         id: sub.id,
         productName: product.name,
         status: sub.status,
         amount: price.unit_amount ?? 0,
         interval: price.recurring?.interval ?? 'month',
-        currentPeriodEnd: new Date(sub.current_period_end * 1000),
-        currentPeriodStart: new Date(sub.current_period_start * 1000),
-        cancelAtPeriodEnd: sub.cancel_at_period_end,
-        created: new Date(sub.created * 1000),
+        currentPeriodEnd: new Date(subAny.current_period_end * 1000),
+        currentPeriodStart: new Date(subAny.current_period_start * 1000),
+        cancelAtPeriodEnd: subAny.cancel_at_period_end,
+        created: new Date(subAny.created * 1000),
       })
 
       if (sub.status === 'active' || sub.status === 'trialing') {
