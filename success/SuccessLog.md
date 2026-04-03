@@ -17,3 +17,8 @@
 **Commit:** 9ac7f9a
 **Files:** VideoScene.tsx, HeroSection.tsx
 **Result:** Video now displays as full-width blended background in hero section
+
+### 2026-04-03 - Supabase Recovery & Vercel Deployment
+**Status:** SUCCESS ✅
+**Files:** next.config.ts, migrations/*.sql, Vercel env vars
+**Result:** Restored Supabase DB from local migrations after accidental deletion, fixed Turbopack root config, deployed to Vercel with 15 env vars. Live at freeplug-in.dev
