@@ -50,8 +50,10 @@ const fragmentShader = `
 
 function VideoCharacter() {
   const meshRef = useRef<THREE.Mesh>(null)
-  const { viewport } = useThree()
+  const materialRef = useRef<THREE.MeshBasicMaterial>(null)
+  const { viewport, size } = useThree()
   const [scrollY, setScrollY] = useState(0)
+  const [videoLoaded, setVideoLoaded] = useState(false)
 
   const texture = useVideoTexture('/hero-video.mp4', {
     muted: true,
@@ -59,27 +61,12 @@ function VideoCharacter() {
     start: true,
   })
 
-  const material = useMemo(() => {
-    return new THREE.ShaderMaterial({
-      uniforms: {
-        map: { value: null },
-        keyColor: { value: new THREE.Color(0x00ff00) },
-        similarity: { value: 0.35 },
-        smoothness: { value: 0.12 },
-        opacity: { value: 1.0 },
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      side: THREE.DoubleSide,
-    })
-  }, [])
-
   useEffect(() => {
-    if (texture && material) {
-      material.uniforms.map.value = texture
+    if (texture) {
+      setVideoLoaded(true)
+      console.log('Video texture loaded:', texture)
     }
-  }, [texture, material])
+  }, [texture])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,36 +77,47 @@ function VideoCharacter() {
   }, [])
 
   useFrame((state) => {
-    if (!meshRef.current) return
+    if (!meshRef.current || !materialRef.current) return
     
     const scrollProgress = Math.min(scrollY / 600, 1)
     
-    meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.1 - scrollProgress * 1.5
-    meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.03
+    meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.08 - scrollProgress * 1.5
     
     const scale = 1 - scrollProgress * 0.2
     meshRef.current.scale.setScalar(scale)
     
-    material.uniforms.opacity.value = 1 - scrollProgress * 0.7
+    materialRef.current.opacity = 1 - scrollProgress * 0.7
   })
 
-  const characterHeight = Math.min(viewport.height * 0.75, 9)
-  const characterWidth = characterHeight * (9 / 16)
+  // Calculate size based on viewport
+  const height = Math.min(viewport.height * 0.85, 9)
+  const width = height * (16 / 9)
+  
+  // Position to the right
+  const xPosition = viewport.width * 0.25
+
+  if (!videoLoaded) return null
 
   return (
     <mesh 
       ref={meshRef} 
-      position={[viewport.width * 0.28, -0.8, 0]}
-      material={material}
+      position={[xPosition, 0, 0]}
     >
-      <planeGeometry args={[characterWidth, characterHeight]} />
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial 
+        ref={materialRef}
+        map={texture} 
+        transparent 
+        opacity={1}
+        side={THREE.DoubleSide}
+      />
     </mesh>
   )
 }
 
 function FloatingParticles() {
   const particlesRef = useRef<THREE.Points>(null)
-  const count = 60
+  const count = 50
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry()
@@ -127,14 +125,14 @@ function FloatingParticles() {
     const colors = new Float32Array(count * 3)
     
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 25
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 15
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 8 - 3
+      positions[i * 3] = (Math.random() - 0.5) * 20
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 12
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 6 - 2
       
       const isAccent = Math.random() > 0.8
-      colors[i * 3] = isAccent ? 0.73 : 0.95
-      colors[i * 3 + 1] = isAccent ? 0.24 : 0.95
-      colors[i * 3 + 2] = isAccent ? 0.24 : 0.98
+      colors[i * 3] = isAccent ? 0.73 : 0.9
+      colors[i * 3 + 1] = isAccent ? 0.24 : 0.9
+      colors[i * 3 + 2] = isAccent ? 0.24 : 0.95
     }
     
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
@@ -144,8 +142,7 @@ function FloatingParticles() {
 
   useFrame((state) => {
     if (!particlesRef.current) return
-    particlesRef.current.rotation.y = state.clock.elapsedTime * 0.015
-    particlesRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.04) * 0.03
+    particlesRef.current.rotation.y = state.clock.elapsedTime * 0.01
   })
 
   return (
@@ -154,7 +151,7 @@ function FloatingParticles() {
         size={0.04}
         vertexColors
         transparent
-        opacity={0.4}
+        opacity={0.35}
         sizeAttenuation
       />
     </points>
@@ -185,9 +182,9 @@ export function VideoScene() {
   }
 
   return (
-    <div className="absolute inset-0 -z-10 overflow-hidden">
+    <div className="absolute inset-0 z-0 pointer-events-none">
       <Canvas
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
         camera={{ position: [0, 0, 10], fov: 50 }}
         style={{ background: 'transparent' }}
       >
