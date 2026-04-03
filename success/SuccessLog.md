@@ -11,3 +11,9 @@
 **Commit:** f8643b3
 **Files:** VideoScene.tsx
 **Result:** Fixed BufferAttribute type error by using useMemo with THREE.BufferGeometry
+
+### 2026-04-03 - Full-width Video Background
+**Status:** SUCCESS ✅
+**Commit:** 9ac7f9a
+**Files:** VideoScene.tsx, HeroSection.tsx
+**Result:** Video now displays as full-width blended background in hero section
