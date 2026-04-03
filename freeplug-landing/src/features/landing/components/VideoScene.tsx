@@ -7,6 +7,7 @@ import * as THREE from 'three'
 
 function VideoBackground() {
   const meshRef = useRef<THREE.Mesh>(null)
+  const materialRef = useRef<THREE.MeshBasicMaterial>(null)
   const { viewport } = useThree()
   const [scrollY, setScrollY] = useState(0)
 
@@ -25,10 +26,10 @@ function VideoBackground() {
   }, [])
 
   useFrame(() => {
-    if (!meshRef.current) return
+    if (!meshRef.current || !materialRef.current) return
     const scrollProgress = Math.min(scrollY / 800, 1)
     meshRef.current.position.y = scrollProgress * 2
-    meshRef.current.material.opacity = 1 - scrollProgress * 0.5
+    materialRef.current.opacity = 1 - scrollProgress * 0.5
   })
 
   const scale = Math.max(viewport.width, viewport.height * (16 / 9)) * 1.1
@@ -37,6 +38,7 @@ function VideoBackground() {
     <mesh ref={meshRef} position={[0, 0, -5]}>
       <planeGeometry args={[scale, scale / (16 / 9)]} />
       <meshBasicMaterial 
+        ref={materialRef}
         map={texture} 
         toneMapped={false} 
         transparent 
