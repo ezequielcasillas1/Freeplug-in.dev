@@ -5,6 +5,8 @@
     "dev": "npm run dev --prefix freeplug-landing",
     "build": "npm run build --prefix freeplug-landing",
     "start": "npm run start --prefix freeplug-landing",
-    "lint": "npm run lint --prefix freeplug-landing"
+    "lint": "npm run lint --prefix freeplug-landing",
+    "test": "npm run test --prefix freeplug-landing",
+    "test:watch": "npm run test:watch --prefix freeplug-landing"
   }
 }

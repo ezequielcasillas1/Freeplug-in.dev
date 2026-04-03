@@ -7,6 +7,7 @@ const items = [
   { href: '/dashboard', label: 'Overview' },
   { href: '/dashboard/plans', label: 'Plans' },
   { href: '/dashboard/request-website', label: 'Request website' },
+  { href: '/dashboard/cancel', label: 'Cancel' },
 ] as const
 
 export function DashboardNav() {

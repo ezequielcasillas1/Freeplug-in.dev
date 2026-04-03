@@ -1,3 +1,8 @@
+### 2026-04-03 - Admin QA: override cumulative website value paid
+**Status:** SUCCESS
+**Files:** `freeplug-landing/src/app/admin/actions.ts`, `AdminCumulativePaidCell.tsx`, `AdminCustomersTable.tsx`, `admin/customers/page.tsx`, `.env.example`
+**Result:** Env `ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID=true` enables admin-only adjustment of `cumulative_website_value_paid_cents` for milestone / transfer handoff UI testing; no billing_ledger writes.
+
 ### 2026-04-02 - Stripe Checkout (hosting + maintenance)
 **Status:** SUCCESS
 **Files:** `freeplug-landing/src/app/api/checkout/hosting/route.ts`, `maintenance/route.ts`, `webhooks/stripe/route.ts`, `src/lib/stripe/*`, `HostingPlansSection.tsx`, `.env.example`

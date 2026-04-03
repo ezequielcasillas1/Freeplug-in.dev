@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button'
 import { openBillingPortal } from './billing-actions'
 import { CloseOpenRequestButton } from './request-website/CloseOpenRequestButton'
 import { EvaluationProgress } from './EvaluationProgress'
+import { milestoneWebsiteValueReached } from '@/lib/dashboard/website-milestone'
+import { getEnhancedDashboardData } from './dashboard-actions'
+import { QuickStats } from './QuickStats'
+import { SubscriptionDetails } from './SubscriptionDetails'
+import { RecentActivity } from './RecentActivity'
+import { DashboardAlerts } from './DashboardAlerts'
+import { SupportCard } from './SupportCard'
 
 type Props = {
   searchParams: Promise<{ submitted?: string; checkout?: string }>
@@ -31,11 +38,12 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   await ensureProfile(user.id)
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const [profileResult, enhancedData] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    getEnhancedDashboardData(),
+  ])
+
+  const profile = profileResult.data
 
   const p = profile as Pick<
     ProfileRow,
@@ -52,8 +60,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   const progress = p?.evaluation_progress ?? 0
   const targetCents = p?.website_value_target_cents ?? null
   const paidCents = p?.cumulative_website_value_paid_cents ?? 0
-  const hasTarget = targetCents != null && targetCents > 0
-  const milestoneReached = hasTarget && paidCents >= targetCents!
+  const milestoneReached = milestoneWebsiteValueReached(targetCents, paidCents)
 
   const { data: openRequest } = await supabase
     .from('website_requests')
@@ -72,11 +79,6 @@ export default async function DashboardPage({ searchParams }: Props) {
     .limit(1)
     .maybeSingle()
 
-  const { count: invoiceCount } = await supabase
-    .from('billing_ledger')
-    .select('*', { count: 'exact', head: true })
-    .eq('profile_id', user.id)
-
   const intakeClosedInfo =
     !openRequest && latestRequest?.status === 'closed'
       ? { businessName: latestRequest.business_name?.trim() || 'Your request' }
@@ -85,6 +87,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+      <p className="text-gray-600 mb-6">Welcome back! Here is an overview of your account.</p>
 
       {q.submitted === '1' ? (
         <p className="mb-6 rounded-lg bg-green-50 border border-green-200 text-green-900 px-4 py-3 text-sm">
@@ -99,6 +102,12 @@ export default async function DashboardPage({ searchParams }: Props) {
         </p>
       ) : null}
 
+      {/* Alerts Section */}
+      {enhancedData && <DashboardAlerts alerts={enhancedData.alerts} />}
+
+      {/* Quick Stats Row */}
+      {enhancedData && <QuickStats stats={enhancedData.stats} />}
+
       <EvaluationProgress
         status={status}
         progress={progress}
@@ -111,7 +120,14 @@ export default async function DashboardPage({ searchParams }: Props) {
         websiteTransferAcknowledgedAt={p?.website_transfer_acknowledged_at ?? null}
       />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* Subscription Details */}
+      {enhancedData && (
+        <div className="mb-8">
+          <SubscriptionDetails subscriptions={enhancedData.subscriptions} />
+        </div>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
             Your request
@@ -197,22 +213,6 @@ export default async function DashboardPage({ searchParams }: Props) {
 
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-            Payments
-          </h2>
-          <p className="text-sm text-gray-600">
-            Invoices recorded:{' '}
-            <span className="font-medium text-gray-900">{invoiceCount ?? 0}</span>
-          </p>
-          <Link
-            href="/dashboard/plans"
-            className="mt-3 inline-flex text-sm font-semibold text-[#ba3d3d] hover:underline"
-          >
-            Open plans →
-          </Link>
-        </div>
-
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
             Account
           </h2>
           <p className="text-gray-900 mb-4">{user.email}</p>
@@ -229,6 +229,12 @@ export default async function DashboardPage({ searchParams }: Props) {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Recent Activity and Support */}
+      <div className="grid gap-6 md:grid-cols-2 mt-8">
+        {enhancedData && <RecentActivity activities={enhancedData.recentActivity} />}
+        <SupportCard />
       </div>
     </div>
   )

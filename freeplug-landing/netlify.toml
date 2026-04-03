@@ -1,0 +1,25 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Next.js on Netlify requires the Next.js Runtime
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Redirects for SPA-style routing (Next.js handles this, but good fallback)
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+  conditions = {Role = ["admin"]}
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

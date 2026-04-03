@@ -162,6 +162,43 @@ export async function adminSetProfileWebsiteValueTarget(
   return { ok: true }
 }
 
+/** QA only: set `ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID=true` — does not write billing_ledger. */
+export async function adminSetProfileCumulativeWebsiteValuePaid(
+  profileId: string,
+  dollarsRaw: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID !== 'true') {
+    return { ok: false, error: 'Cumulative paid override is disabled.' }
+  }
+  await assertAdminAccess()
+  if (!uuidSchema.safeParse(profileId).success) {
+    return { ok: false, error: 'Invalid profile id' }
+  }
+  const t = dollarsRaw.trim()
+  const n = Number(t)
+  if (t === '' || !Number.isFinite(n) || !Number.isInteger(n) || n < 0 || n > 500_000) {
+    return { ok: false, error: 'Use whole dollars from 0 to 500,000.' }
+  }
+  const cumulative_website_value_paid_cents = n * 100
+  let admin
+  try {
+    admin = createAdminClient()
+  } catch {
+    return { ok: false, error: 'Admin client unavailable' }
+  }
+  const { error } = await admin
+    .from('profiles')
+    .update({
+      cumulative_website_value_paid_cents,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', profileId)
+  if (error) return { ok: false, error: error.message }
+  revalidatePath('/admin', 'layout')
+  revalidatePath('/dashboard')
+  return { ok: true }
+}
+
 const transferNotesMax = 12_000
 
 export async function adminSetProfileWebsiteTransferNotes(

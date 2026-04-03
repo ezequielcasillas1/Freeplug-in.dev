@@ -63,6 +63,8 @@ export default async function AdminCustomersPage() {
     profiles.map((p) => p.id)
   )
 
+  const allowAdjustCumulativePaid = process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID === 'true'
+
   const customerRows: CustomerRowView[] = profiles.map((p) => {
     const a = authForProfiles.get(p.id)
     return {
@@ -86,8 +88,21 @@ export default async function AdminCustomersPage() {
       <p className="text-sm text-zinc-600 mb-4">
         Evaluation status, website value target, cumulative paid (from webhooks), and Stripe
         customer id. Emails are from Auth — same as sign-in address.
+        {allowAdjustCumulativePaid ? (
+          <>
+            {' '}
+            <span className="text-amber-900 font-medium">
+              Cumulative paid can be overridden for QA (`ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID`) — does not
+              sync Stripe or billing_ledger.
+            </span>
+          </>
+        ) : null}
       </p>
-      <AdminCustomersTable rows={customerRows} smtpConfigured={smtpOn} />
+      <AdminCustomersTable
+        rows={customerRows}
+        smtpConfigured={smtpOn}
+        allowAdjustCumulativePaid={allowAdjustCumulativePaid}
+      />
     </div>
   )
 }

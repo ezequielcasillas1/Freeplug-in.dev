@@ -1,3 +1,4 @@
+import { AdminCumulativePaidCell } from './AdminCumulativePaidCell'
 import { AdminQuickEmail } from './AdminQuickEmail'
 import { AdminTransferNotesCell } from './AdminTransferNotesCell'
 import { AdminWebsiteValueCell } from './AdminWebsiteValueCell'
@@ -18,9 +19,12 @@ export type CustomerRowView = {
 export function AdminCustomersTable({
   rows,
   smtpConfigured,
+  allowAdjustCumulativePaid = false,
 }: {
   rows: CustomerRowView[]
   smtpConfigured: boolean
+  /** When true and env `ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID=true`, show QA override for paid cents. */
+  allowAdjustCumulativePaid?: boolean
 }) {
   if (rows.length === 0) {
     return <p className="text-zinc-600 text-sm">No profile rows.</p>
@@ -37,7 +41,12 @@ export function AdminCustomersTable({
             <th className="p-3 font-medium">Progress</th>
             <th className="p-3 font-medium">Website value</th>
             <th className="p-3 font-medium">Transfer / keys handoff</th>
-            <th className="p-3 font-medium">Paid (cumulative)</th>
+            <th className="p-3 font-medium">
+              Paid (cumulative)
+              {allowAdjustCumulativePaid ? (
+                <span className="block font-normal text-amber-800 text-[10px]">QA override on</span>
+              ) : null}
+            </th>
             <th className="p-3 font-medium">Stripe customer</th>
             <th className="p-3 font-medium">Updated</th>
           </tr>
@@ -61,7 +70,17 @@ export function AdminCustomersTable({
               <td className="p-3">
                 <AdminTransferNotesCell profileId={r.id} notes={r.website_transfer_notes} />
               </td>
-              <td className="p-3">${(r.cumulative_website_value_paid_cents / 100).toFixed(2)}</td>
+              <td className="p-3 align-top">
+                {allowAdjustCumulativePaid ? (
+                  <AdminCumulativePaidCell
+                    key={`cp-${r.id}-${r.cumulative_website_value_paid_cents}`}
+                    profileId={r.id}
+                    paidCents={r.cumulative_website_value_paid_cents}
+                  />
+                ) : (
+                  <span>${(r.cumulative_website_value_paid_cents / 100).toFixed(2)}</span>
+                )}
+              </td>
               <td className="p-3 font-mono text-xs break-all max-w-[120px]">
                 {r.stripe_customer_id ? (
                   <span title={r.stripe_customer_id}>
