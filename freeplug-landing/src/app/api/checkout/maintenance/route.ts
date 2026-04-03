@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe/server'
-import { appBaseUrl, clampMaintenanceCents } from '@/lib/stripe/config'
+import { clampMaintenanceCents } from '@/lib/stripe/config'
+import {
+  applyUserToCheckoutSession,
+  getCheckoutSessionContext,
+} from '@/lib/stripe/checkout-context'
 
 export const runtime = 'nodejs'
 
+/**
+ * One-time maintenance Checkout Session (amount chosen in request body).
+ * Not used from public UI — maintenance is quote-first; callers should be
+ * server-trusted flows (e.g. admin sends invoice) or a future server-determined amount.
+ * Keep route for internal/testing until a dedicated “quoted checkout” path exists.
+ */
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as { maintenanceCents?: unknown }
@@ -15,28 +25,31 @@ export async function POST(request: Request) {
       )
     }
 
-    const base = appBaseUrl()
+    const ctx = await getCheckoutSessionContext()
     const stripe = getStripe()
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: [
+    const session = await stripe.checkout.sessions.create(
+      applyUserToCheckoutSession(
         {
-          price_data: {
-            currency: 'usd',
-            product_data: { name: 'Maintenance (one-time)' },
-            unit_amount: cents,
-          },
-          quantity: 1,
+          mode: 'payment',
+          line_items: [
+            {
+              price_data: {
+                currency: 'usd',
+                product_data: { name: 'Maintenance (one-time)' },
+                unit_amount: cents,
+              },
+              quantity: 1,
+            },
+          ],
         },
-      ],
-      success_url: `${base}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/?checkout=cancelled`,
-      metadata: {
-        type: 'maintenance',
-        maintenance_cents: String(cents),
-      },
-    })
+        ctx,
+        {
+          type: 'maintenance',
+          maintenance_cents: String(cents),
+        }
+      )
+    )
 
     if (!session.url) {
       return NextResponse.json(

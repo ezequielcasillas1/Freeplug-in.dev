@@ -1,16 +1,41 @@
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
+import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
+import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import {
   ADDON_MONTHLY_CENTS,
-  appBaseUrl,
   clampHostingCents,
 } from '@/lib/stripe/config'
+import {
+  applyUserToCheckoutSession,
+  getCheckoutSessionContext,
+} from '@/lib/stripe/checkout-context'
 
 export const runtime = 'nodejs'
 
 export async function POST(request: Request) {
   try {
+    const supabaseAuth = await createClient()
+    const {
+      data: { user },
+    } = await supabaseAuth.auth.getUser()
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Sign in to start checkout.' },
+        { status: 401 }
+      )
+    }
+    if (!(await isPlansCheckoutAllowed(supabaseAuth, user.id))) {
+      return NextResponse.json(
+        {
+          error:
+            'Submit a website request from your dashboard before choosing a hosting plan.',
+        },
+        { status: 403 }
+      )
+    }
+
     const body = (await request.json()) as {
       hostingMonthlyCents?: unknown
       includeAddon?: unknown
@@ -24,7 +49,7 @@ export async function POST(request: Request) {
     }
     const includeAddon = Boolean(body.includeAddon)
 
-    const base = appBaseUrl()
+    const ctx = await getCheckoutSessionContext()
     const stripe = getStripe()
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
@@ -51,17 +76,20 @@ export async function POST(request: Request) {
       })
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      line_items: lineItems,
-      success_url: `${base}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/?checkout=cancelled`,
-      metadata: {
-        type: 'hosting',
-        hosting_monthly_cents: String(hostingCents),
-        include_addon: includeAddon ? 'true' : 'false',
-      },
-    })
+    const session = await stripe.checkout.sessions.create(
+      applyUserToCheckoutSession(
+        {
+          mode: 'subscription',
+          line_items: lineItems,
+        },
+        ctx,
+        {
+          type: 'hosting',
+          hosting_monthly_cents: String(hostingCents),
+          include_addon: includeAddon ? 'true' : 'false',
+        }
+      )
+    )
 
     if (!session.url) {
       return NextResponse.json(

@@ -9,3 +9,5 @@ REMEMBER Dont assume that I made the netlify and namecheap host connection until
 REMEMBER, to make a landing page route in the website page interface with the rest of the feautures live, otherwise don't make it live.
 
 REMEMBER, never expose api keys only things needed to be exposed are url and anon keys. 
+
+REMEMBER TO MAKE THE DEVELOPMENT OF FILES MODULAR. 

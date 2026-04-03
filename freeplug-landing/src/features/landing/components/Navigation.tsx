@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -16,6 +18,7 @@ const navLinks = [
 ]
 
 export function Navigation() {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -27,10 +30,10 @@ export function Navigation() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="#" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl font-bold text-[#ba3d3d]">Freeplug</span>
             <span className="text-2xl font-light text-gray-800">.dev</span>
-          </a>
+          </Link>
 
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
@@ -42,7 +45,27 @@ export function Navigation() {
                 {link.label}
               </a>
             ))}
-            <Button size="sm">Get Started</Button>
+            <Link
+              href="/login"
+              className="text-sm font-medium text-gray-600 hover:text-[#ba3d3d]"
+            >
+              Log in
+            </Link>
+            <Button
+              size="sm"
+              variant="secondary"
+              type="button"
+              onClick={() => router.push('/dashboard')}
+            >
+              Dashboard
+            </Button>
+            <Button
+              size="sm"
+              type="button"
+              onClick={() => router.push('/signup')}
+            >
+              Get Started
+            </Button>
           </div>
 
           <button
@@ -71,7 +94,24 @@ export function Navigation() {
                 {link.label}
               </a>
             ))}
-            <Button size="sm" className="w-fit">Get Started</Button>
+            <Link
+              href="/login"
+              onClick={() => setIsOpen(false)}
+              className="text-gray-600 hover:text-[#ba3d3d] transition-colors font-medium"
+            >
+              Log in
+            </Link>
+            <Button
+              size="sm"
+              className="w-fit"
+              type="button"
+              onClick={() => {
+                setIsOpen(false)
+                router.push('/signup')
+              }}
+            >
+              Get Started
+            </Button>
           </div>
         </div>
       </div>

@@ -1,0 +1,10 @@
+{
+  "name": "freeplug-dev",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix freeplug-landing",
+    "build": "npm run build --prefix freeplug-landing",
+    "start": "npm run start --prefix freeplug-landing",
+    "lint": "npm run lint --prefix freeplug-landing"
+  }
+}

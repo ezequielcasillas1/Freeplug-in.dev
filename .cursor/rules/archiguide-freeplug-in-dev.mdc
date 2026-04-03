@@ -1,0 +1,37 @@
+---
+description: ArchiGuide canon for Freeplug-in.dev — read these MDs when building the product
+globs:
+  - "freeplug-landing/**"
+  - "ArchiGuide/**"
+alwaysApply: false
+---
+
+# ArchiGuide → Freeplug-in.dev
+
+Canonical folder: **`ArchiGuide/`** (`C:\Dev\Freeplug.Dev\ArchiGuide`). When changing **Freeplug-in.dev** (starting with `freeplug-landing/` and future apps in this repo), **open and follow** the relevant guide below before large or structural edits.
+
+## File map (use in order of relevance)
+
+| Guide | Path | When to read |
+|--------|------|----------------|
+| Architecture | `ArchiGuide/architecture.md` | System layout, feature-first structure, use-cases, API routes, AI-safe patterns |
+| Tech stack | `ArchiGuide/Techstack.md` | Dependencies, versions, stack choices for new packages or refactors |
+| UI / brand | `ArchiGuide/UI.md` | Gradients, colors, CSS tokens, visual consistency with the landing |
+| ID rules | `ArchiGuide/id-rules.md` | Any IDs, keys, DTOs, server vs client identity — no fabricated UUIDs on client |
+| Example feature | `ArchiGuide/example-feature.md` | Scaffolding a new feature (posts pattern: components, hooks, use-cases) |
+| Animations | `ArchiGuide/SKILL.md` | Framer Motion variants, co-located `animations/*.variants.ts` |
+| Agent workflow 1 | `ArchiGuide/Project agent guide1.md` | Project/agent process notes |
+| Agent workflow 2 | `ArchiGuide/Project agent guide 2.md` | Additional agent/process notes |
+
+## Must follow
+
+- **Prefer guides over improvisation**: If a task touches structure, IDs, or UI, reconcile with the matching row above.
+- **Landing app**: `freeplug-landing/` should stay aligned with **Techstack** and **UI**; new features should move toward **architecture** and **example-feature** patterns as the app grows.
+- **Do not duplicate canon**: Update the **`ArchiGuide/*.md`** source when rules change; this `.mdc` only points to them.
+
+## Quick triggers
+
+- New route, API, or feature folder → `architecture.md` + `example-feature.md`
+- New dependency → `Techstack.md`
+- Styling / hero / cards / motion → `UI.md` + `SKILL.md`
+- Data create/update and `id` fields → `id-rules.md`
