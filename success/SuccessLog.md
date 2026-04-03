@@ -22,3 +22,9 @@
 **Status:** SUCCESS ✅
 **Files:** next.config.ts, migrations/*.sql, Vercel env vars
 **Result:** Restored Supabase DB from local migrations after accidental deletion, fixed Turbopack root config, deployed to Vercel with 15 env vars. Live at freeplug-in.dev
+
+### 2026-04-03 - FAQ and Help Center Pages
+**Status:** SUCCESS ✅
+**Commit:** 0c1ab65
+**Files:** faq/page.tsx, help/page.tsx, Accordion.tsx, Footer.tsx, SupportCard.tsx
+**Result:** Public FAQ with 5 questions, dashboard Help Center with tabs (FAQ/Guides/Contact), reusable Accordion component

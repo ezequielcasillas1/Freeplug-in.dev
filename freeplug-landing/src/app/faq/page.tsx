@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { HelpCircle, ArrowRight } from 'lucide-react'
-import { Navigation, Footer } from '@/features/landing'
+import { Navigation } from '@/features/landing/components/Navigation'
+import { Footer } from '@/features/landing/components/Footer'
 import {
   Accordion,
   AccordionItem,
