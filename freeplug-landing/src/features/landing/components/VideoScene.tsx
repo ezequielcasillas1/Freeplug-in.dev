@@ -127,9 +127,9 @@ export function VideoScene() {
   if (!mounted) return null
 
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none">
+    <div className="absolute inset-0 z-5 pointer-events-none">
       <Canvas
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
         camera={{ position: [0, 0, 10], fov: 50 }}
         style={{ background: 'transparent' }}
       >
