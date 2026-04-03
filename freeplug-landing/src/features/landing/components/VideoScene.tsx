@@ -1,86 +1,56 @@
 'use client'
 
-import { Canvas, useFrame, useThree, extend } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useVideoTexture } from '@react-three/drei'
 import { Suspense, useRef, useEffect, useState, useMemo } from 'react'
 import * as THREE from 'three'
-import { shaderMaterial } from '@react-three/drei'
 
-const ChromaKeyMaterial = shaderMaterial(
-  {
-    map: null,
-    keyColor: new THREE.Color(0x00ff00),
-    similarity: 0.3,
-    smoothness: 0.1,
-    opacity: 1.0,
-  },
-  // Vertex shader
-  `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  // Fragment shader
-  `
-    uniform sampler2D map;
-    uniform vec3 keyColor;
-    uniform float similarity;
-    uniform float smoothness;
-    uniform float opacity;
-    varying vec2 vUv;
-
-    vec2 RGBtoUV(vec3 rgb) {
-      return vec2(
-        rgb.r * -0.169 + rgb.g * -0.331 + rgb.b * 0.5 + 0.5,
-        rgb.r * 0.5 + rgb.g * -0.419 + rgb.b * -0.081 + 0.5
-      );
-    }
-
-    void main() {
-      vec4 texColor = texture2D(map, vUv);
-      
-      vec2 chromaKey = RGBtoUV(keyColor);
-      vec2 chromaPixel = RGBtoUV(texColor.rgb);
-      
-      float chromaDist = distance(chromaKey, chromaPixel);
-      
-      float baseMask = chromaDist - similarity;
-      float fullMask = pow(clamp(baseMask / smoothness, 0.0, 1.0), 1.5);
-      
-      texColor.a = fullMask * opacity;
-      
-      // Color spill removal - reduce green tint on edges
-      float spillRemoval = 1.0 - smoothstep(similarity, similarity + smoothness * 2.0, chromaDist);
-      texColor.rgb = mix(texColor.rgb, texColor.rgb * vec3(1.1, 0.9, 1.1), spillRemoval * 0.5);
-      
-      gl_FragColor = texColor;
-    }
-  `
-)
-
-extend({ ChromaKeyMaterial })
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      chromaKeyMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        map?: THREE.Texture | null
-        keyColor?: THREE.Color
-        similarity?: number
-        smoothness?: number
-        opacity?: number
-        transparent?: boolean
-        side?: THREE.Side
-      }
-    }
+const vertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-}
+`
+
+const fragmentShader = `
+  uniform sampler2D map;
+  uniform vec3 keyColor;
+  uniform float similarity;
+  uniform float smoothness;
+  uniform float opacity;
+  varying vec2 vUv;
+
+  vec2 RGBtoUV(vec3 rgb) {
+    return vec2(
+      rgb.r * -0.169 + rgb.g * -0.331 + rgb.b * 0.5 + 0.5,
+      rgb.r * 0.5 + rgb.g * -0.419 + rgb.b * -0.081 + 0.5
+    );
+  }
+
+  void main() {
+    vec4 texColor = texture2D(map, vUv);
+    
+    vec2 chromaKey = RGBtoUV(keyColor);
+    vec2 chromaPixel = RGBtoUV(texColor.rgb);
+    
+    float chromaDist = distance(chromaKey, chromaPixel);
+    
+    float baseMask = chromaDist - similarity;
+    float fullMask = pow(clamp(baseMask / smoothness, 0.0, 1.0), 1.5);
+    
+    texColor.a = fullMask * opacity;
+    
+    // Color spill removal - reduce green tint on edges
+    float spillRemoval = 1.0 - smoothstep(similarity, similarity + smoothness * 2.0, chromaDist);
+    texColor.rgb = mix(texColor.rgb, texColor.rgb * vec3(1.1, 0.9, 1.1), spillRemoval * 0.5);
+    
+    gl_FragColor = texColor;
+  }
+`
 
 function VideoCharacter() {
   const meshRef = useRef<THREE.Mesh>(null)
-  const materialRef = useRef<THREE.ShaderMaterial>(null)
   const { viewport } = useThree()
   const [scrollY, setScrollY] = useState(0)
 
@@ -89,6 +59,28 @@ function VideoCharacter() {
     loop: true,
     start: true,
   })
+
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        map: { value: null },
+        keyColor: { value: new THREE.Color(0x00ff00) },
+        similarity: { value: 0.35 },
+        smoothness: { value: 0.12 },
+        opacity: { value: 1.0 },
+      },
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      side: THREE.DoubleSide,
+    })
+  }, [])
+
+  useEffect(() => {
+    if (texture && material) {
+      material.uniforms.map.value = texture
+    }
+  }, [texture, material])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -99,7 +91,7 @@ function VideoCharacter() {
   }, [])
 
   useFrame((state) => {
-    if (!meshRef.current || !materialRef.current) return
+    if (!meshRef.current) return
     
     const scrollProgress = Math.min(scrollY / 600, 1)
     
@@ -112,26 +104,20 @@ function VideoCharacter() {
     meshRef.current.scale.setScalar(scale)
     
     // Fade on scroll
-    materialRef.current.uniforms.opacity.value = 1 - scrollProgress * 0.7
+    material.uniforms.opacity.value = 1 - scrollProgress * 0.7
   })
 
   // Character size - adjust based on viewport
   const characterHeight = Math.min(viewport.height * 0.7, 8)
-  const characterWidth = characterHeight * (9 / 16) // Assuming portrait video
+  const characterWidth = characterHeight * (9 / 16)
 
   return (
-    <mesh ref={meshRef} position={[viewport.width * 0.25, -0.5, 0]}>
+    <mesh 
+      ref={meshRef} 
+      position={[viewport.width * 0.25, -0.5, 0]}
+      material={material}
+    >
       <planeGeometry args={[characterWidth, characterHeight]} />
-      <chromaKeyMaterial
-        ref={materialRef}
-        map={texture}
-        keyColor={new THREE.Color(0x00ff00)}
-        similarity={0.35}
-        smoothness={0.12}
-        opacity={1.0}
-        transparent={true}
-        side={THREE.DoubleSide}
-      />
     </mesh>
   )
 }
