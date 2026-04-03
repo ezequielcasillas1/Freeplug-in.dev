@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useVideoTexture, PerspectiveCamera } from '@react-three/drei'
-import { Suspense, useRef, useEffect, useState } from 'react'
+import { Suspense, useRef, useEffect, useState, useMemo } from 'react'
 import * as THREE from 'three'
 
 function VideoPlane() {
@@ -70,12 +70,17 @@ function FloatingParticles() {
   const particlesRef = useRef<THREE.Points>(null)
   const count = 50
 
-  const positions = new Float32Array(count * 3)
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 12
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 5 - 2
-  }
+  const geometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry()
+    const positions = new Float32Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 20
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 12
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 5 - 2
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    return geo
+  }, [])
 
   useFrame((state) => {
     if (!particlesRef.current) return
@@ -84,15 +89,7 @@ function FloatingParticles() {
   })
 
   return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
+    <points ref={particlesRef} geometry={geometry}>
       <pointsMaterial
         size={0.05}
         color="#ba3d3d"
