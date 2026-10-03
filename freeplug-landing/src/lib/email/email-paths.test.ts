@@ -1,6 +1,13 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Hosting ladder (Oct 3): the plan-step sync is unit-tested in plan-step-sync.test.ts.
+const planStepSync = vi.hoisted(() => vi.fn(async () => ({ outcome: 'updated', stepId: 'starter' })))
+vi.mock('@/lib/plans/plan-step-sync', () => ({
+  syncPlanStepForCustomer: planStepSync,
+  supabasePlanStepStore: () => ({}),
+}))
+
 /**
  * Resend primary (Oct 3): every email the app sends goes through the Resend client with the right
  * to / from / subject. The `resend` SDK is replaced by a fake class: nothing here can reach

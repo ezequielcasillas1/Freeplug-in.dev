@@ -1,6 +1,13 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Hosting ladder (Oct 3): the plan-step sync is unit-tested in plan-step-sync.test.ts.
+const planStepSync = vi.hoisted(() => vi.fn(async () => ({ outcome: 'updated', stepId: 'starter' })))
+vi.mock('@/lib/plans/plan-step-sync', () => ({
+  syncPlanStepForCustomer: planStepSync,
+  supabasePlanStepStore: () => ({}),
+}))
+
 // Outreach billing branches of the Stripe webhook (setup-mode Checkout, first invoice paid).
 const state = { event: null as unknown, setupCalls: [] as unknown[], invoiceCalls: [] as unknown[], setupFails: false, profileUpdates: 0 }
 

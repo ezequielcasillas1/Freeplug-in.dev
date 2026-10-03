@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { CHANGE_TYPES } from '@/lib/help/help-chat-content'
 import { PHONE_INVALID, SERVICE_SOURCE_SITE, SERVICE_SOURCE_SITE_AND_THUMBTACK, SERVICE_SOURCE_THUMBTACK_ONLY } from './copy'
 import { normalizePhone } from './phone'
+import { PLAN_STEP_IDS } from '@/lib/plans/ladder'
 
 /** Zod limits for every outreach form field (same style as the request form). */
 export const DETAIL_KEYS = ['phone', 'address', 'hours', 'service_area', 'quote_email'] as const
@@ -48,10 +49,12 @@ export const changeRequestSchema = z.object({
   description: text(2000).min(1, 'Describe the change.'),
 })
 
-export const planChoiceSchema = z.object({
-  hostingMonthlyCents: z.number().int(),
-  addonTier: z.enum(['none', 'basic', 'plus', 'pro']),
-})
+/** Claim step 3: one of the ladder's step ids (src/lib/plans/ladder.ts). The slider and add-ons are retired. */
+export const planChoiceSchema = z
+  .object({
+    planStep: z.enum(PLAN_STEP_IDS),
+  })
+  .strict()
 
 export const prefillEntrySchema = z.object({ value: text(500), source: text(100) })
 const optionalUrl = z

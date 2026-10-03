@@ -19,8 +19,9 @@ import type {
 
 type Props = {
   email: string
-  /** Plus or Pro add-on: shows the "one small edit each month" note. */
-  hasMonthlyEdit: boolean
+  /** Plan includes a small edit (Fast lane and up, or a grandfathered Plus/Pro add-on): shows the included-edit note. */
+  /** Plan includes the small edit this period (getEntitlements().includedEditsPerMonth > 0). */
+  hasIncludedEdit: boolean
   sendRequest: (input: HelpChangeRequestInput) => Promise<HelpChangeRequestResult>
 }
 
@@ -54,7 +55,7 @@ function UserBubble({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function HelpChat({ email, hasMonthlyEdit, sendRequest }: Props) {
+export function HelpChat({ email, hasIncludedEdit, sendRequest }: Props) {
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null)
   const [step, setStep] = useState<Step>('menu')
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT)
@@ -237,7 +238,7 @@ export function HelpChat({ email, hasMonthlyEdit, sendRequest }: Props) {
           <>
             <BotBubble>
               <p>{C.review}</p>
-              {hasMonthlyEdit ? <p className="mt-2">{C.monthlyEditNote}</p> : null}
+              {hasIncludedEdit ? <p className="mt-2">{C.includedEditNote}</p> : null}
             </BotBubble>
             <dl className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm space-y-2">
               <div>

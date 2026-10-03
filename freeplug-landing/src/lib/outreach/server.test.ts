@@ -81,6 +81,12 @@ function run(op: Op): { data: unknown; error: unknown; count?: number } {
 function runOnce(op: Op): { data: unknown; error: unknown; count?: number } {
   state.ops.push(op)
   if (op.table === 'outreach_sites' && op.action === 'select') return { data: state.sites.filter((r) => matches(r, op)), error: null }
+  // Hosting ladder (Oct 3): saveChosenPlan writes plan_step.
+  if (op.table === 'outreach_sites' && op.action === 'update') {
+    const rows = state.sites.filter((r) => matches(r, op))
+    rows.forEach((r) => Object.assign(r, op.values as Row))
+    return { data: rows, error: null }
+  }
   if (op.table === 'site_details_submissions') {
     if (op.action === 'insert') {
       const row = { id: randomUUID(), review_status: 'pending', submitted_by: null, ...(op.values as Row) }
@@ -671,7 +677,7 @@ describe('deleting stored copies of approved photos (admin)', () => {
 describe('claim step 4 "Add my card" (Jace/Lina, Sep 27)', () => {
   it('opens setup-mode Checkout only: saves the card, creates no subscription and no charge', async () => {
     const userId = randomUUID()
-    const { site } = addSite({ claimed_by: userId, plan_hosting_cents: 3500, plan_addon_tier: 'none', setup_completed_at: null, stripe_customer_id: null })
+    const { site } = addSite({ claimed_by: userId, plan_step: 'starter', setup_completed_at: null, stripe_customer_id: null })
     const res = await server.startSetupCheckout({ id: userId, email: 'gracia@example.com' })
     expect(res).toEqual({ ok: true, url: 'https://checkout.stripe.test/c/cs_setup_test' })
     expect(stripeCalls.checkout).toHaveLength(1)
@@ -686,10 +692,64 @@ describe('claim step 4 "Add my card" (Jace/Lina, Sep 27)', () => {
 
   it('refuses a second setup once the card is saved (still nothing created)', async () => {
     const userId = randomUUID()
-    addSite({ claimed_by: userId, plan_hosting_cents: 3500, plan_addon_tier: 'none', setup_completed_at: '2026-09-27T05:00:00Z' })
+    addSite({ claimed_by: userId, plan_step: 'starter', setup_completed_at: '2026-09-27T05:00:00Z' })
     expect(await server.startSetupCheckout({ id: userId })).toMatchObject({ ok: false, code: 'already_saved' })
     expect(stripeCalls.checkout).toEqual([])
     expect(stripeCalls.other).toEqual([])
+  })
+})
+
+describe('claim step 3: choose a hosting ladder step (Oct 3)', () => {
+  it('saves a valid step id and nothing else', async () => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: null, setup_completed_at: null })
+    expect(await server.saveChosenPlan(userId, { planStep: 'get_found' })).toEqual({ ok: true })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBe('get_found')
+  })
+
+  it.each([
+    [{ planStep: 'gold' }],
+    [{ planStep: 'basic' }],
+    [{ hostingMonthlyCents: 3500, addonTier: 'none' }],
+    [{ planStep: 'starter', addonTier: 'pro' }],
+  ])('refuses %j (retired slider/add-ons, unknown steps)', async (input) => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: null, setup_completed_at: null })
+    expect(await server.saveChosenPlan(userId, input)).toMatchObject({ ok: false, code: 'invalid' })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBeNull()
+  })
+
+  it('is locked once a card is saved for a step, and once live', async () => {
+    const a = randomUUID()
+    addSite({ claimed_by: a, plan_step: 'starter', setup_completed_at: '2026-09-27T05:00:00Z' })
+    expect(await server.saveChosenPlan(a, { planStep: 'growth' })).toMatchObject({ ok: false, code: 'locked' })
+    const b = randomUUID()
+    addSite({ claimed_by: b, plan_step: 'starter', publish_status: 'live' })
+    expect(await server.saveChosenPlan(b, { planStep: 'growth' })).toMatchObject({ ok: false, code: 'locked' })
+  })
+
+  it('a card saved with a pre-ladder choice (no plan_step) may pick a step once; the old columns are untouched', async () => {
+    const userId = randomUUID()
+    const { site } = addSite({
+      claimed_by: userId,
+      plan_step: null,
+      plan_hosting_cents: 4000,
+      plan_addon_tier: 'pro',
+      setup_completed_at: '2026-09-27T05:00:00Z',
+    })
+    expect(await server.saveChosenPlan(userId, { planStep: 'leads' })).toEqual({ ok: true })
+    const row = state.sites.find((x) => x.id === site.id)!
+    expect(row.plan_step).toBe('leads')
+    expect(row.plan_hosting_cents).toBe(4000)
+    expect(row.plan_addon_tier).toBe('pro')
+    expect(await server.saveChosenPlan(userId, { planStep: 'growth' })).toMatchObject({ ok: false, code: 'locked' })
+  })
+
+  it('setup Checkout refuses a site that only has a pre-ladder choice (no_plan)', async () => {
+    const userId = randomUUID()
+    addSite({ claimed_by: userId, plan_step: null, plan_hosting_cents: 3500, plan_addon_tier: 'none', setup_completed_at: null })
+    expect(await server.startSetupCheckout({ id: userId })).toMatchObject({ ok: false, code: 'no_plan' })
+    expect(stripeCalls.checkout).toEqual([])
   })
 })
 

@@ -1,6 +1,13 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Hosting ladder (Oct 3): the plan-step sync is unit-tested in plan-step-sync.test.ts.
+const planStepSync = vi.hoisted(() => vi.fn(async () => ({ outcome: 'updated', stepId: 'starter' })))
+vi.mock('@/lib/plans/plan-step-sync', () => ({
+  syncPlanStepForCustomer: planStepSync,
+  supabasePlanStepStore: () => ({}),
+}))
+
 // Live webhooks can't be delivered (freeplug-in.dev doesn't resolve), so events are unit-tested.
 const constructEventAsync = vi.fn()
 const subsList = vi.fn()
@@ -95,6 +102,44 @@ describe('POST /api/webhooks/stripe: website access on subscription events (e)',
     const r = await deliver('customer.subscription.updated', subscription({ cancel_at_period_end: true }))
     expect(r.status).toBe(200)
     expect(r.body).toEqual({ received: true, websiteAccess: 'ending' })
+  })
+})
+
+describe('POST /api/webhooks/stripe: hosting ladder plan_step sync (Oct 3)', () => {
+  beforeEach(() => {
+    process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test'
+    constructEventAsync.mockReset()
+    subsList.mockReset()
+    cancelNotice.mockReset()
+    planStepSync.mockReset()
+    cancelNotice.mockResolvedValue('not_set_to_cancel')
+    subsList.mockResolvedValue({ data: [] })
+    planStepSync.mockResolvedValue({ outcome: 'updated', stepId: 'leads' })
+  })
+
+  it.each(['customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'])(
+    '%s: re-syncs profiles.plan_step for the customer, after the cancel notice',
+    async (type) => {
+      const r = await deliver(type, subscription())
+      expect(r.status).toBe(200)
+      expect(planStepSync).toHaveBeenCalledTimes(1)
+      expect((planStepSync.mock.calls[0] as unknown[])[1]).toBe('cus_1')
+    }
+  )
+
+  it('a failed sync answers 500 so Stripe retries (the cancel notice is idempotent per event)', async () => {
+    planStepSync.mockRejectedValue(new Error('db down'))
+    const r = await deliver('customer.subscription.updated', subscription({ cancel_at_period_end: true }))
+    expect(r.status).toBe(500)
+    expect(cancelNotice).toHaveBeenCalledTimes(1)
+    expect(cancelNotice.mock.calls[0][2]).toBe('evt_1')
+  })
+
+  it('a replayed event syncs again to the same value (idempotent write)', async () => {
+    await deliver('customer.subscription.updated', subscription())
+    await deliver('customer.subscription.updated', subscription())
+    expect(planStepSync).toHaveBeenCalledTimes(2)
+    expect(planStepSync.mock.calls.map((c) => (c as unknown[])[1])).toEqual(['cus_1', 'cus_1'])
   })
 })
 

@@ -10,6 +10,9 @@ import {
   subscriptionPeriodStart,
 } from '@/lib/stripe/subscription-dates'
 import { subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
+import { entitlementsForSubscription } from '@/lib/stripe/active-subscription'
+import type { Entitlements } from '@/lib/plans/ladder'
+import { periodStartDate } from '@/lib/plans/included-edits'
 
 export type DashboardStats = {
   totalPaidCents: number
@@ -30,6 +33,10 @@ export type SubscriptionDetail = {
   currentPeriodStart: Date | null
   cancelAtPeriodEnd: boolean
   created: Date
+  /** Hosting-ladder step or grandfathered plan (null when it couldn't be worked out). */
+  entitlements?: Entitlements | null
+  /** Included small edit this billing period (Fast lane+ or legacy Plus/Pro); null = not included / unknown. */
+  includedEdit?: { used: number; available: number } | null
 }
 
 export type ActivityItem = {
@@ -134,6 +141,14 @@ export async function getEnhancedDashboardData(
           amount += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
         }
         const price = items[0].price
+        let entitlements: Entitlements | null = null
+        try {
+          entitlements = await entitlementsForSubscription(sub, async (id) =>
+            (await stripe.products.retrieve(id)) as unknown as { id: string; name: string }
+          )
+        } catch (e) {
+          console.error('[dashboard] entitlements failed', e instanceof Error ? e.message : e)
+        }
 
         subscriptions.push({
           id: sub.id,
@@ -146,11 +161,27 @@ export async function getEnhancedDashboardData(
           currentPeriodStart: subscriptionPeriodStart(sub),
           cancelAtPeriodEnd: sub.cancel_at_period_end === true,
           created: stripeTimestampToDate(sub.created) ?? new Date(0),
+          entitlements,
+          includedEdit: null,
         })
 
         if (sub.status === 'active' || sub.status === 'trialing') {
           activeSubscriptionCount++
         }
+      }
+
+      // Included small edit: one per billing period, counted in included_edit_uses (owner can
+      // select own rows). A missing table or a read error just hides the line.
+      for (const detail of subscriptions) {
+        const avail = detail.entitlements?.includedEditsPerMonth ?? 0
+        const start = periodStartDate(detail.currentPeriodStart)
+        if (avail < 1 || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
+        const { count, error: useErr } = await supabase
+          .from('included_edit_uses')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('period_start', start)
+        if (!useErr) detail.includedEdit = { used: count ?? 0, available: avail }
       }
 
       const invoices = await stripe.invoices.list({

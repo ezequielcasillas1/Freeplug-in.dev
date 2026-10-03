@@ -6,16 +6,22 @@ import { Loader2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { openBillingPortal } from '@/app/(dashboard)/dashboard/billing-actions'
+import { PLAN_STEPS, type PlanStepId } from '@/lib/plans/ladder'
 import {
-  ADDON_TIERS,
-  type AddonTierId,
-  HOSTING_DEFAULT_CENTS,
-  HOSTING_MAX_CENTS,
-  HOSTING_MIN_CENTS,
-} from '@/lib/stripe/config'
+  CONTINUE_TO_PAYMENT,
+  EVERYTHING_IN,
+  LADDER_HEADING,
+  LADDER_SUBHEADING,
+  MOST_POPULAR_LABEL,
+  MOST_POPULAR_STEP,
+  PER_MONTH,
+  PERK_LINES,
+  STARTER_BASE_LINES,
+  STEP_BLURBS,
+} from '@/lib/plans/ladder-copy'
 
-function dollarsToCents(d: number): number {
-  return Math.round(d * 100)
+function formatDollars(cents: number): string {
+  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
 }
 
 const LOGIN_THEN_REQUEST = `/login?next=${encodeURIComponent('/dashboard/request-website')}`
@@ -36,7 +42,7 @@ type Props = {
    * Choose-plan mode (outreach claim step 3): the button saves the plan through this callback
    * instead of opening Checkout; nothing is charged. Returns an error message or null.
    */
-  onChoosePlan?: (plan: { hostingMonthlyCents: number; addonTier: AddonTierId | 'none' }) => Promise<string | null>
+  onChoosePlan?: (plan: { planStep: PlanStepId }) => Promise<string | null>
   /** Button label in choose-plan mode. */
   chooseLabel?: string
   /** One grey line above the button in choose-plan mode. */
@@ -52,20 +58,16 @@ export function HostingCheckoutCard({
   chooseLabel,
   noteAboveButton,
 }: Props) {
-  const [hostingDollars, setHostingDollars] = useState(
-    HOSTING_DEFAULT_CENTS / 100
-  )
-  const [addonTier, setAddonTier] = useState<AddonTierId | 'none'>('none')
+  const [planStep, setPlanStep] = useState<PlanStepId>(PLAN_STEPS[0].id)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function startHostingCheckout() {
     setError(null)
-    const hostingMonthlyCents = dollarsToCents(hostingDollars)
     setLoading(true)
     if (onChoosePlan) {
       try {
-        const message = await onChoosePlan({ hostingMonthlyCents, addonTier })
+        const message = await onChoosePlan({ planStep })
         if (message) setError(message)
       } finally {
         setLoading(false)
@@ -76,10 +78,7 @@ export function HostingCheckoutCard({
       const res = await fetch('/api/checkout/hosting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hostingMonthlyCents,
-          addonTier,
-        }),
+        body: JSON.stringify({ planStep }),
       })
       const data = (await res.json()) as { url?: string; error?: string }
       if (!res.ok) {
@@ -101,12 +100,6 @@ export function HostingCheckoutCard({
   const hasLivePlan = (currentPlanLines?.length ?? 0) > 0
   const canPay = signedIn && allowCheckout && !hasLivePlan
 
-  const hostingMin = HOSTING_MIN_CENTS / 100
-  const hostingMax = HOSTING_MAX_CENTS / 100
-  const addonCents =
-    ADDON_TIERS.find((t) => t.id === addonTier)?.monthlyCents ?? 0
-  const totalDollars = (dollarsToCents(hostingDollars) + addonCents) / 100
-
   const shell =
     embedded
       ? 'rounded-2xl bg-white p-6 sm:p-8 shadow-sm border border-zinc-200/80'
@@ -114,70 +107,54 @@ export function HostingCheckoutCard({
 
   return (
     <div className={shell}>
-      <h3 className="text-xl font-semibold text-gray-900 mb-1">Monthly hosting</h3>
-      <p className="text-sm text-gray-500 mb-6">
-        ${hostingMin}–${hostingMax}/mo · default ${HOSTING_DEFAULT_CENTS / 100}
-      </p>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        ${hostingDollars.toFixed(0)}/month
-      </label>
-      <input
-        type="range"
-        min={hostingMin}
-        max={hostingMax}
-        step={1}
-        value={hostingDollars}
-        onChange={(e) => setHostingDollars(Number(e.target.value))}
-        disabled={!canPay}
-        className="w-full accent-[#ba3d3d] mb-6 disabled:opacity-50"
-      />
+      <h3 className="text-xl font-semibold text-gray-900 mb-1">{LADDER_HEADING}</h3>
+      <p className="text-sm text-gray-500 mb-6">{LADDER_SUBHEADING}</p>
       <fieldset className="mb-6" disabled={!canPay}>
-        <legend className="block text-sm font-medium text-gray-700 mb-2">
-          Add-on (optional)
-        </legend>
+        <legend className="sr-only">{LADDER_HEADING}</legend>
         <div className="space-y-2">
-          <label
-            className={`flex items-start gap-3 rounded-lg border p-3 ${
-              addonTier === 'none' ? 'border-[#ba3d3d]' : 'border-gray-200'
-            } ${canPay ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
-          >
-            <input
-              type="radio"
-              name="addon-tier"
-              value="none"
-              checked={addonTier === 'none'}
-              onChange={() => setAddonTier('none')}
-              className="mt-1 text-[#ba3d3d] focus:ring-[#ba3d3d]"
-            />
-            <span className="text-sm text-gray-700">No add-on</span>
-          </label>
-          {ADDON_TIERS.map((tier) => (
-            <label
-              key={tier.id}
-              className={`flex items-start gap-3 rounded-lg border p-3 ${
-                addonTier === tier.id ? 'border-[#ba3d3d]' : 'border-gray-200'
-              } ${canPay ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
-            >
-              <input
-                type="radio"
-                name="addon-tier"
-                value={tier.id}
-                checked={addonTier === tier.id}
-                onChange={() => setAddonTier(tier.id)}
-                className="mt-1 text-[#ba3d3d] focus:ring-[#ba3d3d]"
-              />
-              <span className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">
-                  {tier.name} (+${tier.monthlyCents / 100}/mo)
+          {PLAN_STEPS.map((step, i) => {
+            const selected = planStep === step.id
+            const lines = i === 0 ? STARTER_BASE_LINES : step.adds.map((perk) => PERK_LINES[perk])
+            return (
+              <label
+                key={step.id}
+                data-plan-step={step.id}
+                className={`flex items-start gap-3 rounded-lg border p-3 ${
+                  selected ? 'border-[#ba3d3d]' : 'border-gray-200'
+                } ${canPay ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+              >
+                <input
+                  type="radio"
+                  name="plan-step"
+                  value={step.id}
+                  checked={selected}
+                  onChange={() => setPlanStep(step.id)}
+                  className="mt-1 text-[#ba3d3d] focus:ring-[#ba3d3d]"
+                />
+                <span className="text-sm text-gray-700">
+                  <span className="flex flex-wrap items-center gap-2 font-medium text-gray-900">
+                    {step.name} · {formatDollars(step.monthlyCents)}
+                    {PER_MONTH}
+                    {MOST_POPULAR_STEP === step.id ? (
+                      <span className="rounded bg-[#ba3d3d]/10 px-1.5 text-[11px] font-semibold text-[#ba3d3d]">
+                        {MOST_POPULAR_LABEL}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="block text-gray-500">{STEP_BLURBS[step.id]}</span>
+                  {i > 0 ? (
+                    <span className="block text-gray-500">{EVERYTHING_IN(PLAN_STEPS[i - 1].name)}</span>
+                  ) : null}
+                  <ul className="mt-1 list-disc pl-4 text-gray-600">
+                    {lines.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
                 </span>
-                <span className="block text-gray-500">{tier.includes.join(' · ')}</span>
-              </span>
-            </label>
-          ))}
+              </label>
+            )
+          })}
         </div>
-        <p className="mt-3 text-sm text-gray-700">
-          Total: ${totalDollars}/month
-        </p>
       </fieldset>
       {hasLivePlan ? (
         <>
@@ -208,7 +185,7 @@ export function HostingCheckoutCard({
             ) : onChoosePlan ? (
               chooseLabel ?? 'Continue'
             ) : (
-              'Continue to payment'
+              CONTINUE_TO_PAYMENT
             )}
           </Button>
         </>

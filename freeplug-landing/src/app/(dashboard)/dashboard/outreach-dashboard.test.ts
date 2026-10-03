@@ -13,21 +13,21 @@ describe('outreach dashboard state (Lina, Sep 27; round 9)', () => {
   })
 
   it('before billing: plan chosen -> plan-waiting; no plan yet -> claim-steps link; never the empty state', () => {
-    expect(outreachPlanBox({ plan_hosting_cents: 3500, publish_status: 'none' }, loaded(0))).toBe('plan_waiting')
-    expect(outreachPlanBox({ plan_hosting_cents: 3500, publish_status: 'processing' }, failed)).toBe('plan_waiting')
-    expect(outreachPlanBox({ plan_hosting_cents: 3500, publish_status: 'failed' }, loaded(1))).toBe('plan_waiting')
-    expect(outreachPlanBox({ plan_hosting_cents: null, publish_status: 'none' }, loaded(0))).toBe('choose_plan')
-    expect(outreachDashboardState({ plan_hosting_cents: 3500, publish_status: 'none' }).showRequestCard).toBe(false)
+    expect(outreachPlanBox({ plan_step: 'starter', publish_status: 'none' }, loaded(0))).toBe('plan_waiting')
+    expect(outreachPlanBox({ plan_step: 'starter', publish_status: 'processing' }, failed)).toBe('plan_waiting')
+    expect(outreachPlanBox({ plan_step: 'starter', publish_status: 'failed' }, loaded(1))).toBe('plan_waiting')
+    expect(outreachPlanBox({ plan_step: null, publish_status: 'none' }, loaded(0))).toBe('choose_plan')
+    expect(outreachDashboardState({ plan_step: 'starter', publish_status: 'none' }).showRequestCard).toBe(false)
   })
 
   it('live with a real subscription: the real plan', () => {
-    expect(outreachPlanBox({ plan_hosting_cents: 3500, publish_status: 'live' }, loaded(1))).toBe('plan')
+    expect(outreachPlanBox({ plan_step: 'starter', publish_status: 'live' }, loaded(1))).toBe('plan')
   })
 
   it("live but the plan can't be loaded (no subscription, Stripe error, no customer row): Sable's 3:27 line, never plan-waiting", () => {
-    expect(outreachPlanBox({ plan_hosting_cents: 3500, publish_status: 'live' }, loaded(0))).toBe('plan_unavailable')
-    expect(outreachPlanBox({ plan_hosting_cents: 3500, publish_status: 'live' }, failed)).toBe('plan_unavailable')
-    expect(outreachPlanBox({ plan_hosting_cents: null, publish_status: 'live' }, loaded(0))).toBe('plan_unavailable')
+    expect(outreachPlanBox({ plan_step: 'starter', publish_status: 'live' }, loaded(0))).toBe('plan_unavailable')
+    expect(outreachPlanBox({ plan_step: 'starter', publish_status: 'live' }, failed)).toBe('plan_unavailable')
+    expect(outreachPlanBox({ plan_step: null, publish_status: 'live' }, loaded(0))).toBe('plan_unavailable')
   })
 })
 
@@ -52,7 +52,7 @@ describe('Website card follows the tracker in every state (round 9)', () => {
       expect(steps.some((x) => x.label === card.label && x.state === 'done')).toBe(true)
       expect(card.label).not.toBe('Pending')
       const dash = outreachDashboardState(
-        { plan_hosting_cents: 3500, publish_status: st.s.live ? 'live' : 'none' },
+        { plan_step: 'starter', publish_status: st.s.live ? 'live' : 'none' },
         { steps, plans: loaded(0) }
       )
       expect(dash.websiteCard).toEqual(card)
@@ -62,9 +62,9 @@ describe('Website card follows the tracker in every state (round 9)', () => {
 
 // Round 10: Account card line (Sable 3:42 AM) and the "Active Plans" dash (Lina), in every state.
 describe('Account card line and Active Plans tile in every state (round 10)', () => {
-  const beforeCard = { plan_hosting_cents: 3500, publish_status: 'none', setup_completed_at: null }
-  const cardSaved = { plan_hosting_cents: 3500, publish_status: 'none', setup_completed_at: '2026-09-27T08:00:00Z' }
-  const live = { plan_hosting_cents: 3500, publish_status: 'live', setup_completed_at: '2026-09-27T08:00:00Z' }
+  const beforeCard = { plan_step: 'starter', publish_status: 'none', setup_completed_at: null }
+  const cardSaved = { plan_step: 'starter', publish_status: 'none', setup_completed_at: '2026-09-27T08:00:00Z' }
+  const live = { plan_step: 'starter', publish_status: 'live', setup_completed_at: '2026-09-27T08:00:00Z' }
   const state = (site: Parameters<typeof outreachDashboardState>[0], plans: { activePlanCount: number; plansLoaded: boolean }, hasStripeCustomer: boolean) =>
     outreachDashboardState(site, { steps: null, plans, hasStripeCustomer })
 
@@ -72,7 +72,7 @@ describe('Account card line and Active Plans tile in every state (round 10)', ()
     const s = state(beforeCard, loaded(0), false)
     expect(s.accountLine).toBe('add_card')
     expect(s.activePlansDash).toBe(false)
-    expect(accountBillingLine({ plan_hosting_cents: null, publish_status: 'none' }, false)).toBe('add_card')
+    expect(accountBillingLine({ plan_step: null, publish_status: 'none' }, false)).toBe('add_card')
   })
 
   it('outreach with a Stripe customer: Manage billing replaces the line (before and after Live)', () => {
@@ -117,9 +117,9 @@ describe('Account card line and Active Plans tile in every state (round 10)', ()
 
 // Round 11 (Jace / Lina): quick-action "Manage billing" visibility in the seven round 10 states.
 describe('quick-action "Manage billing" visibility (round 11)', () => {
-  const beforeCard = { plan_hosting_cents: 3500, publish_status: 'none', setup_completed_at: null }
-  const cardSaved = { plan_hosting_cents: 3500, publish_status: 'none', setup_completed_at: '2026-09-27T08:00:00Z' }
-  const live = { plan_hosting_cents: 3500, publish_status: 'live', setup_completed_at: '2026-09-27T08:00:00Z' }
+  const beforeCard = { plan_step: 'starter', publish_status: 'none', setup_completed_at: null }
+  const cardSaved = { plan_step: 'starter', publish_status: 'none', setup_completed_at: '2026-09-27T08:00:00Z' }
+  const live = { plan_step: 'starter', publish_status: 'live', setup_completed_at: '2026-09-27T08:00:00Z' }
   const show = (site: Parameters<typeof outreachDashboardState>[0], plans: { activePlanCount: number; plansLoaded: boolean }, hasStripeCustomer: boolean) =>
     outreachDashboardState(site, { steps: null, plans, hasStripeCustomer }).showManageBillingAction
 
@@ -143,9 +143,9 @@ describe('quick-action "Manage billing" visibility (round 11)', () => {
 
 // Round 12: /dashboard/cancel uses the same plan states (outreachCancelBox).
 describe('Cancel page plan state for outreach customers (round 12)', () => {
-  const pre = { plan_hosting_cents: 3500, publish_status: 'none', setup_completed_at: null }
-  const noPlanYet = { plan_hosting_cents: null, publish_status: 'none' }
-  const live = { plan_hosting_cents: 3500, publish_status: 'live', setup_completed_at: '2026-09-27T08:00:00Z' }
+  const pre = { plan_step: 'starter', publish_status: 'none', setup_completed_at: null }
+  const noPlanYet = { plan_step: null, publish_status: 'none' }
+  const live = { plan_step: 'starter', publish_status: 'live', setup_completed_at: '2026-09-27T08:00:00Z' }
   const d = (active: number, ended: number, loaded = true) => ({ subscriptions: Array(active).fill(0), canceledSubscriptions: Array(ended).fill(0), subscriptionsLoaded: loaded })
   it('before Live: plan-waiting (or the claim link with no plan yet), whatever Stripe says', () => {
     expect(outreachCancelBox(pre, d(0, 0))).toBe('plan_waiting')

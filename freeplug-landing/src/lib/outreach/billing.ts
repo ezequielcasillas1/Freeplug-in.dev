@@ -1,6 +1,8 @@
 import type Stripe from 'stripe'
 import { isLiveSubscriptionStatus } from '@/lib/stripe/active-subscription'
-import { resolveOutreachPlan } from './plan'
+import type { PlanStepId } from '@/lib/plans/ladder'
+import { getStepPriceId } from '@/lib/stripe/prices'
+import { resolveLegacyOutreachPlan, resolveOutreachStep } from './plan'
 
 /**
  * Outreach billing (Stripe option (a), Aria section 9). No database or env access here: the
@@ -8,7 +10,8 @@ import { resolveOutreachPlan } from './plan'
  *
  *   * Setup-mode Checkout saves the card at claim; the webhook (or the verified return URL) calls
  *     completeSetupSession(). Nothing is charged.
- *   * Admin Publish calls publishOutreachSite(): the price is recomputed on the server, the
+ *   * Admin Publish calls publishOutreachSite(): the step is re-resolved on the server and charged
+ *     through the Stripe price behind its lookup key (hosting ladder, Oct 3 2026), the
  *     subscription is created off-session with an idempotency key per site + attempt, and the
  *     site goes live only when the first invoice is paid (subscription status 'active').
  *     A declined card or 3D Secure leaves it unpublished with the reason for admin.
@@ -18,6 +21,9 @@ export type OutreachBillingSite = {
   id: string
   business_name: string
   claimed_by: string | null
+  /** Hosting-ladder step chosen at claim step 3 (required for new claims). */
+  plan_step: string | null
+  /** Pre-ladder choice (read-only; never charged). */
   plan_hosting_cents: number | null
   plan_addon_tier: string | null
   setup_session_id: string | null
@@ -53,10 +59,17 @@ export interface OutreachBillingStore {
   setProfileCustomer(userId: string, customerId: string): Promise<void>
 }
 
-export type BillingDeps = { stripe: Stripe; store: OutreachBillingStore; now?: () => Date }
+export type BillingDeps = {
+  stripe: Stripe
+  store: OutreachBillingStore
+  now?: () => Date
+  /** Price id for a step; defaults to the lookup-key resolver in lib/stripe/prices.ts. */
+  stepPriceId?: (stepId: PlanStepId) => Promise<string>
+}
 
-export const HOSTING_PRODUCT_ID = 'freeplug_hosting_monthly'
-export const addonProductId = (tier: string) => `freeplug_addon_${tier}_monthly`
+/** Shown to admins when a site still has a pre-ladder (slider/add-on) choice. */
+export const LEGACY_PLAN_PUBLISH_ERROR =
+  'This site has an old hosting choice (from before the plan ladder). Ask the customer to choose a plan again. Nothing was charged.'
 
 function idOf(v: string | { id: string } | null | undefined): string | null {
   if (!v) return null
@@ -111,18 +124,6 @@ export type PublishResult =
   | { ok: true; status: 'live'; already?: boolean; subscriptionId: string | null }
   | { ok: false; status: 'failed' | 'refused'; error: string }
 
-async function ensureProduct(stripe: Stripe, id: string, name: string): Promise<string> {
-  try {
-    const p = await stripe.products.retrieve(id)
-    return p.id
-  } catch (e) {
-    const code = (e as { code?: string }).code
-    if (code !== 'resource_missing') throw e
-    const p = await stripe.products.create({ id, name }, { idempotencyKey: `product:${id}` })
-    return p.id
-  }
-}
-
 function failureMessage(sub: Stripe.Subscription): string {
   const inv = sub.latest_invoice && typeof sub.latest_invoice !== 'string' ? sub.latest_invoice : null
   const link = inv?.hosted_invoice_url ? ` Send the customer this payment link: ${inv.hosted_invoice_url}` : ''
@@ -148,8 +149,13 @@ export async function publishOutreachSite(
   if (!site.setup_completed_at || !site.stripe_customer_id || !site.stripe_payment_method_id) {
     return { ok: false, status: 'refused', error: "The customer hasn't saved a card yet." }
   }
-  const plan = resolveOutreachPlan(site.plan_hosting_cents, site.plan_addon_tier ?? 'none')
-  if (!plan) return { ok: false, status: 'refused', error: 'No valid hosting plan is saved for this site.' }
+  const step = resolveOutreachStep(site.plan_step)
+  if (!step) {
+    if (resolveLegacyOutreachPlan(site.plan_hosting_cents, site.plan_addon_tier ?? 'none')) {
+      return { ok: false, status: 'refused', error: LEGACY_PLAN_PUBLISH_ERROR }
+    }
+    return { ok: false, status: 'refused', error: 'No valid hosting plan is saved for this site.' }
+  }
 
   if (!(await store.beginPublish(site.id))) {
     return { ok: false, status: 'refused', error: 'Publish is already running for this site.' }
@@ -210,30 +216,8 @@ export async function publishOutreachSite(
       })
     }
 
-    const hostingProduct = await ensureProduct(stripe, HOSTING_PRODUCT_ID, 'Hosting plan (monthly)')
-    const items: Stripe.SubscriptionCreateParams.Item[] = [
-      {
-        price_data: {
-          currency: 'usd',
-          product: hostingProduct,
-          recurring: { interval: 'month' },
-          unit_amount: plan.hostingCents,
-        },
-        quantity: 1,
-      },
-    ]
-    if (plan.addon) {
-      const addonProduct = await ensureProduct(stripe, addonProductId(plan.addon.id), `${plan.addon.name} add-on (monthly)`)
-      items.push({
-        price_data: {
-          currency: 'usd',
-          product: addonProduct,
-          recurring: { interval: 'month' },
-          unit_amount: plan.addon.monthlyCents,
-        },
-        quantity: 1,
-      })
-    }
+    const priceId = await (deps.stepPriceId ?? ((id: PlanStepId) => getStepPriceId(id, stripe)))(step.id)
+    const items: Stripe.SubscriptionCreateParams.Item[] = [{ price: priceId, quantity: 1 }]
 
     const sub = await stripe.subscriptions.create(
       {
@@ -249,8 +233,7 @@ export async function publishOutreachSite(
           source: 'outreach',
           outreach_site_id: site.id,
           supabase_user_id: site.claimed_by,
-          hosting_monthly_cents: String(plan.hostingCents),
-          addon_tier: plan.addon?.id ?? 'none',
+          plan_step: step.id,
         },
       },
       { idempotencyKey: `outreach-publish:${site.id}:${attempt}` }

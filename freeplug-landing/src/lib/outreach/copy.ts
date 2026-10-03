@@ -1,5 +1,6 @@
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '@/lib/site'
 import { PHOTO_LIMITS } from './limits'
+import { CLAIM_STEP3_BODY } from '@/lib/plans/ladder-copy'
 
 /**
  * Outreach claim flow copy. Word for word from Sable's draft
@@ -138,7 +139,8 @@ export const CHECK_PHOTOS = 'Photos'
 export const STEP2_BUTTON = 'Confirm details'
 export const UPLOAD_PHOTOS_LABEL = 'Upload photos'
 export const STEP3_HEADING = 'Choose your hosting plan'
-export const STEP3_BODY = 'Hosting keeps your website online. Plans start at $35 a month.'
+/** Claim step 3 body: built from the ladder (src/lib/plans/ladder-copy.ts, PLACEHOLDER until Sable). */
+export const STEP3_BODY = CLAIM_STEP3_BODY
 export const STEP3_BUTTON = 'Choose this plan'
 export const NO_CHARGE_UNTIL_LIVE = "You won't be charged until your site goes live."
 // Step 4 saves the card only (Sable 12:38 AM, overrides "Go live" / "Publish my website").

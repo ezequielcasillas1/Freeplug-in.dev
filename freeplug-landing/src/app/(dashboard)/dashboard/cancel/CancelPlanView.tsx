@@ -264,7 +264,7 @@ export function CancelPlanView({
                 <div>
                   <h3 className="font-medium text-gray-900">Professional Website Hosting</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Fast, secure hosting optimized for business websites with 99.9% uptime guarantee.
+                    Fast, secure hosting optimized for business websites.
                   </p>
                 </div>
               </div>

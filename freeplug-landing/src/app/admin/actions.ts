@@ -7,6 +7,11 @@ import { sendAdminMail } from '@/lib/admin/mail'
 import { publicMailError } from '@/lib/email/mailer'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseBuyoutPriceInput } from '@/lib/buyout/buyout'
+import { getEntitlements } from '@/lib/stripe/active-subscription'
+import { getStripe } from '@/lib/stripe/server'
+import { subscriptionPeriodStart } from '@/lib/stripe/subscription-dates'
+import { recordIncludedEdit } from '@/lib/plans/included-edits'
+import { nextBusinessDayDue } from '@/lib/plans/due-by'
 
 const STATUSES = ['submitted', 'in_review', 'closed'] as const
 
@@ -203,5 +208,71 @@ export async function adminSetBuyoutPrice(
   revalidatePath('/admin', 'layout')
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/cancel')
+  return { ok: true }
+}
+
+/**
+ * Hosting ladder (admin only): mark a request as a small edit.
+ *   * Fast lane and up: sets website_requests.due_by to the end of the next business day.
+ *   * useIncludedEdit: also records the plan's one included edit for the current billing period in
+ *     included_edit_uses; the UNIQUE (user_id, period_start) constraint refuses a second one.
+ * Entitlements are read from Stripe (lookup key / metadata, or the grandfathered add-on).
+ */
+export async function adminMarkSmallEdit(
+  requestId: string,
+  opts: { useIncludedEdit: boolean }
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdminAccess()
+  if (!uuidSchema.safeParse(requestId).success) return { ok: false, error: 'Invalid request id' }
+  let admin
+  try {
+    admin = createAdminClient()
+  } catch {
+    return { ok: false, error: 'Admin client unavailable' }
+  }
+  const { data: req, error: reqErr } = await admin
+    .from('website_requests')
+    .select('id, user_id, status')
+    .eq('id', requestId)
+    .maybeSingle()
+  if (reqErr || !req) return { ok: false, error: reqErr?.message ?? 'Request not found' }
+  const { data: prof } = await admin.from('profiles').select('stripe_customer_id').eq('id', req.user_id).maybeSingle()
+  const customerId = (prof?.stripe_customer_id as string | null) ?? null
+  if (!customerId) return { ok: false, error: 'This customer has no hosting plan.' }
+
+  let ent, periodStart: Date | null = null
+  try {
+    const stripe = getStripe()
+    ent = await getEntitlements(customerId, stripe)
+    const subs = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 10 })
+    periodStart = subs.data[0] ? subscriptionPeriodStart(subs.data[0]) : null
+  } catch (e) {
+    return { ok: false, error: `Stripe lookup failed: ${e instanceof Error ? e.message : String(e)}` }
+  }
+
+  if (opts.useIncludedEdit) {
+    const res = await recordIncludedEdit(
+      {
+        async insertUse(row) {
+          const { error } = await admin.from('included_edit_uses').insert(row)
+          return error ? { code: error.code, message: error.message } : null
+        },
+      },
+      { userId: req.user_id as string, requestId, includedEditsPerMonth: ent.includedEditsPerMonth, periodStart }
+    )
+    if (!res.ok) return { ok: false, error: res.message }
+  }
+
+  if (ent.nextBusinessDayEdits) {
+    const { error } = await admin
+      .from('website_requests')
+      .update({ due_by: nextBusinessDayDue(new Date()).toISOString() })
+      .eq('id', requestId)
+    if (error) return { ok: false, error: error.message }
+  } else if (!opts.useIncludedEdit) {
+    return { ok: false, error: "This customer's plan doesn't include next-business-day edits." }
+  }
+  revalidatePath('/admin', 'layout')
+  revalidatePath('/dashboard')
   return { ok: true }
 }

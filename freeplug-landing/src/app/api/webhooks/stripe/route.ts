@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendCancelNoticeOnce } from '@/lib/email/cancel-notice'
 import { websiteAccessAfterSubscriptionEvent, type WebsiteAccessStatus } from '@/lib/website-access'
 import { handleOutreachInvoicePaid, handleOutreachSetupSession } from '@/lib/outreach/server'
+import { supabasePlanStepStore, syncPlanStepForCustomer } from '@/lib/plans/plan-step-sync'
 
 export const runtime = 'nodejs'
 
@@ -99,6 +100,22 @@ export async function POST(request: Request) {
           if (notice !== 'not_set_to_cancel') console.info('[webhook] cancel notice', sub.id, notice)
         } catch (e) {
           console.error('[webhook] cancel notice failed', e instanceof Error ? e.message : e)
+        }
+      }
+      // Hosting ladder: cache the plan step on the profile (admin queue). Recomputed from Stripe's
+      // current state, so retries and out-of-order events are safe. On failure answer 500 so Stripe
+      // redelivers (the cancel email above is ledger-protected against a second send).
+      const planCustomerId = getCustomerId(sub.customer as string | Stripe.Customer | Stripe.DeletedCustomer | null)
+      if (planCustomerId) {
+        try {
+          const synced = await syncPlanStepForCustomer(
+            { stripe: getStripe(), store: supabasePlanStepStore(admin as unknown as Parameters<typeof supabasePlanStepStore>[0]) },
+            planCustomerId
+          )
+          console.info('[webhook] plan step', sub.id, synced.outcome, synced.stepId ?? 'none')
+        } catch (e) {
+          console.error('[webhook] plan step sync failed', e instanceof Error ? e.message : e)
+          return NextResponse.json({ error: 'Plan step not saved' }, { status: 500 })
         }
       }
       break

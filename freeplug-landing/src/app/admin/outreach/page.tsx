@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { adminListDomainRequests, adminListOutreachSites } from '@/lib/outreach/server'
 import { adminOutreachStatus } from '@/lib/outreach/status'
-import { formatMonthly, resolveOutreachPlan } from '@/lib/outreach/plan'
+import { formatMonthly, resolveLegacyOutreachPlan, resolveOutreachStep } from '@/lib/outreach/plan'
 import { AdminOutreachRow, type AdminOutreachRowView } from './AdminOutreachRow'
 import { NewOutreachSiteForm } from './NewOutreachSiteForm'
 import { CleanupPhotosButton, MarkDomainDoneButton } from './AdminOutreachExtras'
@@ -12,14 +12,19 @@ export const dynamic = 'force-dynamic'
 export default async function AdminOutreachPage() {
   const [sites, domains] = await Promise.all([adminListOutreachSites(), adminListDomainRequests()])
   const rows: AdminOutreachRowView[] = sites.map((s) => {
-    const plan = resolveOutreachPlan(s.plan_hosting_cents, s.plan_addon_tier ?? 'none')
+    const step = resolveOutreachStep(s.plan_step)
+    const legacy = step ? null : resolveLegacyOutreachPlan(s.plan_hosting_cents, s.plan_addon_tier ?? 'none')
     return {
       id: s.id,
       businessName: s.business_name,
       status: adminOutreachStatus(s),
       expiresAt: s.expires_at,
       claimerEmail: s.claimerEmail,
-      planLine: plan ? formatMonthly(plan.totalCents) + (plan.addon ? ` (incl. ${plan.addon.name})` : '') : null,
+      planLine: step
+        ? `${step.name} · ${formatMonthly(step.monthlyCents)}`
+        : legacy
+          ? `Old choice (before plan ladder): ${formatMonthly(legacy.totalCents)}${legacy.addon ? ` incl. ${legacy.addon.name}` : ''}. Customer must choose a plan again.`
+          : null,
       cardSaved: Boolean(s.setup_completed_at),
       live: s.publish_status === 'live',
       liveUrl: s.live_url,

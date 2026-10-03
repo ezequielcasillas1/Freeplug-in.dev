@@ -18,6 +18,16 @@ import {
   Globe,
   Palette,
 } from 'lucide-react'
+import { PLAN_STEPS } from '@/lib/plans/ladder'
+import {
+  HELP_HIDDEN_FEES,
+  HELP_HOSTING_PLANS,
+  HELP_PLANS_GUIDE_DESCRIPTION,
+  HELP_PLANS_GUIDE_TITLE_LINE,
+  HELP_REQUEST_CHANGES,
+  HELP_SECURITY,
+  STEP_BLURBS,
+} from '@/lib/plans/ladder-copy'
 import {
   Accordion,
   AccordionItem,
@@ -74,8 +84,8 @@ const faqCategories = [
       {
         id: 'b-1',
         question: 'What are the hosting plan options?',
-        answer:
-          'Hosting is $35 to $100 per month. You can add one optional add-on. Basic (+$5/mo) includes regular backups and downtime alerts. Plus (+$10/mo) adds one small edit each month. Pro (+$15/mo) adds updates to your Google Business Profile. Each add-on includes everything in the one before it. See Plans in your dashboard for details.',
+        // PLACEHOLDER (hosting ladder, src/lib/plans/ladder-copy.ts) until Sable's [STRICT] line.
+        answer: HELP_HOSTING_PLANS,
       },
       {
         id: 'b-2',
@@ -92,8 +102,8 @@ const faqCategories = [
       {
         id: 'b-4',
         question: 'Are there any hidden fees?',
-        answer:
-          "No. You pay for monthly hosting, which is required, plus any add-on you choose. One-time maintenance or a buyout costs extra only if you request it. Building your website is free, and you'll see the price before you pay.",
+        // PLACEHOLDER (hosting ladder): add-ons are retired. Was locked help/page.tsx:91.
+        answer: HELP_HIDDEN_FEES,
       },
       {
         id: 'b-5',
@@ -112,8 +122,8 @@ const faqCategories = [
       {
         id: 't-1',
         question: 'Can I request changes to my website?',
-        answer:
-          'Yes. The Plus and Pro add-ons include one small edit each month. For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You\'ll see the exact price before you pay.',
+        // PLACEHOLDER (hosting ladder) until Sable's [STRICT] line.
+        answer: HELP_REQUEST_CHANGES,
       },
       {
         id: 't-2',
@@ -130,8 +140,8 @@ const faqCategories = [
       {
         id: 't-4',
         question: 'How secure is my website?',
-        answer:
-          'Every site includes an SSL certificate, so it loads over a secure https connection. Regular backups come with the Basic, Plus and Pro add-ons.',
+        // Backups are not advertised until they're built (Aria, Oct 3). PLACEHOLDER until Sable.
+        answer: HELP_SECURITY,
       },
     ],
   },
@@ -185,7 +195,7 @@ const guides = [
     icon: FileText,
     steps: [
       'Overview: See your website status and quick actions',
-      'Plans: Choose a hosting plan and add-on, or request maintenance',
+      HELP_PLANS_GUIDE_TITLE_LINE,
       'Request website: Submit or update your website request',
       'Help: Access FAQs, guides, and contact support',
     ],
@@ -193,14 +203,10 @@ const guides = [
   {
     id: 'guide-3',
     title: 'Choosing the right plan',
-    description: 'Compare hosting amounts and add-ons for your business',
+    description: HELP_PLANS_GUIDE_DESCRIPTION,
     icon: CreditCard,
-    steps: [
-      'Hosting: $35 to $100 per month',
-      'Basic (+$5/mo): Regular backups and downtime alerts',
-      'Plus (+$10/mo): Everything in Basic, plus one small edit each month',
-      'Pro (+$15/mo): Everything in Plus, plus Google Business Profile updates',
-    ],
+    // Built from the ladder (PLACEHOLDER copy until Sable/Wren).
+    steps: PLAN_STEPS.map((s) => `${s.name} ($${s.monthlyCents / 100}/mo): ${STEP_BLURBS[s.id]}`),
   },
   {
     id: 'guide-4',

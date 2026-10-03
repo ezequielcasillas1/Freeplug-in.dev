@@ -1,7 +1,8 @@
 import { getAuthSummariesByUserIds } from '@/lib/admin/auth-users'
 import { isMailConfigured } from '@/lib/admin/mail'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getPlanMonthlyTotalCents } from '@/lib/stripe/active-subscription'
+import { getEntitlements } from '@/lib/stripe/active-subscription'
+import { adminPlanBadge, type AdminPlanBadge } from '@/lib/plans/admin-badge'
 import {
   adminAccessLabel,
   getWebsiteAccessForCustomer,
@@ -52,8 +53,9 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
 
   const allowAdjustCumulativePaid = process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID === 'true'
 
-  // Monthly plan totals from Stripe (for the Priority badge). A failed lookup just shows no amount.
+  // Plan step + monthly total from Stripe (step badge). A failed lookup just shows no amount.
   const planTotals = new Map<string, number | null>()
+  const planBadges = new Map<string, AdminPlanBadge | null>()
   // Website access (hosting required) from Stripe, for the badge column and the offline filter.
   // Taking a site offline or restoring it stays manual.
   const access = new Map<string, { status: WebsiteAccessStatus; label: string } | null>()
@@ -62,10 +64,13 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
       .filter((p) => p.stripe_customer_id)
       .map(async (p) => {
         try {
-          planTotals.set(p.id, await getPlanMonthlyTotalCents(p.stripe_customer_id as string))
+          const ent = await getEntitlements(p.stripe_customer_id as string)
+          planTotals.set(p.id, ent.monthlyCents > 0 ? ent.monthlyCents : null)
+          planBadges.set(p.id, adminPlanBadge(ent))
         } catch (e) {
-          console.error('[admin/customers] plan total lookup failed', e instanceof Error ? e.message : e)
+          console.error('[admin/customers] plan lookup failed', e instanceof Error ? e.message : e)
           planTotals.set(p.id, null)
+          planBadges.set(p.id, null)
         }
         try {
           const a = await getWebsiteAccessForCustomer(p.stripe_customer_id)
@@ -88,6 +93,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
       cumulative_website_value_paid_cents: p.cumulative_website_value_paid_cents,
       stripe_customer_id: p.stripe_customer_id,
       planMonthlyCents: planTotals.get(p.id) ?? null,
+      planBadge: planBadges.get(p.id) ?? null,
       websiteAccess: access.get(p.id) ?? null,
       updated_at: p.updated_at,
     }

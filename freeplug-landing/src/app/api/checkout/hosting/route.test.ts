@@ -11,6 +11,7 @@ const customersList = vi.fn()
 const customersCreate = vi.fn()
 const profileUpdate = vi.fn()
 const outreachWaiting = vi.fn()
+const pricesList = vi.fn()
 let ctxCustomerId: string | null = 'cus_test'
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -37,6 +38,7 @@ vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => ({
     subscriptions: { list: subsList },
     customers: { list: customersList, create: customersCreate },
+    prices: { list: pricesList },
     checkout: {
       sessions: {
         create: sessionsCreate,
@@ -63,8 +65,27 @@ vi.mock('@/lib/stripe/checkout-context', () => ({
 }))
 
 import { POST } from './route'
+import { PLAN_STEPS } from '@/lib/plans/ladder'
+import { resetStepPriceCache } from '@/lib/stripe/prices'
 
-function req(body: unknown = { hostingMonthlyCents: 3500, addonTier: 'pro' }) {
+/** Test-mode prices by lookup key, amounts from ladder.ts. */
+function ladderPrices(over: (p: Record<string, unknown>) => Record<string, unknown> = (p) => p) {
+  return {
+    data: PLAN_STEPS.map((st) =>
+      over({
+        id: `price_${st.id}`,
+        lookup_key: st.lookupKey,
+        active: true,
+        currency: 'usd',
+        unit_amount: st.monthlyCents,
+        type: 'recurring',
+        recurring: { interval: 'month', interval_count: 1 },
+      })
+    ),
+  }
+}
+
+function req(body: unknown = { planStep: 'fast_lane' }) {
   return new Request('http://localhost:3000/api/checkout/hosting', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -85,8 +106,11 @@ describe('POST /api/checkout/hosting', () => {
       customersCreate,
       profileUpdate,
       outreachWaiting,
+      pricesList,
     ])
       m.mockReset()
+    resetStepPriceCache()
+    pricesList.mockResolvedValue(ladderPrices())
     outreachWaiting.mockResolvedValue(false)
     customersList.mockResolvedValue({ data: [] })
     customersCreate.mockResolvedValue({ id: 'cus_new' })
@@ -220,9 +244,10 @@ describe('POST /api/checkout/hosting', () => {
       expect(sessionsList).toHaveBeenCalledWith({ customer: 'cus_mine', status: 'open', limit: 10 })
     })
 
-    it('still validates the amount and add-on tier', async () => {
-      expect((await POST(req({ hostingMonthlyCents: 999999, addonTier: 'pro' }))).status).toBe(400)
-      expect((await POST(req({ hostingMonthlyCents: 3500, addonTier: 'gold' }))).status).toBe(400)
+    it('still validates the plan step (and refuses the retired slider / add-ons)', async () => {
+      expect((await POST(req({ planStep: 'gold' }))).status).toBe(400)
+      expect((await POST(req({}))).status).toBe(400)
+      expect((await POST(req({ planStep: 'starter', addonTier: 'pro' }))).status).toBe(400)
       expect(customersCreate).not.toHaveBeenCalled()
       expect(sessionsCreate).not.toHaveBeenCalled()
     })
@@ -245,8 +270,7 @@ describe('POST /api/checkout/hosting', () => {
           url: 'https://checkout.stripe.test/same',
           metadata: {
             type: 'hosting',
-            hosting_monthly_cents: '3500',
-            addon_tier: 'pro',
+            plan_step: 'fast_lane',
           },
         },
       ],
@@ -265,8 +289,7 @@ describe('POST /api/checkout/hosting', () => {
           url: 'https://checkout.stripe.test/other',
           metadata: {
             type: 'hosting',
-            hosting_monthly_cents: '5000',
-            addon_tier: 'none',
+            plan_step: 'priority',
           },
         },
       ],
@@ -282,5 +305,75 @@ describe('POST /api/checkout/hosting', () => {
     const res = await POST(req())
     expect(res.status).toBe(503)
     expect(sessionsCreate).not.toHaveBeenCalled()
+  })
+
+  describe('hosting ladder (Oct 3)', () => {
+    beforeEach(() => {
+      subsList.mockResolvedValue({ data: [] })
+    })
+
+    it.each([
+      [{ hostingMonthlyCents: 3500 }],
+      [{ planStep: 'starter', addonTier: 'basic' }],
+      [{ planStep: 'starter', includeAddon: true }],
+      [{ addonTier: 'none' }],
+    ])('400: rejects the retired slider/add-on fields %j', async (body) => {
+      const res = await POST(req(body))
+      expect(res.status).toBe(400)
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it.each(['gold', 'basic', 'plus', 'pro', '', null, 55])('400: unknown step %j', async (planStep) => {
+      expect((await POST(req({ planStep }))).status).toBe(400)
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it.each(PLAN_STEPS.map((s) => [s.id] as const))(
+      '%s: one line item, the lookup-key price, plan_step metadata on session and subscription',
+      async (id) => {
+        const res = await POST(req({ planStep: id }))
+        expect(res.status).toBe(200)
+        expect(pricesList).toHaveBeenCalledWith({
+          lookup_keys: PLAN_STEPS.map((s) => s.lookupKey),
+          active: true,
+          limit: 100,
+        })
+        const [params] = sessionsCreate.mock.calls[0]
+        expect(params.line_items).toEqual([{ price: `price_${id}`, quantity: 1 }])
+        expect(JSON.stringify(params)).not.toContain('price_data')
+        expect(params.metadata).toEqual({ type: 'hosting', plan_step: id })
+        expect(params.subscription_data.metadata).toMatchObject({ type: 'hosting', plan_step: id })
+      }
+    )
+
+    it('idempotency key differs per step', async () => {
+      await POST(req({ planStep: 'starter' }))
+      await POST(req({ planStep: 'growth' }))
+      const k1 = sessionsCreate.mock.calls[0][1].idempotencyKey
+      const k2 = sessionsCreate.mock.calls[1][1].idempotencyKey
+      expect(k1).not.toBe(k2)
+    })
+
+    it('503 (fails closed) when the step price is missing, and no open session is expired', async () => {
+      pricesList.mockResolvedValue({ data: [] })
+      sessionsList.mockResolvedValue({
+        data: [{ id: 'cs_open', mode: 'subscription', url: 'https://x', metadata: { type: 'hosting', plan_step: 'starter' } }],
+      })
+      const res = await POST(req({ planStep: 'leads' }))
+      expect(res.status).toBe(503)
+      expect(sessionsExpire).not.toHaveBeenCalled()
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it('503 when the Stripe price amount does not match ladder.ts (never charge a drifted amount)', async () => {
+      pricesList.mockResolvedValue(ladderPrices((p) => (p.id === 'price_leads' ? { ...p, unit_amount: 7000 } : p)))
+      expect((await POST(req({ planStep: 'leads' }))).status).toBe(503)
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it('503 when Stripe cannot list prices', async () => {
+      pricesList.mockRejectedValue(new Error('network'))
+      expect((await POST(req({ planStep: 'starter' }))).status).toBe(503)
+    })
   })
 })

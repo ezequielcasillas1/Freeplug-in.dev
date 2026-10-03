@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion'
+import { HELP_WHAT_DO_I_PAY } from '@/lib/plans/ladder-copy'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { BUYOUT_FAQ_ANSWER, BUYOUT_FAQ_QUESTION } from '@/lib/buyout/buyout'
 
@@ -29,8 +30,8 @@ const faqs = [
   {
     id: 'what-do-i-pay',
     question: 'What do I pay for?',
-    answer:
-      'Hosting is required. It keeps your website online and costs $35 to $100 per month. You can add one optional add-on: Basic (+$5/mo), Plus (+$10/mo), or Pro (+$15/mo). Maintenance starts at $50, up to $100. You\'ll see the exact price before you pay. Building the website is free.',
+    // PLACEHOLDER (hosting ladder, src/lib/plans/ladder-copy.ts) until Sable's [STRICT] line.
+    answer: HELP_WHAT_DO_I_PAY,
   },
   {
     id: 'cancel-hosting',

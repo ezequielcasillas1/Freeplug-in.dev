@@ -2,10 +2,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { HelpChat } from './HelpChat'
 import { HELP_QUICK_QUESTIONS } from '@/lib/help/help-chat-content'
+import { HELP_CHAT_INCLUDED_EDIT_NOTE } from '@/lib/plans/ladder-copy'
 
 function setup(
   opts: {
-    hasMonthlyEdit?: boolean
+    hasIncludedEdit?: boolean
     result?: { ok: true; email: string } | { ok: false; error: string }
   } = {}
 ) {
@@ -15,7 +16,7 @@ function setup(
   render(
     <HelpChat
       email="owner@example.com"
-      hasMonthlyEdit={opts.hasMonthlyEdit ?? false}
+      hasIncludedEdit={opts.hasIncludedEdit ?? false}
       sendRequest={sendRequest}
     />
   )
@@ -57,7 +58,7 @@ describe('HelpChat', () => {
         "Here's your request. We'll review it and tell you the price before any paid work starts."
       )
     ).toBeInTheDocument()
-    expect(screen.queryByText('Your plan includes one small edit each month.')).toBeNull()
+    expect(screen.queryByText(HELP_CHAT_INCLUDED_EDIT_NOTE)).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Send request' }))
     await waitFor(() =>
       expect(
@@ -75,9 +76,9 @@ describe('HelpChat', () => {
   })
 
   it('shows the Plus/Pro note only with that add-on, and Edit goes back to step 1', () => {
-    setup({ hasMonthlyEdit: true })
+    setup({ hasIncludedEdit: true })
     walkToReview()
-    expect(screen.getByText('Your plan includes one small edit each month.')).toBeInTheDocument()
+    expect(screen.getByText(HELP_CHAT_INCLUDED_EDIT_NOTE)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
     expect(screen.getByText('What would you like changed?')).toBeInTheDocument()
   })

@@ -3,6 +3,13 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Hosting ladder (Oct 3): the plan-step sync is unit-tested in plan-step-sync.test.ts.
+const planStepSync = vi.hoisted(() => vi.fn(async () => ({ outcome: 'updated', stepId: 'starter' })))
+vi.mock('@/lib/plans/plan-step-sync', () => ({
+  syncPlanStepForCustomer: planStepSync,
+  supabasePlanStepStore: () => ({}),
+}))
+
 /**
  * Round 6 (Aria): the email_sends ledger, end to end through the real webhook route, the real
  * cancel-notice and the real ledger module. Stripe, the sender and the database are fakes (the

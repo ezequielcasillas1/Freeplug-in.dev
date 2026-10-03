@@ -1,6 +1,6 @@
 import { HelpChat } from '@/components/help/HelpChat'
 import { createClient } from '@/lib/supabase/server'
-import { hasMonthlyEditAddon } from '@/lib/stripe/active-subscription'
+import { getEntitlements } from '@/lib/stripe/active-subscription'
 import { sendHelpChangeRequest } from '../request-website/actions'
 
 /**
@@ -13,7 +13,7 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
     data: { user },
   } = await supabase.auth.getUser()
 
-  let hasMonthlyEdit = false
+  let hasIncludedEdit = false
   if (user) {
     const { data: prof } = await supabase
       .from('profiles')
@@ -22,10 +22,10 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
       .maybeSingle()
     if (prof?.stripe_customer_id) {
       try {
-        hasMonthlyEdit = await hasMonthlyEditAddon(prof.stripe_customer_id)
+        hasIncludedEdit = (await getEntitlements(prof.stripe_customer_id)).includedEditsPerMonth > 0
       } catch (e) {
-        // Only hides the optional Plus/Pro note; the chat still works.
-        console.error('[help] add-on lookup failed', e instanceof Error ? e.message : e)
+        // Only hides the optional included-edit note; the chat still works.
+        console.error('[help] entitlements lookup failed', e instanceof Error ? e.message : e)
       }
     }
   }
@@ -34,7 +34,7 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
     <div className="space-y-8">
       <HelpChat
         email={user?.email ?? ''}
-        hasMonthlyEdit={hasMonthlyEdit}
+        hasIncludedEdit={hasIncludedEdit}
         sendRequest={sendHelpChangeRequest}
       />
       {children}

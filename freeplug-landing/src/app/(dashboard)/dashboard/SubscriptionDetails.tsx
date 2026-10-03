@@ -7,6 +7,13 @@ import {
   qualifiesForPriority,
 } from '@/lib/plans/priority'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
+import { cumulativePerks } from '@/lib/plans/ladder'
+import {
+  INCLUDED_EDIT_LINE,
+  LEGACY_PLAN_LABEL,
+  LEGACY_PLAN_NOTE,
+  PERK_LINES,
+} from '@/lib/plans/ladder-copy'
 import type { WebsiteAccess } from '@/lib/website-access'
 import type { OutreachSubscriptionState } from './outreach-dashboard'
 import { OutreachPlanCard } from './OutreachPlanCard'
@@ -125,8 +132,31 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                   <p className="text-sm text-gray-600 mt-0.5">
                     {formatCents(sub.amount)}/{sub.interval}
                   </p>
-                  {qualifiesForPriority(monthlyCents(sub.amount, sub.interval)) ? (
+                  {(sub.entitlements ? sub.entitlements.priorityRank >= 1 : qualifiesForPriority(monthlyCents(sub.amount, sub.interval))) ? (
                     <p className="text-sm text-gray-700 mt-1">{PRIORITY_DASHBOARD_LINE}</p>
+                  ) : null}
+                  {sub.entitlements?.step && !sub.entitlements.legacy ? (
+                    <div className="mt-1 text-sm text-gray-700" data-testid="plan-step">
+                      <p className="font-medium">{sub.entitlements.step.name}</p>
+                      <ul className="list-disc pl-4 text-gray-600">
+                        {cumulativePerks(sub.entitlements.step.id)
+                          .filter((perk) => perk !== 'priorityQueue')
+                          .map((perk) => (
+                            <li key={perk}>{PERK_LINES[perk]}</li>
+                          ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {sub.entitlements?.legacy ? (
+                    <div className="mt-1 text-sm text-gray-600" data-testid="legacy-plan">
+                      <p>{LEGACY_PLAN_LABEL}</p>
+                      <p>{LEGACY_PLAN_NOTE}</p>
+                    </div>
+                  ) : null}
+                  {sub.includedEdit ? (
+                    <p className="text-sm text-gray-700 mt-1" data-testid="included-edit">
+                      {INCLUDED_EDIT_LINE(sub.includedEdit.used, sub.includedEdit.available)}
+                    </p>
                   ) : null}
                 </div>
               </div>

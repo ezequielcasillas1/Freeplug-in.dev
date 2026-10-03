@@ -4,6 +4,7 @@ import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
 import { describeLiveSubscriptions } from '@/lib/stripe/active-subscription'
+import { DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 
 export default async function DashboardPlansPage() {
   const supabase = await createClient()
@@ -55,8 +56,7 @@ export default async function DashboardPlansPage() {
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Plans</h1>
       <p className="text-gray-600 mb-8 max-w-2xl">
-        Hosting is billed monthly through Stripe. Maintenance is quoted after we review your request
-        — describe the work on the request form and we will follow up with pricing.
+        {DASHBOARD_PLANS_INTRO}
       </p>
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl">
         <HostingCheckoutCard embedded currentPlanLines={currentPlanLines} />

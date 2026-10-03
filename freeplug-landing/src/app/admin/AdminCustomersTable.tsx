@@ -1,7 +1,8 @@
 import { AdminCumulativePaidCell } from './AdminCumulativePaidCell'
 import { AdminQuickEmail } from './AdminQuickEmail'
 import Link from 'next/link'
-import { PRIORITY_ADMIN_BADGE, qualifiesForPriority } from '@/lib/plans/priority'
+import { adminPlanBadge, type AdminPlanBadge } from '@/lib/plans/admin-badge'
+import { entitlementsFor } from '@/lib/plans/ladder'
 import type { WebsiteAccessStatus } from '@/lib/website-access'
 
 export type CustomerRowView = {
@@ -14,6 +15,8 @@ export type CustomerRowView = {
   stripe_customer_id: string | null
   /** Monthly total of active plans (hosting + add-on), null when unknown or no Stripe customer. */
   planMonthlyCents: number | null
+  /** Hosting-ladder step badge (replaces the Priority-only badge); null when unknown. */
+  planBadge?: AdminPlanBadge | null
   /** Website access badge (null = never had hosting, or Stripe lookup failed). */
   websiteAccess: { status: WebsiteAccessStatus; label: string } | null
   updated_at: string
@@ -160,11 +163,16 @@ export function AdminCustomersTable({
                 {r.planMonthlyCents ? (
                   <span className="mt-1 flex flex-wrap items-center gap-1 font-sans">
                     <span className="whitespace-nowrap">${(r.planMonthlyCents / 100).toFixed(2)}/mo</span>
-                    {qualifiesForPriority(r.planMonthlyCents) ? (
-                      <span className="rounded bg-[#ba3d3d]/10 px-1 text-[10px] font-semibold text-[#ba3d3d]">
-                        {PRIORITY_ADMIN_BADGE}
-                      </span>
-                    ) : null}
+                    <AdminStepBadge
+                      badge={
+                        r.planBadge !== undefined
+                          ? r.planBadge
+                          : adminPlanBadge({
+                              ...entitlementsFor({ legacy: { hostingCents: r.planMonthlyCents, addonTier: null } }),
+                              legacy: false,
+                            })
+                      }
+                    />
                   </span>
                 ) : null}
               </td>
@@ -180,5 +188,22 @@ export function AdminCustomersTable({
       </table>
     </div>
     </>
+  )
+}
+
+/** Step badge: priority steps (rank >= 1) in red, Starter grey; "(legacy)" for grandfathered plans. */
+export function AdminStepBadge({ badge }: { badge: AdminPlanBadge | null }) {
+  if (!badge) return null
+  return (
+    <span
+      data-plan-step={badge.stepId}
+      className={
+        badge.priority
+          ? 'rounded bg-[#ba3d3d]/10 px-1 text-[10px] font-semibold text-[#ba3d3d]'
+          : 'rounded bg-zinc-100 px-1 text-[10px] font-semibold text-zinc-600'
+      }
+    >
+      {badge.label}
+    </span>
   )
 }

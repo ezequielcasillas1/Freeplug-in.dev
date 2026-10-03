@@ -12,17 +12,17 @@ import {
   syncSetupSessionForUser,
 } from '@/lib/outreach/server'
 import { readPrefill, readServiceSources } from '@/lib/outreach/schemas'
-import { formatMonthly, resolveOutreachPlan } from '@/lib/outreach/plan'
+import { formatMonthly, resolveOutreachStep } from '@/lib/outreach/plan'
 import {
   CLAIMING_FOR_LINE,
   STEP2_BODY,
   STEP2_HEADING,
-  STEP3_BODY,
   STEP3_HEADING,
   STEP4_BODY,
   STEP4_HEADING,
   fill,
 } from '@/lib/outreach/copy'
+import { CLAIM_STEP3_BODY } from '@/lib/plans/ladder-copy'
 import { ClaimAddCardButton, ClaimDetailsStep, ClaimPlanStep, ClaimWaiting } from './ClaimSteps'
 import { ClaimStartForm } from './ClaimStartForm'
 import { claimStartToken, liveClaimRedirect, shouldAutoClaim } from './start/claim-redirect'
@@ -125,7 +125,7 @@ export default async function ClaimPage({ searchParams }: Props) {
   if (live) redirect(live)
 
   const details = await getSiteDetails(site.id)
-  const step: 2 | 3 | 4 = !details?.customer_confirmed_at ? 2 : site.plan_hosting_cents == null ? 3 : 4
+  const step: 2 | 3 | 4 = !details?.customer_confirmed_at ? 2 : site.plan_step == null ? 3 : 4
 
   if (step === 2) {
     const sent = await latestPreviewSubmission(site.id)
@@ -152,7 +152,7 @@ export default async function ClaimPage({ searchParams }: Props) {
         <section className="space-y-4">
           <div className={CARD}>
             <h1 className="text-xl font-semibold text-gray-900">{STEP3_HEADING}</h1>
-            <p className="mt-1 text-sm text-gray-600">{STEP3_BODY}</p>
+            <p className="mt-1 text-sm text-gray-600">{CLAIM_STEP3_BODY}</p>
           </div>
           <ClaimPlanStep />
         </section>
@@ -160,7 +160,7 @@ export default async function ClaimPage({ searchParams }: Props) {
     )
   }
 
-  const plan = resolveOutreachPlan(site.plan_hosting_cents, site.plan_addon_tier ?? 'none')
+  const step4Plan = resolveOutreachStep(site.plan_step)
   return (
     <Shell step={4} businessName={site.business_name}>
       <section className={CARD}>
@@ -173,14 +173,8 @@ export default async function ClaimPage({ searchParams }: Props) {
             <dl className="my-5 space-y-1 text-sm text-gray-700">
               <div className="flex justify-between gap-4">
                 <dt className="text-gray-500">{site.business_name}</dt>
-                <dd>{plan ? `${formatMonthly(plan.totalCents)}` : ''}</dd>
+                <dd>{step4Plan ? `${step4Plan.name} · ${formatMonthly(step4Plan.monthlyCents)}` : ''}</dd>
               </div>
-              {plan?.addon ? (
-                <div className="flex justify-between gap-4">
-                  <dt className="text-gray-500">{plan.addon.name}</dt>
-                  <dd>+{formatMonthly(plan.addon.monthlyCents)}</dd>
-                </div>
-              ) : null}
             </dl>
             <ClaimAddCardButton />
           </>

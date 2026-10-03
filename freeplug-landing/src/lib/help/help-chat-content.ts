@@ -1,6 +1,12 @@
 import { PRIORITY_HELP_ANSWER, PRIORITY_HELP_QUESTION } from '@/lib/plans/priority'
 import { SUPPORT_HOURS } from '@/lib/support-hours'
 import { BUYOUT_FAQ_ANSWER } from '@/lib/buyout/buyout'
+import {
+  HELP_CHAT_INCLUDED_EDIT_NOTE,
+  HELP_HIDDEN_FEES,
+  HELP_REQUEST_CHANGES,
+  HELP_WHAT_DO_I_PAY,
+} from '@/lib/plans/ladder-copy'
 
 /**
  * Scripted help chat (no AI). Wording is Sable's Sep 25 spec (sable-deliverables-2026-09-25.md, section 3).
@@ -20,7 +26,15 @@ export type HelpQuickQuestion = {
    * for newer entries). When a label appears more than once, the latest entry in the file wins.
    */
   lockedRef: string
+  /**
+   * Hosting ladder (Oct 3): the answer is a PLACEHOLDER from src/lib/plans/ladder-copy.ts until
+   * Sable adds the new [STRICT] entry to the locked file; the locked-file drift check skips it.
+   */
+  pendingCopy?: true
 }
+
+/** lockedRef used while an answer waits for Sable's new [STRICT] line. */
+export const PENDING_LADDER_COPY_REF = 'PENDING Sable: hosting ladder [STRICT] entry'
 
 export const HELP_CHAT_GREETING = 'Hi! Pick a question below, or tell us about a change you need.'
 
@@ -36,18 +50,18 @@ export const HELP_QUICK_QUESTIONS: readonly HelpQuickQuestion[] = [
   {
     id: 'what-do-i-pay',
     question: 'What do I pay for?',
-    // faq:32 (hosting required, Sable Sep 25 2:52 PM)
-    answer:
-      "Hosting is required. It keeps your website online and costs $35 to $100 per month. You can add one optional add-on: Basic (+$5/mo), Plus (+$10/mo), or Pro (+$15/mo). Maintenance starts at $50, up to $100. You'll see the exact price before you pay. Building the website is free.",
-    lockedRef: 'faq/page.tsx:32',
+    // Was faq:32 (slider + add-ons). Hosting ladder PLACEHOLDER until Sable's new [STRICT] line.
+    answer: HELP_WHAT_DO_I_PAY,
+    lockedRef: PENDING_LADDER_COPY_REF,
+    pendingCopy: true,
   },
   {
     id: 'hidden-fees',
     question: 'Are there any hidden fees?',
-    // help:91 word for word (Sable Sep 25 3:30 PM; names the buyout fee)
-    answer:
-      "No. You pay for monthly hosting, which is required, plus any add-on you choose. One-time maintenance or a buyout costs extra only if you request it. Building your website is free, and you'll see the price before you pay.",
-    lockedRef: 'help/page.tsx:91',
+    // Was help:91 ("plus any add-on you choose"; add-ons are retired). PLACEHOLDER until Sable.
+    answer: HELP_HIDDEN_FEES,
+    lockedRef: PENDING_LADDER_COPY_REF,
+    pendingCopy: true,
   },
   {
     id: 'how-long',
@@ -91,10 +105,10 @@ export const HELP_QUICK_QUESTIONS: readonly HelpQuickQuestion[] = [
   {
     id: 'request-changes',
     question: 'Can I request changes to my site?',
-    // help:111
-    answer:
-      "Yes. The Plus and Pro add-ons include one small edit each month. For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You'll see the exact price before you pay.",
-    lockedRef: 'src/app/(dashboard)/dashboard/help/page.tsx:111',
+    // Was help:111 (Plus/Pro add-ons). Hosting ladder PLACEHOLDER until Sable.
+    answer: HELP_REQUEST_CHANGES,
+    lockedRef: PENDING_LADDER_COPY_REF,
+    pendingCopy: true,
   },
   {
     id: 'priority',
@@ -126,8 +140,8 @@ export const CHANGE_REQUEST_COPY = {
     "Here's your request. We'll review it and tell you the price before any paid work starts.",
   send: 'Send request',
   edit: 'Edit',
-  /** Only shown when the customer has the Plus or Pro add-on. */
-  monthlyEditNote: 'Your plan includes one small edit each month.',
+  /** Only shown when the plan includes the small edit (Fast lane+, or a grandfathered Plus/Pro). PLACEHOLDER. */
+  includedEditNote: HELP_CHAT_INCLUDED_EDIT_NOTE,
 } as const
 
 export function changeRequestSentMessage(email: string): string {

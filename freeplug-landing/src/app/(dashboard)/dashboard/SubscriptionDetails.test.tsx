@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { SubscriptionDetails } from './SubscriptionDetails'
 import type { SubscriptionDetail } from './dashboard-actions'
+import { cumulativePerks, entitlementsFor } from '@/lib/plans/ladder'
+import { INCLUDED_EDIT_LINE, LEGACY_PLAN_LABEL, PERK_LINES } from '@/lib/plans/ladder-copy'
 
 const LINE = 'Priority included: your change requests go to the front of our queue.'
 
@@ -143,5 +145,38 @@ describe('SubscriptionDetails for a claimed outreach customer (Lina / Sable, Sep
   it('non-outreach customer with an active subscription: the normal list (unchanged)', () => {
     render(<SubscriptionDetails subscriptions={[plan(3500)]} outreach={null} />)
     expect(screen.getByText('Hosting plan (monthly) + Pro add-on (monthly)')).toBeInTheDocument()
+  })
+})
+
+describe('SubscriptionDetails hosting ladder (Oct 3)', () => {
+  it('a ladder plan shows its step name and every perk up to it (cumulative)', () => {
+    render(
+      <SubscriptionDetails
+        subscriptions={[{ ...plan(7500), entitlements: entitlementsFor({ stepId: 'leads' }), includedEdit: { used: 0, available: 1 } }]}
+      />
+    )
+    const box = screen.getByTestId('plan-step')
+    expect(box).toHaveTextContent('Leads')
+    // priorityQueue is covered by the [STRICT] Priority line above the list, so it is not repeated.
+    for (const perk of cumulativePerks('leads').filter((p) => p !== 'priorityQueue')) expect(box).toHaveTextContent(PERK_LINES[perk])
+    expect(box).not.toHaveTextContent(PERK_LINES.gbpManaged)
+    expect(screen.getByText(LINE)).toBeInTheDocument()
+    expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(0, 1))
+  })
+
+  it('Starter: no Priority line, no included edit line', () => {
+    render(<SubscriptionDetails subscriptions={[{ ...plan(3500), entitlements: entitlementsFor({ stepId: 'starter' }) }]} />)
+    expect(screen.queryByText(LINE)).toBeNull()
+    expect(screen.queryByTestId('included-edit')).toBeNull()
+  })
+
+  it('a grandfathered add-on plan is labelled legacy, keeps its Priority by total, and shows no new perks', () => {
+    const ent = entitlementsFor({ legacy: { hostingCents: 4000, addonTier: 'pro' } })
+    render(<SubscriptionDetails subscriptions={[{ ...plan(5500), entitlements: ent, includedEdit: { used: 1, available: 1 } }]} />)
+    expect(screen.getByTestId('legacy-plan')).toHaveTextContent(LEGACY_PLAN_LABEL)
+    expect(screen.queryByTestId('plan-step')).toBeNull()
+    expect(screen.getByText(LINE)).toBeInTheDocument()
+    expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(1, 1))
+    expect(document.body).not.toHaveTextContent(/backup|downtime alert|uptime/i)
   })
 })

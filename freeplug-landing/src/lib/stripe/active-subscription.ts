@@ -1,6 +1,16 @@
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
-import { ADDON_TIERS } from '@/lib/stripe/config'
+import { legacyAddonProductId } from '@/lib/stripe/config'
+import {
+  entitlementsFor,
+  isPlanStepId,
+  LEGACY_ADDON_TIERS,
+  NO_PLAN_ENTITLEMENTS,
+  stepByLookupKey,
+  type Entitlements,
+  type LegacyAddonTierId,
+  type PlanStep,
+} from '@/lib/plans/ladder'
 import { planMonthlyTotalCents } from '@/lib/plans/priority'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 
@@ -135,29 +145,73 @@ export async function describeLiveSubscriptions(customerId: string): Promise<str
   return lines
 }
 
-/** Add-on tiers that include one small edit each month (see ADDON_TIERS includes). */
-export const MONTHLY_EDIT_ADDON_TIER_IDS = ['plus', 'pro'] as const
+// ------------------------------------------------------------------ entitlements (hosting ladder)
+
+type ProductLike = { id: string; name: string; metadata?: Record<string, string> | null }
 
 /**
- * True when a live subscription includes the Plus or Pro add-on. Checkout names that line item
- * "<Tier> add-on (monthly)" (see api/checkout/hosting). Throws if Stripe cannot be reached.
+ * Entitlements of ONE subscription, from what Stripe holds (no names for new plans):
+ *   1. a ladder price: price.lookup_key = freeplug_step_<id>_monthly, else subscription or price
+ *      metadata.plan_step;
+ *   2. otherwise a grandfathered plan: add-on tier from subscription metadata.addon_tier (outreach
+ *      publish), the fixed product id freeplug_addon_<tier>_monthly, or, for pre-ladder dashboard
+ *      checkouts whose ad-hoc products carry nothing else, the product name "<Tier> add-on".
+ * Legacy plans are only read here, never changed.
  */
-export async function hasMonthlyEditAddon(customerId: string): Promise<boolean> {
-  const stripe = getStripe()
-  const prefixes = ADDON_TIERS.filter((t) =>
-    (MONTHLY_EDIT_ADDON_TIER_IDS as ReadonlyArray<string>).includes(t.id)
-  ).map((t) => `${t.name} add-on`)
-  const subs = await listLiveSubscriptions(customerId)
-  for (const sub of subs) {
-    for (const item of sub.items.data) {
+export async function entitlementsForSubscription(
+  sub: Stripe.Subscription,
+  getProduct: (id: string) => Promise<ProductLike>
+): Promise<Entitlements> {
+  const items = sub.items.data
+  let step: PlanStep | null = null
+  for (const item of items) {
+    step = stepByLookupKey(item.price.lookup_key) ?? step
+    const md = item.price.metadata?.plan_step
+    if (!step && isPlanStepId(md)) step = entitlementsFor({ stepId: md }).step
+  }
+  if (!step && isPlanStepId(sub.metadata?.plan_step)) step = entitlementsFor({ stepId: sub.metadata.plan_step }).step
+  if (step) return entitlementsFor({ stepId: step.id })
+
+  // Grandfathered: hosting amount = items that aren't an add-on; tier from metadata/id/name.
+  let addonTier: LegacyAddonTierId | null = null
+  const mdTier = sub.metadata?.addon_tier
+  if (LEGACY_ADDON_TIERS.some((t) => t.id === mdTier)) addonTier = mdTier as LegacyAddonTierId
+  let hostingCents = 0
+  for (const item of items) {
+    const amount = (item.price.unit_amount ?? 0) * (item.quantity ?? 1)
+    const monthly = item.price.recurring?.interval === 'year' ? Math.round(amount / 12) : amount
+    const productId = typeof item.price.product === 'string' ? item.price.product : item.price.product.id
+    let tier = LEGACY_ADDON_TIERS.find((t) => legacyAddonProductId(t.id) === productId)?.id ?? null
+    if (!tier) {
       const product =
         typeof item.price.product === 'string'
-          ? await stripe.products.retrieve(item.price.product)
-          : (item.price.product as Stripe.Product)
-      if (prefixes.some((prefix) => product.name.startsWith(prefix))) return true
+          ? await getProduct(item.price.product)
+          : (item.price.product as unknown as ProductLike)
+      tier = LEGACY_ADDON_TIERS.find((t) => product.name?.startsWith(`${t.name} add-on`))?.id ?? null
     }
+    if (tier) addonTier = addonTier ?? tier
+    else hostingCents += monthly
   }
-  return false
+  return entitlementsFor({ legacy: { hostingCents, addonTier } })
+}
+
+/** Best entitlements across the customer's live subscriptions (one plan per customer is enforced). */
+export function mergeEntitlements(list: readonly Entitlements[]): Entitlements {
+  return list.reduce<Entitlements>(
+    (best, e) => (e.priorityRank > best.priorityRank ? e : best),
+    NO_PLAN_ENTITLEMENTS
+  )
+}
+
+/**
+ * The customer's plan entitlements (replaces the old name-prefix hasMonthlyEditAddon). Only
+ * active/trialing subscriptions count, like the dashboard plan card. Throws if Stripe can't be reached.
+ */
+export async function getEntitlements(customerId: string, stripe: Stripe = getStripe()): Promise<Entitlements> {
+  const res = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 })
+  const live = res.data.filter((s) => s.status === 'active' || s.status === 'trialing')
+  const getProduct = (id: string) => stripe.products.retrieve(id) as unknown as Promise<ProductLike>
+  return mergeEntitlements(await Promise.all(live.map((s) => entitlementsForSubscription(s, getProduct))))
 }
 
 /**

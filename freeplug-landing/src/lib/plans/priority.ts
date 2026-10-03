@@ -1,10 +1,16 @@
+import { stepById, stepForMonthlyCents } from './ladder'
+
 /**
  * Priority (approved by Ezequiel, Sep 25 2026): plans whose monthly total (hosting plus any add-on)
- * is $55 or more get Priority. The threshold lives only here.
+ * is at the Priority step or more get Priority. The amount comes from the hosting ladder
+ * (src/lib/plans/ladder.ts), the only place tier values live.
  */
-export const PRIORITY_MIN_MONTHLY_CENTS = 5500
+export const PRIORITY_MIN_MONTHLY_CENTS = stepById('priority').monthlyCents
 
-/** Customer-facing copy. EXACT wording; also in the locked English file as [STRICT]. */
+/**
+ * Customer-facing copy. EXACT wording; also in the locked English file as [STRICT]. Kept unchanged
+ * until Sable delivers the ladder strings (Aria's card, build step 2).
+ */
 export const PRIORITY_DASHBOARD_LINE =
   'Priority included: your change requests go to the front of our queue.'
 export const PRIORITY_HELP_QUESTION = 'What is Priority?'
@@ -24,8 +30,13 @@ export function monthlyCents(amountCents: number, interval: string): number {
   return 0
 }
 
+/** Priority rank of a monthly total (legacy plans): 0 = Starter .. 5 = Growth partner, -1 = below Starter. */
+export function priorityRankForMonthlyCents(monthlyTotalCents: number): number {
+  return stepForMonthlyCents(monthlyTotalCents)?.rank ?? -1
+}
+
 export function qualifiesForPriority(monthlyTotalCents: number): boolean {
-  return monthlyTotalCents >= PRIORITY_MIN_MONTHLY_CENTS
+  return priorityRankForMonthlyCents(monthlyTotalCents) >= 1
 }
 
 /** Monthly total of the customer's active plans (hosting + add-on items). */

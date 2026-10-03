@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto'
 import { NextResponse } from 'next/server'
-import type Stripe from 'stripe'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
-import { clampHostingCents, resolveAddonTier } from '@/lib/stripe/config'
+import { resolvePlanStep } from '@/lib/plans/ladder'
+import { getStepPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
 import {
   ALREADY_HAS_PLAN_MESSAGE,
   listLiveSubscriptions,
@@ -45,39 +45,47 @@ export async function POST(request: Request) {
       )
     }
 
-    const body = (await request.json()) as {
-      hostingMonthlyCents?: unknown
-      addonTier?: unknown
-      /** Legacy flag from the old single add-on checkbox; maps to Basic. */
-      includeAddon?: unknown
-    }
-    const hostingCents = clampHostingCents(body.hostingMonthlyCents)
-    if (hostingCents === null) {
+    const body = (await request.json()) as Record<string, unknown> | null
+    // The slider and the Basic/Plus/Pro add-ons are retired for new sales (hosting ladder, Oct 3).
+    // Old clients that still send them get a clear 400 instead of a silent step.
+    if (
+      body &&
+      typeof body === 'object' &&
+      ('addonTier' in body || 'includeAddon' in body || 'hostingMonthlyCents' in body)
+    ) {
       return NextResponse.json(
-        { error: 'Invalid hosting amount. Use $35–$100 (whole dollars).' },
+        { error: 'Add-ons and custom amounts are no longer offered. Choose a hosting plan.' },
         { status: 400 }
       )
     }
-    const addonInput =
-      body.addonTier === undefined && body.includeAddon === true
-        ? 'basic'
-        : body.addonTier
-    const addonTier = resolveAddonTier(addonInput)
-    if (addonTier === undefined) {
-      return NextResponse.json(
-        { error: 'Invalid add-on. Choose Basic, Plus, Pro, or no add-on.' },
-        { status: 400 }
-      )
+    const step = resolvePlanStep(body?.planStep)
+    if (!step) {
+      return NextResponse.json({ error: 'Invalid hosting plan.' }, { status: 400 })
     }
 
     const ctx = await getCheckoutSessionContext()
     const stripe = getStripe()
 
+    // One line item: the Stripe price behind the step's lookup key. Resolved before any open session is
+    // expired, and fails closed (503) if the price is missing or doesn't match the ladder amount.
+    let priceId: string
+    try {
+      priceId = await getStepPriceId(step.id, stripe)
+    } catch (e) {
+      console.error(
+        '[checkout/hosting] step price unavailable',
+        e instanceof PriceNotConfiguredError ? e.message : e
+      )
+      return NextResponse.json(
+        { error: "We couldn't load hosting prices. Try again in a moment." },
+        { status: 503 }
+      )
+    }
+
     // One hosting plan per customer: refuse while any subscription is still live/billable.
     // Canceled and ended subscriptions don't count, so a customer whose hosting ended can sign up
     // again. Runs for first-time buyers too (see lib/stripe/checkout-customer.ts). Fails closed
     // (503) if Stripe can't be checked, rather than risk a second plan.
-    const addonId = addonTier ? addonTier.id : 'none'
     const expiredSessionIds: string[] = []
     const checkoutUser = ctx.user ?? { id: user.id, email: user.email }
     let customerId: string | null = ctx.stripeCustomerId
@@ -133,12 +141,7 @@ export async function POST(request: Request) {
         const hostingOpen = open.data.filter(
           (s) => s.mode === 'subscription' && s.metadata?.type === 'hosting'
         )
-        const samePlan = hostingOpen.find(
-          (s) =>
-            s.url &&
-            s.metadata?.hosting_monthly_cents === String(hostingCents) &&
-            s.metadata?.addon_tier === addonId
-        )
+        const samePlan = hostingOpen.find((s) => s.url && s.metadata?.plan_step === step.id)
         if (samePlan?.url) {
           return NextResponse.json({ url: samePlan.url })
         }
@@ -151,33 +154,6 @@ export async function POST(request: Request) {
       }
     }
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'Hosting plan (monthly)' },
-          recurring: { interval: 'month' },
-          unit_amount: hostingCents,
-        },
-        quantity: 1,
-      },
-    ]
-
-    if (addonTier) {
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `${addonTier.name} add-on (monthly)`,
-            description: addonTier.includes.join(', '),
-          },
-          recurring: { interval: 'month' },
-          unit_amount: addonTier.monthlyCents,
-        },
-        quantity: 1,
-      })
-    }
-
     // Double-click guard: concurrent requests for the same user + plan (same 10-minute window, same
     // set of just-expired sessions) get the same Checkout Session instead of two.
     const idempotencyKey =
@@ -187,8 +163,7 @@ export async function POST(request: Request) {
           [
             user.id,
             customerId ?? 'new',
-            hostingCents,
-            addonId,
+            step.id,
             Math.floor(Date.now() / 600_000),
             expiredSessionIds.join(','),
           ].join('|')
@@ -199,14 +174,21 @@ export async function POST(request: Request) {
       applyUserToCheckoutSession(
         {
           mode: 'subscription',
-          line_items: lineItems,
+          line_items: [{ price: priceId, quantity: 1 }],
+          // The subscription carries the step too (webhook + entitlements read it as a fallback
+          // to the price's lookup key).
+          subscription_data: {
+            metadata: {
+              type: 'hosting',
+              plan_step: step.id,
+              supabase_user_id: checkoutUser.id,
+            },
+          },
         },
         { ...ctx, stripeCustomerId: customerId },
         {
           type: 'hosting',
-          hosting_monthly_cents: String(hostingCents),
-          include_addon: addonTier ? 'true' : 'false',
-          addon_tier: addonId,
+          plan_step: step.id,
         }
       ),
       { idempotencyKey }

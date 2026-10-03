@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { AdminConfigError } from '../AdminConfigError'
 import { AdminRequestRow, type AdminRequestRowData } from '../AdminRequestRow'
 import { AdminMailBanner } from '../AdminMailBanner'
+import { compareQueue, resolvePlanStep } from '@/lib/plans/ladder'
 
 export default async function AdminRequestsPage() {
   const mailOn = isMailConfigured()
@@ -22,9 +23,9 @@ export default async function AdminRequestsPage() {
   const { data: rows, error } = await admin
     .from('website_requests')
     .select(
-      'id, user_id, business_name, contact_phone, google_business_url, notes, buyout_price_cents, is_buyout, status, created_at, updated_at'
+      'id, user_id, business_name, contact_phone, google_business_url, notes, buyout_price_cents, is_buyout, status, due_by, created_at, updated_at'
     )
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: true })
 
   if (error) {
     return <p className="text-red-700 text-sm">{error.message}</p>
@@ -36,14 +37,30 @@ export default async function AdminRequestsPage() {
     list.map((r) => r.user_id)
   )
 
-  const enrichedRequests: AdminRequestRowData[] = list.map((r) => {
-    const a = authForRequests.get(r.user_id)
-    return {
-      ...r,
-      userEmail: a?.email ?? null,
-      userDisplayName: a?.displayName ?? null,
-    }
-  })
+  // Hosting ladder: queue order = plan step (profiles.plan_step, cached by the Stripe webhook),
+  // highest first, then oldest first within a step. A failed lookup sorts everyone as "no plan".
+  const userIds = [...new Set(list.map((r) => r.user_id))]
+  const stepByUser = new Map<string, string | null>()
+  if (userIds.length > 0) {
+    const { data: profs, error: profErr } = await admin.from('profiles').select('id, plan_step').in('id', userIds)
+    if (profErr) console.error('[admin/requests] plan step lookup failed', profErr.message)
+    for (const p of profs ?? []) stepByUser.set(p.id as string, (p.plan_step as string | null) ?? null)
+  }
+
+  const enrichedRequests: AdminRequestRowData[] = list
+    .map((r) => {
+      const a = authForRequests.get(r.user_id)
+      const step = resolvePlanStep(stepByUser.get(r.user_id))
+      return {
+        ...r,
+        userEmail: a?.email ?? null,
+        userDisplayName: a?.displayName ?? null,
+        planStepId: step?.id ?? null,
+        planStepName: step?.name ?? null,
+        priorityRank: step?.rank ?? -1,
+      }
+    })
+    .sort(compareQueue)
 
   return (
     <div>
@@ -57,7 +74,7 @@ export default async function AdminRequestsPage() {
           <table className="w-full text-sm text-left">
             <thead className="bg-zinc-50 text-zinc-600 border-b border-zinc-200">
               <tr>
-                <th className="p-3 font-medium">Created</th>
+                <th className="p-3 font-medium">Created / due</th>
                 <th className="p-3 font-medium">Business</th>
                 <th className="p-3 font-medium">Status</th>
                 <th className="p-3 font-medium">Account email</th>

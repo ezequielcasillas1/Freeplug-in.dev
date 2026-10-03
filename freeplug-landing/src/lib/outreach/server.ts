@@ -31,7 +31,7 @@ import {
 import { processUploadedImage, randomObjectName, type ProcessedImage } from './image'
 import { ADMIN_REJECT_ALREADY_APPLIED } from './admin-labels'
 import { PHOTO_LIMITS } from './limits'
-import { resolveOutreachPlan } from './plan'
+import { resolveOutreachStep } from './plan'
 import {
   adminCreateSiteSchema,
   changeRequestSchema,
@@ -88,7 +88,7 @@ export { hashRateKey, rateCheck }
 // ----------------------------------------------------------------------------- site lookups
 
 const SITE_COLUMNS =
-  'id, business_name, contact_email, expires_at, revoked_at, declined_at, claimed_by, claimed_at, screenshot_desktop_path, screenshot_mobile_path, prefill, services, service_sources, plan_hosting_cents, plan_addon_tier, setup_session_id, setup_completed_at, stripe_customer_id, stripe_payment_method_id, stripe_subscription_id, publish_status, publish_error, publish_attempts, published_at, live_url, claimer_verified_at, created_at'
+  'id, business_name, contact_email, expires_at, revoked_at, declined_at, claimed_by, claimed_at, screenshot_desktop_path, screenshot_mobile_path, prefill, services, service_sources, plan_step, plan_hosting_cents, plan_addon_tier, setup_session_id, setup_completed_at, stripe_customer_id, stripe_payment_method_id, stripe_subscription_id, publish_status, publish_error, publish_attempts, published_at, live_url, claimer_verified_at, created_at'
 
 export type OutreachSiteRow = OutreachBillingSite & {
   contact_email: string | null
@@ -606,13 +606,17 @@ export async function uploadCustomerPhoto(
 export async function saveChosenPlan(userId: string, input: unknown): Promise<Result> {
   const site = await getClaimedSiteForUser(userId)
   if (!site) return { ok: false, error: 'no_site', code: 'no_site' }
-  if (site.setup_completed_at || site.publish_status === 'live') return { ok: false, error: 'locked', code: 'locked' }
+  // Locked once live, or once a card is saved for a ladder step. A site that saved a card with a
+  // pre-ladder (slider/add-on) choice has no plan_step yet, so its customer may pick a step once.
+  if (site.publish_status === 'live' || (site.setup_completed_at && site.plan_step != null)) {
+    return { ok: false, error: 'locked', code: 'locked' }
+  }
   const parsed = planChoiceSchema.safeParse(input)
-  const plan = parsed.success ? resolveOutreachPlan(parsed.data.hostingMonthlyCents, parsed.data.addonTier) : null
-  if (!parsed.success || !plan) return { ok: false, error: 'Invalid plan.', code: 'invalid' }
+  const step = parsed.success ? resolveOutreachStep(parsed.data.planStep) : null
+  if (!parsed.success || !step) return { ok: false, error: 'Invalid plan.', code: 'invalid' }
   const { error } = await db()
     .from('outreach_sites')
-    .update({ plan_hosting_cents: plan.hostingCents, plan_addon_tier: plan.addon?.id ?? 'none', updated_at: new Date().toISOString() })
+    .update({ plan_step: step.id, updated_at: new Date().toISOString() })
     .eq('id', site.id)
     .eq('claimed_by', userId)
   if (error) return { ok: false, error: 'save', code: 'save' }
@@ -637,7 +641,7 @@ export async function startSetupCheckout(user: { id: string; email?: string | nu
   const site = await getClaimedSiteForUser(user.id)
   if (!site) return { ok: false, error: 'no_site', code: 'no_site' }
   if (site.setup_completed_at) return { ok: false, error: 'already_saved', code: 'already_saved' }
-  if (!resolveOutreachPlan(site.plan_hosting_cents, site.plan_addon_tier ?? 'none')) {
+  if (!resolveOutreachStep(site.plan_step)) {
     return { ok: false, error: 'no_plan', code: 'no_plan' }
   }
   const stripe = getStripe()
@@ -953,6 +957,7 @@ export async function adminUnclaimAndReissue(siteId: string): Promise<Result<{ l
       revoked_at: null,
       declined_at: null,
       expires_at: linkExpiryFrom().toISOString(),
+      plan_step: null,
       plan_hosting_cents: null,
       plan_addon_tier: null,
       setup_session_id: null,

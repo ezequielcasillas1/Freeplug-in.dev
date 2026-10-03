@@ -18,7 +18,8 @@ import type { TrackerStep } from '@/lib/outreach/tracker'
  *     account has a Stripe customer (a Stripe error included) and always for regular customers.
  */
 export type OutreachDashboardSite = {
-  plan_hosting_cents: number | null
+  /** Hosting-ladder step chosen at claim step 3. A pre-ladder choice alone means "choose again". */
+  plan_step: string | null
   publish_status: string
   /** Card saved (setup-mode Checkout completed). */
   setup_completed_at?: string | null
@@ -49,7 +50,7 @@ export function outreachPlanBox(site: NonNullable<OutreachDashboardSite>, plans:
   if (site.publish_status === 'live') {
     return plans.plansLoaded && plans.activePlanCount > 0 ? 'plan' : 'plan_unavailable'
   }
-  return site.plan_hosting_cents != null ? 'plan_waiting' : 'choose_plan'
+  return site.plan_step != null ? 'plan_waiting' : 'choose_plan'
 }
 
 /**

@@ -1,18 +1,29 @@
-import { clampHostingCents, resolveAddonTier, type AddonTier } from '@/lib/stripe/config'
-
-export type OutreachPlan = { hostingCents: number; addon: AddonTier | null; totalCents: number }
+import { resolvePlanStep, type PlanStep } from '@/lib/plans/ladder'
+import { clampHostingCents, resolveLegacyAddonTier } from '@/lib/stripe/config'
 
 /**
- * Server-side plan from the stored choice. Always recomputed from ADDON_TIERS and the $35-$100
- * clamp (Aria, section 9); returns null for anything invalid.
+ * Server-side step from the stored choice (outreach_sites.plan_step). Always re-resolved from the
+ * ladder (src/lib/plans/ladder.ts); returns null for anything unknown. The amount charged comes from
+ * the Stripe price behind the step's lookup key, never from the row.
  */
-export function resolveOutreachPlan(
-  hostingCents: unknown,
-  addonTier: unknown
-): OutreachPlan | null {
+export function resolveOutreachStep(planStep: unknown): PlanStep | null {
+  return resolvePlanStep(planStep)
+}
+
+export type LegacyOutreachPlan = {
+  hostingCents: number
+  addon: { id: string; name: string; monthlyCents: number } | null
+  totalCents: number
+}
+
+/**
+ * Pre-ladder choice (plan_hosting_cents + plan_addon_tier) saved before Oct 3 2026. Read-only: it is
+ * shown to admins so they can ask the customer to pick a step; it is never charged (no price_data).
+ */
+export function resolveLegacyOutreachPlan(hostingCents: unknown, addonTier: unknown): LegacyOutreachPlan | null {
   const hosting = clampHostingCents(hostingCents)
   if (hosting === null) return null
-  const addon = resolveAddonTier(addonTier)
+  const addon = resolveLegacyAddonTier(addonTier)
   if (addon === undefined) return null
   return { hostingCents: hosting, addon, totalCents: hosting + (addon?.monthlyCents ?? 0) }
 }

@@ -8,15 +8,19 @@ import {
   type OutreachBillingSite,
   type OutreachBillingStore,
   type OutreachSitePatch,
+  LEGACY_PLAN_PUBLISH_ERROR,
 } from './billing'
+import { PLAN_STEPS } from '@/lib/plans/ladder'
+import { resetStepPriceCache } from '@/lib/stripe/prices'
 
 function site(over: Partial<OutreachBillingSite> = {}): OutreachBillingSite {
   return {
     id: 'site-1',
     business_name: "Gracia's Lawn Service",
     claimed_by: 'user-1',
-    plan_hosting_cents: 3500,
-    plan_addon_tier: 'none',
+    plan_step: 'priority',
+    plan_hosting_cents: null,
+    plan_addon_tier: null,
     setup_session_id: 'cs_setup_1',
     setup_completed_at: '2026-09-27T05:00:00Z',
     stripe_customer_id: 'cus_1',
@@ -65,6 +69,20 @@ function fakeStripe(subStatus: Stripe.Subscription.Status = 'active') {
     products: {
       retrieve: vi.fn(async (id: string) => ({ id })),
       create: vi.fn(),
+    },
+    // Ladder prices by lookup key (amounts from ladder.ts).
+    prices: {
+      list: vi.fn(async () => ({
+        data: PLAN_STEPS.map((st) => ({
+          id: `price_${st.id}`,
+          lookup_key: st.lookupKey,
+          active: true,
+          currency: 'usd',
+          unit_amount: st.monthlyCents,
+          type: 'recurring',
+          recurring: { interval: 'month', interval_count: 1 },
+        })),
+      })),
     },
     invoices: { pay: vi.fn() },
     customers: { update: vi.fn(async () => ({})) },
@@ -115,16 +133,41 @@ describe('setup-mode webhook branch (card saved, nothing charged)', () => {
 })
 
 describe('admin Publish (off-session subscription)', () => {
-  it('goes live only when the first invoice is paid, with a per-site idempotency key and a server-computed price', async () => {
-    const f = fakeStore(site({ plan_hosting_cents: 4200, plan_addon_tier: 'none' }))
+  it('goes live only when the first invoice is paid, with a per-site idempotency key and the lookup-key price of the step', async () => {
+    resetStepPriceCache()
+    const f = fakeStore(site({ plan_step: 'leads' }))
     const s = fakeStripe('active')
     const res = await publishOutreachSite({ stripe: s.stripe, store: f.store }, 'site-1', { claimerVerified: true })
     expect(res).toMatchObject({ ok: true, status: 'live', subscriptionId: 'sub_new' })
     const [params, opts] = s.create.mock.calls[0] as unknown as [Stripe.SubscriptionCreateParams, { idempotencyKey: string }]
     expect(opts.idempotencyKey).toBe('outreach-publish:site-1:0')
     expect(params.off_session).toBe(true)
-    expect(params.items?.[0]?.price_data?.unit_amount).toBe(4200)
+    expect(params.items).toEqual([{ price: 'price_leads', quantity: 1 }])
+    expect(params.items?.[0]).not.toHaveProperty('price_data')
+    expect((params.metadata as Record<string, string>).plan_step).toBe('leads')
+    expect(params.metadata).not.toHaveProperty('addon_tier')
     expect(f.row.publish_status).toBe('live')
+  })
+
+  it('refuses a site that only has a pre-ladder (slider/add-on) choice, and charges nothing', async () => {
+    const f = fakeStore(site({ plan_step: null, plan_hosting_cents: 4000, plan_addon_tier: 'pro' }))
+    const s = fakeStripe('active')
+    const res = await publishOutreachSite({ stripe: s.stripe, store: f.store }, 'site-1', { claimerVerified: true })
+    expect(res).toEqual({ ok: false, status: 'refused', error: LEGACY_PLAN_PUBLISH_ERROR })
+    expect(s.create).not.toHaveBeenCalled()
+  })
+
+  it('a missing step price fails the publish (no subscription, site stays unpublished)', async () => {
+    const f = fakeStore(site({ plan_step: 'growth' }))
+    const s = fakeStripe('active')
+    const res = await publishOutreachSite(
+      { stripe: s.stripe, store: f.store, stepPriceId: async () => { throw new Error('No price for growth') } },
+      'site-1',
+      { claimerVerified: true }
+    )
+    expect(res).toMatchObject({ ok: false, status: 'failed' })
+    expect(s.create).not.toHaveBeenCalled()
+    expect(f.row.publish_status).toBe('failed')
   })
 
   it('a double click does not create a second subscription (same key, and the second call is refused while running)', async () => {
