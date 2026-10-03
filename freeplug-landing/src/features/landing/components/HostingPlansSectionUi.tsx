@@ -40,7 +40,7 @@ export function HostingPlansSectionUi({
             Hosting & maintenance
           </h2>
           <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            Choose a monthly hosting amount and optional add-on. For maintenance, we analyze your
+            Choose a monthly hosting amount and an optional Basic, Plus, or Pro add-on. For maintenance, we analyze your
             request first — then quote and invoice.
           </p>
         </motion.div>

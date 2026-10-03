@@ -1,9 +1,32 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { signUp, signInWithGoogle } from '../actions'
 import { Button } from '@/components/ui/button'
+import { ClaimStepLine } from '@/components/outreach/ClaimStepLine'
+import { currentPreviewSite } from '@/lib/outreach/server'
+import {
+  CLAIMING_FOR_LINE,
+  STEP1_BACK_LINK,
+  STEP1_BUTTON,
+  STEP1_HEADING,
+  STEP1_SIGN_IN_LINK,
+  STEP1_SIGN_IN_PROMPT,
+  fill,
+  step1Body,
+} from '@/lib/outreach/copy'
+
+export const metadata: Metadata = {
+  title: 'Create Your Account | Freeplug',
+  description: 'Create a free Freeplug account to request a website for your local business.',
+  openGraph: {
+    title: 'Create Your Account | Freeplug',
+    description: 'Create a free Freeplug account to request a website for your local business.',
+    type: 'website',
+  },
+}
 
 type Props = {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; next?: string }>
 }
 
 function GoogleIcon() {
@@ -31,12 +54,23 @@ function GoogleIcon() {
 
 export default async function SignUpPage({ searchParams }: Props) {
   const q = await searchParams
+  // Claim mode (outreach step 1): only with next=/claim and a valid preview cookie.
+  const claimSite = q.next === '/claim' ? await currentPreviewSite() : null
+  const next = claimSite ? '/claim' : null
 
   return (
     <div className="rounded-2xl bg-white p-8 shadow-sm border border-zinc-200">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Create account</h1>
+      {claimSite ? (
+        <div className="mb-6 space-y-3">
+          <ClaimStepLine step={1} />
+          <p className="text-sm text-gray-500">
+            {fill(CLAIMING_FOR_LINE, { 'Business Name': claimSite.business_name })}
+          </p>
+        </div>
+      ) : null}
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">{claimSite ? STEP1_HEADING : 'Create account'}</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Sign up to access your dashboard.
+        {claimSite ? step1Body(claimSite.contact_email) : 'Sign up to access your dashboard.'}
       </p>
 
       {q.error ? (
@@ -47,6 +81,7 @@ export default async function SignUpPage({ searchParams }: Props) {
 
       {/* Google Sign Up */}
       <form action={signInWithGoogle} className="mb-6">
+        {next ? <input type="hidden" name="next" value={next} /> : null}
         <button
           type="submit"
           className="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 rounded-lg text-gray-700 bg-white hover:bg-zinc-50 font-medium transition-colors"
@@ -66,6 +101,22 @@ export default async function SignUpPage({ searchParams }: Props) {
       </div>
 
       <form action={signUp} className="space-y-4">
+        {next ? <input type="hidden" name="next" value={next} /> : null}
+        {claimSite ? (
+          <div>
+            <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">
+              Business name
+            </label>
+            <input
+              id="business_name"
+              name="business_name"
+              type="text"
+              maxLength={200}
+              defaultValue={claimSite.business_name}
+              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#ba3d3d] focus:border-[#ba3d3d] outline-none"
+            />
+          </div>
+        ) : null}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email
@@ -76,6 +127,7 @@ export default async function SignUpPage({ searchParams }: Props) {
             type="email"
             autoComplete="email"
             required
+            defaultValue={claimSite?.contact_email ?? undefined}
             className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#ba3d3d] focus:border-[#ba3d3d] outline-none"
           />
         </div>
@@ -108,19 +160,20 @@ export default async function SignUpPage({ searchParams }: Props) {
           />
         </div>
         <Button type="submit" className="w-full" size="lg">
-          Sign up
+          {claimSite ? STEP1_BUTTON : 'Sign up'}
         </Button>
       </form>
 
+      {/* Claim mode wording (Sable 12:35 AM); the regular sign-up screen is unchanged. */}
       <p className="mt-6 text-center text-sm text-gray-600">
-        Already have an account?{' '}
-        <Link href="/login" className="font-medium text-[#ba3d3d] hover:underline">
-          Log in
+        {claimSite ? STEP1_SIGN_IN_PROMPT : 'Already have an account?'}{' '}
+        <Link href={next ? '/login?next=/claim' : '/login'} className="font-medium text-[#ba3d3d] hover:underline">
+          {claimSite ? STEP1_SIGN_IN_LINK : 'Log in'}
         </Link>
       </p>
       <p className="mt-3 text-center">
-        <Link href="/" className="text-sm text-gray-500 hover:text-[#ba3d3d]">
-          ← Back to site
+        <Link href={claimSite ? '/preview' : '/'} className="text-sm text-gray-500 hover:text-[#ba3d3d]">
+          ← {claimSite ? STEP1_BACK_LINK : 'Back to site'}
         </Link>
       </p>
     </div>

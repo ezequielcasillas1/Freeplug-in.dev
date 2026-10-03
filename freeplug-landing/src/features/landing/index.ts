@@ -1,6 +1,7 @@
 export { Navigation } from './components/Navigation'
 export { HeroSection } from './components/HeroSection'
 export { AboutSection } from './components/AboutSection'
+export { OutreachSection } from './components/OutreachSection'
 export { TechStackSection } from './components/TechStackSection'
 export { ReviewsSection } from './components/ReviewsSection'
 export { CTASection } from './components/CTASection'

@@ -29,7 +29,7 @@ export function AdminCumulativePaidCell({ profileId, paidCents }: Props) {
           disabled={pending}
           placeholder="USD"
           className="w-full border border-zinc-300 rounded px-2 py-1 text-xs"
-          aria-label="Cumulative website value paid in US dollars (QA override)"
+          aria-label="Cumulative paid in US dollars (QA override)"
         />
         <button
           type="button"

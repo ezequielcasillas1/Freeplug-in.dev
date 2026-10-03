@@ -7,7 +7,7 @@ export const maintenancePlanSummary =
 
 export const maintenancePlanBody = [
   'We evaluate the work required (small content tweak vs. broader overhaul) and charge accordingly after review.',
-  'Typical range: about $20 for a simple change and around $50 for a more involved overhaul. Final price is confirmed before we invoice.',
+  "Maintenance starts at $50, up to $100. You'll see the exact price before you pay.",
 ] as const
 
 export const maintenanceCtaLabel = 'Request maintenance'

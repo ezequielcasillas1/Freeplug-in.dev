@@ -1,0 +1,180 @@
+import type Stripe from 'stripe'
+import { getStripe } from '@/lib/stripe/server'
+import { ADDON_TIERS } from '@/lib/stripe/config'
+import { planMonthlyTotalCents } from '@/lib/plans/priority'
+import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
+
+/** Shown when a customer tries to close their website request while a plan is still active. */
+export const CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE =
+  "You can't close this request while your plan is active, because your site is still hosted under it. To cancel your plan, go to Manage billing. Once the plan has ended, you can close the request here."
+
+/** Formats a plan end date as "Month D, YYYY" (UTC, so server and client agree). */
+export function formatPlanEndDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+/** Shown when the plan is still active but already set to end (canceled at period end / cancel_at). */
+export function closeBlockedPlanEndingMessage(endsAt: Date | null): string {
+  if (!endsAt) {
+    return 'Your plan is canceled and ends at the end of the current billing period. You can close this request after that date.'
+  }
+  return `Your plan is canceled and ends on ${formatPlanEndDate(endsAt)}. You can close this request after that date.`
+}
+
+export type ActiveSubscriptionStatus =
+  | { active: false; setToEnd: false; endsAt: null }
+  | {
+      active: true
+      /** True only when every active/trialing subscription is already scheduled to end. */
+      setToEnd: boolean
+      /** When the last scheduled-to-end subscription ends (cancel_at, else current period end). */
+      endsAt: Date | null
+    }
+
+function subscriptionEndDate(sub: Stripe.Subscription): Date | null {
+  // cancel_at first; otherwise the current period end (items on newer Stripe API versions).
+  return stripeTimestampToDate(sub.cancel_at) ?? subscriptionPeriodEnd(sub)
+}
+
+function isSetToEnd(sub: Stripe.Subscription): boolean {
+  return sub.cancel_at_period_end === true || sub.cancel_at != null
+}
+
+/**
+ * Looks up active/trialing subscriptions for the Stripe customer.
+ * A plan canceled at period end is still 'active' in Stripe, so it counts as active (close stays
+ * blocked) but is reported with setToEnd/endsAt so the UI can show when it ends.
+ * Throws if Stripe cannot be reached, so callers can decide whether to fail closed.
+ */
+export async function getActiveSubscriptionStatus(
+  customerId: string
+): Promise<ActiveSubscriptionStatus> {
+  const stripe = getStripe()
+  const subs: Stripe.Subscription[] = []
+  for (const status of ['active', 'trialing'] as const) {
+    const res = await stripe.subscriptions.list({ customer: customerId, status, limit: 100 })
+    subs.push(...res.data)
+  }
+  if (subs.length === 0) return { active: false, setToEnd: false, endsAt: null }
+
+  const setToEnd = subs.every(isSetToEnd)
+  let endsAt: Date | null = null
+  if (setToEnd) {
+    for (const sub of subs) {
+      const end = subscriptionEndDate(sub)
+      if (end && (!endsAt || end > endsAt)) endsAt = end
+    }
+  }
+  return { active: true, setToEnd, endsAt }
+}
+
+/**
+ * True when the Stripe customer has at least one active or trialing subscription
+ * (including ones canceled at period end that have not ended yet).
+ * Throws if Stripe cannot be reached, so callers can decide whether to fail closed.
+ */
+export async function hasActiveOrTrialingSubscription(customerId: string): Promise<boolean> {
+  return (await getActiveSubscriptionStatus(customerId)).active
+}
+
+/**
+ * Subscription statuses that still count as "has a hosting plan" for checkout: the customer is
+ * (or will be) billed, so a second plan must not be sold. 'incomplete' is excluded on purpose:
+ * it is a first payment that never went through and expires on its own within 23 hours.
+ */
+export const LIVE_SUBSCRIPTION_STATUSES: ReadonlyArray<Stripe.Subscription.Status> = [
+  'active',
+  'trialing',
+  'past_due',
+  'unpaid',
+]
+
+export function isLiveSubscriptionStatus(status: string): boolean {
+  return (LIVE_SUBSCRIPTION_STATUSES as ReadonlyArray<string>).includes(status)
+}
+
+/** Shown (409) when a customer with a live plan tries to start another hosting checkout. */
+export const ALREADY_HAS_PLAN_MESSAGE =
+  'You already have an active hosting plan. Use Manage billing to change it.'
+
+/** Live (billable) subscriptions for the customer. Throws if Stripe cannot be reached. */
+export async function listLiveSubscriptions(customerId: string): Promise<Stripe.Subscription[]> {
+  const stripe = getStripe()
+  const res = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 })
+  return res.data.filter((s) => isLiveSubscriptionStatus(s.status))
+}
+
+/**
+ * One line per live subscription in the same format as the dashboard's Active Subscriptions card:
+ * "<product names joined with +> · $X.XX/<interval>" (plus the status when it is not "active").
+ */
+export async function describeLiveSubscriptions(customerId: string): Promise<string[]> {
+  const stripe = getStripe()
+  const subs = await listLiveSubscriptions(customerId)
+  const lines: string[] = []
+  for (const sub of subs) {
+    const names: string[] = []
+    let amount = 0
+    for (const item of sub.items.data) {
+      const product =
+        typeof item.price.product === 'string'
+          ? await stripe.products.retrieve(item.price.product)
+          : (item.price.product as Stripe.Product)
+      names.push(product.name)
+      amount += (item.price.unit_amount ?? 0) * (item.quantity ?? 1)
+    }
+    const interval = sub.items.data[0]?.price.recurring?.interval ?? 'month'
+    const status = sub.status === 'active' ? '' : ` (${sub.status.replace(/_/g, ' ')})`
+    lines.push(`${names.join(' + ')} · $${(amount / 100).toFixed(2)}/${interval}${status}`)
+  }
+  return lines
+}
+
+/** Add-on tiers that include one small edit each month (see ADDON_TIERS includes). */
+export const MONTHLY_EDIT_ADDON_TIER_IDS = ['plus', 'pro'] as const
+
+/**
+ * True when a live subscription includes the Plus or Pro add-on. Checkout names that line item
+ * "<Tier> add-on (monthly)" (see api/checkout/hosting). Throws if Stripe cannot be reached.
+ */
+export async function hasMonthlyEditAddon(customerId: string): Promise<boolean> {
+  const stripe = getStripe()
+  const prefixes = ADDON_TIERS.filter((t) =>
+    (MONTHLY_EDIT_ADDON_TIER_IDS as ReadonlyArray<string>).includes(t.id)
+  ).map((t) => `${t.name} add-on`)
+  const subs = await listLiveSubscriptions(customerId)
+  for (const sub of subs) {
+    for (const item of sub.items.data) {
+      const product =
+        typeof item.price.product === 'string'
+          ? await stripe.products.retrieve(item.price.product)
+          : (item.price.product as Stripe.Product)
+      if (prefixes.some((prefix) => product.name.startsWith(prefix))) return true
+    }
+  }
+  return false
+}
+
+/**
+ * Monthly total (hosting + any add-on) of the customer's active plans, computed like the dashboard
+ * plan card: each subscription's item unit amounts x quantity. Throws if Stripe cannot be reached.
+ */
+export async function getPlanMonthlyTotalCents(customerId: string): Promise<number> {
+  const stripe = getStripe()
+  const res = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 })
+  return planMonthlyTotalCents(
+    res.data.map((sub) => ({
+      status: sub.status,
+      amount: sub.items.data.reduce(
+        (sum, item) => sum + (item.price.unit_amount ?? 0) * (item.quantity ?? 1),
+        0
+      ),
+      interval: sub.items.data[0]?.price.recurring?.interval ?? 'month',
+    }))
+  )
+}

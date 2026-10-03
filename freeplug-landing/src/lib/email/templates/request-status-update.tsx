@@ -1,5 +1,6 @@
 import { Text, Button, Section } from '@react-email/components'
 import * as React from 'react'
+import { emailBaseUrl } from '@/lib/site'
 import { BaseEmailLayout } from './base-layout'
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
   businessName: string
   newStatus: 'submitted' | 'in_review' | 'closed'
   message?: string
+  baseUrl?: string
 }
 
 const statusConfig = {
@@ -29,11 +31,18 @@ const statusConfig = {
   },
 }
 
-export function RequestStatusUpdateEmail({ userName, businessName, newStatus, message }: Props) {
+export function RequestStatusUpdateEmail({
+  userName,
+  businessName,
+  newStatus,
+  message,
+  baseUrl,
+}: Props) {
   const config = statusConfig[newStatus]
+  const base = emailBaseUrl(baseUrl)
 
   return (
-    <BaseEmailLayout preview={`${config.title} - ${businessName}`}>
+    <BaseEmailLayout baseUrl={base} preview={`${config.title} - ${businessName}`}>
       <Text style={heading}>{config.title}</Text>
       <Text style={paragraph}>
         Hi{userName ? ` ${userName}` : ''},
@@ -58,7 +67,7 @@ export function RequestStatusUpdateEmail({ userName, businessName, newStatus, me
       )}
 
       <Section style={buttonContainer}>
-        <Button style={button} href="https://freeplug.dev/dashboard">
+        <Button style={button} href={`${base}/dashboard`}>
           View Dashboard
         </Button>
       </Section>

@@ -10,11 +10,12 @@ import { cn } from '@/lib/utils/cn'
 import { fadeIn } from '../animations/landing.variants'
 
 const navLinks = [
-  { label: 'Home', href: '#hero' },
-  { label: 'About', href: '#about' },
-  { label: 'Services', href: '#services' },
-  { label: 'Reviews', href: '#reviews' },
-  { label: 'Plans', href: '#hosting-plans' },
+  { label: 'Home', href: '/#hero' },
+  { label: 'About', href: '/#about' },
+  { label: 'Outreach', href: '/#outreach' },
+  { label: 'Services', href: '/#services' },
+  { label: 'Reviews', href: '/#reviews' },
+  { label: 'Plans', href: '/#hosting-plans' },
 ]
 
 export function Navigation() {
@@ -65,7 +66,6 @@ export function Navigation() {
               <Sparkles className="w-4 h-4 text-white" />
             </motion.div>
             <span className="text-2xl font-bold text-[#ba3d3d] group-hover:text-[#8a2e2e] transition-colors">Freeplug</span>
-            <span className="text-2xl font-light text-gray-800">.dev</span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-1">

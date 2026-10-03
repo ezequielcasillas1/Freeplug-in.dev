@@ -36,6 +36,13 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+# backups and copies of env files (e.g. .env.local.owen-backup-20260924-2051), round 4
+.env.*
+.env*.backup*
+.env*.bak*
+.env*.orig
+*.env.backup*
+!.env.example
 
 # vercel
 .vercel
@@ -45,3 +52,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# local agent backups
+.owen-backup-*/
+.arkitect/

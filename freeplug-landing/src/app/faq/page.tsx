@@ -11,37 +11,50 @@ import {
   AccordionContent,
 } from '@/components/ui/accordion'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
+import { BUYOUT_FAQ_ANSWER, BUYOUT_FAQ_QUESTION } from '@/lib/buyout/buyout'
 
 const faqs = [
   {
     id: 'what-is-freeplug',
-    question: 'What is Freeplug.dev?',
+    question: 'What is Freeplug?',
     answer:
-      'Freeplug.dev is a service that provides free professional website development for local businesses. We believe every business deserves a strong online presence, regardless of their budget. Our team builds modern, responsive websites at no cost to help small businesses establish their digital footprint.',
+      'Freeplug reaches local business owners who need a website, and 72 After builds the site for free. We work in Central Texas: San Marcos, Kyle, New Braunfels, San Antonio, and Austin.',
   },
   {
     id: 'is-it-free',
     question: 'Is it really free?',
     answer:
-      'Yes! Website development is completely free. We design and build your entire website at no charge. The only costs you may incur are for optional hosting and maintenance plans after your site is live. There are no hidden fees or surprise charges.',
+      'Yes. Website development is free. 72 After designs and builds your website at no charge. After your site is live, you pay for monthly hosting, which is required. Maintenance or a buyout costs extra only if you ask for it. There are no hidden fees or surprise charges.',
   },
   {
     id: 'what-do-i-pay',
     question: 'What do I pay for?',
     answer:
-      'You only pay for optional services: hosting (keeping your website online and accessible) and maintenance (updates, security patches, content changes). These are affordable monthly plans that ensure your website stays fast, secure, and up-to-date. Development itself is always free.',
+      'Hosting is required. It keeps your website online and costs $35 to $100 per month. You can add one optional add-on: Basic (+$5/mo), Plus (+$10/mo), or Pro (+$15/mo). Maintenance starts at $50, up to $100. You\'ll see the exact price before you pay. Building the website is free.',
+  },
+  {
+    id: 'cancel-hosting',
+    question: 'What happens if I cancel hosting?',
+    answer:
+      'Hosting is required to keep your website online. You can cancel any time. Your website stays online until your paid period ends, then goes offline. If you sign up for hosting again, we bring it back.',
+  },
+  {
+    id: 'buy-website',
+    // Buyout (Sable, locked Sep 25 3:15 PM, revised 3:19 PM).
+    question: BUYOUT_FAQ_QUESTION,
+    answer: BUYOUT_FAQ_ANSWER,
   },
   {
     id: 'how-long',
     question: 'How long does it take to build my website?',
     answer:
-      'Most websites are completed within 2-4 weeks, depending on complexity and your responsiveness with feedback. Simple sites can be ready in as little as 1 week, while more complex projects may take longer. We keep you updated throughout the entire process.',
+      'Every site is different, so we\'ll give you a timeline after we review your request. Most of the time depends on how quickly we get your business details and approvals. We\'ll keep you updated along the way.',
   },
   {
     id: 'get-started',
     question: 'How do I get started?',
     answer:
-      'Getting started is easy! Simply create an account, fill out our website request form describing your business and what you need, and our team will review your submission. Once approved, we\'ll reach out to discuss your project and begin the design process.',
+      'Create an account and fill out the website request form. Tell us about your business and what you need. Our team will review your request. Once it\'s approved, we\'ll contact you to discuss your project and start the design.',
   },
 ]
 
@@ -66,20 +79,19 @@ export default function FAQPage() {
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
               >
                 <HelpCircle className="w-4 h-4" />
-                Help Center
+                Help center
               </motion.div>
               <motion.h1
                 variants={fadeInUp}
                 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4"
               >
-                Frequently Asked{' '}
+                Frequently asked{' '}
                 <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-                  Questions
+                  questions
                 </span>
               </motion.h1>
               <motion.p variants={fadeInUp} className="text-lg text-gray-600 max-w-xl mx-auto">
-                Everything you need to know about Freeplug.dev and how we can help your business
-                succeed online.
+                Answers to common questions about Freeplug and how it works.
               </motion.p>
             </motion.div>
 
@@ -109,13 +121,13 @@ export default function FAQPage() {
             >
               <h3 className="text-xl font-bold text-gray-900 mb-2">Still have questions?</h3>
               <p className="text-gray-600 mb-4">
-                We&apos;re here to help. Reach out to our support team anytime.
+                We&apos;re here to help. Email our support team.
               </p>
               <a
                 href="mailto:support@freeplug-in.dev"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#ba3d3d] text-white font-medium hover:bg-[#a53434] transition-colors"
               >
-                Contact Support
+                Contact support
                 <ArrowRight className="w-4 h-4" />
               </a>
             </motion.div>

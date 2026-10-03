@@ -7,6 +7,7 @@ const links = [
   { href: '/admin/requests', label: 'Requests' },
   { href: '/admin/customers', label: 'Customers' },
   { href: '/admin/accounts', label: 'Accounts' },
+  { href: '/admin/outreach', label: 'Outreach' },
 ] as const
 
 export function AdminNav() {

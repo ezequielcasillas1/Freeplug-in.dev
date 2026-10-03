@@ -1,33 +1,37 @@
 'use client'
 
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Suspense, useRef, useEffect, useState, useMemo } from 'react'
+import { Suspense, useRef, useState, useSyncExternalStore } from 'react'
 import * as THREE from 'three'
+
+// Random layout is generated once per mount (outside render, via the
+// useState initializer below).
+function createParticleGeometry(count: number) {
+  const geo = new THREE.BufferGeometry()
+  const positions = new Float32Array(count * 3)
+  const colors = new Float32Array(count * 3)
+  
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 12
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 5 - 2
+    
+    const isAccent = Math.random() > 0.75
+    colors[i * 3] = isAccent ? 0.73 : 0.92
+    colors[i * 3 + 1] = isAccent ? 0.24 : 0.92
+    colors[i * 3 + 2] = isAccent ? 0.24 : 0.95
+  }
+  
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+  return geo
+}
 
 function FloatingParticles() {
   const particlesRef = useRef<THREE.Points>(null)
   const count = 60
 
-  const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry()
-    const positions = new Float32Array(count * 3)
-    const colors = new Float32Array(count * 3)
-    
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 20
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 12
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 5 - 2
-      
-      const isAccent = Math.random() > 0.75
-      colors[i * 3] = isAccent ? 0.73 : 0.92
-      colors[i * 3 + 1] = isAccent ? 0.24 : 0.92
-      colors[i * 3 + 2] = isAccent ? 0.24 : 0.95
-    }
-    
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
-    return geo
-  }, [])
+  const [geometry] = useState(() => createParticleGeometry(count))
 
   useFrame((state) => {
     if (!particlesRef.current) return
@@ -89,12 +93,17 @@ function Scene() {
   )
 }
 
-export function VideoScene() {
-  const [mounted, setMounted] = useState(false)
+function subscribeNoop() {
+  return () => {}
+}
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+export function VideoScene() {
+  // false during SSR and hydration, true on the client afterwards.
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false
+  )
 
   if (!mounted) return null
 

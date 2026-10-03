@@ -3,6 +3,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import type Stripe from 'stripe'
+import {
+  daysUntil,
+  stripeTimestampToDate,
+  subscriptionPeriodEnd,
+  subscriptionPeriodStart,
+} from '@/lib/stripe/subscription-dates'
+import { subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
 
 export type DashboardStats = {
   totalPaidCents: number
@@ -18,15 +25,16 @@ export type SubscriptionDetail = {
   status: Stripe.Subscription.Status
   amount: number
   interval: string
-  currentPeriodEnd: Date
-  currentPeriodStart: Date
+  /** Null when Stripe sends no period end (shown as a fallback, never "Invalid Date"). */
+  currentPeriodEnd: Date | null
+  currentPeriodStart: Date | null
   cancelAtPeriodEnd: boolean
   created: Date
 }
 
 export type ActivityItem = {
   id: string
-  type: 'payment' | 'request_submitted' | 'request_updated' | 'subscription_created' | 'milestone'
+  type: 'payment' | 'request_submitted' | 'request_updated' | 'subscription_created'
   title: string
   description: string
   date: Date
@@ -45,11 +53,20 @@ export type DashboardAlert = {
 export type EnhancedDashboardData = {
   stats: DashboardStats
   subscriptions: SubscriptionDetail[]
+  /** False only when Stripe failed and the caller asked to tolerate it (outreach customers). */
+  subscriptionsLoaded: boolean
   recentActivity: ActivityItem[]
   alerts: DashboardAlert[]
 }
 
-export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData | null> {
+/**
+ * tolerateStripeErrors (outreach customers only): a failed Stripe lookup leaves the subscriptions
+ * empty with subscriptionsLoaded = false instead of failing the page, so the plan box can show
+ * Sable's 3:27 line. Organic customers keep the old behaviour (the error propagates).
+ */
+export async function getEnhancedDashboardData(
+  opts: { tolerateStripeErrors?: boolean } = {}
+): Promise<EnhancedDashboardData | null> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -60,7 +77,7 @@ export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData 
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'stripe_customer_id, cumulative_website_value_paid_cents, website_value_target_cents, evaluation_status'
+      'stripe_customer_id, cumulative_website_value_paid_cents, evaluation_status'
     )
     .eq('id', user.id)
     .single()
@@ -88,62 +105,74 @@ export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData 
   let activeSubscriptionCount = 0
   let daysSinceFirstPayment: number | null = null
   let websiteStatus: 'live' | 'pending' | 'offline' | 'none' = 'none'
+  let subscriptionsLoaded = true
 
   if (profile?.stripe_customer_id) {
-    const stripe = getStripe()
+    try {
+      const stripe = getStripe()
 
-    const subs = await stripe.subscriptions.list({
-      customer: profile.stripe_customer_id,
-      status: 'all',
-      limit: 10,
-    })
-
-    for (const sub of subs.data) {
-      const item = sub.items.data[0]
-      if (!item) continue
-
-      const price = item.price
-      const product =
-        typeof price.product === 'string'
-          ? await stripe.products.retrieve(price.product)
-          : (price.product as Stripe.Product)
-
-      const subAny = sub as Stripe.Subscription & {
-        current_period_end: number
-        current_period_start: number
-        cancel_at_period_end: boolean
-        created: number
-      }
-
-      subscriptions.push({
-        id: sub.id,
-        productName: product.name,
-        status: sub.status,
-        amount: price.unit_amount ?? 0,
-        interval: price.recurring?.interval ?? 'month',
-        currentPeriodEnd: new Date(subAny.current_period_end * 1000),
-        currentPeriodStart: new Date(subAny.current_period_start * 1000),
-        cancelAtPeriodEnd: subAny.cancel_at_period_end,
-        created: new Date(subAny.created * 1000),
+      const subs = await stripe.subscriptions.list({
+        customer: profile.stripe_customer_id,
+        status: 'all',
+        limit: 10,
       })
 
-      if (sub.status === 'active' || sub.status === 'trialing') {
-        activeSubscriptionCount++
+      for (const sub of subs.data) {
+        const items = sub.items.data
+        if (items.length === 0) continue
+
+        // Include every line item (e.g. hosting + add-on), not just the first one.
+        const productNames: string[] = []
+        let amount = 0
+        for (const item of items) {
+          const itemPrice = item.price
+          const itemProduct =
+            typeof itemPrice.product === 'string'
+              ? await stripe.products.retrieve(itemPrice.product)
+              : (itemPrice.product as Stripe.Product)
+          productNames.push(itemProduct.name)
+          amount += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
+        }
+        const price = items[0].price
+
+        subscriptions.push({
+          id: sub.id,
+          productName: productNames.join(' + '),
+          status: sub.status,
+          amount,
+          interval: price.recurring?.interval ?? 'month',
+          // Period dates live on the subscription items in current Stripe API versions.
+          currentPeriodEnd: subscriptionPeriodEnd(sub),
+          currentPeriodStart: subscriptionPeriodStart(sub),
+          cancelAtPeriodEnd: sub.cancel_at_period_end === true,
+          created: stripeTimestampToDate(sub.created) ?? new Date(0),
+        })
+
+        if (sub.status === 'active' || sub.status === 'trialing') {
+          activeSubscriptionCount++
+        }
       }
-    }
 
-    const invoices = await stripe.invoices.list({
-      customer: profile.stripe_customer_id,
-      status: 'paid',
-      limit: 1,
-    })
+      const invoices = await stripe.invoices.list({
+        customer: profile.stripe_customer_id,
+        status: 'paid',
+        limit: 1,
+      })
 
-    if (invoices.data.length > 0 && invoices.data[0].created) {
-      const firstPaymentDate = new Date(invoices.data[0].created * 1000)
-      const now = new Date()
-      daysSinceFirstPayment = Math.floor(
-        (now.getTime() - firstPaymentDate.getTime()) / (1000 * 60 * 60 * 24)
-      )
+      if (invoices.data.length > 0 && invoices.data[0].created) {
+        const firstPaymentDate = new Date(invoices.data[0].created * 1000)
+        const now = new Date()
+        daysSinceFirstPayment = Math.floor(
+          (now.getTime() - firstPaymentDate.getTime()) / (1000 * 60 * 60 * 24)
+        )
+      }
+    } catch (e) {
+      if (!opts.tolerateStripeErrors) throw e
+      console.error('[dashboard] Stripe lookup failed', e instanceof Error ? e.message : e)
+      subscriptions.length = 0
+      activeSubscriptionCount = 0
+      daysSinceFirstPayment = null
+      subscriptionsLoaded = false
     }
   }
 
@@ -205,10 +234,9 @@ export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData 
     (s) => s.status === 'active' && !s.cancelAtPeriodEnd
   )
   if (activeSubscription) {
-    const daysUntilBilling = Math.ceil(
-      (activeSubscription.currentPeriodEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    )
-    if (daysUntilBilling <= 7 && daysUntilBilling > 0) {
+    const daysUntilBilling = daysUntil(activeSubscription.currentPeriodEnd)
+    // No period end from Stripe: skip the reminder rather than show "NaN days".
+    if (daysUntilBilling != null && daysUntilBilling <= 7 && daysUntilBilling > 0) {
       alerts.push({
         id: 'upcoming-billing',
         type: 'info',
@@ -222,30 +250,14 @@ export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData 
     (s) => s.status === 'active' && s.cancelAtPeriodEnd
   )
   if (cancelingSubscription) {
-    const daysUntilEnd = Math.ceil(
-      (cancelingSubscription.currentPeriodEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    )
+    const daysUntilEnd = daysUntil(cancelingSubscription.currentPeriodEnd)
     alerts.push({
       id: 'subscription-ending',
       type: 'warning',
       title: 'Subscription ending',
-      message: `Your ${cancelingSubscription.productName} will end in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}. Resume to keep your website live.`,
+      message: subscriptionEndingMessage(cancelingSubscription.productName, daysUntilEnd),
       actionLabel: 'Resume plan',
       actionHref: '/dashboard/plans',
-    })
-  }
-
-  const targetCents = profile?.website_value_target_cents ?? 0
-  const paidCents = profile?.cumulative_website_value_paid_cents ?? 0
-  if (targetCents > 0 && paidCents >= targetCents) {
-    alerts.push({
-      id: 'milestone-reached',
-      type: 'success',
-      title: 'Website value milestone reached!',
-      message:
-        'Congratulations! You have reached your website value target. You now have options for ownership transfer.',
-      actionLabel: 'Learn more',
-      actionHref: '/dashboard',
     })
   }
 
@@ -255,7 +267,7 @@ export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData 
       id: 'get-started',
       type: 'action',
       title: 'Get started',
-      message: 'Submit a website request to begin your journey with Freeplug.dev.',
+      message: 'Submit a website request to begin your journey with Freeplug.',
       actionLabel: 'Request a website',
       actionHref: '/dashboard/request-website',
     })
@@ -270,6 +282,7 @@ export async function getEnhancedDashboardData(): Promise<EnhancedDashboardData 
       invoiceCount: invoiceCount ?? 0,
     },
     subscriptions,
+    subscriptionsLoaded,
     recentActivity: recentActivity.slice(0, 10),
     alerts,
   }

@@ -23,7 +23,8 @@ export function AdminQuickEmail({ to, smtpConfigured }: Props) {
     <div className="max-w-[260px]">
       <a
         href={`mailto:${encodeURIComponent(to)}`}
-        className="text-[#ba3d3d] hover:underline break-all text-sm block"
+        title={to}
+        className="text-[#ba3d3d] hover:underline text-sm block truncate"
       >
         {to}
       </a>

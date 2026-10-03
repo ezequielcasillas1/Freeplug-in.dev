@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendCancelNoticeOnce } from '@/lib/email/cancel-notice'
+import { websiteAccessAfterSubscriptionEvent, type WebsiteAccessStatus } from '@/lib/website-access'
+import { handleOutreachInvoicePaid, handleOutreachSetupSession } from '@/lib/outreach/server'
 
 export const runtime = 'nodejs'
 
@@ -42,9 +45,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
   }
 
+  let websiteAccess: WebsiteAccessStatus | undefined
+
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
+      // Outreach claim: setup-mode Checkout only saves the card (no subscription, no charge).
+      if (session.mode === 'setup') {
+        try {
+          const setup = await handleOutreachSetupSession(session)
+          console.info('[webhook] setup session', session.id, setup.handled ? setup.outcome : 'not handled')
+        } catch (e) {
+          console.error('[webhook] setup session failed', e instanceof Error ? e.message : e)
+          return NextResponse.json({ error: 'Setup session not saved' }, { status: 500 })
+        }
+        break
+      }
       const supabaseUserId = session.metadata?.supabase_user_id
       const customerId = getCustomerId(session.customer)
       if (supabaseUserId && customerId) {
@@ -65,12 +81,31 @@ export async function POST(request: Request) {
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
+      // Website access is worked out from Stripe on every dashboard/admin read, so nothing is
+      // stored here. The webhook recomputes it so the log (and response) shows the new status.
       const sub = event.data.object as Stripe.Subscription
-      console.info('[webhook]', event.type, sub.id, sub.status)
+      const access = await websiteAccessAfterSubscriptionEvent(sub)
+      websiteAccess = access.status
+      console.info('[webhook]', event.type, sub.id, sub.status, 'website access:', access.status)
+      if (event.type === 'customer.subscription.updated') {
+        // Cancellation email, sent once per cancellation (see lib/email/cancel-notice.ts).
+        try {
+          const notice = await sendCancelNoticeOnce(getStripe(), sub)
+          if (notice !== 'not_set_to_cancel') console.info('[webhook] cancel notice', sub.id, notice)
+        } catch (e) {
+          console.error('[webhook] cancel notice failed', e instanceof Error ? e.message : e)
+        }
+      }
       break
     }
     case 'invoice.paid': {
       const inv = event.data.object as Stripe.Invoice
+      // Outreach publish: the site goes live once the first invoice is paid (e.g. after 3D Secure).
+      try {
+        if (await handleOutreachInvoicePaid(inv)) console.info('[webhook] outreach site live', inv.id)
+      } catch (e) {
+        console.error('[webhook] outreach invoice', e instanceof Error ? e.message : e)
+      }
       const customerId = getCustomerId(inv.customer)
       if (!customerId || inv.amount_paid <= 0) {
         break
@@ -125,5 +160,5 @@ export async function POST(request: Request) {
       break
   }
 
-  return NextResponse.json({ received: true })
+  return NextResponse.json(websiteAccess ? { received: true, websiteAccess } : { received: true })
 }

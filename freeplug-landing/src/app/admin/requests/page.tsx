@@ -22,7 +22,7 @@ export default async function AdminRequestsPage() {
   const { data: rows, error } = await admin
     .from('website_requests')
     .select(
-      'id, user_id, business_name, contact_phone, google_business_url, notes, status, created_at, updated_at'
+      'id, user_id, business_name, contact_phone, google_business_url, notes, buyout_price_cents, is_buyout, status, created_at, updated_at'
     )
     .order('created_at', { ascending: false })
 
@@ -62,7 +62,6 @@ export default async function AdminRequestsPage() {
                 <th className="p-3 font-medium">Status</th>
                 <th className="p-3 font-medium">Account email</th>
                 <th className="p-3 font-medium">Name</th>
-                <th className="p-3 font-medium">User id</th>
                 <th className="p-3 font-medium">Contact</th>
                 <th className="p-3 font-medium">Notes</th>
               </tr>

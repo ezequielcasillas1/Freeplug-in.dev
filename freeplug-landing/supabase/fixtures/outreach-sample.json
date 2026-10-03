@@ -1,0 +1,16 @@
+{
+  "business_name": "Rivera Lawn Care",
+  "email": "owner@riveralawn.example",
+  "fields": {
+    "phone": { "value": "512-555-0100", "source_label": "Thumbtack profile", "source_url": "https://www.thumbtack.com/tx/austin/lawn-care/rivera-lawn-care/service/000000" },
+    "address": { "value": null, "source_label": null, "source_url": null },
+    "hours": { "value": "Mon-Sat 7 AM to 6 PM", "source_label": "Google Business Profile", "source_url": "https://maps.google.com/?cid=0000000000" },
+    "service_area": { "value": "Austin, Round Rock, Pflugerville", "source_label": "Thumbtack profile", "source_url": "https://www.thumbtack.com/tx/austin/lawn-care/rivera-lawn-care/service/000000" },
+    "quote_email": { "value": null, "source_label": null, "source_url": null }
+  },
+  "services": [
+    { "name": "Lawn mowing", "source_label": "Thumbtack profile", "source_url": "https://www.thumbtack.com/tx/austin/lawn-care/rivera-lawn-care/service/000000" },
+    { "name": "Hedge trimming", "source_label": "Google Business Profile", "source_url": null },
+    { "name": "Leaf cleanup", "source_label": "Facebook page", "source_url": null }
+  ]
+}

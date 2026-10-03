@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import type Stripe from 'stripe'
+import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 
 export type SubscriptionInfo = {
   id: string
@@ -10,7 +11,8 @@ export type SubscriptionInfo = {
   productName: string
   amount: number
   interval: string
-  currentPeriodEnd: Date
+  /** Null when Stripe sends no period end (shown as a fallback, never "Invalid Date"). */
+  currentPeriodEnd: Date | null
   cancelAtPeriodEnd: boolean
   canceledAt: Date | null
 }
@@ -21,9 +23,21 @@ export type CancelPageData = {
   canceledSubscriptions: SubscriptionInfo[]
   invoiceCount: number
   totalPaidCents: number
+  /**
+   * False when the Stripe lookup failed and the caller asked to tolerate it (claimed outreach
+   * customers, same as the dashboard): the lists are then empty and must not be read as "no plan".
+   */
+  subscriptionsLoaded: boolean
 }
 
-export async function getCancelPageData(): Promise<CancelPageData | null> {
+/**
+ * tolerateStripeErrors (claimed outreach customers only, like getEnhancedDashboardData): a Stripe
+ * error returns empty lists with subscriptionsLoaded=false instead of throwing (no 500). Regular
+ * customers keep the old behaviour (the error propagates).
+ */
+export async function getCancelPageData(
+  opts: { tolerateStripeErrors?: boolean } = {}
+): Promise<CancelPageData | null> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -49,19 +63,49 @@ export async function getCancelPageData(): Promise<CancelPageData | null> {
       canceledSubscriptions: [],
       invoiceCount: invoiceCount ?? 0,
       totalPaidCents: profile?.cumulative_website_value_paid_cents ?? 0,
+      subscriptionsLoaded: true,
     }
   }
 
+  const subscriptions: SubscriptionInfo[] = []
+  const canceledSubscriptions: SubscriptionInfo[] = []
+  try {
+    await loadSubscriptions(profile.stripe_customer_id, subscriptions, canceledSubscriptions)
+  } catch (e) {
+    if (!opts.tolerateStripeErrors) throw e
+    console.error('[cancel] Stripe lookup failed', e instanceof Error ? e.message : e)
+    return {
+      hasStripeCustomer: true,
+      subscriptions: [],
+      canceledSubscriptions: [],
+      invoiceCount: invoiceCount ?? 0,
+      totalPaidCents: profile.cumulative_website_value_paid_cents ?? 0,
+      subscriptionsLoaded: false,
+    }
+  }
+
+  return {
+    hasStripeCustomer: true,
+    subscriptions,
+    canceledSubscriptions,
+    invoiceCount: invoiceCount ?? 0,
+    totalPaidCents: profile.cumulative_website_value_paid_cents ?? 0,
+    subscriptionsLoaded: true,
+  }
+}
+
+async function loadSubscriptions(
+  customerId: string,
+  subscriptions: SubscriptionInfo[],
+  canceledSubscriptions: SubscriptionInfo[]
+): Promise<void> {
   const stripe = getStripe()
 
   const subs = await stripe.subscriptions.list({
-    customer: profile.stripe_customer_id,
+    customer: customerId,
     status: 'all',
     limit: 100,
   })
-
-  const subscriptions: SubscriptionInfo[] = []
-  const canceledSubscriptions: SubscriptionInfo[] = []
 
   for (const sub of subs.data) {
     const item = sub.items.data[0]
@@ -73,35 +117,22 @@ export async function getCancelPageData(): Promise<CancelPageData | null> {
         ? await stripe.products.retrieve(price.product)
         : (price.product as Stripe.Product)
 
-    const subAny = sub as Stripe.Subscription & {
-      current_period_end: number
-      cancel_at_period_end: boolean
-      canceled_at: number | null
-    }
-
     const info: SubscriptionInfo = {
       id: sub.id,
       status: sub.status,
       productName: product.name,
       amount: price.unit_amount ?? 0,
       interval: price.recurring?.interval ?? 'month',
-      currentPeriodEnd: new Date(subAny.current_period_end * 1000),
-      cancelAtPeriodEnd: subAny.cancel_at_period_end,
-      canceledAt: subAny.canceled_at ? new Date(subAny.canceled_at * 1000) : null,
+      // Period dates live on the subscription items in current Stripe API versions.
+      currentPeriodEnd: subscriptionPeriodEnd(sub),
+      cancelAtPeriodEnd: sub.cancel_at_period_end === true,
+      canceledAt: stripeTimestampToDate(sub.canceled_at),
     }
 
-    if (sub.status === 'canceled' || subAny.cancel_at_period_end) {
+    if (sub.status === 'canceled' || info.cancelAtPeriodEnd) {
       canceledSubscriptions.push(info)
     } else if (sub.status === 'active' || sub.status === 'trialing') {
       subscriptions.push(info)
     }
-  }
-
-  return {
-    hasStripeCustomer: true,
-    subscriptions,
-    canceledSubscriptions,
-    invoiceCount: invoiceCount ?? 0,
-    totalPaidCents: profile.cumulative_website_value_paid_cents ?? 0,
   }
 }

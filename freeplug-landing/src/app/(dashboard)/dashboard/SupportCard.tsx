@@ -1,4 +1,5 @@
-import { MessageCircle, Mail, HelpCircle, ExternalLink } from 'lucide-react'
+import { MessageCircle, Mail, HelpCircle } from 'lucide-react'
+import { SUPPORT_AVAILABILITY_LABEL, SUPPORT_CARD_LINE } from '@/lib/support-hours'
 
 export function SupportCard() {
   return (
@@ -20,7 +21,6 @@ export function SupportCard() {
             </p>
             <p className="text-xs text-gray-500">support@freeplug-in.dev</p>
           </div>
-          <ExternalLink className="h-4 w-4 text-gray-400" />
         </a>
 
         <a
@@ -36,7 +36,6 @@ export function SupportCard() {
             </p>
             <p className="text-xs text-gray-500">FAQs and guides</p>
           </div>
-          <ExternalLink className="h-4 w-4 text-gray-400" />
         </a>
 
         <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
@@ -44,8 +43,8 @@ export function SupportCard() {
             <MessageCircle className="h-4 w-4 text-green-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900">Response Time</p>
-            <p className="text-xs text-gray-500">Usually within 24 hours</p>
+            <p className="text-sm font-medium text-gray-900">{SUPPORT_AVAILABILITY_LABEL}</p>
+            <p className="text-xs text-gray-500">{SUPPORT_CARD_LINE}</p>
           </div>
         </div>
       </div>

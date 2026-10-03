@@ -5,8 +5,10 @@ import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+import { openBillingPortal } from '@/app/(dashboard)/dashboard/billing-actions'
 import {
-  ADDON_MONTHLY_CENTS,
+  ADDON_TIERS,
+  type AddonTierId,
   HOSTING_DEFAULT_CENTS,
   HOSTING_MAX_CENTS,
   HOSTING_MIN_CENTS,
@@ -25,17 +27,35 @@ type Props = {
   signedIn?: boolean
   /** Requires a submitted website request; enforced on API too. Default true. */
   allowCheckout?: boolean
+  /**
+   * Lines describing the customer's live plan(s). When non-empty, checkout is replaced by
+   * Manage billing (the API refuses a second plan with 409 too).
+   */
+  currentPlanLines?: string[]
+  /**
+   * Choose-plan mode (outreach claim step 3): the button saves the plan through this callback
+   * instead of opening Checkout; nothing is charged. Returns an error message or null.
+   */
+  onChoosePlan?: (plan: { hostingMonthlyCents: number; addonTier: AddonTierId | 'none' }) => Promise<string | null>
+  /** Button label in choose-plan mode. */
+  chooseLabel?: string
+  /** One grey line above the button in choose-plan mode. */
+  noteAboveButton?: string
 }
 
 export function HostingCheckoutCard({
   embedded = false,
   signedIn = true,
   allowCheckout = true,
+  currentPlanLines,
+  onChoosePlan,
+  chooseLabel,
+  noteAboveButton,
 }: Props) {
   const [hostingDollars, setHostingDollars] = useState(
     HOSTING_DEFAULT_CENTS / 100
   )
-  const [includeAddon, setIncludeAddon] = useState(false)
+  const [addonTier, setAddonTier] = useState<AddonTierId | 'none'>('none')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,13 +63,22 @@ export function HostingCheckoutCard({
     setError(null)
     const hostingMonthlyCents = dollarsToCents(hostingDollars)
     setLoading(true)
+    if (onChoosePlan) {
+      try {
+        const message = await onChoosePlan({ hostingMonthlyCents, addonTier })
+        if (message) setError(message)
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
     try {
       const res = await fetch('/api/checkout/hosting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           hostingMonthlyCents,
-          includeAddon,
+          addonTier,
         }),
       })
       const data = (await res.json()) as { url?: string; error?: string }
@@ -69,10 +98,14 @@ export function HostingCheckoutCard({
     }
   }
 
-  const canPay = signedIn && allowCheckout
+  const hasLivePlan = (currentPlanLines?.length ?? 0) > 0
+  const canPay = signedIn && allowCheckout && !hasLivePlan
 
   const hostingMin = HOSTING_MIN_CENTS / 100
   const hostingMax = HOSTING_MAX_CENTS / 100
+  const addonCents =
+    ADDON_TIERS.find((t) => t.id === addonTier)?.monthlyCents ?? 0
+  const totalDollars = (dollarsToCents(hostingDollars) + addonCents) / 100
 
   const shell =
     embedded
@@ -98,29 +131,87 @@ export function HostingCheckoutCard({
         disabled={!canPay}
         className="w-full accent-[#ba3d3d] mb-6 disabled:opacity-50"
       />
-      <label
-        className={`flex items-center gap-3 mb-6 ${canPay ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
-      >
-        <input
-          type="checkbox"
-          checked={includeAddon}
-          onChange={(e) => setIncludeAddon(e.target.checked)}
-          disabled={!canPay}
-          className="rounded border-gray-300 text-[#ba3d3d] focus:ring-[#ba3d3d]"
-        />
-        <span className="text-sm text-gray-700">
-          Include add-on (+${ADDON_MONTHLY_CENTS / 100}/mo)
-        </span>
-      </label>
-      {canPay ? (
-        <Button
-          className="w-full"
-          size="lg"
-          onClick={startHostingCheckout}
-          disabled={loading}
-        >
-          {loading ? <Loader2 className="animate-spin" size={22} /> : 'Continue to payment'}
-        </Button>
+      <fieldset className="mb-6" disabled={!canPay}>
+        <legend className="block text-sm font-medium text-gray-700 mb-2">
+          Add-on (optional)
+        </legend>
+        <div className="space-y-2">
+          <label
+            className={`flex items-start gap-3 rounded-lg border p-3 ${
+              addonTier === 'none' ? 'border-[#ba3d3d]' : 'border-gray-200'
+            } ${canPay ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+          >
+            <input
+              type="radio"
+              name="addon-tier"
+              value="none"
+              checked={addonTier === 'none'}
+              onChange={() => setAddonTier('none')}
+              className="mt-1 text-[#ba3d3d] focus:ring-[#ba3d3d]"
+            />
+            <span className="text-sm text-gray-700">No add-on</span>
+          </label>
+          {ADDON_TIERS.map((tier) => (
+            <label
+              key={tier.id}
+              className={`flex items-start gap-3 rounded-lg border p-3 ${
+                addonTier === tier.id ? 'border-[#ba3d3d]' : 'border-gray-200'
+              } ${canPay ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+            >
+              <input
+                type="radio"
+                name="addon-tier"
+                value={tier.id}
+                checked={addonTier === tier.id}
+                onChange={() => setAddonTier(tier.id)}
+                className="mt-1 text-[#ba3d3d] focus:ring-[#ba3d3d]"
+              />
+              <span className="text-sm text-gray-700">
+                <span className="font-medium text-gray-900">
+                  {tier.name} (+${tier.monthlyCents / 100}/mo)
+                </span>
+                <span className="block text-gray-500">{tier.includes.join(' · ')}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-gray-700">
+          Total: ${totalDollars}/month
+        </p>
+      </fieldset>
+      {hasLivePlan ? (
+        <>
+          <div className="mb-3 text-sm text-gray-700">
+            {currentPlanLines!.map((line) => (
+              <p key={line}>Current plan: {line}</p>
+            ))}
+          </div>
+          <form action={openBillingPortal}>
+            <Button type="submit" className="w-full" size="lg">
+              Manage billing
+            </Button>
+          </form>
+        </>
+      ) : canPay ? (
+        <>
+          {onChoosePlan && noteAboveButton ? (
+            <p className="mb-3 text-sm text-gray-500">{noteAboveButton}</p>
+          ) : null}
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={startHostingCheckout}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="animate-spin" size={22} />
+            ) : onChoosePlan ? (
+              chooseLabel ?? 'Continue'
+            ) : (
+              'Continue to payment'
+            )}
+          </Button>
+        </>
       ) : !signedIn ? (
         <Link
           href={LOGIN_THEN_REQUEST}
@@ -136,7 +227,7 @@ export function HostingCheckoutCard({
           Submit a website request first
         </Link>
       )}
-      {!canPay ? (
+      {!canPay && !hasLivePlan ? (
         <p className="mt-3 text-sm text-gray-600">
           Hosting checkout opens after you submit a website request from your dashboard.
         </p>

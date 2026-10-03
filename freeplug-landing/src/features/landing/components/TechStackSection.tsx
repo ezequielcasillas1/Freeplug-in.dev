@@ -41,13 +41,6 @@ const techFeatures = [
   },
 ]
 
-const stats = [
-  { value: '99.9%', label: 'Uptime' },
-  { value: '<1s', label: 'Load Time' },
-  { value: '100', label: 'Lighthouse Score' },
-  { value: '24/7', label: 'Monitoring' },
-]
-
 export function TechStackSection() {
   return (
     <section id="services" className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
@@ -161,24 +154,11 @@ export function TechStackSection() {
                   <span className="text-[#ba3d3d]">Matters</span>
                 </h3>
                 <p className="text-gray-400 mb-8 leading-relaxed">
-                  Every website we build is optimized for maximum performance. 
-                  Fast loading times mean better user experience and higher search rankings.
+                  Sites are built to be mobile-friendly and reasonably fast. We don&apos;t invent uptime or score guarantees.
                 </p>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {stats.map((stat, index) => (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                      className="text-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
-                    >
-                      <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
-                      <div className="text-xs text-gray-400 uppercase tracking-wider">{stat.label}</div>
-                    </motion.div>
-                  ))}
+                <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-3 text-sm text-gray-300">
+                  Responsive layouts · Clear quote request pages · Monthly hosting keeps it online
                 </div>
               </div>
               

@@ -1,41 +1,34 @@
-'use server'
+// Server-only helpers. Deliberately NOT 'use server': that directive would expose every export
+// below as a public server action anyone could call to send mail through our SMTP account.
+import 'server-only'
 
-import { getResend, EMAIL_FROM, EMAIL_REPLY_TO, isResendConfigured } from './resend'
+import { sendMail } from './smtp'
 import { WelcomeEmail } from './templates/welcome'
 import { PaymentReceivedEmail } from './templates/payment-received'
 import { RequestStatusUpdateEmail } from './templates/request-status-update'
-import { SubscriptionCancelledEmail } from './templates/subscription-cancelled'
+import {
+  SUBSCRIPTION_CANCELLED_SUBJECT,
+  SubscriptionCancelledEmail,
+} from './templates/subscription-cancelled'
 import { BillingReminderEmail } from './templates/billing-reminder'
 import { PasswordResetEmail } from './templates/password-reset'
 
 type SendResult = { success: true; id: string } | { success: false; error: string }
 
+/** Optional per-send overrides (e.g. replyTo). Existing callers can omit it. */
+type SendOptions = { replyTo?: string | string[] }
+
 export async function sendWelcomeEmail(
   to: string,
-  userName?: string
+  userName?: string,
+  options?: SendOptions
 ): Promise<SendResult> {
-  if (!isResendConfigured()) {
-    return { success: false, error: 'Resend not configured' }
-  }
-
-  try {
-    const resend = getResend()
-    const { data, error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      replyTo: EMAIL_REPLY_TO,
-      to,
-      subject: 'Welcome to Freeplug.dev!',
-      react: WelcomeEmail({ userName }),
-    })
-
-    if (error) {
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, id: data?.id ?? '' }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-  }
+  return sendMail({
+    to,
+    subject: 'Welcome to Freeplug!',
+    react: WelcomeEmail({ userName }),
+    replyTo: options?.replyTo,
+  })
 }
 
 export async function sendPaymentReceivedEmail(
@@ -48,31 +41,15 @@ export async function sendPaymentReceivedEmail(
     paymentDate: string
     nextBillingDate?: string
     totalPaidToDate?: string
-    websiteValueProgress?: string
-  }
+  },
+  options?: SendOptions
 ): Promise<SendResult> {
-  if (!isResendConfigured()) {
-    return { success: false, error: 'Resend not configured' }
-  }
-
-  try {
-    const resend = getResend()
-    const { data, error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      replyTo: EMAIL_REPLY_TO,
-      to,
-      subject: `Payment received - ${params.amount}`,
-      react: PaymentReceivedEmail(params),
-    })
-
-    if (error) {
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, id: data?.id ?? '' }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-  }
+  return sendMail({
+    to,
+    subject: `Payment received - ${params.amount}`,
+    react: PaymentReceivedEmail(params),
+    replyTo: options?.replyTo,
+  })
 }
 
 export async function sendRequestStatusUpdateEmail(
@@ -82,63 +59,33 @@ export async function sendRequestStatusUpdateEmail(
     businessName: string
     newStatus: 'submitted' | 'in_review' | 'closed'
     message?: string
-  }
+  },
+  options?: SendOptions
 ): Promise<SendResult> {
-  if (!isResendConfigured()) {
-    return { success: false, error: 'Resend not configured' }
-  }
-
-  try {
-    const resend = getResend()
-    const { data, error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      replyTo: EMAIL_REPLY_TO,
-      to,
-      subject: `Request Update: ${params.businessName}`,
-      react: RequestStatusUpdateEmail(params),
-    })
-
-    if (error) {
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, id: data?.id ?? '' }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-  }
+  return sendMail({
+    to,
+    subject: `Request Update: ${params.businessName}`,
+    react: RequestStatusUpdateEmail(params),
+    replyTo: options?.replyTo,
+  })
 }
 
 export async function sendSubscriptionCancelledEmail(
   to: string,
   params: {
     userName?: string
-    planName: string
+    planName?: string
     endDate: string
     totalPaidToDate?: string
-  }
+  },
+  options?: SendOptions
 ): Promise<SendResult> {
-  if (!isResendConfigured()) {
-    return { success: false, error: 'Resend not configured' }
-  }
-
-  try {
-    const resend = getResend()
-    const { data, error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      replyTo: EMAIL_REPLY_TO,
-      to,
-      subject: `Subscription cancelled - ${params.planName}`,
-      react: SubscriptionCancelledEmail(params),
-    })
-
-    if (error) {
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, id: data?.id ?? '' }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-  }
+  return sendMail({
+    to,
+    subject: SUBSCRIPTION_CANCELLED_SUBJECT,
+    react: SubscriptionCancelledEmail(params),
+    replyTo: options?.replyTo,
+  })
 }
 
 export async function sendBillingReminderEmail(
@@ -149,30 +96,15 @@ export async function sendBillingReminderEmail(
     amount: string
     billingDate: string
     daysUntilBilling: number
-  }
+  },
+  options?: SendOptions
 ): Promise<SendResult> {
-  if (!isResendConfigured()) {
-    return { success: false, error: 'Resend not configured' }
-  }
-
-  try {
-    const resend = getResend()
-    const { data, error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      replyTo: EMAIL_REPLY_TO,
-      to,
-      subject: `Upcoming billing reminder - ${params.amount} on ${params.billingDate}`,
-      react: BillingReminderEmail(params),
-    })
-
-    if (error) {
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, id: data?.id ?? '' }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-  }
+  return sendMail({
+    to,
+    subject: `Upcoming billing reminder - ${params.amount} on ${params.billingDate}`,
+    react: BillingReminderEmail(params),
+    replyTo: options?.replyTo,
+  })
 }
 
 export async function sendPasswordResetEmail(
@@ -181,28 +113,13 @@ export async function sendPasswordResetEmail(
     resetLink: string
     userName?: string
     expiresIn?: string
-  }
+  },
+  options?: SendOptions
 ): Promise<SendResult> {
-  if (!isResendConfigured()) {
-    return { success: false, error: 'Resend not configured' }
-  }
-
-  try {
-    const resend = getResend()
-    const { data, error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      replyTo: EMAIL_REPLY_TO,
-      to,
-      subject: 'Reset your Freeplug.dev password',
-      react: PasswordResetEmail(params),
-    })
-
-    if (error) {
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, id: data?.id ?? '' }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-  }
+  return sendMail({
+    to,
+    subject: 'Reset your Freeplug password',
+    react: PasswordResetEmail(params),
+    replyTo: options?.replyTo,
+  })
 }

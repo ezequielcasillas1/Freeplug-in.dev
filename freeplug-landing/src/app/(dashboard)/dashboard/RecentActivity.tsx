@@ -1,4 +1,4 @@
-import { DollarSign, FileText, CreditCard, Trophy, Clock } from 'lucide-react'
+import { DollarSign, FileText, CreditCard, Clock } from 'lucide-react'
 import type { ActivityItem } from './dashboard-actions'
 
 type Props = {
@@ -47,11 +47,6 @@ const activityConfig = {
     icon: CreditCard,
     color: 'text-purple-600',
     bg: 'bg-purple-50',
-  },
-  milestone: {
-    icon: Trophy,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
   },
 }
 

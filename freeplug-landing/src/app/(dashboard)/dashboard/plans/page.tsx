@@ -3,6 +3,7 @@ import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
+import { describeLiveSubscriptions } from '@/lib/stripe/active-subscription'
 
 export default async function DashboardPlansPage() {
   const supabase = await createClient()
@@ -34,6 +35,22 @@ export default async function DashboardPlansPage() {
     )
   }
 
+  // A customer with a live plan gets Manage billing instead of a second checkout.
+  let currentPlanLines: string[] = []
+  const { data: prof } = await supabase
+    .from('profiles')
+    .select('stripe_customer_id')
+    .eq('id', user!.id)
+    .single()
+  if (prof?.stripe_customer_id) {
+    try {
+      currentPlanLines = await describeLiveSubscriptions(prof.stripe_customer_id)
+    } catch (e) {
+      // Stripe unreachable: show the normal card; the checkout API still refuses a second plan.
+      console.error('[plans] live plan lookup failed', e)
+    }
+  }
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Plans</h1>
@@ -42,7 +59,7 @@ export default async function DashboardPlansPage() {
         — describe the work on the request form and we will follow up with pricing.
       </p>
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl">
-        <HostingCheckoutCard embedded />
+        <HostingCheckoutCard embedded currentPlanLines={currentPlanLines} />
         <MaintenancePlanCard
           embedded
           ctaHref="/dashboard/request-website?focus=maintenance"

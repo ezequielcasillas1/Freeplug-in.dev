@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import { clampMaintenanceCents } from '@/lib/stripe/config'
 import {
@@ -9,13 +10,22 @@ import {
 export const runtime = 'nodejs'
 
 /**
- * One-time maintenance Checkout Session (amount chosen in request body).
- * Not used from public UI — maintenance is quote-first; callers should be
- * server-trusted flows (e.g. admin sends invoice) or a future server-determined amount.
- * Keep route for internal/testing until a dedicated “quoted checkout” path exists.
+ * One-time maintenance Checkout Session (amount chosen in request body, $50–$100).
+ * Not used from any UI — maintenance is quote-first. Requires a signed-in user (401 otherwise).
+ * DESIGN GAP: there is no server-side quote/amount record yet, so the amount still comes from the
+ * caller (bounded to $50–$100). When quotes exist, load the amount from the caller's own quote
+ * record here and ignore any client-sent amount.
  */
 export async function POST(request: Request) {
   try {
+    const supabaseAuth = await createClient()
+    const {
+      data: { user },
+    } = await supabaseAuth.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Sign in to start checkout.' }, { status: 401 })
+    }
+
     const body = (await request.json()) as { maintenanceCents?: unknown }
     const cents = clampMaintenanceCents(body.maintenanceCents)
     if (cents === null) {

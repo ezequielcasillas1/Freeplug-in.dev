@@ -1,6 +1,12 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { signIn, signInWithGoogle } from '../actions'
 import { Button } from '@/components/ui/button'
+
+export const metadata: Metadata = {
+  title: 'Log In | Freeplug',
+  robots: { index: false },
+}
 
 type Props = {
   searchParams: Promise<{ error?: string; next?: string; message?: string }>
@@ -37,7 +43,7 @@ export default async function LoginPage({ searchParams }: Props) {
     <div className="rounded-2xl bg-white p-8 shadow-sm border border-zinc-200">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Log in</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Freeplug.dev account — hosting and dashboard access.
+        Freeplug account — hosting and dashboard access.
       </p>
 
       {q.error ? (
@@ -53,6 +59,7 @@ export default async function LoginPage({ searchParams }: Props) {
 
       {/* Google Sign In */}
       <form action={signInWithGoogle} className="mb-6">
+        {q.next ? <input type="hidden" name="next" value={next} /> : null}
         <button
           type="submit"
           className="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 rounded-lg text-gray-700 bg-white hover:bg-zinc-50 font-medium transition-colors"
@@ -98,6 +105,11 @@ export default async function LoginPage({ searchParams }: Props) {
             required
             className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#ba3d3d] focus:border-[#ba3d3d] outline-none"
           />
+          <p className="mt-2 text-right">
+            <Link href="/forgot-password" className="text-sm font-medium text-[#ba3d3d] hover:underline">
+              Forgot password?
+            </Link>
+          </p>
         </div>
         <Button type="submit" className="w-full" size="lg">
           Sign in
@@ -106,7 +118,10 @@ export default async function LoginPage({ searchParams }: Props) {
 
       <p className="mt-6 text-center text-sm text-gray-600">
         No account?{' '}
-        <Link href="/signup" className="font-medium text-[#ba3d3d] hover:underline">
+        <Link
+          href={q.next === '/claim' ? '/signup?next=/claim' : '/signup'}
+          className="font-medium text-[#ba3d3d] hover:underline"
+        >
           Create one
         </Link>
       </p>
