@@ -590,6 +590,30 @@ describe('the tipping system: tip item vs plan changes', () => {
     expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
   })
 
+  it('Aria 3:43 PM D: a grandfathered plan has no tip (preview and change refused) until it moves to a ladder step', async () => {
+    const f = fakeStripe()
+    const d = tipDeps(f)
+    expect(await previewTipChange(d, legacySub(4000, 1000), 2)).toMatchObject({ ok: false, code: 'no_tip_plan' })
+    expect(await changeTip(d, legacySub(4000, 1000), 2)).toMatchObject({ ok: false, code: 'no_tip_plan' })
+    expect(f.calls).toEqual([])
+    // the upgrade to a ladder step drops the old items; from then on the tip is allowed
+    expect(upgradeItems(legacySub(4000, 1000), 'price_priority')).toEqual([{ id: 'si_h', price: 'price_priority', quantity: 1 }, { id: 'si_a', deleted: true }])
+    const moved = tipped('priority', 0)
+    ;(moved.items.data as unknown[]).pop()
+    const g = idemStripe(moved)
+    expect(await changeTip(g.deps, moved, 2, { confirmId: 'confirm-d-0001' })).toMatchObject({ ok: true, kind: 'changed', tipDollars: 2 })
+  })
+
+  it('Aria 3:43 PM C: a tip added later is appended (the plan item stays first); existing items are never recreated', async () => {
+    const sub = tipped('priority', 0)
+    ;(sub.items.data as unknown[]).pop()
+    const f = idemStripe(sub)
+    await changeTip(f.deps, sub, 4, { confirmId: 'confirm-c-0001' })
+    const [, params] = f.update.mock.calls[0] as unknown as [string, { items: Record<string, unknown>[] }]
+    expect(params.items).toEqual([{ price: 'price_tip', quantity: 4 }]) // only the new item; the plan item is not touched
+    expect(f.live().items.data.map((i) => i.price.id)).toEqual(['price_priority', 'price_tip'])
+  })
+
   it('tip preview: Stripe upcoming invoice with proration none ("Your next bill"), nothing written', async () => {
     const f = fakeStripe()
     const createPreview = vi.fn(async () => ({ amount_due: 7400, currency: 'usd' }))

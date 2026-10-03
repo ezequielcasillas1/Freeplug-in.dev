@@ -348,7 +348,7 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     await waitFor(() => expect(document.activeElement).toBe(third), { timeout: 5000 })
     expect(screen.queryByTestId('confirm-expired')).toBeNull()
     expect(onChangePlan).not.toHaveBeenCalled()
-  })
+  }, 20_000) // the whole test needs room too: under a parallel full run it hit vitest's 5 s default (Oct 3 4:2x PM)
 
   it('expiry: after CONFIRM_OPEN_MS the confirm closes to the button with one grey line; a tap previews again', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
@@ -433,6 +433,17 @@ describe('the tipping system: slider before checkout and in the claim flow', () 
     expect(screen.getByTestId('sticky-summary')).toHaveTextContent('Fast lane · $65 + $7 tip = $72/month')
     fireEvent.click(screen.getByRole('button', { name: 'Choose Fast lane' }))
     await waitFor(() => expect(onChoosePlan).toHaveBeenCalledWith({ planStep: 'fast_lane', tipDollars: 7 }))
+  })
+
+  it('Aria 3:43 PM E: claim customers get the same tip box on our page before checkout, starting at $0 (untouched = no tip)', async () => {
+    const onChoosePlan = vi.fn(async () => null)
+    const { container } = render(<HostingCheckoutCard bare stickyOnPhone onChoosePlan={onChoosePlan} chooseLabelFor={(n) => `Choose ${n}`} />)
+    pickStep(container, 'priority')
+    expect(slider()).toHaveAttribute('aria-valuetext', '$55 a month, no tip')
+    expect(screen.getByTestId('tip-ends').textContent).toBe('No tip$9 tip')
+    expect(screen.getByRole('button', { name: 'Lower tip by $1' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Priority' }))
+    await waitFor(() => expect(onChoosePlan).toHaveBeenCalledWith({ planStep: 'priority', tipDollars: 0 }))
   })
 
   it('nudge: within $5 of the next sellable step it offers the switch; the button picks that step (tip reset)', () => {
@@ -638,5 +649,18 @@ describe('the tipping system: tip box on the Plans page (next bill, no modal)', 
     u2.unmount()
     switching({ currentStepId: null, currentMonthlyCents: 5500, currentPlanLines: ['Website hosting + Pro add-on · $55.00/month'], ...a })
     expect(screen.queryByTestId('tip-change-box')).toBeNull()
+  })
+
+  it('Aria 3:43 PM D: a grandfathered (legacy) plan gets no tip slider until it moves to a ladder step; then the tip box appears at $0', () => {
+    const a = tipActions()
+    const legacy = switching({ currentStepId: null, currentMonthlyCents: 5000, currentPlanLines: ['Website hosting + Pro add-on · $50.00/month'], ...a })
+    expect(screen.queryByTestId('tip-change-box')).toBeNull()
+    expect(screen.queryByTestId('tip-area')).toBeNull()
+    expect(legacy.container.querySelectorAll('input[type="range"]')).toHaveLength(0)
+    legacy.unmount()
+    // after "Switch to Priority" lands (the webhook writes the step), the tip box is there, starting at no tip
+    switching({ currentStepId: 'priority', currentMonthlyCents: 5500, currentPlanLines: ['Freeplug Hosting: Priority · $55.00/month'], currentTipDollars: 0, ...a })
+    const box = screen.getByTestId('tip-change-box')
+    expect(within(box).getByRole('slider')).toHaveAttribute('aria-valuetext', '$55 a month, no tip')
   })
 })

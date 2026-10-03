@@ -170,6 +170,20 @@ implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
   "4 × Freeplug: optional monthly tip (at $1.00 / month)"; PDF row "Freeplug: optional monthly tip | Qty 4 |
   $1.00 | $4.00" (period Oct 3–Nov 3, 2026), listed ABOVE "Freeplug Hosting: Priority | 1 | $55.00".
   Script: `/workspace/owen/devstack/invoice-tip-line.mjs` (read-only, test key only).
+- **Tip line renamed** (Aria 3:43 PM C): the Stripe TEST product `freeplug_tip` is now "Optional monthly
+  tip" (`TIP_PRODUCT_NAME` in scripts/stripe-test-setup-ladder.mjs; renamed in place, same product and
+  prices). New test invoice 3IAXC7R9-0001 ($59): API lines plan first, "1 × Freeplug Hosting: Priority (at
+  $55.00 / month)" then "4 × Optional monthly tip (at $1.00 / month)". Stripe's PDF still renders the tip
+  row ("Optional monthly tip | 4 | $1.00 | $4.00") above the plan row: the PDF does not follow the
+  subscription item order, and we can't change that. Stripe's line format can't say "($1.00 each)"; it
+  always prints "(at $1.00 / month)". Checkout, claim publish and the tip change already put the plan
+  item first; a tip added later is appended, nothing is recreated (change-plan.test.ts). The live product
+  name is set at launch by the same setup script.
+- **Grandfathered plans** (Aria D): no tip slider and no tip preview/change (`no_tip_plan`) until the
+  customer moves to a ladder step; then the tip box appears at $0 (tests in change-plan.test.ts and
+  HostingCheckoutCard.test.tsx).
+- **Claim tip box** (Aria E): claim step 3 uses the same slider before checkout and starts at $0; untouched
+  it sends `tipDollars: 0` (HostingCheckoutCard.test.tsx, outreach/server.test.ts).
 - **Tip ranges after launch** (Aria 4, follow-up, no code): before any range change after launch, publish
   should list the customers whose tip falls outside the new range and keep their tip until they change
   it, not refuse.

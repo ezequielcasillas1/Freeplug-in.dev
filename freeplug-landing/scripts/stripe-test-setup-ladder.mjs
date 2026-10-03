@@ -88,7 +88,7 @@ export function assertTestObject(obj, what) {
 
 export const RETIRED_PRODUCT_IDS = ['freeplug_hosting_ladder']
 /** [Sable] Stripe-visible name of the tip product (shows on invoices and Checkout). */
-export const TIP_PRODUCT_NAME = 'Freeplug: optional monthly tip'
+export const TIP_PRODUCT_NAME = 'Optional monthly tip' // invoice line "4 × Optional monthly tip" (Aria, Oct 3 3:43 PM)
 
 export function priceMatches(price, step, productId = step.productId) {
   const product = typeof price.product === 'string' ? price.product : price.product?.id
