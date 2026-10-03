@@ -263,3 +263,20 @@ describe('cancel goes only through the app (Aria, Oct 3 4:05 PM)', () => {
     expect(CANCEL_FAILED_MESSAGE).toContain('737-392-5612')
   })
 })
+
+describe('cancel page plan card heading (Sable 5:23 PM)', () => {
+  it('a ladder plan reads "Fast lane" (plan name only), active or set to end', () => {
+    const fl = { productName: 'Freeplug Hosting: Fast lane', planName: 'Fast lane', amount: 6500, tipCents: 400 }
+    const { unmount } = render(<CancelPlanView data={data({ subscriptions: [sub(fl)] })} />)
+    expect(screen.getByRole('heading', { name: 'Fast lane' })).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent('Freeplug Hosting:')
+    unmount()
+    render(<CancelPlanView data={data({ canceledSubscriptions: [sub({ ...fl, cancelAtPeriodEnd: true })] })} />)
+    expect(screen.getByRole('heading', { name: 'Fast lane' })).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent('Freeplug Hosting:')
+  })
+  it('a grandfathered plan keeps its product name', () => {
+    render(<CancelPlanView data={data({ subscriptions: [sub({ planName: 'Hosting plan (monthly)' })] })} />)
+    expect(screen.getByRole('heading', { name: 'Hosting plan (monthly)' })).toBeInTheDocument()
+  })
+})

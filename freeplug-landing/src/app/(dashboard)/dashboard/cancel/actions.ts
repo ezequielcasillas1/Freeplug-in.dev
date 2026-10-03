@@ -6,12 +6,15 @@ import type Stripe from 'stripe'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { stepById } from '@/lib/plans/ladder'
+import { planNameOf } from '@/lib/stripe/plan-line'
 import { tierItems, tipDollarsOfItems } from '@/lib/plans/tips'
 
 export type SubscriptionInfo = {
   id: string
   status: Stripe.Subscription.Status
   productName: string
+  /** Plan card heading (Sable 5:23 PM): the step name for a ladder plan ("Fast lane"); a grandfathered plan keeps its product name. */
+  planName?: string
   /** The plan (tier) price × quantity, without the tip. */
   amount: number
   /** The monthly tip on this subscription (0 = none); shown next to the plan price (Vera bug 4). */
@@ -117,7 +120,8 @@ async function loadSubscriptions(
 
   for (const sub of subs.data) {
     // The plan item, never the tip item (item order isn't guaranteed); the tip is shown on its own.
-    const item = tierItems(sub.items.data)[0] ?? sub.items.data[0]
+    const tiers = tierItems(sub.items.data)
+    const item = tiers[0] ?? sub.items.data[0]
     if (!item) continue
 
     const price = item.price
@@ -130,6 +134,7 @@ async function loadSubscriptions(
       id: sub.id,
       status: sub.status,
       productName: product.name,
+      planName: tiers.length === 1 ? planNameOf([{ lookupKey: price.lookup_key ?? null, productName: product.name }]) : product.name,
       amount: (price.unit_amount ?? 0) * (item.quantity ?? 1),
       tipCents: tipDollarsOfItems(sub.items.data) * 100,
       interval: price.recurring?.interval ?? 'month',

@@ -297,7 +297,11 @@ pinned word for word in ladder-copy.test.ts:
   to keep your website live.") and its "Resume plan" goes to `/dashboard/cancel#resume-plan` (the cancel
   page's Resume box; the Plans page has no Resume). The Active Subscriptions list reads "Fast lane + $4
   tip" (`subscriptionListName`, PLAN_STRIP_TIP pattern); grandfathered plans keep their product names.
-  Recent activity ("Subscription started") still shows the product names.
+- **Sable 5:23 PM:** the ending alert reads "Your Fast lane plan will end in 31 days. Resume to keep
+  your website live." (a grandfathered plan: "Your <product names> will end…", no extra "plan"); the link
+  stays `/dashboard/cancel#resume-plan`. Recent activity ("Subscription started") uses the list name
+  ("Fast lane + $4 tip" / "Fast lane"). The cancel page plan cards read the plan name only ("Fast lane";
+  grandfathered plans keep their product name).
 
 ## Not built (Part B)
 L2 AI editor + quota enforcement, leads report job, form-fill storage, GBP API, SMS, L3.

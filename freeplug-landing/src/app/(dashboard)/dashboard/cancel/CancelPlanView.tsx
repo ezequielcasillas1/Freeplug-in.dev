@@ -141,7 +141,7 @@ export function CancelPlanView({
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{sub.productName}</h3>
+                    <h3 className="font-semibold text-gray-900">{sub.planName ?? sub.productName}</h3>
                     <p className="text-sm text-gray-600 mt-1">
                       {priceLine(sub)}
                     </p>
@@ -174,7 +174,7 @@ export function CancelPlanView({
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{sub.productName}</h3>
+                    <h3 className="font-semibold text-gray-900">{sub.planName ?? sub.productName}</h3>
                     <p className="text-sm text-gray-600 mt-1">
                       {priceLine(sub)}
                     </p>

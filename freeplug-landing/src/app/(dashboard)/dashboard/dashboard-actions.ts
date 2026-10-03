@@ -17,7 +17,7 @@ import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { formatPlanEndDate } from '@/lib/stripe/active-subscription'
-import { stepById } from '@/lib/plans/ladder'
+import { stepById, stepByLookupKey } from '@/lib/plans/ladder'
 import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel } from '@/lib/dashboard/billing-activity'
 
 export type DashboardStats = {
@@ -34,8 +34,10 @@ export type SubscriptionDetail = {
   productName: string
   /** Plan name only, never the tip: "Fast lane" (Subscription ending alert, Sable 5:11 PM). */
   planName?: string
-  /** Active Subscriptions list: "Fast lane + $4 tip" (Sable 5:11 PM); plan name only without a tip. */
+  /** Active Subscriptions list and Recent activity: "Fast lane + $4 tip" (Sable 5:11 / 5:23 PM); plan name only without a tip. */
   listName?: string
+  /** True for a hosting-ladder step (the ending alert says "Your Fast lane plan"). */
+  ladderStep?: boolean
   status: Stripe.Subscription.Status
   amount: number
   interval: string
@@ -184,6 +186,7 @@ export async function getEnhancedDashboardData(
           amount += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
         }
         const planName = planItems.length > 0 ? planNameOf(planItems) : productNames.join(' + ')
+        const ladderStep = planItems.length === 1 && stepByLookupKey(planItems[0].lookupKey) != null
         const price = items[0].price
         const entitlements: Entitlements | null =
           sub.status === 'active' || sub.status === 'trialing' ? planEntitlements : null
@@ -202,6 +205,7 @@ export async function getEnhancedDashboardData(
           productName: productNames.join(' + '),
           planName,
           listName: subscriptionListName(planName, tipDollars),
+          ladderStep,
           status: sub.status,
           amount,
           interval: price.recurring?.interval ?? 'month',
@@ -302,7 +306,7 @@ export async function getEnhancedDashboardData(
       id: `sub-${sub.id}`,
       type: 'subscription_created',
       title: 'Subscription started',
-      description: sub.productName,
+      description: sub.listName ?? sub.productName,
       date: sub.created,
     })
   }
@@ -336,7 +340,7 @@ export async function getEnhancedDashboardData(
       id: 'subscription-ending',
       type: 'warning',
       title: 'Subscription ending',
-      message: subscriptionEndingMessage(cancelingSubscription.planName ?? cancelingSubscription.productName, daysUntilEnd),
+      message: subscriptionEndingMessage(cancelingSubscription.planName ?? cancelingSubscription.productName, daysUntilEnd, cancelingSubscription.ladderStep === true),
       actionLabel: 'Resume plan',
       actionHref: RESUME_PLAN_ANCHOR_HREF,
     })

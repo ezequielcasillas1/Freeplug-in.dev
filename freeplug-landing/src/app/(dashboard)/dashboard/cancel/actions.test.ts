@@ -64,6 +64,7 @@ describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => 
     const d = await getCancelPageData({ tolerateStripeErrors: true })
     expect(d?.subscriptionsLoaded).toBe(true)
     expect(d?.subscriptions.map((s) => s.productName)).toEqual(['Hosting plan (monthly)'])
+    expect(d?.subscriptions.map((s) => s.planName)).toEqual(['Hosting plan (monthly)']) // grandfathered keeps its name
   })
 
   it('outreach (tolerate): a Stripe outage returns empty lists and subscriptionsLoaded false, no throw', async () => {
@@ -77,6 +78,7 @@ describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => 
     const d = await getCancelPageData()
     expect(d?.subscriptions).toHaveLength(1)
     expect(d?.subscriptions[0]).toMatchObject({ productName: 'Freeplug Hosting: Fast lane', amount: 6500, tipCents: 600, interval: 'month' })
+    expect(d?.subscriptions[0].planName).toBe('Fast lane') // Sable 5:23 PM: the plan card heading
   })
 
   it('Vera 5b: Starter + $11 shows the plan ($35) and the $11 tip (was "Starter $35.00 / month")', async () => {

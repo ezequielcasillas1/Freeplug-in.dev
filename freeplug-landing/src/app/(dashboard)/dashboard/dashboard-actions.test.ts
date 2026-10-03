@@ -87,17 +87,24 @@ describe('getEnhancedDashboardData and Stripe errors (round 9)', () => {
     const d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
     expect(d?.subscriptionsLoaded).toBe(true)
     expect(d?.subscriptions.map((s) => s.productName)).toEqual(['Hosting plan (monthly)'])
+    // grandfathered: the list and Recent activity keep the product name (no tip item here)
+    expect(d?.subscriptions.map((s) => s.listName)).toEqual(['Hosting plan (monthly)'])
+    expect(d?.subscriptions[0].ladderStep).toBe(false)
+    expect(d?.recentActivity.find((a) => a.type === 'subscription_created')?.description).toBe('Hosting plan (monthly)')
   })
 
-  it('Sable 5:11 PM / Vera B3: the ending alert names the plan only and links to the Resume box; the list reads "Fast lane + $4 tip"', async () => {
+  it('Sable 5:11 + 5:23 PM / Vera B3: "Your Fast lane plan will end…" linking to the Resume box; list and Recent activity read "Fast lane + $4 tip"', async () => {
     stripe.mode = 'ladder'
     const d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
     const sub = d!.subscriptions[0]
     expect(sub.planName).toBe('Fast lane')
     expect(sub.listName).toBe('Fast lane + $4 tip')
-    expect(sub.productName).toBe('Freeplug Hosting: Fast lane + Optional monthly tip') // Recent activity keeps the product names
+    expect(sub.productName).toBe('Freeplug Hosting: Fast lane + Optional monthly tip')
+    expect(sub.ladderStep).toBe(true)
+    const started = d!.recentActivity.find((a) => a.type === 'subscription_created')!
+    expect(started.description).toBe('Fast lane + $4 tip') // Sable 5:23 PM: same pattern as the list
     const alert = d!.alerts.find((a) => a.id === 'subscription-ending')!
-    expect(alert.message).toMatch(/^Fast lane will end in 3[01] days\. Resume to keep your website live\.$/)
+    expect(alert.message).toMatch(/^Your Fast lane plan will end in 3[01] days\. Resume to keep your website live\.$/)
     expect(alert.message).not.toMatch(/tip|Freeplug Hosting/)
     expect(alert.actionLabel).toBe('Resume plan')
     expect(alert.actionHref).toBe('/dashboard/cancel#resume-plan')
