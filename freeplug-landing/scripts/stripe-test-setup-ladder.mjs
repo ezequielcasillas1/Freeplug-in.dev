@@ -9,6 +9,10 @@
  *                      failed-card upgrade, upgrade over a pending downgrade, cancel vs downgrade
  *                      both ways, a non-sellable target, and the webhook events Stripe emits
  *        [--tag-probes] archive the probe products and tag every probe leftover metadata.probe=true
+ *        [--probe-checkout-expiry]  Aria's 12:56 open-checkout rule on REAL open sessions (probe
+ *                      customer only): expires_at = now + 1 h, the expiry of non-sellable steps'
+ *                      sessions (idempotent second run), and the sellable session left open
+ *        [--probe-billing]  card-update portal flow and invoice list, with and without a schedule
  *
  * TEST MODE ONLY. The key is read from the --env-file (only the STRIPE_SECRET_KEY line), never
  * from the shell environment, and never printed. Anything but an sk_test_ / rk_test_ key is
@@ -552,6 +556,100 @@ export async function runConditionProbes(stripe, ladder, setup, { log = console.
   return out
 }
 
+/** Loads app TS modules for the probes (relative imports only; no server-only modules). */
+async function appModule(rel) {
+  const { createJiti } = await import('jiti')
+  const here = path.dirname(fileURLToPath(import.meta.url))
+  return createJiti(import.meta.url).import(path.join(here, '..', 'src', ...rel.split('/')))
+}
+
+/**
+ * Aria 12:56, open checkouts: real open Checkout Sessions on the probe customer (metadata.probe=true),
+ * expired with the app's expireUnsellableCheckoutSessions scoped to that customer. TEST MODE ONLY.
+ */
+export async function runCheckoutExpiryProbe(stripe, ladder, setup, { log = console.log } = {}) {
+  const { checkoutSessionExpiresAt } = await appModule('lib/stripe/checkout-expiry.ts')
+  const { expireUnsellableCheckoutSessions } = await appModule('lib/stripe/expire-unsellable-checkouts.ts')
+  const out = { startedAt: new Date().toISOString() }
+  const customer = assertTestObject(await stripe.customers.retrieve(PROBE_CUSTOMER_ID), 'probe customer')
+  const make = async (step, withMeta) => {
+    const expiresAt = checkoutSessionExpiresAt()
+    const s = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: customer.id,
+      expires_at: expiresAt,
+      line_items: [{ price: setup.priceIds[step], quantity: 1 }],
+      success_url: 'https://example.test/probe?ok=1',
+      cancel_url: 'https://example.test/probe?cancel=1',
+      metadata: { probe: 'true', freeplug_probe: PROBE_TAG, ...(withMeta ? { type: 'hosting', plan_step: step } : {}) },
+      subscription_data: { metadata: { probe: 'true', freeplug_probe: PROBE_TAG } },
+    })
+    assertTestObject(s, 'checkout session')
+    return { id: s.id, step, metadata: withMeta ? 'plan_step' : 'none (lookup key)', status: s.status, expires_at: s.expires_at, requested: expiresAt, ttlMinutes: Math.round(((s.expires_at - s.created) / 60) * 10) / 10 }
+  }
+  out.created = [await make('leads', true), await make('growth', false), await make('starter', true)]
+  const quiet = { log: (m) => log(m), customer: customer.id }
+  const r1 = await expireUnsellableCheckoutSessions(stripe, quiet)
+  out.run1 = r1
+  out.afterRun1 = []
+  for (const c of out.created) out.afterRun1.push({ id: c.id, step: c.step, status: (await stripe.checkout.sessions.retrieve(c.id)).status })
+  out.run2_idempotent = await expireUnsellableCheckoutSessions(stripe, quiet)
+  // cleanup: the sellable session is left open by the rule; expire it ourselves
+  const starter = out.created.find((c) => c.step === 'starter')
+  await stripe.checkout.sessions.expire(starter.id)
+  out.cleanup = `expired the sellable (starter) probe session ${starter.id} by hand; all three carry metadata.probe=true`
+  out.finishedAt = new Date().toISOString()
+  log(JSON.stringify(out, null, 2))
+  return out
+}
+
+/**
+ * Aria 12:56, Manage billing with a schedule: the card-only portal flow and the in-app invoice list,
+ * without and then with a schedule, using the app's billing-routing.ts. TEST MODE ONLY.
+ */
+export async function runBillingProbe(stripe, ladder, setup, { log = console.log } = {}) {
+  const br = await appModule('lib/stripe/billing-routing.ts')
+  const cp = await appModule('lib/stripe/change-plan.ts')
+  const out = { startedAt: new Date().toISOString() }
+  const customer = assertTestObject(await stripe.customers.retrieve(PROBE_CUSTOMER_ID), 'probe customer')
+  const visa = await stripe.paymentMethods.attach('pm_card_visa', { customer: customer.id })
+  await stripe.customers.update(customer.id, { invoice_settings: { default_payment_method: visa.id } })
+  const env = { STRIPE_PORTAL_CONFIGURATION_ID: setup.portalConfigurationId ?? '' }
+  const ret = 'https://example.test/dashboard/plans?card=updated'
+  let sub = assertTestObject(
+    await stripe.subscriptions.create({ customer: customer.id, items: [{ price: setup.priceIds.priority }], metadata: { type: 'hosting', plan_step: 'priority', freeplug_probe: PROBE_TAG, probe: 'true' } }),
+    'probe subscription'
+  )
+  const session = async (label) => {
+    try {
+      const s = await stripe.billingPortal.sessions.create(br.paymentMethodUpdateSessionParams(customer.id, ret, env))
+      return { label, ok: true, configuration: s.configuration, flow: s.flow?.type ?? null, after_completion: s.flow?.after_completion?.type ?? null, redirect: s.flow?.after_completion?.redirect?.return_url ?? null }
+    } catch (e) {
+      return { label, ok: false, error: redact(`${e?.code ?? ''} ${String(e?.message ?? e).slice(0, 220)}`) }
+    }
+  }
+  out.noSchedule = {
+    findScheduledSubscription: await br.findScheduledSubscription(stripe, customer.id),
+    cardUpdateSession: await session('card update, no schedule'),
+    invoices: (await br.listInvoicesForCustomer(stripe, customer.id, 5)).map((i) => ({ id: i.id, status: i.status, total: i.totalCents, hosted: Boolean(i.hostedUrl), pdf: Boolean(i.pdfUrl) })),
+  }
+  const down = await cp.changePlanStep({ stripe, priceIdFor: async (id) => setup.priceIds[id] }, sub, 'starter')
+  sub = await stripe.subscriptions.retrieve(sub.id)
+  out.withSchedule = {
+    downgrade: down,
+    findScheduledSubscription: await br.findScheduledSubscription(stripe, customer.id),
+    manageBillingGoesTo: (await br.findScheduledSubscription(stripe, customer.id)) ? br.PLANS_PENDING_BILLING_PATH : 'Billing Portal',
+    cardUpdateSession: await session('card update, with schedule'),
+    scheduleStillThere: (await stripe.subscriptions.retrieve(sub.id)).schedule,
+  }
+  if (sub.schedule) await stripe.subscriptionSchedules.release(typeof sub.schedule === 'string' ? sub.schedule : sub.schedule.id)
+  await stripe.subscriptions.cancel(sub.id)
+  out.cleanup = `probe subscription ${sub.id} (metadata.probe=true) schedule released and canceled`
+  out.finishedAt = new Date().toISOString()
+  log(JSON.stringify(out, null, 2))
+  return out
+}
+
 async function main(argv) {
   const arg = (name) => {
     const i = argv.indexOf(name)
@@ -568,6 +666,8 @@ async function main(argv) {
   if (argv.includes('--probe') && !argv.includes('--dry-run')) await runProbes(stripe, ladder, setup)
   if (argv.includes('--probe-conditions') && !argv.includes('--dry-run')) await runConditionProbes(stripe, ladder, setup)
   if (argv.includes('--tag-probes') && !argv.includes('--dry-run')) await tagProbeLeftovers(stripe)
+  if (argv.includes('--probe-checkout-expiry') && !argv.includes('--dry-run')) await runCheckoutExpiryProbe(stripe, ladder, setup)
+  if (argv.includes('--probe-billing') && !argv.includes('--dry-run')) await runBillingProbe(stripe, ladder, setup)
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
