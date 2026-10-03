@@ -127,7 +127,7 @@ export async function listLiveSubscriptions(customerId: string): Promise<Stripe.
 
 /**
  * One line per live subscription for the Plans page strip: "<step name> · $65/month" (see plan-line.ts;
- * grandfathered plans keep their product names), plus the status when it is not "active".
+ * grandfathered plans: "Hosting + Pro add-on · $50/month", no tip), plus the status when it is not "active".
  */
 export async function describeLiveSubscriptions(customerId: string): Promise<string[]> {
   const stripe = getStripe()
@@ -142,7 +142,7 @@ export async function describeLiveSubscriptions(customerId: string): Promise<str
         typeof item.price.product === 'string'
           ? await stripe.products.retrieve(item.price.product)
           : (item.price.product as Stripe.Product)
-      items.push({ lookupKey: item.price.lookup_key ?? null, productName: product.name, unitAmountCents: item.price.unit_amount ?? 0, quantity: item.quantity ?? 1 })
+      items.push({ lookupKey: item.price.lookup_key ?? null, productName: product.name, productId: product.id ?? null, unitAmountCents: item.price.unit_amount ?? 0, quantity: item.quantity ?? 1 })
     }
     lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars))
   }

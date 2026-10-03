@@ -7,21 +7,24 @@ export function formatPlanDollars(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
 }
 
-export type PlanLineItem = { lookupKey: string | null; productName: string; unitAmountCents: number; quantity: number }
+export type PlanLineItem = { lookupKey: string | null; productName: string; unitAmountCents: number; quantity: number; productId?: string | null }
 
 /**
  * The Plans page strip line for one live subscription (round 5, Sable/Lina): "<Name> · $65/month".
  * A ladder plan is named by its step ("Fast lane"), never the product name ("Freeplug Hosting: Fast
- * lane"), so the strip doesn't read "Current plan: Freeplug Hosting: …". Grandfathered plans keep
- * their product names joined with " + ". The status is added when it is not "active".
+ * lane"), so the strip doesn't read "Current plan: Freeplug Hosting: …". A grandfathered plan uses the
+ * short display name (Sable, Oct 3 6:28 PM): "Hosting + Pro add-on · $50/month", "Hosting plan · …",
+ * WITHOUT a tip part. The status is added when it is not "active".
  * The tipping system: `items` are the plan's items only (never the tip item); a tip is added as its
  * own part ("Fast lane · $65/month + $5 tip"), so the step price and the tip never blur together.
  */
 export function planStripLine(items: ReadonlyArray<PlanLineItem>, interval: string, status: string, tipDollars = 0): string {
-  const name = planNameOf(items)
+  const name = planDisplayName(items)
+  const ladderStep = items.length === 1 && stepByLookupKey(items[0].lookupKey) != null
   const amount = items.reduce((sum, i) => sum + i.unitAmountCents * i.quantity, 0)
   const suffix = status === 'active' ? '' : ` (${status.replace(/_/g, ' ')})`
-  const tip = tipDollars > 0 ? PLAN_STRIP_TIP(formatPlanDollars(tipDollars * 100)) : ''
+  // Ladder plans keep their tip part; a grandfathered line never shows one (Sable 6:28 PM).
+  const tip = ladderStep && tipDollars > 0 ? PLAN_STRIP_TIP(formatPlanDollars(tipDollars * 100)) : ''
   return `${name} · ${formatPlanDollars(amount)}/${interval}${tip}${suffix}`
 }
 

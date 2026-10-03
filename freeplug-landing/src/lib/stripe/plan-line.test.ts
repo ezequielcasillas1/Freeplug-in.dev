@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatPlanDollars, planDisplayName, planNameOf, planStripLine, subscriptionListName } from './plan-line'
+import { PLAN_STEPS } from '../plans/ladder'
 
 const ladder = (step: string, cents: number) => ({ lookupKey: `freeplug_step_${step}_monthly`, productName: `Freeplug Hosting: ${step}`, unitAmountCents: cents, quantity: 1 })
 
@@ -14,12 +15,12 @@ describe('Plans page strip line (round 5)', () => {
     expect(formatPlanDollars(6550)).toBe('$65.50')
     expect(formatPlanDollars(0)).toBe('$0')
   })
-  it('a grandfathered plan keeps its product names; a non-active status is shown', () => {
+  it('a grandfathered plan uses the short name (Sable 6:28 PM); a non-active status is shown', () => {
     const items = [
       { lookupKey: null, productName: 'Hosting plan (monthly)', unitAmountCents: 4000, quantity: 1 },
       { lookupKey: null, productName: 'Pro add-on (monthly)', unitAmountCents: 1500, quantity: 1 },
     ]
-    expect(planStripLine(items, 'month', 'past_due')).toBe('Hosting plan (monthly) + Pro add-on (monthly) · $55/month (past due)')
+    expect(planStripLine(items, 'month', 'past_due')).toBe('Hosting + Pro add-on · $55/month (past due)')
   })
 })
 
@@ -58,5 +59,34 @@ describe('grandfathered display name (Sable 6:19 PM; Vera copy-c4f9940 lows)', (
   it('a ladder plan is still its step name; planNameOf (the ending alert source) is unchanged', () => {
     expect(planDisplayName([ladder('fast_lane', 6500)])).toBe('Fast lane')
     expect(planNameOf([hosting, pro])).toBe('Hosting plan (monthly) + Pro add-on (monthly)')
+  })
+})
+
+describe('Plans page "Current plan" line, grandfathered short name without the tip (Sable 6:28 PM)', () => {
+  const hosting = { lookupKey: null, productName: 'Hosting plan (monthly)', productId: 'prod_h', unitAmountCents: 4000, quantity: 1 }
+  const pro = { lookupKey: null, productName: 'Pro add-on (monthly)', productId: 'prod_p', unitAmountCents: 1000, quantity: 1 }
+  it('no add-on: "Hosting plan · $40/month"', () => {
+    expect(planStripLine([hosting], 'month', 'active')).toBe('Hosting plan · $40/month')
+  })
+  it('add-on: "Hosting + Pro add-on · $50/month"', () => {
+    expect(planStripLine([hosting, pro], 'month', 'active')).toBe('Hosting + Pro add-on · $50/month')
+    expect(planStripLine([pro, hosting], 'month', 'active')).toBe('Hosting + Pro add-on · $50/month')
+  })
+  it('add-on with a $4 tip: the tip is not shown (name or line)', () => {
+    const line = planStripLine([hosting, pro], 'month', 'active', 4)
+    expect(line).toBe('Hosting + Pro add-on · $50/month')
+    expect(line).not.toMatch(/tip|\$4\b|\$54/)
+    expect(planStripLine([hosting], 'month', 'active', 4)).toBe('Hosting plan · $40/month')
+  })
+  it('ladder plans come out unchanged (step name, tip part kept)', () => {
+    for (const step of PLAN_STEPS) {
+      const item = { lookupKey: step.lookupKey, productName: `Freeplug Hosting: ${step.name}`, unitAmountCents: step.monthlyCents, quantity: 1 }
+      expect(planDisplayName([item])).toBe(planNameOf([item]))
+      expect(planDisplayName([item])).toBe(step.name)
+      expect(planStripLine([item], 'month', 'active', 3)).toBe(`${step.name} · ${formatPlanDollars(step.monthlyCents)}/month + $3 tip`)
+    }
+    expect(planStripLine([ladder('fast_lane', 6500)], 'month', 'active')).toBe('Fast lane · $65/month')
+    expect(planStripLine([ladder('fast_lane', 6500)], 'month', 'active', 6)).toBe('Fast lane · $65/month + $6 tip')
+    expect(planStripLine([ladder('priority', 5500)], 'month', 'past_due', 4)).toBe('Priority · $55/month + $4 tip (past due)')
   })
 })
