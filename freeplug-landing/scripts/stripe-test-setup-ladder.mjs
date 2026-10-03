@@ -15,6 +15,11 @@
  *        [--probe-upgrade-confirm]  Aria 1:34 PM: preview amount == invoiced amount, pending downgrade,
  *                      stale/future proration_date refused, double Confirm charges once (probe customer)
  *        [--probe-billing]  card-update portal flow and invoice list, with and without a schedule
+ *        [--probe-tips]  the tipping system: checkout line items with a tip, tip change next cycle
+ *                      (no proration), upgrade with a tip (tip removed, preview == invoice), downgrade
+ *                      with a tip (tip dropped in the schedule's next phase), tip change refused while
+ *                      a switch is planned, and the change-plan lock (two concurrent confirms over a
+ *                      pending downgrade: one upgrade, one charge; needs --lock-db <postgres url>)
  *
  * TEST MODE ONLY. The key is read from the --env-file (only the STRIPE_SECRET_KEY line), never
  * from the shell environment, and never printed. Anything but an sk_test_ / rk_test_ key is
@@ -81,6 +86,8 @@ export function assertTestObject(obj, what) {
 }
 
 export const RETIRED_PRODUCT_IDS = ['freeplug_hosting_ladder']
+/** [Sable] Stripe-visible name of the tip product (shows on invoices and Checkout). */
+export const TIP_PRODUCT_NAME = 'Freeplug: optional monthly tip'
 
 export function priceMatches(price, step, productId = step.productId) {
   const product = typeof price.product === 'string' ? price.product : price.product?.id
@@ -200,6 +207,61 @@ export async function setupLadder(stripe, ladder, { dryRun = false, log = consol
     if (found?.active) await stripe.prices.update(found.id, { active: false })
   }
 
+  // The tipping system (Oct 3): ONE recurring $1/month price on a fixed tip product; the tip is the
+  // item's quantity (whole dollars). Same replace-if-mismatched rule as the step prices.
+  let tipPriceId = null
+  if (ladder.TIP_LOOKUP_KEY) {
+    const tipProductId = ladder.TIP_PRODUCT_ID
+    let tipProduct = null
+    try {
+      tipProduct = assertTestObject(await stripe.products.retrieve(tipProductId), `product ${tipProductId}`)
+    } catch (e) {
+      if (e instanceof SetupRefused) throw e
+      if (e?.statusCode !== 404 && e?.code !== 'resource_missing') throw e
+    }
+    if (!tipProduct) {
+      actions.push(`create product ${tipProductId}`)
+      if (!dryRun) {
+        assertTestObject(
+          await stripe.products.create(
+            { id: tipProductId, name: TIP_PRODUCT_NAME, metadata: { app: 'freeplug', kind: 'tip', ladder: '2026-10-03' } },
+            { idempotencyKey: `ladder-product-${tipProductId}` }
+          ),
+          `product ${tipProductId}`
+        )
+      }
+    } else if (!tipProduct.active || tipProduct.name !== TIP_PRODUCT_NAME) {
+      actions.push(`update product ${tipProductId} (active, name)`)
+      if (!dryRun) await stripe.products.update(tipProductId, { active: true, name: TIP_PRODUCT_NAME })
+    }
+    const tipStep = { monthlyCents: ladder.TIP_UNIT_CENTS, productId: tipProductId }
+    const tipList = await stripe.prices.list({ lookup_keys: [ladder.TIP_LOOKUP_KEY], limit: 10 })
+    for (const p of tipList.data) assertTestObject(p, `price ${p.id}`)
+    const foundTip = tipList.data.find((p) => p.lookup_key === ladder.TIP_LOOKUP_KEY)
+    if (foundTip && priceMatches(foundTip, tipStep, tipProductId)) {
+      tipPriceId = foundTip.id
+    } else {
+      actions.push(foundTip ? `replace price ${foundTip.id} (${ladder.TIP_LOOKUP_KEY}: no longer matches)` : `create price ${ladder.TIP_LOOKUP_KEY} ($1/month, quantity = tip dollars)`)
+      if (!dryRun) {
+        const created = assertTestObject(
+          await stripe.prices.create({
+            product: tipProductId,
+            currency: 'usd',
+            unit_amount: ladder.TIP_UNIT_CENTS,
+            recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' },
+            lookup_key: ladder.TIP_LOOKUP_KEY,
+            transfer_lookup_key: Boolean(foundTip),
+            nickname: 'Monthly tip ($1 x quantity)',
+            metadata: { kind: 'tip' },
+          }),
+          `price ${ladder.TIP_LOOKUP_KEY}`
+        )
+        tipPriceId = created.id
+        if (foundTip?.active) await stripe.prices.update(foundTip.id, { active: false })
+      }
+    }
+  }
+
   // Retired single product from the first test run: archive once no price on it is active.
   for (const id of RETIRED_PRODUCT_IDS) {
     let old = null
@@ -230,7 +292,7 @@ export async function setupLadder(stripe, ladder, { dryRun = false, log = consol
 
   log(`mode: TEST (livemode=false on every object)${dryRun ? ' [dry run]' : ''}`)
   for (const a of actions) log(`  ${dryRun ? 'would ' : ''}${a}`)
-  return { priceIds, portalConfigurationId: portal?.id ?? null, actions }
+  return { priceIds, tipPriceId, portalConfigurationId: portal?.id ?? null, actions }
 }
 
 async function ensureProbeProduct(stripe, id, name) {
@@ -785,7 +847,276 @@ export async function runUpgradeConfirmProbe(stripe, ladder, setup, { log = cons
   return out
 }
 
+/**
+ * The tipping system (Oct 3), against Stripe TEST mode with the app's own code (change-plan.ts,
+ * tips.ts). Every subscription is on the tagged probe customer with metadata.probe=true and is
+ * released + canceled at the end; the Checkout Session is expired. TEST MODE ONLY.
+ *   T1 checkout line items with a tip (quantity = tip dollars; none for $0)
+ *   T2 subscription step + tip: tier lookup ignores the tip; invoice tip cents
+ *   T3 tip change next cycle, up / to $0 / back, proration none (no invoice, no pending items)
+ *   T4 upgrade with a tip: tip item removed, preview == invoice
+ *   T5 downgrade with a tip: the schedule's next phase holds only the new step price; tip change refused
+ *   T6 lock (with --lock-db): two concurrent confirms over a pending downgrade -> one upgrade, one
+ *      charge, the downgrade released, the second answer UPGRADE_IN_PROGRESS with no Stripe call
+ */
+export async function runTipProbe(stripe, ladder, setup, { log = console.log, lockDb = null } = {}) {
+  const cp = await appModule('lib/stripe/change-plan.ts')
+  const tips = await appModule('lib/plans/tips.ts')
+  if (!setup.tipPriceId) throw new SetupRefused('No tip price (run the setup without --dry-run first).')
+  const tipPriceId = setup.tipPriceId
+  const deps = { stripe, priceIdFor: async (id) => setup.priceIds[id], tipPriceId: async () => tipPriceId, log: (m) => log(redact(m)) }
+  const out = { startedAt: new Date().toISOString(), tipPriceId }
+  const customer = assertTestObject(await stripe.customers.retrieve(PROBE_CUSTOMER_ID), 'probe customer')
+  const visa = await stripe.paymentMethods.attach('pm_card_visa', { customer: customer.id })
+  await stripe.customers.update(customer.id, { invoice_settings: { default_payment_method: visa.id } })
+  const tag = { type: 'hosting', freeplug_probe: PROBE_TAG, probe: 'true' }
+  const created = []
+  const newSub = async (step, tipDollars) => {
+    const items = [{ price: setup.priceIds[step], quantity: 1 }, ...tips.tipLineItems(tipPriceId, tipDollars)]
+    const s = assertTestObject(await stripe.subscriptions.create({ customer: customer.id, items, metadata: { ...tag, plan_step: step, tip_dollars: String(tipDollars) } }), 'probe subscription')
+    created.push(s.id)
+    return s
+  }
+  const fresh = (id) => stripe.subscriptions.retrieve(id, { expand: ['latest_invoice'] })
+  const lk = (sub) => sub.items.data.map((i) => `${i.price.lookup_key ?? i.price.id} x${i.quantity}`).join(' + ')
+  const invoicesFor = async (subId) => (await stripe.invoices.list({ subscription: subId, limit: 20 })).data
+  const pendingItems = async (subId) => (await stripe.invoiceItems.list({ customer: customer.id, pending: true, limit: 50 })).data.filter((ii) => {
+    const sub = ii.parent?.subscription_details?.subscription ?? ii.subscription ?? null
+    return (typeof sub === 'string' ? sub : sub?.id) === subId
+  })
+  const nowSec = () => Math.floor(Date.now() / 1000)
+
+  // T1: checkout line items (what /api/checkout/hosting sends), then expire the session
+  {
+    const fast = ladder.PLAN_STEPS.find((x) => x.id === 'fast_lane')
+    const parsed = tips.parseTipDollars(fast, 5)
+    const refused = [tips.parseTipDollars(fast, 10), tips.parseTipDollars(fast, -1), tips.parseTipDollars(fast, 2.5), tips.parseTipDollars(ladder.PLAN_STEPS.find((x) => x.id === 'leads'), 1)]
+    const session = assertTestObject(
+      await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer: customer.id,
+        line_items: [{ price: setup.priceIds.fast_lane, quantity: 1 }, ...tips.tipLineItems(tipPriceId, parsed.tipDollars)],
+        success_url: 'https://example.test/probe?ok=1',
+        cancel_url: 'https://example.test/probe?cancel=1',
+        metadata: { ...tag, plan_step: 'fast_lane', tip_dollars: String(parsed.tipDollars) },
+        subscription_data: { metadata: { ...tag, plan_step: 'fast_lane', tip_dollars: String(parsed.tipDollars) } },
+      }),
+      'checkout session'
+    )
+    const items = await stripe.checkout.sessions.listLineItems(session.id, { limit: 10 })
+    out.T1_checkoutWithTip = {
+      parsed,
+      refused,
+      session: session.id,
+      amount_total: session.amount_total,
+      lineItems: items.data.map((li) => ({ price: li.price?.lookup_key ?? li.price?.id, quantity: li.quantity, amount_total: li.amount_total })),
+      zeroTipLines: tips.tipLineItems(tipPriceId, 0),
+      ok: session.amount_total === 7000 && items.data.length === 2,
+    }
+    await stripe.checkout.sessions.expire(session.id)
+  }
+
+  // T2: step + tip subscription (the publish path): tier from the step item only, invoice tip cents
+  {
+    const s = await fresh((await newSub('starter', 19)).id)
+    const inv = await stripe.invoices.retrieve(typeof s.latest_invoice === 'string' ? s.latest_invoice : s.latest_invoice.id)
+    out.T2_subscriptionWithTip = {
+      items: lk(s),
+      currentLadderStep: cp.currentLadderStep(s)?.id ?? null,
+      planMonthlyCents: cp.subscriptionMonthlyCents(s),
+      tipDollars: cp.subscriptionTipDollars(s),
+      invoice: { id: inv.id, amount_paid: inv.amount_paid, tipCents: tips.invoiceTipCents(inv), lines: inv.lines.data.map((l) => ({ amount: l.amount, product: l.pricing?.price_details?.product ?? null, quantity: l.quantity })) },
+      ok: cp.currentLadderStep(s)?.id === 'starter' && cp.subscriptionMonthlyCents(s) === 3500 && tips.invoiceTipCents(inv) === 1900 && inv.amount_paid === 5400,
+    }
+  }
+
+  // T3: tip changes from the next bill (proration none): up, to $0, back again
+  {
+    const s0 = await newSub('priority', 3)
+    const invBefore = (await invoicesFor(s0.id)).length
+    const preview = await cp.previewTipChange(deps, await fresh(s0.id), 9)
+    const up = await cp.changeTip(deps, await fresh(s0.id), 9, { userId: 'probe-user' })
+    const afterUp = await fresh(s0.id)
+    const toZero = await cp.changeTip(deps, afterUp, 0, { userId: 'probe-user' })
+    const afterZero = await fresh(s0.id)
+    const back = await cp.changeTip(deps, afterZero, 4, { userId: 'probe-user' })
+    const afterBack = await fresh(s0.id)
+    const outOfRange = await cp.changeTip(deps, afterBack, 10, { userId: 'probe-user' })
+    const invAfter = (await invoicesFor(s0.id)).length
+    const pend = await pendingItems(s0.id)
+    out.T3_tipChangeNextCycle = {
+      preview,
+      up: { result: up, items: lk(afterUp) },
+      toZero: { result: toZero, items: lk(afterZero) },
+      back: { result: back, items: lk(afterBack) },
+      outOfRange,
+      invoicesBefore: invBefore,
+      invoicesAfter: invAfter,
+      pendingInvoiceItems: pend.length,
+      ok: preview.ok && preview.nextAmountCents === 5500 + 900 && invBefore === invAfter && pend.length === 0 && cp.subscriptionTipDollars(afterZero) === 0 && cp.subscriptionTipDollars(afterBack) === 4 && outOfRange.ok === false,
+    }
+  }
+
+  // T4: upgrade with a tip: the preview includes the tip removal; the tip item is gone after
+  {
+    let s = await newSub('starter', 10)
+    await new Promise((r) => setTimeout(r, 3000))
+    const pd = nowSec()
+    const preview = await cp.previewPlanStepChange(deps, await fresh(s.id), 'fast_lane', pd)
+    const r = await cp.changePlanStep(deps, await fresh(s.id), 'fast_lane', { prorationDate: pd, userId: 'probe-user' })
+    s = await fresh(s.id)
+    out.T4_upgradeWithTip = {
+      preview,
+      result: r,
+      itemsNow: lk(s),
+      tipAfter: cp.subscriptionTipDollars(s),
+      invoice: { id: s.latest_invoice?.id, billing_reason: s.latest_invoice?.billing_reason, amount_due: s.latest_invoice?.amount_due, amount_paid: s.latest_invoice?.amount_paid },
+      ok: r.ok === true && cp.subscriptionTipDollars(s) === 0 && preview.ok === true && preview.amountDueCents === s.latest_invoice?.amount_due && preview.tipDollars === 10,
+    }
+  }
+
+  // T5: downgrade with a tip: the next phase holds only the new step price (tip dropped at the switch)
+  {
+    let s = await newSub('fast_lane', 6)
+    const down = await cp.changePlanStep(deps, await fresh(s.id), 'priority')
+    s = await fresh(s.id)
+    const schedule = await stripe.subscriptionSchedules.retrieve(typeof s.schedule === 'string' ? s.schedule : s.schedule.id)
+    const phaseItems = await Promise.all(
+      schedule.phases.map(async (ph) => (await Promise.all(ph.items.map(async (i) => {
+        const p = typeof i.price === 'string' ? await stripe.prices.retrieve(i.price) : i.price
+        return `${p.lookup_key ?? p.id} x${i.quantity}`
+      }))).join(' + '))
+    )
+    const tipChange = await cp.changeTip(deps, s, 2, { userId: 'probe-user' })
+    const pending = await cp.pendingPlanChange(stripe, s)
+    out.T5_downgradeWithTip = {
+      downgrade: down,
+      pending,
+      itemsNow: lk(s),
+      phases: phaseItems,
+      tipChangeWhilePending: tipChange,
+      ok: down.ok === true && phaseItems.length === 2 && phaseItems[0].includes(ladder.TIP_LOOKUP_KEY) && !phaseItems[1].includes(ladder.TIP_LOOKUP_KEY) && tipChange.ok === false && tipChange.code === 'pending_change',
+    }
+  }
+
+  // T6: the change-plan lock (local DB only), see runLockProbe
+  if (lockDb) out.T6_lock = await runLockProbe(stripe, ladder, setup, { deps, newSub, fresh, lk, lockDb, log })
+
+  for (const id of created) {
+    const s = await stripe.subscriptions.retrieve(id)
+    if (s.schedule) await stripe.subscriptionSchedules.release(typeof s.schedule === 'string' ? s.schedule : s.schedule.id).catch(() => undefined)
+    if (!['canceled', 'incomplete_expired'].includes(s.status)) await stripe.subscriptions.cancel(id)
+  }
+  const left = []
+  for (const id of created) {
+    const s = await stripe.subscriptions.retrieve(id)
+    left.push({ id, status: s.status, schedule: s.schedule ?? null, probe: s.metadata?.probe })
+  }
+  out.cleanup = { canceled: created.length, check: left }
+  out.allOk = Object.entries(out).filter(([k]) => /^T\d/.test(k)).every(([, v]) => v?.ok === true)
+  out.finishedAt = new Date().toISOString()
+  log(JSON.stringify(out, null, 2))
+  return out
+}
+
+/** Local review user 2 (lock rows reference auth.users); the row is released at the end. */
+export const LOCK_PROBE_USER_ID = '22d71842-bd8e-49f7-9bea-4ce1e3810742'
+
+/**
+ * Lock store on a LOCAL Postgres through psql (the probe has no service-role key and must not read
+ * one from the environment). Only 127.0.0.1 / localhost URLs are accepted.
+ */
+export async function psqlLockStore(url) {
+  const u = new URL(url)
+  if (!['127.0.0.1', 'localhost'].includes(u.hostname)) throw new SetupRefused('--lock-db must be a local Postgres URL.')
+  const { execFile } = await import('node:child_process')
+  const uuid = /^[0-9a-f-]{36}$/
+  const run = (sql) =>
+    new Promise((resolve, reject) => {
+      const env = { PATH: process.env.PATH ?? '/usr/bin:/bin' }
+      execFile('psql', [url, '-At', '-v', 'ON_ERROR_STOP=1', '-c', sql], { env }, (err, stdout) => (err ? reject(new Error(String(err.message).slice(0, 200))) : resolve(String(stdout))))
+    })
+  return {
+    async claim(userId, ttl) {
+      if (!uuid.test(userId) || !Number.isInteger(ttl)) throw new Error('bad args')
+      const outText = await run(`begin; set local role service_role; select public.plan_change_lock_claim('${userId}', ${ttl}); commit;`)
+      const id = outText.split('\n').map((l) => l.trim()).find((l) => uuid.test(l))
+      return id ?? null
+    },
+    async release(userId, claimId) {
+      if (!uuid.test(userId) || !uuid.test(claimId)) throw new Error('bad args')
+      await run(`begin; set local role service_role; select public.plan_change_lock_release('${userId}', '${claimId}'); commit;`)
+    },
+    async rows(userId) {
+      return Number((await run(`select count(*) from public.plan_change_locks where user_id = '${userId}'`)).trim())
+    },
+  }
+}
+
+/**
+ * T6: two concurrent Confirms over a pending downgrade, each going through the app's lock
+ * (plan-change-lock.ts withPlanChangeLock) exactly like changeHostingPlan: claim first, then read
+ * the subscription and call changePlanStep. Expect: one upgrade, one proration charge, the pending
+ * downgrade released, and the other request answered in_progress with ZERO Stripe calls.
+ */
+async function runLockProbe(stripe, ladder, setup, { deps, newSub, fresh, lk, lockDb, log }) {
+  const cp = await appModule('lib/stripe/change-plan.ts')
+  const lockLib = await appModule('lib/plans/plan-change-lock.ts')
+  const store = await psqlLockStore(lockDb)
+  let s = await newSub('priority', 4)
+  const down = await cp.changePlanStep(deps, await fresh(s.id), 'starter')
+  s = await fresh(s.id)
+  const pendingBefore = await cp.pendingPlanChange(stripe, s)
+  await new Promise((r) => setTimeout(r, 2000))
+  const pd = Math.floor(Date.now() / 1000)
+  const preview = await cp.previewPlanStepChange(deps, s, 'fast_lane', pd)
+  const calls = [0, 0]
+  const confirm = (n) =>
+    lockLib.withPlanChangeLock(store, LOCK_PROBE_USER_ID, async () => {
+      calls[n] += 1 // reached Stripe
+      const sub = await fresh(s.id)
+      return cp.changePlanStep(deps, sub, 'fast_lane', { prorationDate: pd, userId: 'probe-user' })
+    }, (m) => log(redact(m)))
+  const [a, b] = await Promise.all([confirm(0), confirm(1)])
+  s = await fresh(s.id)
+  const invoices = (await stripe.invoices.list({ subscription: s.id, limit: 20 })).data
+  const proration = invoices.filter((i) => i.billing_reason === 'subscription_update')
+  const lockRowsAfter = await store.rows(LOCK_PROBE_USER_ID)
+  const results = [a, b]
+  const upgraded = results.filter((r) => r.ok && r.value?.ok && r.value.kind === 'upgraded').length
+  const inProgress = results.filter((r) => !r.ok && r.code === 'in_progress').length
+  const stripeCallsByLoser = results.map((r, i) => (!r.ok ? calls[i] : null)).filter((x) => x !== null)
+  // a third Confirm after both finished: the lock is free again (released in finally)
+  const third = await lockLib.withPlanChangeLock(store, LOCK_PROBE_USER_ID, async () => 'claimed', (m) => log(redact(m)))
+  return {
+    downgrade: down,
+    pendingBefore,
+    preview,
+    results,
+    stripeCalls: calls,
+    itemsNow: lk(s),
+    scheduleAfter: s.schedule ?? null,
+    prorationInvoices: proration.map((i) => ({ id: i.id, amount_paid: i.amount_paid, status: i.status })),
+    lockRowsAfter,
+    thirdAfterRelease: third,
+    ok:
+      upgraded === 1 &&
+      inProgress === 1 &&
+      stripeCallsByLoser.every((c) => c === 0) &&
+      proration.length === 1 &&
+      proration[0].amount_paid === preview.amountDueCents &&
+      (s.schedule ?? null) === null &&
+      lockRowsAfter === 0 &&
+      third.ok === true,
+  }
+}
+
+/** Bot secrets the box injects into every shell: this script never reads them, and the app code it loads
+ * (jiti) and the psql child never see them (Oct 3 audit). */
+export const BOT_SECRET_VARS = ['SUPABASE_DB_PASSWORD', 'SUPABASE_SERVICE_ROLE_KEY', 'CLOUDFLARE_API_TOKEN', 'STRIPE_WEBHOOK_SECRET']
+
 async function main(argv) {
+  for (const k of BOT_SECRET_VARS) delete process.env[k]
   const arg = (name) => {
     const i = argv.indexOf(name)
     return i >= 0 ? argv[i + 1] : undefined
@@ -796,6 +1127,7 @@ async function main(argv) {
   const ladder = await loadLadder()
   const setup = await setupLadder(stripe, ladder, { dryRun: argv.includes('--dry-run') })
   for (const s of ladder.PLAN_STEPS) console.log(`  ${s.productId} / ${s.lookupKey} -> ${setup.priceIds[s.id] ?? '(missing)'}`)
+  console.log(`  ${ladder.TIP_PRODUCT_ID} / ${ladder.TIP_LOOKUP_KEY} -> ${setup.tipPriceId ?? '(missing)'}`)
   console.log(`portal configuration: ${setup.portalConfigurationId ?? '(none yet)'}`)
   if (setup.portalConfigurationId) console.log(`set STRIPE_PORTAL_CONFIGURATION_ID=${setup.portalConfigurationId} (not a secret)`)
   if (argv.includes('--probe') && !argv.includes('--dry-run')) await runProbes(stripe, ladder, setup)
@@ -804,6 +1136,7 @@ async function main(argv) {
   if (argv.includes('--probe-checkout-expiry') && !argv.includes('--dry-run')) await runCheckoutExpiryProbe(stripe, ladder, setup)
   if (argv.includes('--probe-billing') && !argv.includes('--dry-run')) await runBillingProbe(stripe, ladder, setup)
   if (argv.includes('--probe-upgrade-confirm') && !argv.includes('--dry-run')) await runUpgradeConfirmProbe(stripe, ladder, setup)
+  if (argv.includes('--probe-tips') && !argv.includes('--dry-run')) await runTipProbe(stripe, ladder, setup, { lockDb: arg('--lock-db') ?? null })
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {

@@ -91,10 +91,15 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     f = fakeStripe()
   })
 
-  it('first run: six products, one monthly lookup-key price each (from ladder.ts), one non-default portal configuration', async () => {
+  it('first run: six products, one monthly lookup-key price each (from ladder.ts), the $1 tip price, one non-default portal configuration', async () => {
     const r = await setupLadder(f.stripe, ladder, quiet)
-    expect(f.stripe.products.create).toHaveBeenCalledTimes(6)
-    expect(f.stripe.prices.create).toHaveBeenCalledTimes(6)
+    expect(f.stripe.products.create).toHaveBeenCalledTimes(7)
+    expect(f.stripe.prices.create).toHaveBeenCalledTimes(7)
+    // The tipping system: ONE recurring $1/month price on the fixed tip product; quantity = tip dollars.
+    expect(f.state.products.get(ladder.TIP_PRODUCT_ID)).toMatchObject({ name: setup.TIP_PRODUCT_NAME })
+    const tip = f.state.prices.find((x) => x.lookup_key === ladder.TIP_LOOKUP_KEY)!
+    expect(tip).toMatchObject({ product: 'freeplug_tip', currency: 'usd', unit_amount: 100, recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' } })
+    expect(r.tipPriceId).toBe(tip.id)
     for (const s of ladder.PLAN_STEPS) {
       expect(f.state.products.get(s.productId)).toMatchObject({ name: `Freeplug Hosting: ${s.name}`, metadata: { plan_step: s.id } })
       const p = f.state.prices.find((x) => x.lookup_key === s.lookupKey)!
@@ -121,8 +126,8 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
   it('second run creates nothing (only refreshes the portal configuration)', async () => {
     await setupLadder(f.stripe, ladder, quiet)
     const r2 = await setupLadder(f.stripe, ladder, quiet)
-    expect(f.stripe.products.create).toHaveBeenCalledTimes(6)
-    expect(f.stripe.prices.create).toHaveBeenCalledTimes(6)
+    expect(f.stripe.products.create).toHaveBeenCalledTimes(7)
+    expect(f.stripe.prices.create).toHaveBeenCalledTimes(7)
     expect(f.stripe.billingPortal.configurations.create).toHaveBeenCalledTimes(1)
     expect(r2.actions).toEqual([expect.stringMatching(/^update portal configuration bpc_/)])
   })
@@ -132,8 +137,8 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     const old = f.state.prices.find((x) => x.lookup_key === 'freeplug_step_leads_monthly')!
     old.unit_amount = 7000
     const r = await setupLadder(f.stripe, ladder, quiet)
-    expect(f.stripe.prices.create).toHaveBeenCalledTimes(7)
-    expect(f.stripe.prices.create.mock.calls[6][0]).toMatchObject({ lookup_key: 'freeplug_step_leads_monthly', unit_amount: 7500, transfer_lookup_key: true })
+    expect(f.stripe.prices.create).toHaveBeenCalledTimes(8)
+    expect(f.stripe.prices.create.mock.calls[7][0]).toMatchObject({ lookup_key: 'freeplug_step_leads_monthly', unit_amount: 7500, transfer_lookup_key: true })
     expect(old.active).toBe(false)
     expect(r.priceIds.leads).not.toBe(old.id)
   })
@@ -154,7 +159,7 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     expect(f.stripe.products.create).not.toHaveBeenCalled()
     expect(f.stripe.prices.create).not.toHaveBeenCalled()
     expect(f.stripe.billingPortal.configurations.create).not.toHaveBeenCalled()
-    expect(r.actions).toHaveLength(13)
+    expect(r.actions).toHaveLength(15) // 6 products + 6 prices + tip product + tip price + portal
   })
 
   it('stops if Stripe ever answers with a live-mode object', async () => {
