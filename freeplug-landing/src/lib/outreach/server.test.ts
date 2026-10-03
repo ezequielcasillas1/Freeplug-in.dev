@@ -703,8 +703,23 @@ describe('claim step 3: choose a hosting ladder step (Oct 3)', () => {
   it('saves a valid step id and nothing else', async () => {
     const userId = randomUUID()
     const { site } = addSite({ claimed_by: userId, plan_step: null, setup_completed_at: null })
-    expect(await server.saveChosenPlan(userId, { planStep: 'get_found' })).toEqual({ ok: true })
-    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBe('get_found')
+    expect(await server.saveChosenPlan(userId, { planStep: 'fast_lane' })).toEqual({ ok: true })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBe('fast_lane')
+  })
+
+  it.each(['leads', 'get_found', 'growth'])('sellable=false: refuses %s on the server (claim step 3), nothing saved', async (planStep) => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: null, setup_completed_at: null })
+    expect(await server.saveChosenPlan(userId, { planStep })).toMatchObject({ ok: false, code: 'not_sellable' })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBeNull()
+  })
+
+  it('a card saved for a step that is no longer sold may re-pick a sellable step (publish would refuse the old one)', async () => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: 'leads', setup_completed_at: '2026-09-27T05:00:00Z' })
+    expect(await server.saveChosenPlan(userId, { planStep: 'priority' })).toEqual({ ok: true })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBe('priority')
+    expect(await server.saveChosenPlan(userId, { planStep: 'starter' })).toMatchObject({ ok: false, code: 'locked' })
   })
 
   it.each([
@@ -737,9 +752,9 @@ describe('claim step 3: choose a hosting ladder step (Oct 3)', () => {
       plan_addon_tier: 'pro',
       setup_completed_at: '2026-09-27T05:00:00Z',
     })
-    expect(await server.saveChosenPlan(userId, { planStep: 'leads' })).toEqual({ ok: true })
+    expect(await server.saveChosenPlan(userId, { planStep: 'fast_lane' })).toEqual({ ok: true })
     const row = state.sites.find((x) => x.id === site.id)!
-    expect(row.plan_step).toBe('leads')
+    expect(row.plan_step).toBe('fast_lane')
     expect(row.plan_hosting_cents).toBe(4000)
     expect(row.plan_addon_tier).toBe('pro')
     expect(await server.saveChosenPlan(userId, { planStep: 'growth' })).toMatchObject({ ok: false, code: 'locked' })
@@ -750,6 +765,30 @@ describe('claim step 3: choose a hosting ladder step (Oct 3)', () => {
     addSite({ claimed_by: userId, plan_step: null, plan_hosting_cents: 3500, plan_addon_tier: 'none', setup_completed_at: null })
     expect(await server.startSetupCheckout({ id: userId })).toMatchObject({ ok: false, code: 'no_plan' })
     expect(stripeCalls.checkout).toEqual([])
+  })
+
+  it('admin Publish (the server action path) refuses a step that is not sold: no subscription, nothing charged', async () => {
+    const userId = randomUUID()
+    const { site } = addSite({
+      claimed_by: userId,
+      plan_step: 'get_found',
+      setup_completed_at: '2026-09-27T05:00:00Z',
+      stripe_customer_id: 'cus_pub',
+      stripe_payment_method_id: 'pm_pub',
+      publish_status: null,
+    })
+    const res = await server.adminPublishSite(site.id, { claimerVerified: true })
+    expect(res).toMatchObject({ ok: false, status: 'refused' })
+    expect((res as { error: string }).error).toMatch(/Get found is not sold yet/)
+    expect(stripeCalls.other).toEqual([])
+  })
+
+  it('setup Checkout refuses a step that is not sold (sellable=false), nothing created', async () => {
+    const userId = randomUUID()
+    addSite({ claimed_by: userId, plan_step: 'growth', setup_completed_at: null })
+    expect(await server.startSetupCheckout({ id: userId })).toMatchObject({ ok: false, code: 'not_sellable' })
+    expect(stripeCalls.checkout).toEqual([])
+    expect(stripeCalls.other).toEqual([])
   })
 })
 

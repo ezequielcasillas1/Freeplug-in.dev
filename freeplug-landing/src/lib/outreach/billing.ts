@@ -67,6 +67,10 @@ export type BillingDeps = {
   stepPriceId?: (stepId: PlanStepId) => Promise<string>
 }
 
+/** Admin-only message (not customer copy): publish refused for a step that is not sold yet. */
+export const STEP_NOT_SELLABLE_PUBLISH_ERROR = (name: string) =>
+  `${name} is not sold yet (ladder.ts sellable=false). Ask the customer to pick another plan on the claim page.`
+
 /** Shown to admins when a site still has a pre-ladder (slider/add-on) choice. */
 export const LEGACY_PLAN_PUBLISH_ERROR =
   'This site has an old hosting choice (from before the plan ladder). Ask the customer to choose a plan again. Nothing was charged.'
@@ -155,6 +159,11 @@ export async function publishOutreachSite(
       return { ok: false, status: 'refused', error: LEGACY_PLAN_PUBLISH_ERROR }
     }
     return { ok: false, status: 'refused', error: 'No valid hosting plan is saved for this site.' }
+  }
+  // Publish starts a NEW subscription, so a step that is not sold (ladder.ts sellable=false) is
+  // refused here even if it was saved earlier. The customer can pick another step on the claim page.
+  if (!step.sellable) {
+    return { ok: false, status: 'refused', error: STEP_NOT_SELLABLE_PUBLISH_ERROR(step.name) }
   }
 
   if (!(await store.beginPublish(site.id))) {

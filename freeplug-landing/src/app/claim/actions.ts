@@ -9,6 +9,8 @@ import {
 } from '@/lib/outreach/server'
 import { customerMessage } from '@/lib/outreach/errors'
 import { GENERIC_TRY_AGAIN } from '@/lib/outreach/copy'
+import { resolvePlanStep } from '@/lib/plans/ladder'
+import { STEP_NOT_SELLABLE_MESSAGE } from '@/lib/plans/ladder-copy'
 
 type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; code?: string; error: string }
 
@@ -40,6 +42,10 @@ export async function saveClaimPlanAction(plan: unknown): Promise<string | null>
   const user = await signedInUser()
   if (!user) return GENERIC_TRY_AGAIN
   const res = await saveChosenPlan(user.id, plan)
+  if (!res.ok && res.code === 'not_sellable') {
+    const step = resolvePlanStep((plan as { planStep?: unknown } | null)?.planStep)
+    return STEP_NOT_SELLABLE_MESSAGE(step?.name ?? 'This plan')
+  }
   return res.ok ? null : GENERIC_TRY_AGAIN
 }
 

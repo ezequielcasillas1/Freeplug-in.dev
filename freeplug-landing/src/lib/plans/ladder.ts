@@ -41,18 +41,30 @@ export type PlanStep = {
   rank: number
   /** Perks this step ADDS on top of the steps below it. */
   adds: readonly PlanPerk[]
+  /**
+   * Can a NEW customer buy or switch to this step? false = shown as "coming soon"; checkout,
+   * outreach plan choice/publish and plan switching refuse it ON THE SERVER. Customers already on
+   * the step keep it (entitlements, renewals and "keep my plan" are not affected).
+   */
+  sellable: boolean
 }
 
 const lookupKeyFor = (id: PlanStepId) => `freeplug_step_${id}_monthly`
 const productIdFor = (id: PlanStepId) => `freeplug_step_${id}`
 
+/**
+ * sellable (Aria, Oct 3 12:25): Leads, Get found and Growth partner stay false until Ezequiel
+ * decides which of their perks he will deliver by hand at launch. Flip one value to sell a step.
+ * OPEN QUESTION (Aria/Ezequiel): Starter, Priority and Fast lane are sellable but advertise AI-edit
+ * counts, and the AI-edit quota is not enforced yet (Part B).
+ */
 export const PLAN_STEPS: readonly PlanStep[] = [
-  { id: 'starter', name: 'Starter', monthlyCents: 3500, lookupKey: lookupKeyFor('starter'), productId: productIdFor('starter'), aiEditsPerMonth: 5, rank: 0, adds: [] },
-  { id: 'priority', name: 'Priority', monthlyCents: 5500, lookupKey: lookupKeyFor('priority'), productId: productIdFor('priority'), aiEditsPerMonth: 15, rank: 1, adds: ['priorityQueue'] },
-  { id: 'fast_lane', name: 'Fast lane', monthlyCents: 6500, lookupKey: lookupKeyFor('fast_lane'), productId: productIdFor('fast_lane'), aiEditsPerMonth: 15, rank: 2, adds: ['includedSmallEdit', 'nextBusinessDayEdits'] },
-  { id: 'leads', name: 'Leads', monthlyCents: 7500, lookupKey: lookupKeyFor('leads'), productId: productIdFor('leads'), aiEditsPerMonth: 40, rank: 3, adds: ['leadsReport', 'quoteAlerts'] },
-  { id: 'get_found', name: 'Get found', monthlyCents: 8500, lookupKey: lookupKeyFor('get_found'), productId: productIdFor('get_found'), aiEditsPerMonth: 40, rank: 4, adds: ['gbpManaged', 'reviewKit'] },
-  { id: 'growth', name: 'Growth partner', monthlyCents: 10000, lookupKey: lookupKeyFor('growth'), productId: productIdFor('growth'), aiEditsPerMonth: 40, rank: 5, adds: ['seasonalRefresh', 'quarterlyCall', 'doneForYouEdits'] },
+  { id: 'starter', name: 'Starter', monthlyCents: 3500, lookupKey: lookupKeyFor('starter'), productId: productIdFor('starter'), aiEditsPerMonth: 5, rank: 0, adds: [], sellable: true },
+  { id: 'priority', name: 'Priority', monthlyCents: 5500, lookupKey: lookupKeyFor('priority'), productId: productIdFor('priority'), aiEditsPerMonth: 15, rank: 1, adds: ['priorityQueue'], sellable: true },
+  { id: 'fast_lane', name: 'Fast lane', monthlyCents: 6500, lookupKey: lookupKeyFor('fast_lane'), productId: productIdFor('fast_lane'), aiEditsPerMonth: 15, rank: 2, adds: ['includedSmallEdit', 'nextBusinessDayEdits'], sellable: true },
+  { id: 'leads', name: 'Leads', monthlyCents: 7500, lookupKey: lookupKeyFor('leads'), productId: productIdFor('leads'), aiEditsPerMonth: 40, rank: 3, adds: ['leadsReport', 'quoteAlerts'], sellable: false },
+  { id: 'get_found', name: 'Get found', monthlyCents: 8500, lookupKey: lookupKeyFor('get_found'), productId: productIdFor('get_found'), aiEditsPerMonth: 40, rank: 4, adds: ['gbpManaged', 'reviewKit'], sellable: false },
+  { id: 'growth', name: 'Growth partner', monthlyCents: 10000, lookupKey: lookupKeyFor('growth'), productId: productIdFor('growth'), aiEditsPerMonth: 40, rank: 5, adds: ['seasonalRefresh', 'quarterlyCall', 'doneForYouEdits'], sellable: false },
 ] as const
 
 /**
@@ -142,6 +154,12 @@ export function stepById(id: PlanStepId): PlanStep {
 /** Server-side resolver for untrusted input: the step, or null for anything unknown. */
 export function resolvePlanStep(value: unknown): PlanStep | null {
   return isPlanStepId(value) ? stepById(value) : null
+}
+
+/** For NEW sales (checkout, outreach choice/publish, switching to a step): known AND sellable. */
+export function resolveSellablePlanStep(value: unknown): PlanStep | null {
+  const step = resolvePlanStep(value)
+  return step && step.sellable ? step : null
 }
 
 export function stepByLookupKey(key: string | null | undefined): PlanStep | null {

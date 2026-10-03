@@ -9,6 +9,7 @@ import {
   type OutreachBillingStore,
   type OutreachSitePatch,
   LEGACY_PLAN_PUBLISH_ERROR,
+  STEP_NOT_SELLABLE_PUBLISH_ERROR,
 } from './billing'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
 import { resetStepPriceCache } from '@/lib/stripe/prices'
@@ -136,16 +137,16 @@ describe('setup-mode webhook branch (card saved, nothing charged)', () => {
 describe('admin Publish (off-session subscription)', () => {
   it('goes live only when the first invoice is paid, with a per-site idempotency key and the lookup-key price of the step', async () => {
     resetStepPriceCache()
-    const f = fakeStore(site({ plan_step: 'leads' }))
+    const f = fakeStore(site({ plan_step: 'fast_lane' }))
     const s = fakeStripe('active')
     const res = await publishOutreachSite({ stripe: s.stripe, store: f.store }, 'site-1', { claimerVerified: true })
     expect(res).toMatchObject({ ok: true, status: 'live', subscriptionId: 'sub_new' })
     const [params, opts] = s.create.mock.calls[0] as unknown as [Stripe.SubscriptionCreateParams, { idempotencyKey: string }]
     expect(opts.idempotencyKey).toBe('outreach-publish:site-1:0')
     expect(params.off_session).toBe(true)
-    expect(params.items).toEqual([{ price: 'price_leads', quantity: 1 }])
+    expect(params.items).toEqual([{ price: 'price_fast_lane', quantity: 1 }])
     expect(params.items?.[0]).not.toHaveProperty('price_data')
-    expect((params.metadata as Record<string, string>).plan_step).toBe('leads')
+    expect((params.metadata as Record<string, string>).plan_step).toBe('fast_lane')
     expect(params.metadata).not.toHaveProperty('addon_tier')
     expect(f.row.publish_status).toBe('live')
   })
@@ -158,11 +159,23 @@ describe('admin Publish (off-session subscription)', () => {
     expect(s.create).not.toHaveBeenCalled()
   })
 
+  it.each(PLAN_STEPS.filter((st) => !st.sellable).map((st) => [st.id] as const))(
+    'sellable=false: refuses to publish %s on the server (no subscription, nothing charged, site not marked failed)',
+    async (id) => {
+      const f = fakeStore(site({ plan_step: id }))
+      const s = fakeStripe('active')
+      const res = await publishOutreachSite({ stripe: s.stripe, store: f.store }, 'site-1', { claimerVerified: true })
+      expect(res).toEqual({ ok: false, status: 'refused', error: STEP_NOT_SELLABLE_PUBLISH_ERROR(PLAN_STEPS.find((x) => x.id === id)!.name) })
+      expect(s.create).not.toHaveBeenCalled()
+      expect(f.row.publish_status).not.toBe('failed')
+    }
+  )
+
   it('a missing step price fails the publish (no subscription, site stays unpublished)', async () => {
-    const f = fakeStore(site({ plan_step: 'growth' }))
+    const f = fakeStore(site({ plan_step: 'priority' }))
     const s = fakeStripe('active')
     const res = await publishOutreachSite(
-      { stripe: s.stripe, store: f.store, stepPriceId: async () => { throw new Error('No price for growth') } },
+      { stripe: s.stripe, store: f.store, stepPriceId: async () => { throw new Error('No price for priority') } },
       'site-1',
       { claimerVerified: true }
     )

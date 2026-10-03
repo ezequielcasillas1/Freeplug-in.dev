@@ -20,6 +20,7 @@ import {
 } from '@/lib/stripe/checkout-context'
 import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
 import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
+import { STEP_NOT_SELLABLE_MESSAGE } from '@/lib/plans/ladder-copy'
 
 export const runtime = 'nodejs'
 
@@ -61,6 +62,10 @@ export async function POST(request: Request) {
     const step = resolvePlanStep(body?.planStep)
     if (!step) {
       return NextResponse.json({ error: 'Invalid hosting plan.' }, { status: 400 })
+    }
+    // Not sold yet ("coming soon", ladder.ts sellable=false): refused here, whatever the UI sent.
+    if (!step.sellable) {
+      return NextResponse.json({ error: STEP_NOT_SELLABLE_MESSAGE(step.name), code: 'not_sellable' }, { status: 400 })
     }
 
     const ctx = await getCheckoutSessionContext()

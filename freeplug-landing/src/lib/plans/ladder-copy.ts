@@ -2,10 +2,10 @@ import { PLAN_STEPS, stepById, type PlanPerk, type PlanStepId } from './ladder'
 
 /** "$35" style, from ladder.ts (never hard-code a price in copy). */
 const dollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
-/** "$35, $55, $65, $75, $85 or $100", built from PLAN_STEPS. */
+/** "$35, $55 or $65", built from the SELLABLE steps in PLAN_STEPS (coming-soon steps not priced). */
 const PRICE_LIST = (() => {
-  const all = PLAN_STEPS.map((s) => dollars(s.monthlyCents))
-  return `${all.slice(0, -1).join(', ')} or ${all[all.length - 1]}`
+  const all = PLAN_STEPS.filter((s) => s.sellable).map((s) => dollars(s.monthlyCents))
+  return all.length > 1 ? `${all.slice(0, -1).join(', ')} or ${all[all.length - 1]}` : (all[0] ?? '')
 })()
 const STARTER_PRICE = dollars(stepById('starter').monthlyCents)
 const INCLUDED_EDIT_FROM = PLAN_STEPS.find((s) => s.adds.includes('includedSmallEdit'))!
@@ -103,20 +103,35 @@ export const HELP_PLANS_GUIDE_DESCRIPTION = 'Compare hosting plans for your busi
 /** Monthly edit note in the help chat (Fast lane+ and legacy Plus/Pro). */
 export const HELP_CHAT_INCLUDED_EDIT_NOTE = 'Your plan includes one small edit each billing period.'
 
+/** PLACEHOLDER (Sable/Wren): steps with sellable=false in ladder.ts ("coming soon"). */
+export const COMING_SOON_LABEL = 'Coming soon'
+export const STEP_NOT_SELLABLE_MESSAGE = (name: string) =>
+  `${name} isn't available yet. Choose another plan for now.`
+
 /** PLACEHOLDER (Sable/Wren): switching plans in the app (src/lib/stripe/change-plan.ts). */
 export const CHANGE_PLAN_BUTTON = (name: string) => `Switch to ${name}`
 export const CHANGE_PLAN_CURRENT = 'Your current plan'
 export const CHANGE_PLAN_HELP =
   "Moving up starts right away, and you pay only the difference for the rest of this billing period. Moving down starts at your next billing date, so you keep what you paid for until then."
 export const CHANGE_PLAN_UPGRADED = (name: string) =>
-  `You're now on ${name}. We charged the difference for the rest of this billing period.`
+  `You're moving to ${name}. We charged the difference for the rest of this billing period. Your new plan shows here as soon as Stripe confirms it, usually within a minute.`
 export const CHANGE_PLAN_SCHEDULED = (name: string, date: string) =>
   `You'll move to ${name} on ${date}. You keep your current plan until then.`
 export const CHANGE_PLAN_UNCHANGED = "You're on this plan. Any planned change has been cancelled."
 export const CHANGE_PLAN_ENDING = 'Your plan is set to end. Resume it first, then switch.'
 export const CHANGE_PLAN_PAYMENT_FAILED =
   "We couldn't charge your card, so your plan didn't change. Update your payment method in Manage billing and try again."
+export const CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST =
+  "We couldn't charge your card, so your plan didn't change. Your planned switch at the next billing date was cancelled too; pick it again if you still want it."
 export const CHANGE_PLAN_UNAVAILABLE = "We couldn't change your plan right now. Try again, or email support@freeplug-in.dev."
+/** Plans page: a downgrade waiting for the next billing date. */
+export const PENDING_CHANGE_LINE = (name: string, date: string) =>
+  `Changing to ${name} on ${date}. You keep your current plan until then.`
+export const KEEP_PLAN_BUTTON = (name: string) => `Keep ${name}`
+/** Cancel page, when a downgrade is pending (Stripe can't cancel a plan with a planned switch). */
+export const CANCEL_WITH_PENDING_NOTE = (name: string, date: string) =>
+  `You have a switch to ${name} planned for ${date}. Canceling your plan also cancels that switch.`
+export const CANCEL_PLAN_BUTTON = 'Cancel my plan at the end of this billing period'
 /**
  * PROPOSED for Sable, NOT wired: the [STRICT] double-charge message (active-subscription.ts
  * ALREADY_HAS_PLAN_MESSAGE, "Use Manage billing to change it.") stays until Sable re-locks it;

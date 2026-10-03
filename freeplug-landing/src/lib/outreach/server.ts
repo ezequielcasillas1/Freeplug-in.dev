@@ -606,14 +606,18 @@ export async function uploadCustomerPhoto(
 export async function saveChosenPlan(userId: string, input: unknown): Promise<Result> {
   const site = await getClaimedSiteForUser(userId)
   if (!site) return { ok: false, error: 'no_site', code: 'no_site' }
-  // Locked once live, or once a card is saved for a ladder step. A site that saved a card with a
-  // pre-ladder (slider/add-on) choice has no plan_step yet, so its customer may pick a step once.
-  if (site.publish_status === 'live' || (site.setup_completed_at && site.plan_step != null)) {
+  // Locked once live, or once a card is saved for a sellable ladder step. A site that saved a card
+  // with a pre-ladder (slider/add-on) choice has no plan_step yet, and a site whose saved step is no
+  // longer sold (ladder.ts sellable=false) can't be published, so its customer may pick again.
+  const savedStep = resolveOutreachStep(site.plan_step)
+  if (site.publish_status === 'live' || (site.setup_completed_at && savedStep?.sellable)) {
     return { ok: false, error: 'locked', code: 'locked' }
   }
   const parsed = planChoiceSchema.safeParse(input)
   const step = parsed.success ? resolveOutreachStep(parsed.data.planStep) : null
   if (!parsed.success || !step) return { ok: false, error: 'Invalid plan.', code: 'invalid' }
+  // Coming soon (sellable=false): refused on the server, whatever the claim page sent.
+  if (!step.sellable) return { ok: false, error: 'not_sellable', code: 'not_sellable' }
   const { error } = await db()
     .from('outreach_sites')
     .update({ plan_step: step.id, updated_at: new Date().toISOString() })
@@ -641,9 +645,11 @@ export async function startSetupCheckout(user: { id: string; email?: string | nu
   const site = await getClaimedSiteForUser(user.id)
   if (!site) return { ok: false, error: 'no_site', code: 'no_site' }
   if (site.setup_completed_at) return { ok: false, error: 'already_saved', code: 'already_saved' }
-  if (!resolveOutreachStep(site.plan_step)) {
+  const chosen = resolveOutreachStep(site.plan_step)
+  if (!chosen) {
     return { ok: false, error: 'no_plan', code: 'no_plan' }
   }
+  if (!chosen.sellable) return { ok: false, error: 'not_sellable', code: 'not_sellable' }
   const stripe = getStripe()
   const client = db()
   const { data: prof } = await client.from('profiles').select('stripe_customer_id').eq('id', user.id).maybeSingle()

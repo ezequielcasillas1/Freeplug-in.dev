@@ -329,7 +329,30 @@ describe('POST /api/checkout/hosting', () => {
       expect(sessionsCreate).not.toHaveBeenCalled()
     })
 
-    it.each(PLAN_STEPS.map((s) => [s.id] as const))(
+    it.each(PLAN_STEPS.filter((s) => !s.sellable).map((s) => [s.id] as const))(
+      'sellable=false: 400 not_sellable for %s, before any Stripe call',
+      async (id) => {
+        const res = await POST(req({ planStep: id }))
+        expect(res.status).toBe(400)
+        expect(await res.json()).toMatchObject({ code: 'not_sellable' })
+        expect(pricesList).not.toHaveBeenCalled()
+        expect(subsList).not.toHaveBeenCalled()
+        expect(sessionsCreate).not.toHaveBeenCalled()
+      }
+    )
+
+    it('sellable is read from ladder.ts on every request (flip a step off: refused; back on: sold)', async () => {
+      const step = PLAN_STEPS.find((s) => s.id === 'priority')! as { sellable: boolean }
+      step.sellable = false
+      try {
+        expect((await POST(req({ planStep: 'priority' }))).status).toBe(400)
+      } finally {
+        step.sellable = true
+      }
+      expect((await POST(req({ planStep: 'priority' }))).status).toBe(200)
+    })
+
+    it.each(PLAN_STEPS.filter((s) => s.sellable).map((s) => [s.id] as const))(
       '%s: one line item, the lookup-key price, plan_step metadata on session and subscription',
       async (id) => {
         const res = await POST(req({ planStep: id }))
@@ -349,7 +372,7 @@ describe('POST /api/checkout/hosting', () => {
 
     it('idempotency key differs per step', async () => {
       await POST(req({ planStep: 'starter' }))
-      await POST(req({ planStep: 'growth' }))
+      await POST(req({ planStep: 'fast_lane' }))
       const k1 = sessionsCreate.mock.calls[0][1].idempotencyKey
       const k2 = sessionsCreate.mock.calls[1][1].idempotencyKey
       expect(k1).not.toBe(k2)
@@ -360,15 +383,15 @@ describe('POST /api/checkout/hosting', () => {
       sessionsList.mockResolvedValue({
         data: [{ id: 'cs_open', mode: 'subscription', url: 'https://x', metadata: { type: 'hosting', plan_step: 'starter' } }],
       })
-      const res = await POST(req({ planStep: 'leads' }))
+      const res = await POST(req({ planStep: 'priority' }))
       expect(res.status).toBe(503)
       expect(sessionsExpire).not.toHaveBeenCalled()
       expect(sessionsCreate).not.toHaveBeenCalled()
     })
 
     it('503 when the Stripe price amount does not match ladder.ts (never charge a drifted amount)', async () => {
-      pricesList.mockResolvedValue(ladderPrices((p) => (p.id === 'price_leads' ? { ...p, unit_amount: 7000 } : p)))
-      expect((await POST(req({ planStep: 'leads' }))).status).toBe(503)
+      pricesList.mockResolvedValue(ladderPrices((p) => (p.id === 'price_fast_lane' ? { ...p, unit_amount: 7000 } : p)))
+      expect((await POST(req({ planStep: 'fast_lane' }))).status).toBe(503)
       expect(sessionsCreate).not.toHaveBeenCalled()
     })
 

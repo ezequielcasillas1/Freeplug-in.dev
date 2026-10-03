@@ -26,6 +26,7 @@ import {
   HELP_PLANS_GUIDE_TITLE_LINE,
   HELP_REQUEST_CHANGES,
   HELP_SECURITY,
+  COMING_SOON_LABEL,
   STEP_BLURBS,
 } from '@/lib/plans/ladder-copy'
 import {
@@ -206,7 +207,7 @@ const guides = [
     description: HELP_PLANS_GUIDE_DESCRIPTION,
     icon: CreditCard,
     // Built from the ladder (PLACEHOLDER copy until Sable/Wren).
-    steps: PLAN_STEPS.map((s) => `${s.name} ($${s.monthlyCents / 100}/mo): ${STEP_BLURBS[s.id]}`),
+    steps: PLAN_STEPS.map((s) => `${s.name} ($${s.monthlyCents / 100}/mo)${s.sellable ? '' : ` (${COMING_SOON_LABEL.toLowerCase()})`}: ${STEP_BLURBS[s.id]}`),
   },
   {
     id: 'guide-4',
