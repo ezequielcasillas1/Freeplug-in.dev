@@ -278,7 +278,12 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       {/* Recent Activity and Support */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-8">
-        {enhancedData && <RecentActivity activities={enhancedData.recentActivity} />}
+        {enhancedData && (
+          <RecentActivity
+            activities={enhancedData.recentActivity}
+            loadFailed={!enhancedData.recentActivityLoaded}
+          />
+        )}
         <SupportCard />
       </div>
     </div>

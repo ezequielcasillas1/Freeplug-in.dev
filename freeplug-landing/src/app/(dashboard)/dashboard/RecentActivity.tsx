@@ -1,8 +1,10 @@
-import { DollarSign, FileText, CreditCard, Clock } from 'lucide-react'
+import { DollarSign, FileText, CreditCard, Clock, CircleAlert } from 'lucide-react'
 import type { ActivityItem } from './dashboard-actions'
 
 type Props = {
   activities: ActivityItem[]
+  /** True when the activity queries failed: show the error state, not "No recent activity". */
+  loadFailed?: boolean
 }
 
 function formatRelativeTime(date: Date): string {
@@ -50,7 +52,26 @@ const activityConfig = {
   },
 }
 
-export function RecentActivity({ activities }: Props) {
+export function RecentActivity({ activities, loadFailed = false }: Props) {
+  if (loadFailed) {
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
+          Recent Activity
+        </h2>
+        <div className="flex items-start gap-3" role="alert" data-testid="recent-activity-error">
+          <div className="rounded-lg bg-amber-50 p-2 flex-shrink-0">
+            <CircleAlert className="h-4 w-4 text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900">Couldn&apos;t load activity</p>
+            <p className="text-sm text-gray-600">Refresh the page to try again.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (activities.length === 0) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -88,11 +109,11 @@ export function RecentActivity({ activities }: Props) {
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 truncate">{activity.description}</p>
-                {activity.amount && (
+                {activity.amount ? (
                   <p className="text-sm font-medium text-green-600 mt-0.5">
                     +{formatCents(activity.amount)}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
           )

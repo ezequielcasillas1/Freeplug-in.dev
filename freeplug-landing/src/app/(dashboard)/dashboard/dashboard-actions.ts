@@ -16,6 +16,7 @@ import { periodStartDate } from '@/lib/plans/included-edits'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { formatPlanEndDate } from '@/lib/stripe/active-subscription'
 import { stepById } from '@/lib/plans/ladder'
+import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel } from '@/lib/dashboard/billing-activity'
 
 export type DashboardStats = {
   totalPaidCents: number
@@ -68,7 +69,20 @@ export type EnhancedDashboardData = {
   /** False only when Stripe failed and the caller asked to tolerate it (outreach customers). */
   subscriptionsLoaded: boolean
   recentActivity: ActivityItem[]
+  /**
+   * False when the payments (billing_ledger) or requests query failed. recentActivity is then
+   * empty and the card shows "Couldn't load activity" instead of "No recent activity".
+   */
+  recentActivityLoaded: boolean
   alerts: DashboardAlert[]
+}
+
+/** Server log for a failed activity query: PostgREST code and message only (no user id, no row data). */
+function logActivityQueryError(source: string, error: { code?: string; message?: string }) {
+  console.error(`[dashboard] recent activity: ${source} query failed`, {
+    code: error.code ?? null,
+    message: error.message ?? null,
+  })
 }
 
 /**
@@ -99,19 +113,23 @@ export async function getEnhancedDashboardData(
     .select('*', { count: 'exact', head: true })
     .eq('profile_id', user.id)
 
-  const { data: billingRecords } = await supabase
+  const { data: billingRecords, error: billingError } = await supabase
     .from('billing_ledger')
-    .select('created_at, amount_cents, description')
+    .select(BILLING_ACTIVITY_COLUMNS)
     .eq('profile_id', user.id)
     .order('created_at', { ascending: false })
     .limit(10)
+  if (billingError) logActivityQueryError('billing_ledger', billingError)
 
-  const { data: requests } = await supabase
+  const { data: requests, error: requestsError } = await supabase
     .from('website_requests')
     .select('id, status, business_name, created_at, updated_at')
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
     .limit(5)
+  if (requestsError) logActivityQueryError('website_requests', requestsError)
+
+  const recentActivityLoaded = !billingError && !requestsError
 
   const subscriptions: SubscriptionDetail[] = []
   let activeSubscriptionCount = 0
@@ -238,10 +256,10 @@ export async function getEnhancedDashboardData(
   if (billingRecords) {
     for (const record of billingRecords) {
       recentActivity.push({
-        id: `payment-${record.created_at}`,
+        id: `payment-${record.id ?? record.created_at}`,
         type: 'payment',
         title: 'Payment received',
-        description: record.description || 'Monthly hosting',
+        description: paymentActivityLabel(record.amount_cents, record.created_at),
         date: new Date(record.created_at),
         amount: record.amount_cents,
       })
@@ -332,7 +350,9 @@ export async function getEnhancedDashboardData(
     },
     subscriptions,
     subscriptionsLoaded,
-    recentActivity: recentActivity.slice(0, 10),
+    // A failed query shows the error state, never a partial list that looks complete.
+    recentActivity: recentActivityLoaded ? recentActivity.slice(0, 10) : [],
+    recentActivityLoaded,
     alerts,
   }
 }
