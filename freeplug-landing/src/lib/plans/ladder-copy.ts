@@ -1,4 +1,4 @@
-import { PLAN_STEPS, stepById, type PlanPerk, type PlanStepId } from './ladder'
+import { PLAN_STEPS, customerAiEditsPerMonth, showAiEditQuota, stepById, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
 
 /** "$35" style, from ladder.ts (never hard-code a price in copy). */
 const dollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
@@ -73,7 +73,14 @@ export const INCLUDED_EDIT_LINE = (used: number, available: number) =>
     ? 'Your included edit: used this billing period.'
     : `Your included edit: ${available - used} available this billing period.`
 export const NEXT_BUSINESS_DAY_LINE = `Small edits: ${NEXT_BUSINESS_DAY_TARGET}.`
-export const AI_EDITS_LINE = (n: number) => `AI edits: ${n} a month (coming soon)`
+/**
+ * AI-edit line for a step card. null while showAiEditQuota (ladder.ts) is false, which it stays until
+ * the AI editor ships (Aria, Oct 3 12:56). PLACEHOLDER wording for when it ships.
+ */
+export const aiEditsLine = (step: Pick<PlanStep, 'aiEditsPerMonth'>, show: boolean = showAiEditQuota): string | null => {
+  const n = customerAiEditsPerMonth(step, show)
+  return n === null ? null : `AI edits: ${n} a month`
+}
 
 /** Step marked "Most popular" on the cards; null for none. PLACEHOLDER (Lina/Sable decide). */
 export const MOST_POPULAR_STEP: PlanStepId | null = 'fast_lane'

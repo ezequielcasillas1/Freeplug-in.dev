@@ -22,6 +22,7 @@ import {
   MOST_POPULAR_STEP,
   PER_MONTH,
   PERK_LINES,
+  aiEditsLine,
   STARTER_BASE_LINES,
   STEP_BLURBS,
 } from '@/lib/plans/ladder-copy'
@@ -161,7 +162,8 @@ export function HostingCheckoutCard({
         <div className="space-y-2">
           {PLAN_STEPS.map((step, i) => {
             const selected = planStep === step.id
-            const lines = i === 0 ? STARTER_BASE_LINES : step.adds.map((perk) => PERK_LINES[perk])
+            const aiLine = aiEditsLine(step) // null while showAiEditQuota (ladder.ts) is false
+            const lines = [...(i === 0 ? STARTER_BASE_LINES : step.adds.map((perk) => PERK_LINES[perk])), ...(aiLine ? [aiLine] : [])]
             const canPick = selectable && pickable(step.id)
             return (
               <label

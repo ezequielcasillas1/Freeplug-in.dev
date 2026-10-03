@@ -35,7 +35,10 @@ export type PlanStep = {
   lookupKey: string
   /** Stripe Product id: one product per step, each with one monthly price (Aria section 6.1). */
   productId: string
-  /** L2 AI-editor quota per month. Stored only: the L2 editor and enforcement are Part B. */
+  /**
+   * L2 AI-editor quota per month. Stored only: the L2 editor and enforcement are Part B. NEVER shown
+   * to customers while `showAiEditQuota` is false (read it through customerAiEditsPerMonth()).
+   */
   aiEditsPerMonth: number
   /** 0 (Starter) .. 5 (Growth partner). Requests queue sorts by this, highest first. */
   rank: number
@@ -49,14 +52,28 @@ export type PlanStep = {
   sellable: boolean
 }
 
+/**
+ * AI-edit quota display (Aria, Oct 3 12:56): false until the L2 AI editor ships. The numbers stay in
+ * PLAN_STEPS[].aiEditsPerMonth; there is no quota enforcement. While this is false, no customer-facing
+ * output (Plans, pricing, help, emails, claim flow) may show an edit count; the test
+ * src/lib/plans/ai-edit-quota-hidden.test.tsx fails if one does. Flip to true only when the editor
+ * and its enforcement ship.
+ */
+export const showAiEditQuota: boolean = false
+
+/** The AI-edit count a customer may see for a step: null while showAiEditQuota is false. */
+export function customerAiEditsPerMonth(step: Pick<PlanStep, 'aiEditsPerMonth'>, show: boolean = showAiEditQuota): number | null {
+  return show === true ? step.aiEditsPerMonth : null
+}
+
 const lookupKeyFor = (id: PlanStepId) => `freeplug_step_${id}_monthly`
 const productIdFor = (id: PlanStepId) => `freeplug_step_${id}`
 
 /**
  * sellable (Aria, Oct 3 12:25): Leads, Get found and Growth partner stay false until Ezequiel
  * decides which of their perks he will deliver by hand at launch. Flip one value to sell a step.
- * OPEN QUESTION (Aria/Ezequiel): Starter, Priority and Fast lane are sellable but advertise AI-edit
- * counts, and the AI-edit quota is not enforced yet (Part B).
+ * Starter, Priority and Fast lane stay sellable on their other perks (Aria, Oct 3 12:56); their AI-edit
+ * counts are hidden from customers until the AI editor ships (showAiEditQuota below).
  */
 export const PLAN_STEPS: readonly PlanStep[] = [
   { id: 'starter', name: 'Starter', monthlyCents: 3500, lookupKey: lookupKeyFor('starter'), productId: productIdFor('starter'), aiEditsPerMonth: 5, rank: 0, adds: [], sellable: true },
