@@ -62,12 +62,14 @@ export type ActiveSubscriptionStatus =
       endsAt: Date | null
     }
 
-function subscriptionEndDate(sub: Stripe.Subscription): Date | null {
+/** When a subscription set to end ends: cancel_at, else the current period end. */
+export function subscriptionEndDate(sub: Stripe.Subscription): Date | null {
   // cancel_at first; otherwise the current period end (items on newer Stripe API versions).
   return stripeTimestampToDate(sub.cancel_at) ?? subscriptionPeriodEnd(sub)
 }
 
-function isSetToEnd(sub: Stripe.Subscription): boolean {
+/** Set to end: canceled at period end, or a cancel_at date on its own. */
+export function isSetToEnd(sub: Pick<Stripe.Subscription, 'cancel_at_period_end' | 'cancel_at'>): boolean {
   return sub.cancel_at_period_end === true || sub.cancel_at != null
 }
 

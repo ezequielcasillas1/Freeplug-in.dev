@@ -5,6 +5,7 @@ import { getStripe } from '@/lib/stripe/server'
 import type Stripe from 'stripe'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
+import { isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
 import { stepById } from '@/lib/plans/ladder'
 import { planNameOf } from '@/lib/stripe/plan-line'
 import { tierItems, tipDollarsOfItems } from '@/lib/plans/tips'
@@ -20,8 +21,12 @@ export type SubscriptionInfo = {
   /** The monthly tip on this subscription (0 = none); shown next to the plan price (Vera bug 4). */
   tipCents?: number
   interval: string
-  /** Null when Stripe sends no period end (shown as a fallback, never "Invalid Date"). */
+  /**
+   * Null when Stripe sends no period end (shown as a fallback, never "Invalid Date"). For a plan set to
+   * end it is when it ends (cancel_at, else the period end).
+   */
   currentPeriodEnd: Date | null
+  /** Set to end: cancel at period end, or a cancel_at date on its own (both get the Resume box). */
   cancelAtPeriodEnd: boolean
   canceledAt: Date | null
   /** A ladder downgrade waiting for the next billing date (subscription schedule), else null. */
@@ -139,8 +144,8 @@ async function loadSubscriptions(
       tipCents: tipDollarsOfItems(sub.items.data) * 100,
       interval: price.recurring?.interval ?? 'month',
       // Period dates live on the subscription items in current Stripe API versions.
-      currentPeriodEnd: subscriptionPeriodEnd(sub),
-      cancelAtPeriodEnd: sub.cancel_at_period_end === true,
+      currentPeriodEnd: isSetToEnd(sub) ? subscriptionEndDate(sub) : subscriptionPeriodEnd(sub),
+      cancelAtPeriodEnd: isSetToEnd(sub),
       canceledAt: stripeTimestampToDate(sub.canceled_at),
     }
 

@@ -34,7 +34,7 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' | 'ladder' }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'ladder' | 'grandfathered-ending' | 'cancel-at-only' | 'trial-ending' }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('Stripe is down') } } }
@@ -51,6 +51,38 @@ vi.mock('@/lib/stripe/server', () => ({
         subscriptions: {
           list: async () => ({
             data: [{ id: 'sub_l', status: 'active', created: 1790000000, cancel_at_period_end: true, cancel_at: end, items: { data: [item('freeplug_step_fast_lane_monthly', 'Freeplug Hosting: Fast lane', 6500, 1), item('freeplug_tip_monthly', 'Optional monthly tip', 100, 4)] } }],
+          }),
+        },
+        invoices: { list: async () => ({ data: [] }) },
+      }
+    }
+    if (stripe.mode === 'cancel-at-only' || stripe.mode === 'trial-ending') {
+      // Starter; a cancel_at on its own 9 days out (period end 25 days out), or a trial set to end at period end in 5 days
+      const now = Math.floor(Date.now() / 1000)
+      const periodEnd = now + (stripe.mode === 'cancel-at-only' ? 25 : 5) * 86400 - 600
+      const sub =
+        stripe.mode === 'cancel-at-only'
+          ? { status: 'active', cancel_at_period_end: false, cancel_at: now + 9 * 86400 - 600 }
+          : { status: 'trialing', cancel_at_period_end: true, cancel_at: periodEnd }
+      const item = { price: { lookup_key: 'freeplug_step_starter_monthly', product: { id: 'prod_st', name: 'Freeplug Hosting: Starter' }, unit_amount: 3500, recurring: { interval: 'month' } }, quantity: 1, current_period_end: periodEnd, current_period_start: periodEnd - 30 * 86400 }
+      return {
+        subscriptions: { list: async () => ({ data: [{ id: 'sub_c', created: 1790000000, ...sub, items: { data: [item] } }] }) },
+        invoices: { list: async () => ({ data: [] }) },
+      }
+    }
+    if (stripe.mode === 'grandfathered-ending') {
+      // Hosting plan (monthly) + Pro add-on (monthly), set to end in 12 days
+      const end = Math.floor(Date.now() / 1000) + 12 * 86400 - 600
+      const item = (name: string, unit_amount: number) => ({
+        price: { lookup_key: null, product: { id: `prod_${unit_amount}`, name }, unit_amount, recurring: { interval: 'month' } },
+        quantity: 1,
+        current_period_end: end,
+        current_period_start: end - 30 * 86400,
+      })
+      return {
+        subscriptions: {
+          list: async () => ({
+            data: [{ id: 'sub_g', status: 'active', created: 1790000000, cancel_at_period_end: true, cancel_at: end, items: { data: [item('Hosting plan (monthly)', 4000), item('Pro add-on (monthly)', 1500)] } }],
           }),
         },
         invoices: { list: async () => ({ data: [] }) },
@@ -108,6 +140,30 @@ describe('getEnhancedDashboardData and Stripe errors (round 9)', () => {
     expect(alert.message).not.toMatch(/tip|Freeplug Hosting/)
     expect(alert.actionLabel).toBe('Resume plan')
     expect(alert.actionHref).toBe('/dashboard/cancel#resume-plan')
+  })
+
+  it('Sable 5:30 PM: a grandfathered plan ending reads "Your hosting plan and Pro add-on will end in 12 days."', async () => {
+    stripe.mode = 'grandfathered-ending'
+    const d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
+    expect(d!.subscriptions[0].ladderStep).toBe(false)
+    expect(d!.subscriptions[0].planName).toBe('Hosting plan (monthly) + Pro add-on (monthly)') // the list keeps the product names
+    const alert = d!.alerts.find((a) => a.id === 'subscription-ending')!
+    expect(alert.message).toBe('Your hosting plan and Pro add-on will end in 12 days. Resume to keep your website live.')
+    expect(alert.actionHref).toBe('/dashboard/cancel#resume-plan')
+  })
+
+  it('next round: the kept Subscription ending alert covers a cancel_at on its own (days to cancel_at, no billing reminder) and a trial', async () => {
+    stripe.mode = 'cancel-at-only'
+    let d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
+    expect(d!.subscriptions[0].cancelAtPeriodEnd).toBe(true) // set to end
+    expect(d!.alerts.find((a) => a.id === 'subscription-ending')).toMatchObject({
+      message: 'Your Starter plan will end in 9 days. Resume to keep your website live.',
+      actionHref: '/dashboard/cancel#resume-plan',
+    })
+    expect(d!.alerts.find((a) => a.id === 'upcoming-billing')).toBeUndefined()
+    stripe.mode = 'trial-ending'
+    d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
+    expect(d!.alerts.find((a) => a.id === 'subscription-ending')?.message).toBe('Your Starter plan will end in 5 days. Resume to keep your website live.')
   })
 
   it('outreach (tolerate): a Stripe error leaves no plans and subscriptionsLoaded = false instead of failing', async () => {

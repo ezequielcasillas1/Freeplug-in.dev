@@ -207,3 +207,13 @@ export function websiteAccessAlert(access: WebsiteAccess | null): WebsiteAccessA
     button: { kind: 'checkout', label: RESTART_HOSTING_LABEL, href: RESTART_HOSTING_HREF },
   }
 }
+
+/**
+ * The website-access card on the dashboard: offline only ("Restart hosting"). Next round (Oct 3): the
+ * "ending" card duplicated the "Subscription ending" alert, which stays (it links to the cancel page
+ * Resume box, /dashboard/cancel#resume-plan) and now covers trials and cancel_at as this card did.
+ */
+export function dashboardAccessAlert(access: WebsiteAccess | null): WebsiteAccessAlert | null {
+  const alert = websiteAccessAlert(access)
+  return alert?.status === 'offline' ? alert : null
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type Stripe from 'stripe'
 import {
+  dashboardAccessAlert,
   ACCESS_OFFLINE_MESSAGE,
   adminAccessLabel,
   computeWebsiteAccess,
@@ -118,6 +119,23 @@ describe('websiteAccessAlert (one button, by state)', () => {
     expect(websiteAccessAlert({ status: 'active', accessEndsAt: null, hasHostingHistory: true })).toBeNull()
     expect(websiteAccessAlert({ status: 'offline', accessEndsAt: null, hasHostingHistory: false })).toBeNull()
     expect(websiteAccessAlert(null)).toBeNull()
+  })
+})
+
+describe('dashboardAccessAlert (next round: one "Subscription ending" card on the dashboard)', () => {
+  it('no website-access card while ending: the Subscription ending alert (to /dashboard/cancel#resume-plan) is the only one', () => {
+    expect(dashboardAccessAlert({ status: 'ending', accessEndsAt: PERIOD_END, hasHostingHistory: true })).toBeNull()
+    expect(dashboardAccessAlert({ status: 'ending', accessEndsAt: null, hasHostingHistory: true })).toBeNull()
+  })
+  it('offline keeps "Restart hosting"; active / never had hosting / unknown show nothing', () => {
+    expect(dashboardAccessAlert({ status: 'offline', accessEndsAt: null, hasHostingHistory: true })).toMatchObject({
+      status: 'offline',
+      before: ACCESS_OFFLINE_MESSAGE,
+      button: { kind: 'checkout', label: 'Restart hosting', href: '/dashboard/plans' },
+    })
+    expect(dashboardAccessAlert({ status: 'active', accessEndsAt: null, hasHostingHistory: true })).toBeNull()
+    expect(dashboardAccessAlert({ status: 'offline', accessEndsAt: null, hasHostingHistory: false })).toBeNull()
+    expect(dashboardAccessAlert(null)).toBeNull()
   })
 })
 

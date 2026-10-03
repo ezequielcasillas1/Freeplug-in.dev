@@ -18,10 +18,15 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' | 'starter11' }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' | 'starter11' | 'cancel-at-only' }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('local mock: simulated Stripe outage') } } }
+    if (stripe.mode === 'cancel-at-only') {
+      // a cancel_at on its own (no period-end flag), before the period end
+      const plan = { quantity: 1, price: { id: 'price_st', lookup_key: 'freeplug_step_starter_monthly', product: { name: 'Freeplug Hosting: Starter' }, unit_amount: 3500, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
+      return { subscriptions: { list: async () => ({ data: [{ id: 'sub_c', status: 'active', cancel_at_period_end: false, cancel_at: 1792500000, canceled_at: null, schedule: null, items: { data: [plan] } }] }) } }
+    }
     if (stripe.mode === 'starter11') {
       // Vera 5b: Starter + $11, plan item first (the order the app now creates)
       const plan = { quantity: 1, price: { id: 'price_st', lookup_key: 'freeplug_step_starter_monthly', product: { name: 'Freeplug Hosting: Starter' }, unit_amount: 3500, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
@@ -65,6 +70,14 @@ describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => 
     expect(d?.subscriptionsLoaded).toBe(true)
     expect(d?.subscriptions.map((s) => s.productName)).toEqual(['Hosting plan (monthly)'])
     expect(d?.subscriptions.map((s) => s.planName)).toEqual(['Hosting plan (monthly)']) // grandfathered keeps its name
+  })
+
+  it('next round: a cancel_at on its own is "set to end" (Resume box, access until cancel_at), not a live plan to cancel', async () => {
+    stripe.mode = 'cancel-at-only'
+    const d = await getCancelPageData()
+    expect(d?.subscriptions).toEqual([])
+    expect(d?.canceledSubscriptions).toHaveLength(1)
+    expect(d?.canceledSubscriptions[0]).toMatchObject({ id: 'sub_c', cancelAtPeriodEnd: true, currentPeriodEnd: new Date(1792500000 * 1000) })
   })
 
   it('outreach (tolerate): a Stripe outage returns empty lists and subscriptionsLoaded false, no throw', async () => {

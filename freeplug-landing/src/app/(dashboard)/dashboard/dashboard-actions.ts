@@ -16,7 +16,7 @@ import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
-import { formatPlanEndDate } from '@/lib/stripe/active-subscription'
+import { formatPlanEndDate, isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
 import { stepById, stepByLookupKey } from '@/lib/plans/ladder'
 import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel } from '@/lib/dashboard/billing-activity'
 
@@ -44,7 +44,10 @@ export type SubscriptionDetail = {
   /** Null when Stripe sends no period end (shown as a fallback, never "Invalid Date"). */
   currentPeriodEnd: Date | null
   currentPeriodStart: Date | null
+  /** Set to end: cancel at period end, or a cancel_at date on its own (the dashboard shows both as ending). */
   cancelAtPeriodEnd: boolean
+  /** When a plan set to end ends (cancel_at, else the period end); null when not set to end. */
+  endsAt?: Date | null
   created: Date
   /** Hosting-ladder step or grandfathered plan (null when it couldn't be worked out). */
   entitlements?: Entitlements | null
@@ -212,7 +215,8 @@ export async function getEnhancedDashboardData(
           // Period dates live on the subscription items in current Stripe API versions.
           currentPeriodEnd: subscriptionPeriodEnd(sub),
           currentPeriodStart: subscriptionPeriodStart(sub),
-          cancelAtPeriodEnd: sub.cancel_at_period_end === true,
+          cancelAtPeriodEnd: isSetToEnd(sub),
+          endsAt: isSetToEnd(sub) ? subscriptionEndDate(sub) : null,
           created: stripeTimestampToDate(sub.created) ?? new Date(0),
           entitlements,
           includedEdit: null,
@@ -331,11 +335,13 @@ export async function getEnhancedDashboardData(
     }
   }
 
+  // The one "Subscription ending" card on the dashboard (the website-access "ending" card is gone,
+  // next round): it also covers a trial and a cancel_at set on its own, as that card did.
   const cancelingSubscription = subscriptions.find(
-    (s) => s.status === 'active' && s.cancelAtPeriodEnd
+    (s) => (s.status === 'active' || s.status === 'trialing') && s.cancelAtPeriodEnd
   )
   if (cancelingSubscription) {
-    const daysUntilEnd = daysUntil(cancelingSubscription.currentPeriodEnd)
+    const daysUntilEnd = daysUntil(cancelingSubscription.endsAt ?? cancelingSubscription.currentPeriodEnd)
     alerts.push({
       id: 'subscription-ending',
       type: 'warning',

@@ -170,7 +170,7 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                 <div className="flex items-center gap-1 text-gray-500">
                   <Calendar className="h-3.5 w-3.5 shrink-0" />
                   <span>
-                    {sub.cancelAtPeriodEnd ? 'Ends' : 'Renews'}: {formatBillingDate(sub.currentPeriodEnd)}
+                    {sub.cancelAtPeriodEnd ? 'Ends' : 'Renews'}: {formatBillingDate(sub.cancelAtPeriodEnd ? sub.endsAt ?? sub.currentPeriodEnd : sub.currentPeriodEnd)}
                   </span>
                 </div>
               </div>

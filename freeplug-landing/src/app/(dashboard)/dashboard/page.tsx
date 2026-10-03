@@ -14,7 +14,7 @@ import { RecentActivity } from './RecentActivity'
 import { DashboardAlerts } from './DashboardAlerts'
 import { SupportCard } from './SupportCard'
 import { syncStripeCustomerFromCheckoutSession } from '@/lib/stripe/sync-checkout-customer'
-import { getWebsiteAccessForCustomer, websiteAccessAlert, type WebsiteAccess } from '@/lib/website-access'
+import { dashboardAccessAlert, getWebsiteAccessForCustomer, type WebsiteAccess } from '@/lib/website-access'
 import { WebsiteAccessAlert } from './WebsiteAccessAlert'
 import { DashboardBuyoutCard } from './BuyoutCard'
 import { requestBuyoutQuote } from './buyout-actions'
@@ -85,7 +85,8 @@ export default async function DashboardPage({ searchParams }: Props) {
       console.error('[dashboard] website access lookup failed', e instanceof Error ? e.message : e)
     }
   }
-  const accessAlert = websiteAccessAlert(websiteAccess)
+  // Offline only; a plan set to end shows the one "Subscription ending" alert instead (next round).
+  const accessAlert = dashboardAccessAlert(websiteAccess)
 
   const { data: openRequest } = await supabase
     .from('website_requests')
@@ -183,7 +184,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         </p>
       ) : null}
 
-      {/* Website access (ending / offline): first card, per Lina */}
+      {/* Website offline ("Restart hosting"): first card, per Lina. Ending = the Subscription ending alert. */}
       {accessAlert ? <WebsiteAccessAlert alert={accessAlert} /> : null}
 
       {trackerSteps ? (
