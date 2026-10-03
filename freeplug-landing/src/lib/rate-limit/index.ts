@@ -46,3 +46,6 @@ export async function rateCheck(rule: RateRule, rawKey: string): Promise<boolean
 
 /** Dashboard help chat "Send request": 10 per hour per user. */
 export const HELP_CHAT_LIMIT: RateRule = { bucket: 'help_chat_user', limit: 10, windowSeconds: 3600 }
+
+/** Plans page upgrade confirm: read-only Stripe previews, 20 per 10 minutes per user. */
+export const PLAN_PREVIEW_LIMIT: RateRule = { bucket: 'plan_preview_user', limit: 20, windowSeconds: 600 }

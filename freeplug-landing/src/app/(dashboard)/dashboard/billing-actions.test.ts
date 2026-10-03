@@ -40,10 +40,21 @@ vi.mock('@/lib/plans/plan-step-sync', () => ({
   supabasePlanStepStore: () => ({}),
 }))
 vi.mock('@/lib/stripe/prices', () => ({ getStepPriceId: async (id: string) => `price_${id}` }))
+const listedCustomers: string[] = []
 vi.mock('@/lib/stripe/active-subscription', async (orig) => ({
   ...(await orig<typeof import('@/lib/stripe/active-subscription')>()),
-  listLiveSubscriptions: async () => liveSubs,
+  listLiveSubscriptions: async (customerId: string) => (listedCustomers.push(customerId), liveSubs),
 }))
+let rateAllowed = true
+const rateKeys: string[] = []
+vi.mock('@/lib/rate-limit', () => ({
+  PLAN_PREVIEW_LIMIT: { bucket: 'plan_preview_user', limit: 20, windowSeconds: 600 },
+  rateCheck: async (_rule: unknown, key: string) => (rateKeys.push(key), rateAllowed),
+}))
+let previewFails = false
+let updateKeyInUse = false
+const updateParams: Record<string, unknown>[] = []
+const previewParams: Record<string, unknown>[] = []
 const PERIOD_END = 1_793_726_938
 const portalSessions: Record<string, unknown>[] = []
 let subscriptionsListFails = false
@@ -66,11 +77,21 @@ vi.mock('@/lib/stripe/server', () => ({
         return { data: liveSubs }
       },
       update: async (id: string, params: Record<string, unknown>) => {
+        updateParams.push(params)
         calls.push(params.cancel_at_period_end ? 'stripe.subscriptions.update(cancel)' : 'stripe.subscriptions.update(items)')
+        if (updateKeyInUse) throw Object.assign(new Error('another in-progress request'), { type: 'StripeIdempotencyError', code: 'idempotency_key_in_use' })
         return { id, pending_update: null, latest_invoice: { id: 'in_1', status: 'paid' } }
       },
     },
-    invoices: { voidInvoice: async () => (calls.push('stripe.invoices.void'), {}) },
+    invoices: {
+      voidInvoice: async () => (calls.push('stripe.invoices.void'), {}),
+      createPreview: async (params: Record<string, unknown>) => {
+        calls.push('stripe.invoices.createPreview')
+        previewParams.push(params)
+        if (previewFails) throw new Error('stripe down')
+        return { amount_due: 1953, currency: 'usd' }
+      },
+    },
     prices: { retrieve: async (id: string) => ({ id, lookup_key: null }) },
     subscriptionSchedules: {
       retrieve: async () => (
@@ -92,9 +113,9 @@ vi.mock('@/lib/stripe/server', () => ({
   }),
 }))
 
-import { cancelHostingAtPeriodEnd, changeHostingPlan, openBillingPortal, updatePaymentMethod } from './billing-actions'
+import { cancelHostingAtPeriodEnd, changeHostingPlan, openBillingPortal, previewPlanChange, updatePaymentMethod } from './billing-actions'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { STEP_NOT_SELLABLE_MESSAGE } from '@/lib/plans/ladder-copy'
+import { STEP_NOT_SELLABLE_MESSAGE, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
 
 const ladderSub = (id: string, over: Record<string, unknown> = {}) => {
   const s = PLAN_STEPS.find((p) => p.id === id)!
@@ -105,7 +126,7 @@ const ladderSub = (id: string, over: Record<string, unknown> = {}) => {
     cancel_at: null,
     schedule: null,
     latest_invoice: 'in_0',
-    items: { data: [{ id: 'si_1', quantity: 1, price: { id: `price_${id}`, lookup_key: s.lookupKey, unit_amount: s.monthlyCents, recurring: { interval: 'month' } } }] },
+    items: { data: [{ id: 'si_1', quantity: 1, current_period_end: PERIOD_END, price: { id: `price_${id}`, lookup_key: s.lookupKey, unit_amount: s.monthlyCents, recurring: { interval: 'month' } } }] },
     ...over,
   }
 }
@@ -224,5 +245,87 @@ describe('Manage billing while a plan switch is planned (Aria, Oct 3 12:56)', ()
         after_completion: { type: 'redirect', redirect: { return_url: 'https://app.test/dashboard/plans?card=updated' } },
       },
     })
+  })
+})
+
+describe('previewPlanChange + confirm (Aria, Oct 3 1:34 PM)', () => {
+  beforeEach(() => {
+    calls.length = 0
+    updateParams.length = 0
+    previewParams.length = 0
+    listedCustomers.length = 0
+    rateKeys.length = 0
+    rateAllowed = true
+    previewFails = false
+    snapshotRow = SYNCED
+    liveSubs = [ladderSub('starter')]
+  })
+  const nowS = () => Math.floor(Date.now() / 1000)
+
+  it("previews the caller's own subscription only (read-only), with a fresh server proration_date", async () => {
+    const before = nowS()
+    const r = await previewPlanChange('fast_lane')
+    expect(r).toMatchObject({ ok: true, amountDueCents: 1953, nextAmountCents: 6500, nextDate: 'November 3, 2026' })
+    const pd = (r as { prorationDate: number }).prorationDate
+    expect(pd).toBeGreaterThanOrEqual(before)
+    expect(pd).toBeLessThanOrEqual(nowS())
+    expect(listedCustomers).toEqual(['cus_1']) // from the signed-in user's profile, never from the browser
+    expect(rateKeys).toEqual(['u1'])
+    expect(calls).toEqual(['stripe.invoices.createPreview'])
+    expect(previewParams[0]).toMatchObject({ subscription: 'sub_1', subscription_details: { proration_behavior: 'always_invoice', proration_date: pd } })
+  })
+
+  it('rate limited: no Stripe call; the fallback still gets a proration_date', async () => {
+    rateAllowed = false
+    const r = await previewPlanChange('fast_lane')
+    expect(r).toMatchObject({ ok: false, reason: 'rate_limited' })
+    expect(typeof (r as { prorationDate: number }).prorationDate).toBe('number')
+    expect(calls).toEqual([])
+  })
+
+  it("Stripe preview failure: 'preview_failed' with the proration_date (\"We'll charge the difference today\")", async () => {
+    previewFails = true
+    const r = await previewPlanChange('priority')
+    expect(r).toMatchObject({ ok: false, reason: 'preview_failed' })
+    expect(typeof (r as { prorationDate: number }).prorationDate).toBe('number')
+  })
+
+  it('downgrades and unknown steps get no preview', async () => {
+    liveSubs = [ladderSub('fast_lane')]
+    expect(await previewPlanChange('starter')).toEqual({ ok: false, reason: 'not_upgrade', prorationDate: null })
+    expect(await previewPlanChange('nope')).toEqual({ ok: false, reason: 'unavailable', prorationDate: null })
+    expect(calls).toEqual([])
+  })
+
+  it('Confirm passes the previewed proration_date to the subscription update', async () => {
+    const r = await previewPlanChange('fast_lane')
+    const pd = (r as { prorationDate: number }).prorationDate
+    expect(await changeHostingPlan('fast_lane', pd)).toMatchObject({ ok: true })
+    expect(updateParams[0]).toMatchObject({ proration_date: pd, proration_behavior: 'always_invoice' })
+  })
+
+  it('a stale (over 10 minutes) or future proration_date is refused: no Stripe write, the "check again" line', async () => {
+    for (const pd of [nowS() - 601, nowS() + 60]) {
+      calls.length = 0
+      expect(await changeHostingPlan('fast_lane', pd)).toEqual({ ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' })
+      expect(calls.filter((c) => c.startsWith('stripe.'))).toEqual([])
+    }
+  })
+
+  it('a second Confirm while the first is still in flight (Stripe 409 on the same key) gets the "already going through" line', async () => {
+    const r = await previewPlanChange('fast_lane')
+    const pd = (r as { prorationDate: number }).prorationDate
+    updateKeyInUse = true
+    try {
+      expect(await changeHostingPlan('fast_lane', pd)).toEqual({ ok: false, message: UPGRADE_IN_PROGRESS })
+    } finally {
+      updateKeyInUse = false
+    }
+  })
+
+  it('a malformed proration_date from the browser is refused without touching Stripe', async () => {
+    expect(await changeHostingPlan('fast_lane', '1790000000' as unknown as number)).toMatchObject({ ok: false })
+    expect(await changeHostingPlan('fast_lane', 1.5)).toMatchObject({ ok: false })
+    expect(calls.filter((c) => c.startsWith('stripe.'))).toEqual([])
   })
 })

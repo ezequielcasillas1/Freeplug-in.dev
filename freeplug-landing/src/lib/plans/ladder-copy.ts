@@ -82,7 +82,10 @@ export const aiEditsLine = (step: Pick<PlanStep, 'aiEditsPerMonth'>, show: boole
   return n === null ? null : `AI edits: ${n} a month`
 }
 
-/** Step marked "Most popular" on the cards; null for none. PLACEHOLDER (Lina/Sable decide). */
+/**
+ * Step marked "Most popular" on the cards; null for none. Off (Lina, Oct 3 round 4): no sales data
+ * behind it, and with three sellable steps it reads as a push. Revisit with real numbers.
+ */
 export const MOST_POPULAR_STEP: PlanStepId | null = 'fast_lane'
 
 /** PLACEHOLDER (Sable): landing "Hosting & maintenance" intro (replaces the slider + add-on line). */
@@ -159,3 +162,47 @@ export const DOWNLOAD_INVOICE_PDF = 'PDF'
  */
 export const ALREADY_HAS_PLAN_SWITCH =
   'You already have an active hosting plan. To change it, pick a plan on the Plans page and choose Switch.'
+
+/**
+ * PLACEHOLDERS for Sable (Lina's layout direction, Oct 3 round 4, hosting-ladder-ux-LINA-2026-10-03.md).
+ * Every string in this block is marked [Sable] in Lina's spec: drafted by Owen so the layout can ship,
+ * waiting for Sable's final wording. The upgrade confirm line is Aria's wording (1:34 PM).
+ */
+export const LAYOUT_COPY_STATUS = 'PLACEHOLDER [Sable]: Lina round-4 layout strings' as const
+/** [Sable] Plans page "Your plan" strip (was the hard-coded "Current plan: …" under the list). */
+export const CURRENT_PLAN_LINE = (line: string) => `Current plan: ${line}`
+/** [Sable] Badge on the step a pending downgrade moves to, so the list matches the pending box. */
+export const STARTS_ON_BADGE = (date: string) => `Starts ${date}`
+/** [Sable] Phone only: the collapsed Coming soon group. */
+export const SEE_COMING_SOON = (count: number) => `See plans coming soon (${count})`
+/** [Sable] Claim step 3 button, names the pick (replaces "Choose this plan"). */
+export const CHOOSE_STEP_BUTTON = (name: string) => `Choose ${name}`
+/** [Sable] Claim step 4 summary: text link back to step 3 (only before the card is saved). */
+export const CLAIM_CHANGE_PLAN_LINK = 'Change'
+/** [Sable] Switching card: selected = current plan (button disabled). */
+export const CHANGE_PLAN_PICK_TO_SWITCH = 'Pick a plan to switch'
+/** [Sable] Switching card: selected step is higher (starts now). */
+export const CHANGE_PLAN_BUTTON_NOW = (name: string) => `Switch to ${name} now`
+/** [Sable] Switching card: selected step is lower (starts at the next billing date). */
+export const CHANGE_PLAN_BUTTON_ON = (name: string, date: string) => `Switch to ${name} on ${date}`
+/** [Sable] CHANGE_PLAN_HELP split in two: the line under an upgrade button… */
+export const CHANGE_PLAN_HELP_UP = 'Starts today. You pay only the difference for the rest of this billing period.'
+/** [Sable] …and the line under a downgrade button. */
+export const CHANGE_PLAN_HELP_DOWN = 'Starts at your next billing date. You keep what you paid for until then.'
+/** [Sable] Upgrade confirm, while the server preview runs (never a fake amount). */
+export const UPGRADE_CALCULATING = 'Calculating…'
+/** [Sable, Aria's wording 1:34 PM] Upgrade confirm with the previewed amounts. */
+export const UPGRADE_CONFIRM_LINE = (name: string, today: string, monthly: string, date: string) =>
+  `Switch to ${name} now? We'll charge ${today} today, then ${monthly}/month starting ${date}.`
+/** [Sable] Upgrade confirm when the preview failed. */
+export const UPGRADE_CONFIRM_FALLBACK = (name: string) => `Switch to ${name} now? We'll charge the difference today.`
+/** [Sable] */
+export const UPGRADE_CONFIRM_BUTTON = 'Confirm'
+/** [Sable] */
+export const UPGRADE_CANCEL_BUTTON = 'Cancel'
+/** [Sable] Grey line after the confirm expired (10 minutes) or the server refused a stale amount. */
+export const UPGRADE_PREVIEW_EXPIRED = 'That amount is out of date. Tap the button to see it again.'
+/** [Sable] A second Confirm arrived while the first was still going through (charged once). */
+export const UPGRADE_IN_PROGRESS = 'Your plan change is already going through. Refresh in a moment to see it.'
+/** [Sable] Dashboard home plan card: plain link to the Plans page. */
+export const CHANGE_PLAN_LINK = 'Change plan'

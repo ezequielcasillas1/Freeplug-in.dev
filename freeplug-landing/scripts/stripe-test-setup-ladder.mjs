@@ -12,6 +12,8 @@
  *        [--probe-checkout-expiry]  Aria's 12:56 open-checkout rule on REAL open sessions (probe
  *                      customer only): expires_at = now + 1 h, the expiry of non-sellable steps'
  *                      sessions (idempotent second run), and the sellable session left open
+ *        [--probe-upgrade-confirm]  Aria 1:34 PM: preview amount == invoiced amount, pending downgrade,
+ *                      stale/future proration_date refused, double Confirm charges once (probe customer)
  *        [--probe-billing]  card-update portal flow and invoice list, with and without a schedule
  *
  * TEST MODE ONLY. The key is read from the --env-file (only the STRIPE_SECRET_KEY line), never
@@ -650,6 +652,139 @@ export async function runBillingProbe(stripe, ladder, setup, { log = console.log
   return out
 }
 
+/**
+ * Aria 1:34 PM, upgrade confirm: the previewed amount (invoices.createPreview, always_invoice, a
+ * server proration_date) against what the upgrade really invoices with that same proration_date,
+ * using the app's change-plan.ts. Also: a pending downgrade underneath, stale/future proration_date
+ * refused before any Stripe write, and a double Confirm (concurrent and sequential) charging once.
+ * Every subscription is on the tagged probe customer with metadata.probe=true; all are released and
+ * canceled at the end. TEST MODE ONLY.
+ */
+export async function runUpgradeConfirmProbe(stripe, ladder, setup, { log = console.log } = {}) {
+  const cp = await appModule('lib/stripe/change-plan.ts')
+  const deps = { stripe, priceIdFor: async (id) => setup.priceIds[id], log: (m) => log(redact(m)) }
+  const out = { startedAt: new Date().toISOString() }
+  const customer = assertTestObject(await stripe.customers.retrieve(PROBE_CUSTOMER_ID), 'probe customer')
+  const visa = await stripe.paymentMethods.attach('pm_card_visa', { customer: customer.id })
+  await stripe.customers.update(customer.id, { invoice_settings: { default_payment_method: visa.id } })
+  const tag = { type: 'hosting', freeplug_probe: PROBE_TAG, probe: 'true' }
+  const created = []
+  const newSub = async (step) => {
+    const s = assertTestObject(await stripe.subscriptions.create({ customer: customer.id, items: [{ price: setup.priceIds[step] }], metadata: { ...tag, plan_step: step } }), 'probe subscription')
+    created.push(s.id)
+    return s
+  }
+  const fresh = (id) => stripe.subscriptions.retrieve(id, { expand: ['latest_invoice'] })
+  const lk = (sub) => sub.items.data.map((i) => i.price.lookup_key ?? i.price.id).join(' + ')
+  const nowSec = () => Math.floor(Date.now() / 1000)
+  const invoicesFor = async (subId) => (await stripe.invoices.list({ subscription: subId, limit: 20 })).data.map((i) => ({ id: i.id, billing_reason: i.billing_reason, status: i.status, amount_due: i.amount_due, amount_paid: i.amount_paid }))
+  const prorationInvoices = async (subId) => (await invoicesFor(subId)).filter((i) => i.billing_reason === 'subscription_update')
+  const userId = 'probe-user'
+
+  // U1: preview, then confirm with the same proration_date: amount due == amount invoiced
+  {
+    let s = await newSub('starter')
+    // a few seconds into the period, so the proration is a real partial amount
+    await new Promise((r) => setTimeout(r, 3000))
+    const pd = nowSec()
+    const preview = await cp.previewPlanStepChange(deps, await fresh(s.id), 'fast_lane', pd)
+    const before = await prorationInvoices(s.id)
+    const r = await cp.changePlanStep(deps, await fresh(s.id), 'fast_lane', { prorationDate: pd, userId })
+    s = await fresh(s.id)
+    const after = await prorationInvoices(s.id)
+    out.U1_previewEqualsInvoice = {
+      preview,
+      result: r,
+      itemsNow: lk(s),
+      invoice: { id: s.latest_invoice?.id, billing_reason: s.latest_invoice?.billing_reason, status: s.latest_invoice?.status, amount_due: s.latest_invoice?.amount_due, amount_paid: s.latest_invoice?.amount_paid },
+      prorationInvoicesBefore: before.length,
+      prorationInvoicesAfter: after.length,
+      match: preview.ok === true && preview.amountDueCents === s.latest_invoice?.amount_due,
+    }
+  }
+
+  // U2: the same with a pending downgrade underneath (priority -> starter scheduled, then upgrade to fast_lane)
+  {
+    let s = await newSub('priority')
+    const down = await cp.changePlanStep(deps, await fresh(s.id), 'starter')
+    s = await fresh(s.id)
+    const pending = await cp.pendingPlanChange(stripe, s)
+    const pd = nowSec()
+    let preview
+    try {
+      preview = await cp.previewPlanStepChange(deps, s, 'fast_lane', pd)
+    } catch (e) {
+      preview = { threw: redact(`${e?.code ?? ''} ${String(e?.message ?? e).slice(0, 220)}`) }
+    }
+    const r = await cp.changePlanStep(deps, await fresh(s.id), 'fast_lane', { prorationDate: pd, userId })
+    s = await fresh(s.id)
+    out.U2_withPendingDowngrade = {
+      downgrade: down,
+      pendingBefore: pending,
+      preview,
+      result: r,
+      itemsNow: lk(s),
+      scheduleAfter: s.schedule ?? null,
+      invoice: { id: s.latest_invoice?.id, billing_reason: s.latest_invoice?.billing_reason, status: s.latest_invoice?.status, amount_due: s.latest_invoice?.amount_due },
+      match: preview?.ok === true && preview.amountDueCents === s.latest_invoice?.amount_due,
+    }
+  }
+
+  // U3: stale (11 min old) and future proration_date: refused before any Stripe write
+  {
+    let s = await newSub('starter')
+    const invBefore = (await invoicesFor(s.id)).length
+    const stale = await cp.changePlanStep(deps, await fresh(s.id), 'fast_lane', { prorationDate: nowSec() - 11 * 60, userId })
+    const future = await cp.changePlanStep(deps, await fresh(s.id), 'fast_lane', { prorationDate: nowSec() + 120, userId })
+    s = await fresh(s.id)
+    out.U3_staleAndFutureRefused = { stale, future, itemsNow: lk(s), invoicesBefore: invBefore, invoicesAfter: (await invoicesFor(s.id)).length }
+  }
+
+  // U4: double Confirm. (a) concurrent, both from the same pre-update subscription (same idempotency
+  // key); (b) a second tap after the first finished (the server re-reads the subscription: "same").
+  {
+    let s = await newSub('starter')
+    await new Promise((r) => setTimeout(r, 2000))
+    const pd = nowSec()
+    const snapshot = await fresh(s.id)
+    const settled = await Promise.allSettled([
+      cp.changePlanStep(deps, snapshot, 'fast_lane', { prorationDate: pd, userId }),
+      cp.changePlanStep(deps, snapshot, 'fast_lane', { prorationDate: pd, userId }),
+    ])
+    const concurrent = settled.map((x) => (x.status === 'fulfilled' ? x.value : { rejected: redact(`${x.reason?.code ?? ''} ${String(x.reason?.message ?? x.reason).slice(0, 200)}`) }))
+    const afterConcurrent = await prorationInvoices(s.id)
+    const sequential = await cp.changePlanStep(deps, await fresh(s.id), 'fast_lane', { prorationDate: pd, userId })
+    // (c) the same stale snapshot again after it finished: Stripe replays the stored response
+    const replay = await cp.changePlanStep(deps, snapshot, 'fast_lane', { prorationDate: pd, userId })
+    s = await fresh(s.id)
+    const afterAll = await prorationInvoices(s.id)
+    out.U4_doubleSubmit = {
+      concurrent,
+      prorationInvoicesAfterConcurrent: afterConcurrent,
+      sequentialSecondTap: sequential,
+      replayOfSameRequest: replay,
+      prorationInvoicesAfterAll: afterAll,
+      itemsNow: lk(s),
+      chargedOnce: afterAll.length === 1 && afterAll[0].amount_paid > 0,
+    }
+  }
+
+  for (const id of created) {
+    const s = await stripe.subscriptions.retrieve(id)
+    if (s.schedule) await stripe.subscriptionSchedules.release(typeof s.schedule === 'string' ? s.schedule : s.schedule.id).catch(() => undefined)
+    if (!['canceled', 'incomplete_expired'].includes(s.status)) await stripe.subscriptions.cancel(id)
+  }
+  const left = []
+  for (const id of created) {
+    const s = await stripe.subscriptions.retrieve(id)
+    left.push({ id, status: s.status, schedule: s.schedule ?? null, probe: s.metadata?.probe })
+  }
+  out.cleanup = { canceled: created.length, check: left }
+  out.finishedAt = new Date().toISOString()
+  log(JSON.stringify(out, null, 2))
+  return out
+}
+
 async function main(argv) {
   const arg = (name) => {
     const i = argv.indexOf(name)
@@ -668,6 +803,7 @@ async function main(argv) {
   if (argv.includes('--tag-probes') && !argv.includes('--dry-run')) await tagProbeLeftovers(stripe)
   if (argv.includes('--probe-checkout-expiry') && !argv.includes('--dry-run')) await runCheckoutExpiryProbe(stripe, ladder, setup)
   if (argv.includes('--probe-billing') && !argv.includes('--dry-run')) await runBillingProbe(stripe, ladder, setup)
+  if (argv.includes('--probe-upgrade-confirm') && !argv.includes('--dry-run')) await runUpgradeConfirmProbe(stripe, ladder, setup)
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {

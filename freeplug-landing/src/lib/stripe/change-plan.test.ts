@@ -2,7 +2,17 @@
 import { describe, expect, it, vi } from 'vitest'
 import type Stripe from 'stripe'
 import { PLAN_STEPS, type PlanStepId } from '@/lib/plans/ladder'
-import { cancelPlanAtPeriodEnd, changePlanStep, pendingPlanChange, planMove, subscriptionMonthlyCents } from './change-plan'
+import {
+  PRORATION_DATE_MAX_AGE_SECONDS,
+  cancelPlanAtPeriodEnd,
+  changePlanStep,
+  checkProrationDate,
+  pendingPlanChange,
+  planMove,
+  previewPlanStepChange,
+  subscriptionMonthlyCents,
+  upgradeIdempotencyKey,
+} from './change-plan'
 
 const step = (id: PlanStepId) => PLAN_STEPS.find((s) => s.id === id)!
 const ladderSub = (id: PlanStepId, over: Record<string, unknown> = {}) =>
@@ -98,7 +108,8 @@ describe('changePlanStep (upgrades now + prorated, downgrades at period end)', (
     const [id, params, opts] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
     expect(id).toBe('sub_1')
     expect(params).toMatchObject({ items: [{ id: 'si_1', price: 'price_fast_lane', quantity: 1 }], proration_behavior: 'always_invoice', payment_behavior: 'pending_if_incomplete' })
-    expect(opts.idempotencyKey).toBe('plan-move:sub_1:price_starter:fast_lane:none')
+    expect(opts.idempotencyKey).toBe('plan-move:na:fast_lane:now:sub_1:price_starter:none')
+    expect(params).not.toHaveProperty('proration_date')
     expect(f.raw.subscriptionSchedules.create).not.toHaveBeenCalled()
   })
 
@@ -123,7 +134,7 @@ describe('changePlanStep (upgrades now + prorated, downgrades at period end)', (
     const f = fakeStripe()
     await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter', { latest_invoice: 'in_void_1' }), 'priority')
     const [, , opts] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, unknown, { idempotencyKey: string }]
-    expect(opts.idempotencyKey).toBe('plan-move:sub_1:price_starter:priority:in_void_1')
+    expect(opts.idempotencyKey).toBe('plan-move:na:priority:now:sub_1:price_starter:in_void_1')
   })
 
   it('downgrade: no subscription update; a schedule moves to the step price at the period end', async () => {
@@ -249,5 +260,118 @@ describe('entitlements are never written by a plan move', () => {
   it('changePlanStep and cancelPlanAtPeriodEnd only take Stripe (no profile/plan_step store exists in their deps)', () => {
     expect(changePlanStep.length).toBe(3)
     expect(cancelPlanAtPeriodEnd.length).toBe(2)
+  })
+})
+
+describe('upgrade confirm: preview + proration_date (Aria, Oct 3 1:34 PM)', () => {
+  const withPreview = () => {
+    const f = fakeStripe()
+    const createPreview = vi.fn(async () => ({ amount_due: 1953, currency: 'usd', total: 1953 }))
+    ;(f.raw as unknown as { invoices: Record<string, unknown> }).invoices.createPreview = createPreview
+    return { ...f, createPreview }
+  }
+  const periodSub = (id: PlanStepId, over: Record<string, unknown> = {}) => {
+    const sub = ladderSub(id, over) as unknown as { items: { data: Record<string, unknown>[] } }
+    sub.items.data[0].current_period_end = PERIOD_END
+    return sub as unknown as Stripe.Subscription
+  }
+
+  it('checkProrationDate: ok within 10 minutes, stale after, future and junk refused', () => {
+    expect(PRORATION_DATE_MAX_AGE_SECONDS).toBe(600)
+    expect(checkProrationDate(NOW_S, NOW)).toBe('ok')
+    expect(checkProrationDate(NOW_S - 600, NOW)).toBe('ok')
+    expect(checkProrationDate(NOW_S - 601, NOW)).toBe('stale')
+    expect(checkProrationDate(NOW_S + 1, NOW)).toBe('future')
+    for (const junk of ['1790000000', 1.5, -1, 0, null, undefined, Number.NaN]) expect(checkProrationDate(junk, NOW)).toBe('invalid')
+  })
+
+  it('preview: read-only createPreview with the same items, always_invoice and the server proration_date', async () => {
+    const f = withPreview()
+    const p = await previewPlanStepChange({ stripe: f.stripe, priceIdFor }, periodSub('starter'), 'fast_lane', NOW_S)
+    expect(p).toEqual({
+      ok: true,
+      step: 'fast_lane',
+      prorationDate: NOW_S,
+      amountDueCents: 1953,
+      currency: 'usd',
+      nextAmountCents: 6500,
+      nextBillingAt: new Date(PERIOD_END * 1000).toISOString(),
+    })
+    expect(f.createPreview).toHaveBeenCalledWith({
+      subscription: 'sub_1',
+      subscription_details: { items: [{ id: 'si_1', price: 'price_fast_lane', quantity: 1 }], proration_behavior: 'always_invoice', proration_date: NOW_S },
+    })
+    expect(f.calls).toEqual([]) // nothing written
+  })
+
+  it('preview: a grandfathered plan replaces the hosting item and deletes the add-on, like the update', async () => {
+    const f = withPreview()
+    await previewPlanStepChange({ stripe: f.stripe, priceIdFor }, legacySub(4000, 1500), 'fast_lane', NOW_S)
+    expect(f.createPreview.mock.calls[0]).toEqual([
+      expect.objectContaining({ subscription_details: expect.objectContaining({ items: [{ id: 'si_h', price: 'price_fast_lane', quantity: 1 }, { id: 'si_a', deleted: true }] }) }),
+    ])
+  })
+
+  it('preview: downgrades, the same step, non-sellable targets and ending plans get no preview (no confirm)', async () => {
+    const f = withPreview()
+    expect(await previewPlanStepChange({ stripe: f.stripe, priceIdFor }, periodSub('fast_lane'), 'starter', NOW_S)).toMatchObject({ ok: false, code: 'not_upgrade' })
+    expect(await previewPlanStepChange({ stripe: f.stripe, priceIdFor }, periodSub('fast_lane'), 'fast_lane', NOW_S)).toMatchObject({ ok: false, code: 'not_upgrade' })
+    expect(await previewPlanStepChange({ stripe: f.stripe, priceIdFor }, periodSub('starter'), 'leads', NOW_S)).toMatchObject({ ok: false, code: 'not_sellable' })
+    expect(await previewPlanStepChange({ stripe: f.stripe, priceIdFor }, periodSub('starter', { cancel_at_period_end: true }), 'priority', NOW_S)).toMatchObject({ ok: false, code: 'ending' })
+    expect(f.createPreview).not.toHaveBeenCalled()
+  })
+
+  it('confirm: the proration_date goes to the update, and the idempotency key is user + step + proration_date', async () => {
+    const f = fakeStripe()
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, ladderSub('starter'), 'fast_lane', { prorationDate: NOW_S - 120, userId: 'u1' })
+    expect(r).toMatchObject({ ok: true, kind: 'upgraded' })
+    const [, params, opts] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
+    expect(params.proration_date).toBe(NOW_S - 120)
+    expect(params.proration_behavior).toBe('always_invoice')
+    expect(opts.idempotencyKey).toBe(`plan-move:u1:fast_lane:${NOW_S - 120}:sub_1:price_starter:none`)
+  })
+
+  it.each([
+    ['stale (10 min + 1 s)', NOW_S - 601],
+    ['future', NOW_S + 30],
+  ])('confirm with a %s proration_date is refused before anything changes in Stripe', async (_label, pd) => {
+    const f = fakeStripe()
+    const sub = ladderSub('priority', { schedule: 'sub_sched_0' }) // even a pending downgrade is left alone
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, sub, 'fast_lane', { prorationDate: pd, userId: 'u1' })
+    expect(r).toMatchObject({ ok: false, code: 'stale_preview' })
+    expect(f.calls).toEqual([])
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+
+  it('a double Confirm sends the identical update (same key, same params), so Stripe charges once', async () => {
+    const f = fakeStripe()
+    const deps = { stripe: f.stripe, priceIdFor, now: () => NOW }
+    const opts = { prorationDate: NOW_S - 5, userId: 'u1' }
+    await Promise.all([changePlanStep(deps, ladderSub('starter'), 'priority', opts), changePlanStep(deps, ladderSub('starter'), 'priority', opts)])
+    const calls = f.raw.subscriptions.update.mock.calls as unknown as [string, unknown, { idempotencyKey: string }][]
+    expect(calls).toHaveLength(2)
+    expect(calls[0][2].idempotencyKey).toBe(calls[1][2].idempotencyKey)
+    expect(calls[0][1]).toEqual(calls[1][1])
+    // and a confirm after the switch landed is "same": no second update at all
+    const after = await changePlanStep(deps, ladderSub('priority'), 'priority', opts)
+    expect(after).toEqual({ ok: true, kind: 'unchanged', step: 'priority' })
+    expect(f.raw.subscriptions.update).toHaveBeenCalledTimes(2)
+  })
+
+  it('the second of two concurrent Confirms gets Stripe 409 (key in use): in_progress, and the pending downgrade is NOT put back', async () => {
+    const f = fakeStripe()
+    f.raw.subscriptions.update.mockRejectedValueOnce(Object.assign(new Error('another in-progress request'), { type: 'StripeIdempotencyError', code: 'idempotency_key_in_use' }))
+    const sub = ladderSub('priority', { schedule: 'sub_sched_0' })
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, sub, 'fast_lane', { prorationDate: NOW_S - 5, userId: 'u1' })
+    expect(r).toMatchObject({ ok: false, code: 'in_progress' })
+    expect(f.calls.filter((c) => c.startsWith('schedules.create') || c.startsWith('schedules.update'))).toEqual([])
+  })
+
+  it('a different user, step or proration_date is a different key', () => {
+    const sub = ladderSub('starter')
+    const k = upgradeIdempotencyKey(sub, 'priority', { prorationDate: 100, userId: 'u1' })
+    expect(upgradeIdempotencyKey(sub, 'priority', { prorationDate: 100, userId: 'u2' })).not.toBe(k)
+    expect(upgradeIdempotencyKey(sub, 'fast_lane', { prorationDate: 100, userId: 'u1' })).not.toBe(k)
+    expect(upgradeIdempotencyKey(sub, 'priority', { prorationDate: 101, userId: 'u1' })).not.toBe(k)
   })
 })

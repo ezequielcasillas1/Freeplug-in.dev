@@ -114,6 +114,8 @@ describe('shared rate limiter', () => {
       expect(usesDecision).toEqual(['lib/auth/reset-rate-limit.ts', 'lib/rate-limit/index.ts'])
       const usesCheck = files.filter((f) => /\brateCheck\((?!\))/.test(readFileSync(f, 'utf8'))).map(rel).sort()
       expect(usesCheck).toEqual([
+        // upgrade confirm preview (round 4): fails closed to the "charge the difference" fallback
+        'app/(dashboard)/dashboard/billing-actions.ts',
         'app/(dashboard)/dashboard/request-website/actions.ts',
         'lib/outreach/resend-confirmation.ts',
         'lib/outreach/server.ts',

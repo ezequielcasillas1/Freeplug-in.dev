@@ -2,6 +2,10 @@ import type Stripe from 'stripe'
 // Relative import on purpose: scripts/stripe-test-setup-ladder.mjs loads this file (jiti) for the
 // test-mode probes, outside Next's "@/" alias.
 import { isPlanStepId, stepById, stepByLookupKey, type PlanStep, type PlanStepId } from '../plans/ladder'
+import { PRORATION_DATE_MAX_AGE_SECONDS, planMove, type PlanMove } from '../plans/plan-direction'
+import { subscriptionPeriodEnd } from './subscription-dates'
+
+export { planMove, type PlanMove }
 
 /**
  * Moving a live hosting subscription to a ladder step (Aria section 6.4). Done in the app, not the
@@ -37,7 +41,6 @@ import { isPlanStepId, stepById, stepByLookupKey, type PlanStep, type PlanStepId
  * "now" amount is the subscription's monthly total (hosting + add-on); an equal-priced step is
  * treated as an upgrade (applied now, zero proration).
  */
-export type PlanMove = 'upgrade' | 'downgrade' | 'same'
 
 export type PendingPlanChange = { step: PlanStepId; effectiveAt: string; scheduleId: string }
 
@@ -46,7 +49,39 @@ export type ChangePlanResult =
   | { ok: true; kind: 'scheduled'; step: PlanStepId; effectiveAt: string }
   | { ok: true; kind: 'unchanged'; step: PlanStepId }
   | { ok: false; code: 'payment_failed'; message: string; pendingRestored: boolean | null }
-  | { ok: false; code: 'not_live' | 'ending' | 'price' | 'not_sellable'; message: string }
+  | { ok: false; code: 'not_live' | 'ending' | 'price' | 'not_sellable' | 'stale_preview' | 'in_progress'; message: string }
+
+/**
+ * Upgrade confirm (Aria, Oct 3 1:34 PM): the amount shown is a read-only Stripe preview
+ * (invoices.createPreview) at a server-generated proration_date, and Confirm sends that same
+ * proration_date back so the charge equals the preview. It is refused when it is more than
+ * PRORATION_DATE_MAX_AGE_SECONDS old (the customer looks again) or in the future.
+ */
+export { PRORATION_DATE_MAX_AGE_SECONDS }
+
+export type ProrationDateCheck = 'ok' | 'stale' | 'future' | 'invalid'
+
+export function checkProrationDate(value: unknown, now: Date): ProrationDateCheck {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) return 'invalid'
+  const nowSec = Math.floor(now.getTime() / 1000)
+  if (value > nowSec) return 'future'
+  if (nowSec - value > PRORATION_DATE_MAX_AGE_SECONDS) return 'stale'
+  return 'ok'
+}
+
+export type PlanChangePreview =
+  | {
+      ok: true
+      step: PlanStepId
+      prorationDate: number
+      /** What the always_invoice proration invoice would charge now (after any customer credit). */
+      amountDueCents: number
+      currency: string
+      /** The step's monthly price, billed from nextBillingAt (the billing date does not move). */
+      nextAmountCents: number
+      nextBillingAt: string | null
+    }
+  | { ok: false; code: 'not_live' | 'ending' | 'not_upgrade' | 'not_sellable' | 'price'; message: string }
 
 type Sub = Pick<Stripe.Subscription, 'id' | 'status' | 'cancel_at_period_end' | 'cancel_at' | 'schedule' | 'items'> & {
   latest_invoice?: string | { id: string } | null
@@ -63,13 +98,6 @@ export function subscriptionMonthlyCents(sub: Pick<Stripe.Subscription, 'items'>
 export function currentLadderStep(sub: Pick<Stripe.Subscription, 'items'>): PlanStep | null {
   if (sub.items.data.length !== 1) return null
   return stepByLookupKey(sub.items.data[0].price.lookup_key)
-}
-
-export function planMove(current: PlanStep | null, currentCents: number, target: PlanStep): PlanMove {
-  if (current && current.id === target.id) return 'same'
-  if (target.monthlyCents > currentCents) return 'upgrade'
-  if (target.monthlyCents === currentCents) return current ? 'same' : 'upgrade'
-  return 'downgrade'
 }
 
 const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : (v?.id ?? null))
@@ -137,10 +165,71 @@ const isCardError = (e: unknown) =>
 
 const PAYMENT_FAILED = 'The card was not charged, so the plan did not change.'
 
+/** Stripe's 409 for a second request with the same idempotency key while the first is in flight. */
+const isKeyInUse = (e: unknown) => !!e && typeof e === 'object' && (e as { code?: string }).code === 'idempotency_key_in_use'
+
+/** Items for an upgrade: the first item becomes the step price, any others (an old add-on) go. */
+function upgradeItems(sub: Pick<Stripe.Subscription, 'items'>, priceId: string): Stripe.SubscriptionUpdateParams.Item[] {
+  const [first, ...rest] = sub.items.data
+  return [{ id: first.id, price: priceId, quantity: 1 }, ...rest.map((i) => ({ id: i.id, deleted: true as const }))]
+}
+
+export function upgradeIdempotencyKey(
+  sub: Pick<Sub, 'id' | 'items' | 'latest_invoice'>,
+  target: PlanStepId,
+  opts: { prorationDate?: number; userId?: string } = {}
+): string {
+  const prices = sub.items.data.map((i) => i.price.id).join('+')
+  return `plan-move:${opts.userId ?? 'na'}:${target}:${opts.prorationDate ?? 'now'}:${sub.id}:${prices}:${idOf(sub.latest_invoice) ?? 'none'}`
+}
+
+/**
+ * Read-only preview of an upgrade (nothing is charged or changed): the proration invoice Stripe
+ * would create right now with always_invoice at `prorationDate`. Downgrades and "same" get
+ * not_upgrade (no confirm for them). Stripe errors are thrown; the caller falls back to "We'll
+ * charge the difference today" and still sends the proration_date with Confirm.
+ */
+export async function previewPlanStepChange(
+  deps: { stripe: Stripe; priceIdFor: (id: PlanStepId) => Promise<string> },
+  sub: Sub,
+  targetId: PlanStepId,
+  prorationDate: number
+): Promise<PlanChangePreview> {
+  const target = stepById(targetId)
+  if (sub.status !== 'active' && sub.status !== 'trialing') return { ok: false, code: 'not_live', message: 'No active hosting plan to change.' }
+  if (sub.cancel_at_period_end || sub.cancel_at) return { ok: false, code: 'ending', message: 'This plan is set to end. Resume it first.' }
+  if (planMove(currentLadderStep(sub), subscriptionMonthlyCents(sub), target) !== 'upgrade') {
+    return { ok: false, code: 'not_upgrade', message: 'Only an upgrade is charged now.' }
+  }
+  if (!target.sellable) return { ok: false, code: 'not_sellable', message: `${target.name} is not sold yet.` }
+  let priceId: string
+  try {
+    priceId = await deps.priceIdFor(target.id)
+  } catch {
+    return { ok: false, code: 'price', message: 'This plan is not available right now.' }
+  }
+  const preview = await deps.stripe.invoices.createPreview({
+    subscription: sub.id,
+    subscription_details: { items: upgradeItems(sub, priceId), proration_behavior: 'always_invoice', proration_date: prorationDate },
+  })
+  const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
+  return {
+    ok: true,
+    step: target.id,
+    prorationDate,
+    amountDueCents: preview.amount_due,
+    currency: preview.currency,
+    nextAmountCents: target.monthlyCents,
+    nextBillingAt: end ? end.toISOString() : null,
+  }
+}
+
 export async function changePlanStep(
   deps: { stripe: Stripe; priceIdFor: (id: PlanStepId) => Promise<string>; now?: () => Date; log?: (msg: string) => void },
   sub: Sub,
-  targetId: PlanStepId
+  targetId: PlanStepId,
+  /** prorationDate: from previewPlanStepChange (upgrades only); userId: for the idempotency key. */
+  opts: { prorationDate?: number; userId?: string } = {}
 ): Promise<ChangePlanResult> {
   const { stripe } = deps
   const log = deps.log ?? ((m: string) => console.error(m))
@@ -171,6 +260,11 @@ export async function changePlanStep(
   }
 
   if (move === 'upgrade') {
+    // The confirmed amount's proration_date: checked before anything changes in Stripe.
+    if (opts.prorationDate !== undefined) {
+      const check = checkProrationDate(opts.prorationDate, deps.now?.() ?? new Date())
+      if (check !== 'ok') return { ok: false, code: 'stale_preview', message: `The previewed amount can't be used (${check}). Check it again.` }
+    }
     // Release a pending downgrade first (Aria, Oct 3 12:25). Remember it so a failed card puts it back.
     let restore: PendingPlanChange | null = null
     if (pending) {
@@ -187,21 +281,26 @@ export async function changePlanStep(
         return false
       }
     }
-    const [first, ...rest] = sub.items.data
-    const items: Stripe.SubscriptionUpdateParams.Item[] = [
-      { id: first.id, price: priceId, quantity: 1 },
-      ...rest.map((i) => ({ id: i.id, deleted: true as const })),
-    ]
     let updated: Stripe.Subscription
     try {
       updated = await stripe.subscriptions.update(
         sub.id,
-        { items, proration_behavior: 'always_invoice', payment_behavior: 'pending_if_incomplete', expand: ['latest_invoice'] },
-        // Double-click safe; the latest invoice id makes a retry after a failed card a NEW request
-        // (a reused key would replay the failed response for 24 hours).
-        { idempotencyKey: `plan-move:${sub.id}:${sub.items.data.map((i) => i.price.id).join('+')}:${target.id}:${idOf(sub.latest_invoice) ?? 'none'}` }
+        {
+          items: upgradeItems(sub, priceId),
+          proration_behavior: 'always_invoice',
+          payment_behavior: 'pending_if_incomplete',
+          ...(opts.prorationDate !== undefined ? { proration_date: opts.prorationDate } : {}),
+          expand: ['latest_invoice'],
+        },
+        // user + step + proration_date (Aria 1:34 PM): a double Confirm sends the same key, so Stripe
+        // runs the update once. The subscription's prices and latest invoice id keep a retry after a
+        // failed card a NEW request (a reused key would replay the failed response for 24 hours).
+        { idempotencyKey: upgradeIdempotencyKey(sub, target.id, opts) }
       )
     } catch (e) {
+      // A double Confirm (same user + step + proration_date) while the first is still running: the
+      // first one charges; this one changes nothing and must not put a pending downgrade back.
+      if (isKeyInUse(e)) return { ok: false, code: 'in_progress', message: 'This plan change is already going through.' }
       if (!isCardError(e)) throw e
       return { ok: false, code: 'payment_failed', message: PAYMENT_FAILED, pendingRestored: await putBack() }
     }

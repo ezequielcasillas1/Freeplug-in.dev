@@ -9,7 +9,8 @@ import { billingPortalSessionParams } from '@/lib/stripe/portal'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
-import { cancelPlanAtPeriodEnd, changePlanStep } from '@/lib/stripe/change-plan'
+import { cancelPlanAtPeriodEnd, changePlanStep, previewPlanStepChange } from '@/lib/stripe/change-plan'
+import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getStepPriceId } from '@/lib/stripe/prices'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
@@ -23,6 +24,8 @@ import {
   CHANGE_PLAN_UNCHANGED,
   CHANGE_PLAN_UPGRADED,
   STEP_NOT_SELLABLE_MESSAGE,
+  UPGRADE_IN_PROGRESS,
+  UPGRADE_PREVIEW_EXPIRED,
 } from '@/lib/plans/ladder-copy'
 
 export async function openBillingPortal() {
@@ -141,9 +144,58 @@ export async function resumePlan() {
  * it is synced from Stripe BEFORE the move (so perks keep coming from the snapshot); afterwards only
  * the customer.subscription.updated webhook changes plan_step and perks.
  */
-export async function changeHostingPlan(planStep: string): Promise<{ ok: boolean; message: string }> {
+export type ChangeHostingPlanResult = { ok: boolean; message: string; code?: 'stale_preview' }
+
+/**
+ * Upgrade confirm preview (Aria, Oct 3 1:34 PM; Lina §3a). Signed in, rate limited per user, and
+ * only ever about the caller's own subscription (found from their profile's Stripe customer; nothing
+ * about the subscription comes from the browser). Read-only: invoices.createPreview at a
+ * server-generated proration_date, which the browser sends back with Confirm. The proration_date is
+ * returned on every failure too, so the fallback confirm ("We'll charge the difference today")
+ * still charges at the time the customer looked.
+ */
+export type PlanPreviewResponse =
+  | { ok: true; prorationDate: number; amountDueCents: number; nextAmountCents: number; nextDate: string | null }
+  | { ok: false; reason: 'not_upgrade' | 'rate_limited' | 'preview_failed' | 'unavailable'; prorationDate: number | null }
+
+export async function previewPlanChange(planStep: string): Promise<PlanPreviewResponse> {
+  const step = resolvePlanStep(planStep)
+  if (!step) return { ok: false, reason: 'unavailable', prorationDate: null }
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login?next=/dashboard/plans')
+  const prorationDate = Math.floor(Date.now() / 1000)
+  if (!(await rateCheck(PLAN_PREVIEW_LIMIT, user.id))) return { ok: false, reason: 'rate_limited', prorationDate }
+  const { data: prof } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single()
+  const customerId = prof?.stripe_customer_id
+  if (!customerId) return { ok: false, reason: 'unavailable', prorationDate: null }
+  try {
+    const live = (await listLiveSubscriptions(customerId)).filter((s) => s.status === 'active' || s.status === 'trialing')
+    if (live.length !== 1) return { ok: false, reason: 'unavailable', prorationDate: null }
+    const stripe = getStripe()
+    const p = await previewPlanStepChange({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe) }, live[0], step.id, prorationDate)
+    if (!p.ok) return { ok: false, reason: p.code === 'not_upgrade' ? 'not_upgrade' : 'unavailable', prorationDate: null }
+    return {
+      ok: true,
+      prorationDate: p.prorationDate,
+      amountDueCents: p.amountDueCents,
+      nextAmountCents: p.nextAmountCents,
+      nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null,
+    }
+  } catch (e) {
+    console.error('[previewPlanChange] failed', e instanceof Error ? e.message : e)
+    return { ok: false, reason: 'preview_failed', prorationDate }
+  }
+}
+
+export async function changeHostingPlan(planStep: string, prorationDate?: number): Promise<ChangeHostingPlanResult> {
   const step = resolvePlanStep(planStep)
   if (!step) return { ok: false, message: CHANGE_PLAN_UNAVAILABLE }
+  if (prorationDate !== undefined && (typeof prorationDate !== 'number' || !Number.isSafeInteger(prorationDate))) {
+    return { ok: false, message: CHANGE_PLAN_UNAVAILABLE }
+  }
   const supabase = await createClient()
   const {
     data: { user },
@@ -161,7 +213,7 @@ export async function changeHostingPlan(planStep: string): Promise<{ ok: boolean
     if (!snapshot?.plan_step_synced_at) {
       await syncPlanSnapshotForCustomer(stripe, customerId)
     }
-    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe) }, live[0], step.id)
+    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe) }, live[0], step.id, { prorationDate, userId: user.id })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (r.ok && r.kind === 'upgraded') return { ok: true, message: CHANGE_PLAN_UPGRADED(step.name) }
@@ -169,6 +221,8 @@ export async function changeHostingPlan(planStep: string): Promise<{ ok: boolean
     if (r.ok) return { ok: true, message: CHANGE_PLAN_UNCHANGED }
     if (r.code === 'ending') return { ok: false, message: CHANGE_PLAN_ENDING }
     if (r.code === 'not_sellable') return { ok: false, message: STEP_NOT_SELLABLE_MESSAGE(step.name) }
+    if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }
+    if (r.code === 'in_progress') return { ok: false, message: UPGRADE_IN_PROGRESS }
     if (r.code === 'payment_failed') {
       return { ok: false, message: r.pendingRestored === false ? CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST : CHANGE_PLAN_PAYMENT_FAILED }
     }
