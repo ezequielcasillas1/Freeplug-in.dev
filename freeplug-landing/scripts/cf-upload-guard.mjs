@@ -16,7 +16,8 @@
  * Live markers: sk_live_ / rk_live_ / pk_live_ keys, the live Supabase project ref, a
  * service_role JWT, RESEND_API_KEY or SMTP_PASS set to a real (non-placeholder) value, a
  * whsec_ next to a live Stripe key (a whsec_ alone does not say test or live mode), secrets in
- * plain wrangler vars, and any secret value from the env showing up in the bundle.
+ * plain wrangler vars, RESEND_API_KEY named anywhere in wrangler.jsonc (it is a Worker secret only), and
+ * any secret value from the env showing up in the bundle.
  *
  * Targets: --target=preview (default, strictest) or --target=production.
  *
@@ -187,7 +188,11 @@ export function runGuard({
   }
   const wranglerPath = path.join(root, 'wrangler.jsonc')
   if (existsSync(wranglerPath)) {
-    const cfg = parseJsonc(readFileSync(wranglerPath, 'utf8'))
+    const raw = readFileSync(wranglerPath, 'utf8')
+    // Resend primary (Aria, Oct 3): the key is a Worker secret only (versions secret put). Its name anywhere in
+    // wrangler.jsonc (vars, env.*.vars, a define, even a comment) is refused, whatever the value.
+    if (raw.includes('RESEND_API_KEY')) findings.push({ check: 'resend-key-named-in-wrangler-config (Worker secret only: wrangler versions secret put)', where: 'wrangler.jsonc' })
+    const cfg = parseJsonc(raw)
     fileVars.push(['wrangler.jsonc:vars', cfg.vars ?? {}, true])
     for (const [name, e] of Object.entries(cfg.env ?? {})) fileVars.push([`wrangler.jsonc:env.${name}.vars`, e?.vars ?? {}, true])
   }

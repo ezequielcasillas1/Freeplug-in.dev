@@ -50,7 +50,7 @@ function fakeAdminClient() {
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/admin/guard', () => ({ assertAdminAccess: vi.fn(async () => undefined) }))
-vi.mock('@/lib/admin/mail', () => ({ sendSmtpMail: vi.fn() }))
+vi.mock('@/lib/admin/mail', () => ({ sendAdminMail: vi.fn() }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => fakeAdminClient() }))
 
 const { adminSetBuyoutPrice } = await import('./actions')

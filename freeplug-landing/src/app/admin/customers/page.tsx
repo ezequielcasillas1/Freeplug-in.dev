@@ -1,5 +1,5 @@
 import { getAuthSummariesByUserIds } from '@/lib/admin/auth-users'
-import { isSmtpConfigured } from '@/lib/admin/mail'
+import { isMailConfigured } from '@/lib/admin/mail'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPlanMonthlyTotalCents } from '@/lib/stripe/active-subscription'
 import {
@@ -14,13 +14,13 @@ import {
   parseAccessFilter,
   type CustomerRowView,
 } from '../AdminCustomersTable'
-import { AdminSmtpBanner } from '../AdminSmtpBanner'
+import { AdminMailBanner } from '../AdminMailBanner'
 
 type Props = { searchParams: Promise<{ access?: string }> }
 
 export default async function AdminCustomersPage({ searchParams }: Props) {
   const accessFilter = parseAccessFilter((await searchParams).access)
-  const smtpOn = isSmtpConfigured()
+  const mailOn = isMailConfigured()
 
   let admin
   try {
@@ -95,7 +95,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
 
   return (
     <div>
-      <AdminSmtpBanner />
+      <AdminMailBanner />
       <h2 className="text-xl font-semibold mb-2">Customers (profiles)</h2>
       <p className="text-sm text-zinc-600 mb-4">
         Evaluation status, cumulative paid (from webhooks), and Stripe customer id. Emails are from Auth — same as sign-in address.
@@ -113,7 +113,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
         rows={filterCustomersByAccess(customerRows, accessFilter)}
         accessFilter={accessFilter}
         totalCount={customerRows.length}
-        smtpConfigured={smtpOn}
+        mailConfigured={mailOn}
         allowAdjustCumulativePaid={allowAdjustCumulativePaid}
       />
     </div>

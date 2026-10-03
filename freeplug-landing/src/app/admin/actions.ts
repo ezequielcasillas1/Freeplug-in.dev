@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { assertAdminAccess } from '@/lib/admin/guard'
-import { sendSmtpMail } from '@/lib/admin/mail'
+import { sendAdminMail } from '@/lib/admin/mail'
+import { publicMailError } from '@/lib/email/mailer'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseBuyoutPriceInput } from '@/lib/buyout/buyout'
 
@@ -25,12 +26,12 @@ export async function adminSendCustomerEmail(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues.map((i) => i.message).join(' ') }
   }
-  const result = await sendSmtpMail({
+  const result = await sendAdminMail({
     to: parsed.data.to,
     subject: parsed.data.subject,
     text: parsed.data.body,
   })
-  if (!result.ok) return result
+  if (!result.ok) return { ok: false, error: publicMailError(result.error) }
   revalidatePath('/admin', 'layout')
   return { ok: true }
 }

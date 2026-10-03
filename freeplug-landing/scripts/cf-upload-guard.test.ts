@@ -104,6 +104,24 @@ describe('upload guard (scripts/cf-upload-guard.mjs)', () => {
     ])
   })
 
+  it('refuses RESEND_API_KEY anywhere in wrangler.jsonc, even empty or only in a comment (Worker secret only)', () => {
+    const inVars = project({ 'wrangler.jsonc': '{ "vars": { "RESEND_API_KEY": "" } }' })
+    expect(checks(runGuard({ root: inVars, env: DUMMY_ENV }))).toEqual([
+      'resend-key-named-in-wrangler-config (Worker secret only: wrangler versions secret put) @ wrangler.jsonc',
+      'secret-in-plain-wrangler-vars (use versions secret put) @ wrangler.jsonc:vars:RESEND_API_KEY',
+    ])
+    const inPreview = project({ 'wrangler.jsonc': '{ "env": { "preview": { "vars": { "RESEND_API_KEY": "re_dummy" } } } }' })
+    expect(checks(runGuard({ root: inPreview, env: DUMMY_ENV, target: 'preview' }))).toEqual([
+      'resend-key-named-in-wrangler-config (Worker secret only: wrangler versions secret put) @ wrangler.jsonc',
+      'secret-in-plain-wrangler-vars (use versions secret put) @ wrangler.jsonc:env.preview.vars:RESEND_API_KEY',
+    ])
+    const inComment = project({ 'wrangler.jsonc': '{ "vars": {} } // RESEND_API_KEY goes here' })
+    expect(checks(runGuard({ root: inComment, env: DUMMY_ENV, target: 'production' }))).toEqual([
+      'resend-key-named-in-wrangler-config (Worker secret only: wrangler versions secret put) @ wrangler.jsonc',
+    ])
+    expect(checks(runGuard({ root: project({ 'wrangler.jsonc': '{ "vars": { "EMAIL_FROM": "support@freeplug-in.dev" } }' }), env: DUMMY_ENV }))).toEqual([])
+  })
+
   it('trips on the built bundle: baked keys, JWTs, whsec, resend keys and env secret values', () => {
     const root = project({
       '.open-next/server-functions/default/handler.mjs': `const a="${FAKE.sk}";const b="${FAKE.serviceJwt}";const c="${FAKE.whsec}"`,

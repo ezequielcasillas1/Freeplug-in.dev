@@ -61,7 +61,7 @@ export function WebsiteAccessBadge({ access }: { access: CustomerRowView['websit
 
 export function AdminCustomersTable({
   rows,
-  smtpConfigured,
+  mailConfigured,
   allowAdjustCumulativePaid = false,
   accessFilter = 'all',
   totalCount,
@@ -70,7 +70,7 @@ export function AdminCustomersTable({
   accessFilter?: AccessFilter
   /** Rows before filtering (for the filter summary). */
   totalCount?: number
-  smtpConfigured: boolean
+  mailConfigured: boolean
   /** When true and env `ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID=true`, show QA override for paid cents. */
   allowAdjustCumulativePaid?: boolean
 }) {
@@ -133,7 +133,7 @@ export function AdminCustomersTable({
           {rows.map((r) => (
             <tr key={r.id} className="border-t border-zinc-100 align-top">
               <td className="p-3">
-                <AdminQuickEmail to={r.email} smtpConfigured={smtpConfigured} />
+                <AdminQuickEmail to={r.email} mailConfigured={mailConfigured} />
               </td>
               <td className="p-3 text-zinc-800">{r.displayName ?? '—'}</td>
               <td className="p-3 font-mono text-xs">{r.evaluation_status}</td>

@@ -81,4 +81,19 @@ describe('sendCancelNoticeOnce', () => {
     expect(await sendCancelNoticeOnce(stripe, { ...canceledSub, canceled_at: 1791000000 } as unknown as Stripe.Subscription)).toBe('sent')
     expect(sendCancelled).toHaveBeenCalledTimes(2)
   })
+
+  it('passes the Resend idempotency key `<event.id>:subscription-cancelled` (Oct 3)', async () => {
+    const { stripe } = makeStripe(canceledSub)
+    expect(await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription, 'evt_123')).toBe('sent')
+    expect(sendCancelled).toHaveBeenCalledWith('owner@example.com', expect.any(Object), { idempotencyKey: 'evt_123:subscription-cancelled' })
+  })
+
+  it('a throwing sender is send_failed (never an exception), after the claim was written', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {})
+    sendCancelled.mockRejectedValue(new Error('resend down'))
+    const { stripe, raw } = makeStripe(canceledSub)
+    expect(await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription, 'evt_124')).toBe('send_failed')
+    expect(raw.subscriptions.update).toHaveBeenCalledTimes(1)
+    quiet.mockRestore()
+  })
 })

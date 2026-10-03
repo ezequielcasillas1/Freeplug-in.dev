@@ -27,10 +27,10 @@ const STATUSES = ['submitted', 'in_review', 'closed'] as const
 
 export function AdminRequestRow({
   row,
-  smtpConfigured,
+  mailConfigured,
 }: {
   row: AdminRequestRowData
-  smtpConfigured: boolean
+  mailConfigured: boolean
 }) {
   const [pending, startTransition] = useTransition()
   const buyout = row.is_buyout === true
@@ -72,7 +72,7 @@ export function AdminRequestRow({
         </select>
       </td>
       <td className="p-3">
-        <AdminQuickEmail to={row.userEmail} smtpConfigured={smtpConfigured} />
+        <AdminQuickEmail to={row.userEmail} mailConfigured={mailConfigured} />
       </td>
       <td className="p-3 text-zinc-700 text-sm max-w-[120px] break-words">
         {row.userDisplayName ?? '—'}

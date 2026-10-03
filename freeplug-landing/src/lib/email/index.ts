@@ -1,12 +1,18 @@
-export { getResend, isResendConfigured, EMAIL_FROM, EMAIL_REPLY_TO } from './resend'
+export { getResend, isResendConfigured } from './resend'
 export {
-  isSmtpConfigured,
-  getSmtpTransport,
+  isMailConfigured,
   getEmailFrom,
   getDefaultReplyTo,
   sendMail,
-} from './smtp'
-export type { MailParams, MailResult } from './smtp'
+  MAIL_NOT_CONFIGURED,
+  MAIL_GENERIC_ERROR,
+  DEFAULT_FROM_ADDRESS,
+  DEFAULT_REPLY_TO,
+  publicMailError,
+  EMAIL_FROM,
+  EMAIL_REPLY_TO,
+} from './mailer'
+export type { MailParams, MailResult } from './mailer'
 export {
   sendWelcomeEmail,
   sendPaymentReceivedEmail,

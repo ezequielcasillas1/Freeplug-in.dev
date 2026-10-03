@@ -16,7 +16,7 @@ import {
   isResetThrottledForIp,
   recoveryConfirmUrl,
 } from '@/lib/auth/password-reset'
-import { isSmtpConfigured, sendMail } from '@/lib/email/smtp'
+import { isMailConfigured, sendMail } from '@/lib/email/mailer'
 import { RESET_COOKIE_NAME, resetCookieSecret, verifyResetToken } from '@/lib/auth/reset-cookie'
 import { sendPasswordResetEmail } from '@/lib/email/send'
 import { GoogleSignInEmail } from '@/lib/email/templates/google-sign-in'
@@ -132,10 +132,10 @@ async function clientIp(): Promise<string> {
 }
 
 /**
- * Sends the reset email from our own SMTP sender (EMAIL_FROM / EMAIL_FROM_NAME).
+ * Sends the reset email from our own sender (Resend; EMAIL_FROM / EMAIL_FROM_NAME).
  * Unknown emails get nothing; Google-only accounts get a "sign in with Google" note.
- * Falls back to Supabase's built-in mailer only when SMTP or the service role key is missing,
- * or when our SMTP send fails.
+ * Falls back to Supabase Auth's own mailer (the hosted project's email settings, not ours) only when
+ * RESEND_API_KEY or the service role key is missing, or when our Resend send fails.
  */
 /** Reset-link base: the local origin in `next dev` on localhost, else emailBaseUrl(). */
 async function resetLinkBaseUrl(): Promise<string> {
@@ -146,7 +146,7 @@ async function resetLinkBaseUrl(): Promise<string> {
 async function deliverPasswordReset(email: string): Promise<void> {
   const origin = await resetLinkBaseUrl()
 
-  if (isSmtpConfigured() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+  if (isMailConfigured() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
     const admin = createAdminClient()
     const { data, error } = await admin.auth.admin.generateLink({ type: 'recovery', email })
     if (error || !data?.properties?.hashed_token) {
@@ -168,7 +168,7 @@ async function deliverPasswordReset(email: string): Promise<void> {
       resetLink: recoveryConfirmUrl(origin, data.properties.hashed_token),
     })
     if (res.success) return
-    console.error('[password-reset] SMTP send failed, falling back to Supabase mailer:', res.error)
+    console.error('[password-reset] Resend send failed, falling back to Supabase mailer:', res.error)
   }
 
   const supabase = await createClient()

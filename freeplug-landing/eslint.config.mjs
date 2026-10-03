@@ -2,6 +2,9 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
+const NODEMAILER_MSG =
+  "nodemailer was removed (Resend primary, Oct 3): send through sendMail() in src/lib/email/mailer.ts. To go back, apply resend-primary.patch in reverse.";
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -53,8 +56,37 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-restricted-imports": [
         "error",
         {
-          paths: [{ name: "sharp", message: "sharp can't run on Cloudflare Workers: use processUploadedImage() (Images binding)." }],
+          paths: [
+            { name: "sharp", message: "sharp can't run on Cloudflare Workers: use processUploadedImage() (Images binding)." },
+            { name: "nodemailer", message: NODEMAILER_MSG },
+          ],
+          patterns: [{ group: ["nodemailer/*", "@types/nodemailer"], message: NODEMAILER_MSG }],
         },
+      ],
+    },
+  },
+  // Resend primary (Oct 3): nodemailer was removed. Tests, test helpers, scripts and root config files too
+  // (src app code is covered by the block above; core rule name, so neither block replaces the other).
+  {
+    files: ["src/**/*.test.{ts,tsx}", "test/**/*.{ts,tsx,js,mjs}", "scripts/**/*.{ts,mts,js,mjs,cjs}", "*.{ts,mts,js,mjs,cjs}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [{ name: "nodemailer", message: NODEMAILER_MSG }],
+          patterns: [{ group: ["nodemailer/*", "@types/nodemailer"], message: NODEMAILER_MSG }],
+        },
+      ],
+    },
+  },
+  // CommonJS require and dynamic import of nodemailer, in any file.
+  {
+    files: ["**/*.{ts,tsx,mts,js,mjs,cjs}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        { selector: "ImportExpression[source.value=/^nodemailer(\\/|$)/]", message: NODEMAILER_MSG },
+        { selector: "CallExpression[callee.name='require'][arguments.0.value=/^nodemailer(\\/|$)/]", message: NODEMAILER_MSG },
       ],
     },
   },

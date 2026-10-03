@@ -1,8 +1,8 @@
 // Server-only helpers. Deliberately NOT 'use server': that directive would expose every export
-// below as a public server action anyone could call to send mail through our SMTP account.
+// below as a public server action anyone could call to send mail from our address (Resend).
 import 'server-only'
 
-import { sendMail } from './smtp'
+import { sendMail } from './mailer'
 import { WelcomeEmail } from './templates/welcome'
 import { PaymentReceivedEmail } from './templates/payment-received'
 import { RequestStatusUpdateEmail } from './templates/request-status-update'
@@ -15,8 +15,8 @@ import { PasswordResetEmail } from './templates/password-reset'
 
 type SendResult = { success: true; id: string } | { success: false; error: string }
 
-/** Optional per-send overrides (e.g. replyTo). Existing callers can omit it. */
-type SendOptions = { replyTo?: string | string[] }
+/** Optional per-send overrides (replyTo, Resend idempotency key). Existing callers can omit it. */
+type SendOptions = { replyTo?: string | string[]; idempotencyKey?: string }
 
 export async function sendWelcomeEmail(
   to: string,
@@ -28,6 +28,7 @@ export async function sendWelcomeEmail(
     subject: 'Welcome to Freeplug!',
     react: WelcomeEmail({ userName }),
     replyTo: options?.replyTo,
+    idempotencyKey: options?.idempotencyKey,
   })
 }
 
@@ -49,6 +50,7 @@ export async function sendPaymentReceivedEmail(
     subject: `Payment received - ${params.amount}`,
     react: PaymentReceivedEmail(params),
     replyTo: options?.replyTo,
+    idempotencyKey: options?.idempotencyKey,
   })
 }
 
@@ -67,6 +69,7 @@ export async function sendRequestStatusUpdateEmail(
     subject: `Request Update: ${params.businessName}`,
     react: RequestStatusUpdateEmail(params),
     replyTo: options?.replyTo,
+    idempotencyKey: options?.idempotencyKey,
   })
 }
 
@@ -85,6 +88,7 @@ export async function sendSubscriptionCancelledEmail(
     subject: SUBSCRIPTION_CANCELLED_SUBJECT,
     react: SubscriptionCancelledEmail(params),
     replyTo: options?.replyTo,
+    idempotencyKey: options?.idempotencyKey,
   })
 }
 
@@ -104,6 +108,7 @@ export async function sendBillingReminderEmail(
     subject: `Upcoming billing reminder - ${params.amount} on ${params.billingDate}`,
     react: BillingReminderEmail(params),
     replyTo: options?.replyTo,
+    idempotencyKey: options?.idempotencyKey,
   })
 }
 
@@ -121,5 +126,6 @@ export async function sendPasswordResetEmail(
     subject: 'Reset your Freeplug password',
     react: PasswordResetEmail(params),
     replyTo: options?.replyTo,
+    idempotencyKey: options?.idempotencyKey,
   })
 }

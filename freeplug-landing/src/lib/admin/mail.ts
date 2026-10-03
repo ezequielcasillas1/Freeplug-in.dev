@@ -1,11 +1,12 @@
-import { isSmtpConfigured as isSmtpTransportConfigured, sendMail } from '@/lib/email/smtp'
+import { isMailConfigured as isTransportConfigured, sendMail } from '@/lib/email/mailer'
 
-/** True when SMTP_HOST, SMTP_USER and SMTP_PASS are set (From defaults to EMAIL_FROM / SMTP_USER). */
-export function isSmtpConfigured(): boolean {
-  return isSmtpTransportConfigured()
+/** True when the app can send email (RESEND_API_KEY is set). From is EMAIL_FROM / EMAIL_FROM_NAME. */
+export function isMailConfigured(): boolean {
+  return isTransportConfigured()
 }
 
-export async function sendSmtpMail(params: {
+/** Free-form admin email to a customer (admin "Send email" box), sent through Resend. */
+export async function sendAdminMail(params: {
   to: string
   subject: string
   text: string
@@ -13,9 +14,6 @@ export async function sendSmtpMail(params: {
   /** Optional Reply-To (e.g. a customer's address). Defaults to EMAIL_REPLY_TO. */
   replyTo?: string
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!isSmtpConfigured()) {
-    return { ok: false, error: 'SMTP is not configured' }
-  }
   const result = await sendMail({
     to: params.to,
     subject: params.subject,

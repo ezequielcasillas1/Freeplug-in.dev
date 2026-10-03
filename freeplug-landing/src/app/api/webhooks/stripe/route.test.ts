@@ -65,6 +65,7 @@ describe('POST /api/webhooks/stripe: website access on subscription events (e)',
     expect(r.body.websiteAccess).toBe('ending')
     expect(cancelNotice).toHaveBeenCalledTimes(1)
     expect(cancelNotice.mock.calls[0][1]).toEqual(sub)
+    expect(cancelNotice.mock.calls[0][2]).toBe('evt_1') // event.id → Resend idempotency key
   })
 
   it('updated back (resume): active', async () => {
@@ -90,9 +91,10 @@ describe('POST /api/webhooks/stripe: website access on subscription events (e)',
   })
 
   it('a failing cancel email never fails the webhook', async () => {
-    cancelNotice.mockRejectedValue(new Error('smtp down'))
+    cancelNotice.mockRejectedValue(new Error('resend down'))
     const r = await deliver('customer.subscription.updated', subscription({ cancel_at_period_end: true }))
     expect(r.status).toBe(200)
+    expect(r.body).toEqual({ received: true, websiteAccess: 'ending' })
   })
 })
 

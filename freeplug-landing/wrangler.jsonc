@@ -52,6 +52,8 @@
       "vars": { "TRUST_CF_CONNECTING_IP": "true" }
     }
   }
-  // Email: Resend becomes the primary sender on Cloudflare once Ezequiel provides a working key
-  // (src/lib/email/send.ts sendMail(); RESEND_API_KEY via `versions secret put`). Not switched yet.
+  // Email: Resend is the only app sender (src/lib/email/mailer.ts sendMail(); nodemailer removed).
+  // The Resend key is a Worker SECRET only (`wrangler versions secret put`, see CF-PORT-NOTES.md); its
+  // name must never appear in this file (the upload guard and src/lib/email/no-nodemailer.test.ts check).
+  // EMAIL_FROM / EMAIL_FROM_NAME / EMAIL_REPLY_TO may go in "vars" (defaults: Freeplug <support@freeplug-in.dev>).
 }

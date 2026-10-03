@@ -90,9 +90,11 @@ export async function POST(request: Request) {
       websiteAccess = access.status
       console.info('[webhook]', event.type, sub.id, sub.status, 'website access:', access.status)
       if (event.type === 'customer.subscription.updated') {
-        // Cancellation email, sent once per cancellation (see lib/email/cancel-notice.ts).
+        // Cancellation email, sent once per cancellation (see lib/email/cancel-notice.ts), after the
+        // claim write and inside try/catch: an email failure never turns the webhook into a non-2xx.
+        // Resend idempotency key: `<event.id>:subscription-cancelled`.
         try {
-          const notice = await sendCancelNoticeOnce(getStripe(), sub)
+          const notice = await sendCancelNoticeOnce(getStripe(), sub, event.id)
           if (notice !== 'not_set_to_cancel') console.info('[webhook] cancel notice', sub.id, notice)
         } catch (e) {
           console.error('[webhook] cancel notice failed', e instanceof Error ? e.message : e)

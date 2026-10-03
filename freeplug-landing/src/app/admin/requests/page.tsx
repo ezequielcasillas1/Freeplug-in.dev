@@ -1,12 +1,12 @@
 import { getAuthSummariesByUserIds } from '@/lib/admin/auth-users'
-import { isSmtpConfigured } from '@/lib/admin/mail'
+import { isMailConfigured } from '@/lib/admin/mail'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AdminConfigError } from '../AdminConfigError'
 import { AdminRequestRow, type AdminRequestRowData } from '../AdminRequestRow'
-import { AdminSmtpBanner } from '../AdminSmtpBanner'
+import { AdminMailBanner } from '../AdminMailBanner'
 
 export default async function AdminRequestsPage() {
-  const smtpOn = isSmtpConfigured()
+  const mailOn = isMailConfigured()
 
   let admin
   try {
@@ -47,7 +47,7 @@ export default async function AdminRequestsPage() {
 
   return (
     <div>
-      <AdminSmtpBanner />
+      <AdminMailBanner />
       <h2 className="text-xl font-semibold mb-4">Website requests</h2>
 
       {enrichedRequests.length === 0 ? (
@@ -68,7 +68,7 @@ export default async function AdminRequestsPage() {
             </thead>
             <tbody>
               {enrichedRequests.map((r) => (
-                <AdminRequestRow key={r.id} row={r} smtpConfigured={smtpOn} />
+                <AdminRequestRow key={r.id} row={r} mailConfigured={mailOn} />
               ))}
             </tbody>
           </table>

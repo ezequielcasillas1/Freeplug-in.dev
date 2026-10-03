@@ -36,14 +36,14 @@ const table = (el: React.ReactNode) => render(<table><tbody>{el}</tbody></table>
 
 describe('admin buyout requests (maintenance list)', () => {
   it('shows the Buyout badge and "Buyout requested" until a price is set', () => {
-    table(<AdminRequestRow row={row('Buyout request (dashboard):\nRequested: x')} smtpConfigured={false} />)
+    table(<AdminRequestRow row={row('Buyout request (dashboard):\nRequested: x')} mailConfigured={false} />)
     expect(screen.getByText('Buyout')).toHaveAttribute('data-request-type', 'buyout')
     expect(screen.getByText('Buyout requested')).toBeInTheDocument()
     expect(screen.getByLabelText(/Buyout price/)).toBeInTheDocument()
   })
 
   it('shows "Buyout quoted" from the buyout_price_cents column and prefills the price field', () => {
-    table(<AdminRequestRow row={row('Buyout request (dashboard):\nRequested: x', 120_000)} smtpConfigured={false} />)
+    table(<AdminRequestRow row={row('Buyout request (dashboard):\nRequested: x', 120_000)} mailConfigured={false} />)
     expect(screen.getByText('Buyout quoted: $1,200')).toBeInTheDocument()
     expect(screen.getByLabelText(/Buyout price/)).toHaveValue(1200)
   })
@@ -52,7 +52,7 @@ describe('admin buyout requests (maintenance list)', () => {
     table(
       <AdminRequestRow
         row={row('Buyout request (dashboard):\nBuyout price: $1', 90_000)}
-        smtpConfigured={false}
+        mailConfigured={false}
       />
     )
     expect(screen.getByText('Buyout quoted: $900')).toBeInTheDocument()
@@ -60,20 +60,20 @@ describe('admin buyout requests (maintenance list)', () => {
   })
 
   it('a "Buyout price: $1" notes line with no column price: still "Buyout requested", empty field', () => {
-    table(<AdminRequestRow row={row('Buyout request (dashboard):\nBuyout price: $1')} smtpConfigured={false} />)
+    table(<AdminRequestRow row={row('Buyout request (dashboard):\nBuyout price: $1')} mailConfigured={false} />)
     expect(screen.getByText('Buyout requested')).toBeInTheDocument()
     expect(screen.queryByText(/Buyout quoted/)).toBeNull()
     expect(screen.getByLabelText(/Buyout price/)).toHaveValue(null)
   })
 
   it('a "Buyout price: $1" line on a non-buyout request adds no badge or price field', () => {
-    table(<AdminRequestRow row={row('Change request (Help chat):\nBuyout price: $1')} smtpConfigured={false} />)
+    table(<AdminRequestRow row={row('Change request (Help chat):\nBuyout price: $1')} mailConfigured={false} />)
     expect(screen.queryByText('Buyout')).toBeNull()
     expect(screen.queryByLabelText(/Buyout price/)).toBeNull()
   })
 
   it('is_buyout decides the badge, not the notes: line deleted by the customer -> still a buyout', () => {
-    table(<AdminRequestRow row={row('Customer rewrote the notes', null, true)} smtpConfigured={false} />)
+    table(<AdminRequestRow row={row('Customer rewrote the notes', null, true)} mailConfigured={false} />)
     expect(screen.getByText('Buyout')).toHaveAttribute('data-request-type', 'buyout')
     expect(screen.getByLabelText(/Buyout price/)).toBeInTheDocument()
   })
@@ -82,7 +82,7 @@ describe('admin buyout requests (maintenance list)', () => {
     table(
       <AdminRequestRow
         row={row('Buyout request (dashboard):\nRequested: pasted', null, false)}
-        smtpConfigured={false}
+        mailConfigured={false}
       />
     )
     expect(screen.queryByText('Buyout')).toBeNull()
@@ -99,7 +99,7 @@ describe('admin buyout requests (maintenance list)', () => {
   })
 
   it('no badge on a normal maintenance request', () => {
-    table(<AdminRequestRow row={row('Change request (Help chat):\nType: Photos')} smtpConfigured={false} />)
+    table(<AdminRequestRow row={row('Change request (Help chat):\nType: Photos')} mailConfigured={false} />)
     expect(screen.queryByText('Buyout')).toBeNull()
   })
 })

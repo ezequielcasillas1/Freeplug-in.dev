@@ -13,6 +13,8 @@ import { formatBillingDate, stripeTimestampToDate, subscriptionPeriodEnd } from 
  * skip. Resuming and cancelling again is a new cancellation, so it gets a new email.
  */
 export const CANCEL_EMAIL_MARKER_KEY = 'freeplug_cancel_email_sent_for'
+/** Template name in the Resend idempotency key `<event.id>:<template>`. */
+export const CANCEL_EMAIL_TEMPLATE = 'subscription-cancelled'
 
 export type CancelNoticeResult =
   | 'sent'
@@ -32,7 +34,9 @@ function cancellationMarker(sub: Stripe.Subscription): string {
 
 export async function sendCancelNoticeOnce(
   stripe: Stripe,
-  subscriptionFromEvent: Stripe.Subscription
+  subscriptionFromEvent: Stripe.Subscription,
+  /** The Stripe event id: the send carries the Resend idempotency key `<eventId>:subscription-cancelled`. */
+  eventId?: string
 ): Promise<CancelNoticeResult> {
   if (!isSetToCancel(subscriptionFromEvent)) return 'not_set_to_cancel'
 
@@ -53,8 +57,16 @@ export async function sendCancelNoticeOnce(
     metadata: { [CANCEL_EMAIL_MARKER_KEY]: marker },
   })
 
+  // The claim above is the committed write; the email comes after it and can never throw out of here.
   const endDate = formatBillingDate(stripeTimestampToDate(sub.cancel_at) ?? subscriptionPeriodEnd(sub))
-  const result = await sendSubscriptionCancelledEmail(email, { endDate })
+  let result: Awaited<ReturnType<typeof sendSubscriptionCancelledEmail>>
+  try {
+    result = eventId
+      ? await sendSubscriptionCancelledEmail(email, { endDate }, { idempotencyKey: `${eventId}:${CANCEL_EMAIL_TEMPLATE}` })
+      : await sendSubscriptionCancelledEmail(email, { endDate })
+  } catch (e) {
+    result = { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+  }
   if (!result.success) {
     console.error('[cancel-notice] send failed', sub.id, result.error)
     return 'send_failed'

@@ -1,20 +1,22 @@
 import { Resend } from 'resend'
-import { getEmailFrom, getDefaultReplyTo } from './smtp'
 
 /**
- * Resend is now an OPTIONAL fallback only. Primary sending is SMTP (see ./smtp.ts).
- * RESEND_API_KEY is not required; it is only used when SMTP is not configured.
+ * The Resend client: the app's only email transport (Resend primary, Oct 3). Send through sendMail()
+ * in ./mailer; this module only builds the client. RESEND_API_KEY is required for any app-sent email.
  */
 
 let resend: Resend | null = null
+let resendKey: string | null = null
 
 export function getResend(): Resend {
-  if (!resend) {
-    const key = process.env.RESEND_API_KEY?.trim()
-    if (!key) {
-      throw new Error('RESEND_API_KEY is not set')
-    }
+  const key = process.env.RESEND_API_KEY?.trim()
+  if (!key) {
+    throw new Error('RESEND_API_KEY is not set')
+  }
+  // Rebuilt if the key changes (a rotated secret on a warm isolate, or tests).
+  if (!resend || resendKey !== key) {
     resend = new Resend(key)
+    resendKey = key
   }
   return resend
 }
@@ -22,8 +24,3 @@ export function getResend(): Resend {
 export function isResendConfigured(): boolean {
   return !!process.env.RESEND_API_KEY?.trim()
 }
-
-/** From header, built from EMAIL_FROM_NAME + EMAIL_FROM (e.g. `"Freeplug" <support@freeplug-in.dev>`). */
-export const EMAIL_FROM = getEmailFrom()
-/** Default Reply-To (EMAIL_REPLY_TO or support@freeplug-in.dev). */
-export const EMAIL_REPLY_TO = getDefaultReplyTo()

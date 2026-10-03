@@ -12,10 +12,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
  *   - the resend goes to NEXT_PUBLIC_SUPABASE_URL (here the local server) and nowhere else: every
  *     fetch made during the call is recorded and all of them hit the local server;
  *   - it is Supabase Auth's POST /auth/v1/resend with type "signup" and the session user's email;
- *   - the app's own SMTP mailer is never called (and the module doesn't import it).
+ *   - the app's own mailer (Resend) is never called (and the module doesn't import it).
  */
 const sendMail = vi.fn()
-vi.mock('@/lib/email/smtp', () => ({ sendMail, isSmtpConfigured: () => true }))
+vi.mock('@/lib/email/mailer', () => ({ sendMail, isMailConfigured: () => true }))
 vi.mock('@/lib/email/send', () => ({ sendPasswordResetEmail: sendMail }))
 vi.mock('@/lib/rate-limit', () => ({ rateCheck: async () => true }))
 const jar = vi.hoisted(() => ({ cookies: [] as { name: string; value: string }[] }))
@@ -65,7 +65,7 @@ afterAll(async () => {
 })
 
 describe('resend never leaves the configured local Supabase stand-in (round 7)', () => {
-  it('records the resend on the local server, contacts nothing else, and never uses SMTP', async () => {
+  it('records the resend on the local server, contacts nothing else, and never uses the app mailer', async () => {
     const realFetch = globalThis.fetch
     const urls: string[] = []
     globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
@@ -91,6 +91,6 @@ describe('resend never leaves the configured local Supabase stand-in (round 7)',
   it('the resend module has no mailer import (only Supabase Auth sends the email)', () => {
     const src = readFileSync(path.join(__dirname, 'resend-confirmation.ts'), 'utf8')
     expect(src).not.toMatch(/from '@\/lib\/email/)
-    expect(src).not.toMatch(/nodemailer|smtp/i)
+    expect(src).not.toMatch(/nodemailer|smtp|resend\.com|from 'resend'/i)
   })
 })
