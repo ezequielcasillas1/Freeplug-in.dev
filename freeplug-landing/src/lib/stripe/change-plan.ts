@@ -373,6 +373,8 @@ export async function cancelPlanAtPeriodEnd(stripe: Stripe, sub: Sub, now: Date 
 // ------------------------------------------------------------------ the tipping system: tip changes
 
 export type TipChangeRefusal = 'not_live' | 'ending' | 'pending_change' | 'no_tip_plan' | 'out_of_range' | 'price'
+/** Stripe answered, but its subscription doesn't hold the requested tip (Vera B2: a replayed response). */
+export type TipChangeFailure = 'mismatch'
 
 export type TipChangePreview =
   | {
@@ -389,7 +391,24 @@ export type TipChangePreview =
 
 export type TipChangeResult =
   | { ok: true; kind: 'changed' | 'unchanged'; step: PlanStepId; tipDollars: number; nextAmountCents: number; nextBillingAt: string | null }
-  | { ok: false; code: TipChangeRefusal; message: string }
+  | { ok: false; code: TipChangeRefusal | TipChangeFailure; message: string }
+
+/** A per-Confirm id from the tip preview (or the client); anything else gets a fresh random id. */
+export function isTipConfirmId(v: unknown): v is string {
+  return typeof v === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(v)
+}
+
+/**
+ * Idempotency key for one tip Confirm (Vera B2, Oct 3). Keyed by the Confirm, not by amounts and time:
+ * the old "<from>:<to>:<minute>" key made $9 -> $4 -> $9 -> $4 inside a minute replay the first response
+ * without applying anything. The same Confirm retried (double tap, network retry) reuses its id and
+ * dedupes; a new Confirm always gets a new id. Without a valid id, a random one (no dedupe; the
+ * change-plan lock still refuses a concurrent second Confirm).
+ */
+export function tipChangeIdempotencyKey(userId: string | undefined, subId: string, confirmId: unknown, next: number): string {
+  const id = isTipConfirmId(confirmId) ? confirmId : `r-${crypto.randomUUID()}`
+  return `tip-change:${userId ?? 'na'}:${subId}:${id}:${next}`
+}
 
 type TipCheck =
   | { ok: true; step: PlanStep; current: number; items: Stripe.SubscriptionUpdateParams.Item[] }
@@ -466,7 +485,7 @@ export async function changeTip(
   deps: { stripe: Stripe; tipPriceId: () => Promise<string> },
   sub: Sub,
   tipDollars: unknown,
-  opts: { userId?: string; now?: Date } = {}
+  opts: { userId?: string; now?: Date; confirmId?: unknown } = {}
 ): Promise<TipChangeResult> {
   const check = await tipChangeItems(sub, tipDollars, deps.tipPriceId)
   if (!check.ok) return check
@@ -475,13 +494,22 @@ export async function changeTip(
   const nextBillingAt = end ? end.toISOString() : null
   const nextAmountCents = check.step.monthlyCents + next * 100
   if (check.items.length === 0) return { ok: true, kind: 'unchanged', step: check.step.id, tipDollars: next, nextAmountCents, nextBillingAt }
-  await deps.stripe.subscriptions.update(
+  const updated = await deps.stripe.subscriptions.update(
     sub.id,
     { items: check.items, proration_behavior: 'none' },
-    // Same user + subscription + from/to amounts within the same minute = one update (a double Save).
-    // The minute keeps a later change back to the same amount a NEW request (a reused key would
-    // replay the old response for 24 hours without applying anything).
-    { idempotencyKey: `tip-change:${opts.userId ?? 'na'}:${sub.id}:${check.current}:${next}:${Math.floor((opts.now ?? new Date()).getTime() / 60000)}` }
+    { idempotencyKey: tipChangeIdempotencyKey(opts.userId, sub.id, opts.confirmId, next) }
   )
+  // Guard (Vera B2): the subscription must hold exactly the requested tip and the same step. A replayed
+  // idempotent response looks right (it is the first response), so the check reads the LIVE subscription
+  // too. Anything else (a replay, a concurrent edit) fails loudly; the caller writes nothing and the
+  // customer sees the try-again message, never "Your tip is updated".
+  const fresh = updated?.items?.data ? await deps.stripe.subscriptions.retrieve(sub.id) : updated
+  const gotItems = fresh?.items?.data
+  const gotTip = gotItems ? tipDollarsOfItems(gotItems) : null
+  const gotStep = gotItems ? currentLadderStep(fresh as Stripe.Subscription)?.id ?? null : null
+  if (gotTip !== next || gotStep !== check.step.id) {
+    console.error('[changeTip] MISMATCH after Stripe update', { sub: sub.id, requestedTip: next, stripeTip: gotTip, requestedStep: check.step.id, stripeStep: gotStep })
+    return { ok: false, code: 'mismatch', message: 'Stripe did not apply the requested tip.' }
+  }
   return { ok: true, kind: 'changed', step: check.step.id, tipDollars: next, nextAmountCents, nextBillingAt }
 }

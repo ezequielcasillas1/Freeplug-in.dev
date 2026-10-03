@@ -27,7 +27,7 @@ const charge = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 
 type Phase =
   | { phase: 'idle' }
   | { phase: 'loading' }
-  | { phase: 'confirm' | 'submitting'; text: string; tipDollars: number }
+  | { phase: 'confirm' | 'submitting'; text: string; tipDollars: number; confirmId?: string }
 
 type Props = {
   step: PlanStep
@@ -37,7 +37,8 @@ type Props = {
   /** The planned switch's date ("November 3, 2026") for the locked note. */
   lockedDate?: string | null
   onPreviewTip: (tipDollars: number) => Promise<TipPreviewResponse>
-  onChangeTip: (tipDollars: number) => Promise<ChangeTipResponse>
+  /** confirmId: from the preview this Confirm belongs to (one Stripe idempotency key per Confirm). */
+  onChangeTip: (tipDollars: number, confirmId?: string) => Promise<ChangeTipResponse>
 }
 
 /**
@@ -88,7 +89,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
         return
       }
       const text = p.nextDate ? TIP_NEXT_BILL(charge(p.nextAmountCents), p.nextDate) : TIP_NEXT_BILL_NO_DATE(charge(p.nextAmountCents))
-      setState({ phase: 'confirm', text, tipDollars: tip })
+      setState({ phase: 'confirm', text, tipDollars: tip, confirmId: p.confirmId })
     } catch {
       setError('Network error. Try again.')
       setState({ phase: 'idle' })
@@ -99,7 +100,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
     if (state.phase !== 'confirm') return
     setState({ ...state, phase: 'submitting' })
     try {
-      const r = await onChangeTip(state.tipDollars)
+      const r = await onChangeTip(state.tipDollars, state.confirmId)
       if (r.ok) setNotice(TIP_CHANGED(state.text))
       else setError(r.message)
     } catch {

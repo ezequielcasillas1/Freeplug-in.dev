@@ -570,8 +570,9 @@ describe("the tipping system: Sable's confirm lines (Oct 3 2:20 PM)", () => {
 })
 
 describe('the tipping system: tip box on the Plans page (next bill, no modal)', () => {
+  let previews = 0
   const tipActions = () => ({
-    onPreviewTip: vi.fn(async (t: number) => ({ ok: true as const, tipDollars: t, nextAmountCents: 6500 + t * 100, nextDate: 'November 3, 2026' })),
+    onPreviewTip: vi.fn(async (t: number) => ({ ok: true as const, tipDollars: t, nextAmountCents: 6500 + t * 100, nextDate: 'November 3, 2026', confirmId: `confirm-${++previews}` })),
     onChangeTip: vi.fn(async () => ({ ok: true, message: 'server' })),
   })
 
@@ -591,8 +592,25 @@ describe('the tipping system: tip box on the Plans page (next bill, no modal)', 
     expect(await within(box).findByTestId('tip-change-confirm')).toHaveTextContent('Your next bill will be $71 on November 3, 2026.')
     expect(a.onPreviewTip).toHaveBeenCalledWith(6)
     fireEvent.click(within(box).getByRole('button', { name: 'Confirm' }))
-    await waitFor(() => expect(a.onChangeTip).toHaveBeenCalledWith(6))
+    await waitFor(() => expect(a.onChangeTip).toHaveBeenCalledWith(6, expect.stringMatching(/^confirm-\d+$/)))
     expect(await within(box).findByTestId('tip-change-notice')).toHaveTextContent('Your tip is updated. Your next bill will be $71 on November 3, 2026.')
+  })
+
+  it('Vera B2: every Confirm sends the confirm id of ITS preview (one Stripe key per Confirm), so A -> B -> A gets new ids', async () => {
+    const a = tipActions()
+    switching({ currentStepId: 'fast_lane', currentPlanLines: ['x'], currentTipDollars: 2, ...a })
+    const box = screen.getByTestId('tip-change-box')
+    const r = within(box).getByRole('slider') as HTMLInputElement
+    for (const total of [71, 69, 71]) {
+      fireEvent.change(r, { target: { value: String(total) } })
+      fireEvent.click(within(box).getByTestId('tip-change-button'))
+      await within(box).findByTestId('tip-change-confirm')
+      fireEvent.click(within(box).getByRole('button', { name: 'Confirm' }))
+      await waitFor(() => expect(within(box).queryByTestId('tip-change-confirm')).toBeNull())
+    }
+    const ids = a.onChangeTip.mock.calls.map((c) => (c as unknown[])[1])
+    expect(a.onChangeTip.mock.calls.map((c) => (c as unknown[])[0])).toEqual([6, 4, 6])
+    expect(new Set(ids).size).toBe(3)
   })
 
   it('a planned switch locks the tip (Lina round 5b: no bar, one read-only row + the ends-on note); a grandfathered plan gets no tip box', () => {

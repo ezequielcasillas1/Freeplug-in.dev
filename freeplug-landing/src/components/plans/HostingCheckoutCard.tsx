@@ -118,7 +118,7 @@ type Props = {
   currentTipDollars?: number
   /** With a live ladder plan: tip box actions (server actions previewTipChangeAction / changeTipAction). */
   onPreviewTip?: (tipDollars: number) => Promise<TipPreviewResponse>
-  onChangeTip?: (tipDollars: number) => Promise<ChangeTipResponse>
+  onChangeTip?: (tipDollars: number, confirmId?: string) => Promise<ChangeTipResponse>
 }
 
 /** Upgrade confirm states (Lina §3a). Downgrades and checkout never enter it. */

@@ -306,11 +306,12 @@ export async function cancelHostingAtPeriodEnd(): Promise<void> {
 // ------------------------------------------------------------------ the tipping system: tip changes
 
 export type TipPreviewResponse =
-  | { ok: true; tipDollars: number; nextAmountCents: number; nextDate: string | null }
+  /** confirmId: one per preview, sent back with that Confirm (idempotency per Confirm, Vera B2). */
+  | { ok: true; tipDollars: number; nextAmountCents: number; nextDate: string | null; confirmId: string }
   | { ok: false; message: string }
 export type ChangeTipResponse = { ok: boolean; message: string }
 
-function tipRefusalMessage(code: TipChangeRefusal | 'rate_limited'): string {
+function tipRefusalMessage(code: TipChangeRefusal | 'mismatch' | 'rate_limited'): string {
   if (code === 'pending_change') return TIP_CHANGE_PENDING
   if (code === 'ending') return TIP_PLAN_ENDING
   if (code === 'no_tip_plan') return TIP_NOT_FOR_PLAN
@@ -344,7 +345,13 @@ export async function previewTipChangeAction(tipDollars: number): Promise<TipPre
     const stripe = getStripe()
     const p = await previewTipChange({ stripe, tipPriceId: () => getTipPriceId(stripe) }, own.sub, tipDollars)
     if (!p.ok) return { ok: false, message: tipRefusalMessage(p.code) }
-    return { ok: true, tipDollars: p.tipDollars, nextAmountCents: p.nextAmountCents, nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null }
+    return {
+      ok: true,
+      tipDollars: p.tipDollars,
+      nextAmountCents: p.nextAmountCents,
+      nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null,
+      confirmId: crypto.randomUUID(),
+    }
   } catch (e) {
     console.error('[previewTipChange] failed', e instanceof Error ? e.message : e)
     return { ok: false, message: TIP_CHANGE_UNAVAILABLE }
@@ -356,14 +363,14 @@ export async function previewTipChangeAction(tipDollars: number): Promise<TipPre
  * today). Runs under the same change-plan lock as a plan switch, so a tip change and a switch can't
  * interleave (e.g. a tip added while an upgrade is removing it).
  */
-export async function changeTipAction(tipDollars: number): Promise<ChangeTipResponse> {
+export async function changeTipAction(tipDollars: number, confirmId?: string): Promise<ChangeTipResponse> {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login?next=/dashboard/plans')
   try {
-    const lock = await withPlanChangeLock(lockStore(), user.id, () => runTipChange(tipDollars))
+    const lock = await withPlanChangeLock(lockStore(), user.id, () => runTipChange(tipDollars, confirmId))
     // A second tip change while this one holds the lock (double-click, second tab): Sable's tip line, not
     // the plan-change one (round 5b).
     if (!lock.ok) return { ok: false, message: lock.code === 'in_progress' ? TIP_IN_PROGRESS : TIP_CHANGE_UNAVAILABLE }
@@ -374,12 +381,12 @@ export async function changeTipAction(tipDollars: number): Promise<ChangeTipResp
   }
 }
 
-async function runTipChange(tipDollars: number): Promise<ChangeTipResponse> {
+async function runTipChange(tipDollars: number, confirmId?: string): Promise<ChangeTipResponse> {
   try {
     const own = await ownLiveSubscription()
     if (!own) return { ok: false, message: TIP_CHANGE_UNAVAILABLE }
     const stripe = getStripe()
-    const r = await changeTip({ stripe, tipPriceId: () => getTipPriceId(stripe) }, own.sub, tipDollars, { userId: own.userId })
+    const r = await changeTip({ stripe, tipPriceId: () => getTipPriceId(stripe) }, own.sub, tipDollars, { userId: own.userId, confirmId })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (!r.ok) return { ok: false, message: tipRefusalMessage(r.code) }

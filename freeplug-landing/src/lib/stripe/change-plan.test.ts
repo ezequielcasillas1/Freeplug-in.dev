@@ -16,6 +16,7 @@ import {
   subscriptionTipDollars,
   upgradeItems,
   changeTip,
+  tipChangeIdempotencyKey,
   previewTipChange,
 } from './change-plan'
 
@@ -445,23 +446,116 @@ describe('the tipping system: tip item vs plan changes', () => {
     expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
   })
 
-  it('tip change: next cycle only (proration none), up / down / to $0 / added; one key per minute and amount', async () => {
-    const cases: [number, number | null, unknown][] = [
+  /**
+   * A Stripe-like fake for tip changes: it applies item params to its own copy of the subscription and
+   * replays the stored response for a reused idempotency key WITHOUT applying anything (what Stripe does).
+   */
+  function idemStripe(start: Stripe.Subscription) {
+    const state = JSON.parse(JSON.stringify(start)) as { items: { data: Record<string, unknown>[] } }
+    const seen = new Map<string, unknown>()
+    const update = vi.fn(async (_id: string, params: { items: Record<string, unknown>[] }, o: { idempotencyKey: string }) => {
+      if (seen.has(o.idempotencyKey)) return JSON.parse(JSON.stringify(seen.get(o.idempotencyKey)))
+      for (const it of params.items) {
+        if (it.deleted) state.items.data = state.items.data.filter((x) => x.id !== it.id)
+        else if (it.id) state.items.data.find((x) => x.id === it.id)!.quantity = it.quantity
+        else state.items.data.push({ id: `si_new_${state.items.data.length}`, quantity: it.quantity, price: TIP_PRICE, current_period_end: PERIOD_END })
+      }
+      const res = { id: 'sub_1', items: { data: JSON.parse(JSON.stringify(state.items.data)) } }
+      seen.set(o.idempotencyKey, res)
+      return JSON.parse(JSON.stringify(res))
+    })
+    const retrieve = vi.fn(async () => ({ id: 'sub_1', items: { data: JSON.parse(JSON.stringify(state.items.data)) } }))
+    const stripe = { subscriptions: { update, retrieve } } as unknown as Stripe
+    const live = () => JSON.parse(JSON.stringify({ ...start, items: state.items })) as Stripe.Subscription
+    const tip = () => (state.items.data.find((x) => (x.price as { id: string }).id === 'price_tip')?.quantity as number | undefined) ?? 0
+    return { deps: { stripe, priceIdFor, tipPriceId: async () => 'price_tip' }, update, live, tip }
+  }
+
+  it('tip change: next cycle only (proration none), up / down / to $0 / added; one key per Confirm', async () => {
+    const cases: [number, number, unknown][] = [
       [6, 9, [{ id: 'si_tip', quantity: 9 }]],
       [6, 2, [{ id: 'si_tip', quantity: 2 }]],
       [6, 0, [{ id: 'si_tip', deleted: true }]],
       [0, 4, [{ price: 'price_tip', quantity: 4 }]],
     ]
     for (const [from, to, items] of cases) {
-      const f = fakeStripe()
-      const sub = from > 0 ? tipped('fast_lane', from) : tipped('fast_lane', 0)
+      const sub = tipped('fast_lane', from)
       if (from === 0) (sub.items.data as unknown[]).pop()
-      const r = await changeTip(tipDeps(f), sub, to, { userId: 'u1', now: NOW })
-      expect(r).toMatchObject({ ok: true, kind: 'changed', tipDollars: to, nextAmountCents: 6500 + (to ?? 0) * 100, nextBillingAt: new Date(PERIOD_END * 1000).toISOString() })
-      const [id, params, opts] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
+      const f = idemStripe(sub)
+      const r = await changeTip(f.deps, sub, to, { userId: 'u1', now: NOW, confirmId: 'confirm-abc123' })
+      expect(r).toMatchObject({ ok: true, kind: 'changed', tipDollars: to, nextAmountCents: 6500 + to * 100, nextBillingAt: new Date(PERIOD_END * 1000).toISOString() })
+      const [id, params, opts] = f.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
       expect(id).toBe('sub_1')
       expect(params).toEqual({ items, proration_behavior: 'none' })
-      expect(opts.idempotencyKey).toBe(`tip-change:u1:sub_1:${from}:${to}:${Math.floor(NOW.getTime() / 60000)}`)
+      expect(opts.idempotencyKey).toBe(`tip-change:u1:sub_1:confirm-abc123:${to}`)
+      expect(f.tip()).toBe(to)
+    }
+  })
+
+  it("Vera B2: $9 -> $4 -> $9 -> $4 inside one minute, one Confirm each: every change applies, Stripe ends at $4 (was: replayed, billed $64)", async () => {
+    let sub = tipped('priority', 9)
+    const f = idemStripe(sub)
+    const seq: [number, string][] = [[4, 'confirm-0001'], [9, 'confirm-0002'], [4, 'confirm-0003']]
+    for (const [to, confirmId] of seq) {
+      const r = await changeTip(f.deps, sub, to, { userId: 'u1', now: NOW, confirmId }) // same minute every time
+      expect(r).toMatchObject({ ok: true, kind: 'changed', tipDollars: to, nextAmountCents: 5500 + to * 100 })
+      expect(f.tip()).toBe(to)
+      sub = f.live()
+    }
+    expect(f.update).toHaveBeenCalledTimes(3)
+    expect(new Set(f.update.mock.calls.map((c) => (c[2] as { idempotencyKey: string }).idempotencyKey)).size).toBe(3)
+    expect(f.tip()).toBe(4) // next bill $59, matching what the customer was told
+  })
+
+  it('Vera B2, old key shape: the guard catches a replayed response (no "updated" message), even if a key repeats', async () => {
+    let sub = tipped('priority', 9)
+    const f = idemStripe(sub)
+    // Simulate the old bug: the 3rd Confirm reuses the 1st Confirm's key (same id, same target).
+    expect(await changeTip(f.deps, sub, 4, { userId: 'u1', confirmId: 'confirm-same' })).toMatchObject({ ok: true })
+    sub = f.live()
+    expect(await changeTip(f.deps, sub, 9, { userId: 'u1', confirmId: 'confirm-0002' })).toMatchObject({ ok: true })
+    sub = f.live()
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const r = await changeTip(f.deps, sub, 4, { userId: 'u1', confirmId: 'confirm-same' })
+    // Stripe replays the 1st response (tip 4, looks right); the live read shows 9.
+    expect(r).toEqual({ ok: false, code: 'mismatch', message: 'Stripe did not apply the requested tip.' })
+    expect(err).toHaveBeenCalledWith('[changeTip] MISMATCH after Stripe update', expect.objectContaining({ requestedTip: 4, stripeTip: 9 }))
+    err.mockRestore()
+    expect(f.tip()).toBe(9) // Stripe really holds 9; the app said so instead of "updated"
+  })
+
+  it('the same Confirm retried (double tap / network retry) dedupes: one Stripe change, same key', async () => {
+    const sub = tipped('fast_lane', 2)
+    const f = idemStripe(sub)
+    const a = await changeTip(f.deps, sub, 6, { userId: 'u1', confirmId: 'confirm-tap' })
+    const b = await changeTip(f.deps, sub, 6, { userId: 'u1', confirmId: 'confirm-tap' }) // retry with the stale sub
+    expect(a).toMatchObject({ ok: true, tipDollars: 6 })
+    expect(b).toMatchObject({ ok: true, tipDollars: 6 })
+    const keys = f.update.mock.calls.map((c) => (c[2] as { idempotencyKey: string }).idempotencyKey)
+    expect(keys).toEqual(['tip-change:u1:sub_1:confirm-tap:6', 'tip-change:u1:sub_1:confirm-tap:6'])
+    expect(f.tip()).toBe(6)
+  })
+
+  it('mismatch guard: a response with another tip or step, or without items, fails loudly', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    for (const res of [
+      { id: 'sub_1', items: { data: [tipped('fast_lane', 3).items.data[0], { id: 'si_tip', quantity: 3, price: TIP_PRICE }] } },
+      { id: 'sub_1', items: { data: [tipped('priority', 5).items.data[0], { id: 'si_tip', quantity: 5, price: TIP_PRICE }] } },
+      { id: 'sub_1' },
+    ]) {
+      const stripe = { subscriptions: { update: vi.fn(async () => res), retrieve: vi.fn(async () => res) } } as unknown as Stripe
+      expect(await changeTip({ stripe, tipPriceId: async () => 'price_tip' }, tipped('fast_lane', 3), 5, { confirmId: 'confirm-mm01' })).toMatchObject({ ok: false, code: 'mismatch' })
+    }
+    err.mockRestore()
+  })
+
+  it('tipChangeIdempotencyKey: a valid Confirm id is used; anything else gets a fresh random id', () => {
+    expect(tipChangeIdempotencyKey('u1', 'sub_1', 'confirm-abc123', 4)).toBe('tip-change:u1:sub_1:confirm-abc123:4')
+    for (const bad of [undefined, '', 'short', 'has space here', 'x'.repeat(65), 42, { a: 1 }]) {
+      const k1 = tipChangeIdempotencyKey('u1', 'sub_1', bad, 4)
+      const k2 = tipChangeIdempotencyKey('u1', 'sub_1', bad, 4)
+      expect(k1).toMatch(/^tip-change:u1:sub_1:r-[0-9a-f-]{36}:4$/)
+      expect(k1).not.toBe(k2)
     }
   })
 
