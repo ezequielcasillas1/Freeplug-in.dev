@@ -2,7 +2,7 @@
 // below as a public server action anyone could call to send mail from our address (Resend).
 import 'server-only'
 
-import { sendMail } from './mailer'
+import { sendMail, type MailResult } from './mailer'
 import { WelcomeEmail } from './templates/welcome'
 import { PaymentReceivedEmail } from './templates/payment-received'
 import { RequestStatusUpdateEmail } from './templates/request-status-update'
@@ -13,10 +13,10 @@ import {
 import { BillingReminderEmail } from './templates/billing-reminder'
 import { PasswordResetEmail } from './templates/password-reset'
 
-type SendResult = { success: true; id: string } | { success: false; error: string }
+type SendResult = MailResult
 
-/** Optional per-send overrides (replyTo, Resend idempotency key). Existing callers can omit it. */
-type SendOptions = { replyTo?: string | string[]; idempotencyKey?: string }
+/** Optional per-send overrides (replyTo, Resend idempotency key, timeout). Existing callers can omit it. */
+type SendOptions = { replyTo?: string | string[]; idempotencyKey?: string; timeoutMs?: number }
 
 export async function sendWelcomeEmail(
   to: string,
@@ -29,6 +29,7 @@ export async function sendWelcomeEmail(
     react: WelcomeEmail({ userName }),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
+    timeoutMs: options?.timeoutMs,
   })
 }
 
@@ -51,6 +52,7 @@ export async function sendPaymentReceivedEmail(
     react: PaymentReceivedEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
+    timeoutMs: options?.timeoutMs,
   })
 }
 
@@ -70,6 +72,7 @@ export async function sendRequestStatusUpdateEmail(
     react: RequestStatusUpdateEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
+    timeoutMs: options?.timeoutMs,
   })
 }
 
@@ -89,6 +92,7 @@ export async function sendSubscriptionCancelledEmail(
     react: SubscriptionCancelledEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
+    timeoutMs: options?.timeoutMs,
   })
 }
 
@@ -109,6 +113,7 @@ export async function sendBillingReminderEmail(
     react: BillingReminderEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
+    timeoutMs: options?.timeoutMs,
   })
 }
 
@@ -127,5 +132,6 @@ export async function sendPasswordResetEmail(
     react: PasswordResetEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
+    timeoutMs: options?.timeoutMs,
   })
 }

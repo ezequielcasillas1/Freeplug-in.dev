@@ -65,7 +65,7 @@ export async function sendCancelNoticeOnce(
       ? await sendSubscriptionCancelledEmail(email, { endDate }, { idempotencyKey: `${eventId}:${CANCEL_EMAIL_TEMPLATE}` })
       : await sendSubscriptionCancelledEmail(email, { endDate })
   } catch (e) {
-    result = { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+    result = { success: false, reason: 'local_error', error: e instanceof Error ? e.message : 'Unknown error' }
   }
   if (!result.success) {
     console.error('[cancel-notice] send failed', sub.id, result.error)

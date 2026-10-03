@@ -22,17 +22,52 @@ vi.mock('next/navigation', () => ({
     throw Object.assign(new Error('NEXT_REDIRECT'), { url })
   },
 }))
+const hdr = vi.hoisted(() => ({ extra: {} as Record<string, string> }))
 vi.mock('next/headers', () => ({
-  headers: async () => new Headers({ host: 'freeplug.example' }),
+  headers: async () => new Headers({ host: 'freeplug.example', ...hdr.extra }),
   cookies: async () => ({ get: () => undefined, getAll: () => [], set: () => {}, delete: () => {} }),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
 vi.mock('@/lib/admin/guard', () => ({ assertAdminAccess: async () => {}, isAdminAccessAllowed: async () => true }))
 
 // Supabase (admin generateLink for the reset; server client for the Supabase-mailer fallback).
-const sb = vi.hoisted(() => ({ generateLink: vi.fn(), resetPasswordForEmail: vi.fn() }))
+// rate_limit_hits stand-in (the reset-fallback counter): insert + select().eq().gte().order().limit().
+const sb = vi.hoisted(() => ({
+  generateLink: vi.fn(),
+  resetPasswordForEmail: vi.fn(),
+  hits: [] as { bucket: string; key_hash: string; hit_at: string }[],
+  dbDown: false,
+}))
 vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: () => ({ auth: { admin: { generateLink: sb.generateLink } }, from: vi.fn() }),
+  createAdminClient: () => ({
+    auth: { admin: { generateLink: sb.generateLink } },
+    from: (table: string) => {
+      if (table !== 'rate_limit_hits') throw new Error(`unexpected table ${table}`)
+      return {
+        insert: async (row: { bucket: string; key_hash: string }) => {
+          if (sb.dbDown) return { error: { message: 'db down' } }
+          sb.hits.push({ ...row, hit_at: new Date().toISOString() })
+          return { error: null }
+        },
+        select: () => {
+          const f: { eq?: [string, string]; gte?: [string, string] } = {}
+          const q = {
+            eq: (k: string, v: string) => ((f.eq = [k, v]), q),
+            gte: (k: string, v: string) => ((f.gte = [k, v]), q),
+            order: () => q,
+            limit: async () => {
+              if (sb.dbDown) return { data: null, error: { message: 'db down' } }
+              const rows = sb.hits
+                .filter((h) => (!f.eq || h.bucket === f.eq[1]) && (!f.gte || h.hit_at >= f.gte[1]))
+                .sort((a, b) => (a.hit_at < b.hit_at ? 1 : -1))
+              return { data: rows, error: null }
+            },
+          }
+          return q
+        },
+      }
+    },
+  }),
 }))
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { resetPasswordForEmail: sb.resetPasswordForEmail } }),
@@ -69,6 +104,16 @@ import {
   sendWelcomeEmail,
 } from './send'
 import { MAIL_GENERIC_ERROR, MAIL_NOT_CONFIGURED, getEmailFrom, publicMailError, sendMail } from './mailer'
+import {
+  RESET_FALLBACK_BUCKET,
+  RESET_SEND_TIMEOUT_MS,
+  __resetFallbackMemoryForTests,
+  getResetFallbackStatus,
+  resetFallbackReason,
+} from './reset-fallback'
+import { RESET_NEUTRAL_MESSAGE } from '@/lib/auth/password-reset'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { AdminMailBanner } from '@/app/admin/AdminMailBanner'
 import { SUBSCRIPTION_CANCELLED_SUBJECT } from './templates/subscription-cancelled'
 import { requestPasswordReset } from '@/app/(auth)/actions'
 import { adminSendCustomerEmail } from '@/app/admin/actions'
@@ -76,7 +121,7 @@ import { GET as testEmailGET } from '@/app/api/test-email/route'
 import { POST as stripeWebhookPOST } from '@/app/api/webhooks/stripe/route'
 
 const FAKE_KEY = 're_test_fake_vitest_only'
-const FROM = '"Freeplug" <support@freeplug-in.dev>'
+const FROM = 'Freeplug <no-reply@freeplug-in.dev>'
 const REPLY_TO = 'support@freeplug-in.dev'
 
 let n = 0
@@ -101,6 +146,10 @@ beforeEach(() => {
   sb.generateLink.mockReset()
   sb.resetPasswordForEmail.mockReset()
   sb.resetPasswordForEmail.mockResolvedValue({ error: null })
+  sb.hits.length = 0
+  sb.dbDown = false
+  hdr.extra = {}
+  __resetFallbackMemoryForTests()
   vi.stubEnv('RESEND_API_KEY', FAKE_KEY)
   vi.stubEnv('EMAIL_FROM', '')
   vi.stubEnv('EMAIL_FROM_NAME', '')
@@ -153,7 +202,8 @@ describe('send.ts helpers: one Resend call each, with to / from / subject / repl
     expect(rs.send).toHaveBeenCalledTimes(1)
     const [msg, opts] = rs.send.mock.calls[0]
     expect(msg).toMatchObject({ to: 'a@example.com', from: FROM, subject, replyTo: REPLY_TO })
-    expect(msg.from).toMatch(/<[^@<>]+@freeplug-in\.dev>$/)
+    expect(msg.from).toBe('Freeplug <no-reply@freeplug-in.dev>')
+    expect(msg.from).not.toMatch(/@send\./)
     expect(typeof msg.html).toBe('string')
     expect(msg.text).toEqual(expect.any(String)) // plain-text part
     expect(opts).toBeUndefined() // no idempotency key unless asked
@@ -173,14 +223,19 @@ describe('sender configuration', () => {
     vi.stubEnv('EMAIL_FROM_NAME', 'Freeplug Team')
     vi.stubEnv('EMAIL_REPLY_TO', 'help@freeplug-in.dev')
     await sendWelcomeEmail('b@example.com')
-    expect(sent()[0]).toMatchObject({ from: '"Freeplug Team" <hello@freeplug-in.dev>', replyTo: 'help@freeplug-in.dev' })
+    expect(sent()[0]).toMatchObject({ from: 'Freeplug Team <hello@freeplug-in.dev>', replyTo: 'help@freeplug-in.dev' })
   })
 
-  it('defaults: From on the main domain @freeplug-in.dev (never the send. return-path subdomain), Reply-To support@', async () => {
-    expect(getEmailFrom()).toBe(FROM)
+  it('a display name with special characters is quoted', () => {
+    vi.stubEnv('EMAIL_FROM_NAME', 'Freeplug, Inc.')
+    expect(getEmailFrom()).toBe('"Freeplug, Inc." <no-reply@freeplug-in.dev>')
+  })
+
+  it('defaults: From Freeplug <no-reply@freeplug-in.dev> (never the send. subdomain), Reply-To support@', async () => {
+    expect(getEmailFrom()).toBe('Freeplug <no-reply@freeplug-in.dev>')
     await sendWelcomeEmail('a@example.com')
     const { from, replyTo } = sent()[0] as { from: string; replyTo: string }
-    expect(from).toMatch(/<[^@<>]+@freeplug-in\.dev>$/)
+    expect(from).toBe('Freeplug <no-reply@freeplug-in.dev>')
     expect(from).not.toMatch(/@send\./)
     expect(replyTo).toBe('support@freeplug-in.dev')
   })
@@ -198,22 +253,39 @@ describe('missing or failing Resend: fails closed, nothing sent, no other transp
   it('no RESEND_API_KEY: { success: false }, a clear log line, the Resend client is never built', async () => {
     vi.stubEnv('RESEND_API_KEY', '')
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
-    expect(await sendWelcomeEmail('d@example.com')).toEqual({ success: false, error: MAIL_NOT_CONFIGURED })
+    expect(await sendWelcomeEmail('d@example.com')).toEqual({ success: false, reason: 'not_configured', error: MAIL_NOT_CONFIGURED })
     expect(rs.send).not.toHaveBeenCalled()
     expect(rs.keys).toEqual([])
     expect(log.mock.calls.flat().join(' ')).toContain('RESEND_API_KEY is not set')
     expect(log.mock.calls.flat().join(' ')).not.toContain('d@example.com')
   })
 
-  it('a Resend API error or a thrown SDK error is a failure, never an exception', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    rs.send.mockResolvedValueOnce({ data: null, error: { message: 'API key is invalid', name: 'validation_error' } })
-    expect(await sendWelcomeEmail('e@example.com')).toEqual({ success: false, error: 'API key is invalid' })
+  it('classifies failures: 4xx/5xx = http with status, statusCode null or a throw = network, no answer = timeout', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    rs.send.mockResolvedValueOnce({ data: null, error: { message: 'API key is invalid', name: 'validation_error', statusCode: 403 } })
+    expect(await sendWelcomeEmail('e@example.com')).toEqual({ success: false, reason: 'http', status: 403, error: 'API key is invalid' })
+    rs.send.mockResolvedValueOnce({ data: null, error: { message: 'Internal server error', name: 'application_error', statusCode: 503 } })
+    expect(await sendWelcomeEmail('e@example.com')).toMatchObject({ success: false, reason: 'http', status: 503 })
+    rs.send.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Unable to fetch data. The request could not be resolved.', name: 'application_error', statusCode: null },
+    })
+    expect(await sendWelcomeEmail('e@example.com')).toMatchObject({ success: false, reason: 'network', status: null })
     rs.send.mockRejectedValueOnce(new Error('network down'))
-    expect(await sendWelcomeEmail('e@example.com')).toEqual({ success: false, error: 'network down' })
+    expect(await sendWelcomeEmail('e@example.com')).toMatchObject({ success: false, reason: 'network', error: 'network down' })
+    rs.send.mockReturnValueOnce(new Promise(() => {}))
+    expect(await sendMail({ to: 'e@example.com', subject: 's', text: 't', timeoutMs: 20 })).toMatchObject({ success: false, reason: 'timeout' })
+    // Logs carry status/name only, never the Resend message (it can echo the address) or the recipient.
+    const logged = log.mock.calls.flat().join(' ')
+    expect(logged).toContain('503')
+    expect(logged).not.toContain('e@example.com')
+    expect(logged).not.toContain('API key is invalid')
   })
 
   it('users see a generic message in production; the detail stays in the log', () => {
+    expect(MAIL_GENERIC_ERROR).toBe(
+      "We couldn't send that email right now. Please try again in a few minutes. If it still doesn't work, email support@freeplug-in.dev."
+    )
     vi.stubEnv('NODE_ENV', 'production')
     expect(publicMailError(MAIL_NOT_CONFIGURED)).toBe(MAIL_GENERIC_ERROR)
     vi.stubEnv('NODE_ENV', 'test')
@@ -221,45 +293,224 @@ describe('missing or failing Resend: fails closed, nothing sent, no other transp
   })
 })
 
-describe('password reset (requestPasswordReset)', () => {
-  const recovery = (email: string, identities: { provider: string }[]) => ({
+describe('password reset (requestPasswordReset): Resend first, loud Supabase fallback, rate limit first', () => {
+  const NEUTRAL = '/forgot-password?sent=1'
+  const recovery = (email: string, identities: { provider: string }[] = [{ provider: 'email' }]) => ({
     data: { properties: { hashed_token: 'hashed_tok_1' }, user: { id: 'u1', email, identities } },
     error: null,
   })
-
-  it('email account: the reset email via Resend, neutral page', async () => {
-    const email = uniqueEmail('reset')
-    sb.generateLink.mockResolvedValue(recovery(email, [{ provider: 'email' }]))
+  function logs() {
+    return {
+      warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
+      error: vi.spyOn(console, 'error').mockImplementation(() => {}),
+      info: vi.spyOn(console, 'info').mockImplementation(() => {}),
+      log: vi.spyOn(console, 'log').mockImplementation(() => {}),
+    }
+  }
+  const allLogged = (l: ReturnType<typeof logs>) =>
+    [l.warn, l.error, l.info, l.log].flatMap((s) => s.mock.calls.flat().map(String)).join('\n')
+  const fallbackWarnings = (l: ReturnType<typeof logs>) =>
+    l.warn.mock.calls.map((c) => String(c[0])).filter((m) => m.includes('FALLBACK to Supabase'))
+  async function submit(email: string): Promise<string> {
     const fd = new FormData()
     fd.set('email', email)
-    expect(await expectRedirect(requestPasswordReset(fd))).toBe('/forgot-password?sent=1')
-    expect(sb.generateLink).toHaveBeenCalledWith({ type: 'recovery', email })
-    expect(sent()).toHaveLength(1)
-    expect(sent()[0]).toMatchObject({ to: email, from: FROM, subject: 'Reset your Freeplug password', replyTo: REPLY_TO })
-    expect(String(sent()[0].html)).toContain('hashed_tok_1')
+    return expectRedirect(requestPasswordReset(fd))
+  }
+
+  type Case = {
+    name: string
+    arrange: () => void
+    resendCalls: number
+    fallback: string | null // expected reason in the warning, or null = no fallback
+  }
+  const cases: Case[] = [
+    { name: 'Resend accepts (id returned): no fallback', arrange: () => {}, resendCalls: 1, fallback: null },
+    { name: 'no RESEND_API_KEY', arrange: () => vi.stubEnv('RESEND_API_KEY', ''), resendCalls: 0, fallback: 'reason=missing_key' },
+    {
+      name: 'no service role key',
+      arrange: () => vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', ''),
+      resendCalls: 0,
+      fallback: 'reason=missing_service_role',
+    },
+    {
+      name: 'Resend 5xx',
+      arrange: () => rs.send.mockResolvedValue({ data: null, error: { message: 'Internal', name: 'application_error', statusCode: 503 } }),
+      resendCalls: 1,
+      fallback: 'reason=resend_http status=503',
+    },
+    {
+      name: 'Resend 4xx',
+      arrange: () => rs.send.mockResolvedValue({ data: null, error: { message: 'Invalid from', name: 'validation_error', statusCode: 422 } }),
+      resendCalls: 1,
+      fallback: 'reason=resend_http status=422',
+    },
+    {
+      name: 'network error, no response (SDK statusCode null)',
+      arrange: () =>
+        rs.send.mockResolvedValue({ data: null, error: { message: 'Unable to fetch data.', name: 'application_error', statusCode: null } }),
+      resendCalls: 1,
+      fallback: 'reason=resend_network',
+    },
+    {
+      name: 'network error thrown by the SDK',
+      arrange: () => rs.send.mockRejectedValue(new TypeError('fetch failed')),
+      resendCalls: 1,
+      fallback: 'reason=resend_network',
+    },
+  ]
+
+  it.each(cases)('$name', async ({ arrange, resendCalls, fallback }) => {
+    arrange()
+    const l = logs()
+    const email = uniqueEmail('reset')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    expect(await submit(email)).toBe(NEUTRAL)
+    expect(rs.send).toHaveBeenCalledTimes(resendCalls)
+    if (resendCalls) {
+      expect(sent()[0]).toMatchObject({ to: email, from: FROM, subject: 'Reset your Freeplug password', replyTo: REPLY_TO })
+      expect(String(sent()[0].html)).toContain('hashed_tok_1')
+    }
+    if (fallback) {
+      expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(1)
+      expect(sb.resetPasswordForEmail).toHaveBeenCalledWith(email, expect.objectContaining({ redirectTo: expect.any(String) }))
+      expect(fallbackWarnings(l)).toHaveLength(1)
+      expect(fallbackWarnings(l)[0]).toContain(fallback)
+    } else {
+      expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
+      expect(fallbackWarnings(l)).toEqual([])
+    }
+    // Never the recipient in any log line.
+    expect(allLogged(l)).not.toContain(email)
+  })
+
+  it('fallback decision: only when Resend clearly did not accept (an id never falls back)', () => {
+    expect(resetFallbackReason({ success: true, id: 'email_1' })).toBeNull()
+    expect(resetFallbackReason({ success: true, id: '' })).toBeNull() // 2xx without an id: accepted, no duplicate
+    expect(resetFallbackReason({ success: false, reason: 'not_configured', error: 'x' })).toEqual({ reason: 'missing_key', status: null })
+    expect(resetFallbackReason({ success: false, reason: 'http', status: 500, error: 'x' })).toEqual({ reason: 'resend_http', status: 500 })
+    expect(resetFallbackReason({ success: false, reason: 'http', status: 429, error: 'x' })).toEqual({ reason: 'resend_http', status: 429 })
+    expect(resetFallbackReason({ success: false, reason: 'network', status: null, error: 'x' })).toEqual({ reason: 'resend_network', status: null })
+    expect(resetFallbackReason({ success: false, reason: 'timeout', error: 'x' })).toEqual({ reason: 'resend_timeout', status: null })
+    expect(resetFallbackReason({ success: false, reason: 'local_error', error: 'x' })).toEqual({ reason: 'resend_local_error', status: null })
+    expect(RESET_SEND_TIMEOUT_MS).toBe(8000)
+  })
+
+  it('fallbacks are counted for the admin banner (database = all isolates)', async () => {
+    logs()
+    vi.stubEnv('RESEND_API_KEY', '')
+    await submit(uniqueEmail('count'))
+    await submit(uniqueEmail('count'))
+    expect(sb.hits.map((h) => [h.bucket, h.key_hash])).toEqual([
+      [RESET_FALLBACK_BUCKET, 'missing_key'],
+      [RESET_FALLBACK_BUCKET, 'missing_key'],
+    ])
+    expect(await getResetFallbackStatus()).toMatchObject({ count: 2, lastReason: 'missing_key', source: 'database' })
+    const html = renderToStaticMarkup(await AdminMailBanner())
+    expect(html).toContain('Email not configured')
+    expect(html).toContain('Email degraded: 2 password resets fell back to the Supabase mailer in the last 24 h')
+    expect(html).toContain('missing_key')
+  })
+
+  it('without the service role (or with the DB down) the banner still counts this instance', async () => {
+    logs()
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', '')
+    await submit(uniqueEmail('inst'))
+    expect(sb.hits).toEqual([])
+    expect(await getResetFallbackStatus()).toMatchObject({ count: 1, lastReason: 'missing_service_role', source: 'instance' })
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'dummy-service-role-for-tests')
+    sb.dbDown = true
+    expect(renderToStaticMarkup(await AdminMailBanner())).toContain('counted on this server instance only')
+  })
+
+  it('no banner warning when Resend accepted every reset', async () => {
+    logs()
+    const email = uniqueEmail('ok')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    await submit(email)
+    expect(await getResetFallbackStatus()).toMatchObject({ count: 0 })
+    const html = renderToStaticMarkup(await AdminMailBanner())
+    expect(html).toContain('Email (Resend) is configured.')
+    expect(html).not.toContain('Email degraded')
+  })
+
+  it('Google-only account: the "How to sign in" notice via Resend, no Supabase reset even if it fails', async () => {
+    logs()
+    const email = uniqueEmail('google')
+    sb.generateLink.mockResolvedValue(recovery(email, [{ provider: 'google' }]))
+    expect(await submit(email)).toBe(NEUTRAL)
+    expect(sent()[0]).toMatchObject({ to: email, from: FROM, subject: 'How to sign in to Freeplug' })
+    const email2 = uniqueEmail('google')
+    sb.generateLink.mockResolvedValue(recovery(email2, [{ provider: 'google' }]))
+    rs.send.mockResolvedValue({ data: null, error: { message: 'x', name: 'application_error', statusCode: 500 } })
+    expect(await submit(email2)).toBe(NEUTRAL)
     expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
   })
 
-  it('Google-only account: the "How to sign in" notice via Resend', async () => {
-    const email = uniqueEmail('google')
-    sb.generateLink.mockResolvedValue(recovery(email, [{ provider: 'google' }]))
-    const fd = new FormData()
-    fd.set('email', email)
-    expect(await expectRedirect(requestPasswordReset(fd))).toBe('/forgot-password?sent=1')
-    expect(sent()).toHaveLength(1)
-    expect(sent()[0]).toMatchObject({ to: email, from: FROM, subject: 'How to sign in to Freeplug' })
+  it('unknown email: nothing sent anywhere, same response', async () => {
+    logs()
+    sb.generateLink.mockResolvedValue({ data: null, error: { message: 'User not found' } })
+    expect(await submit(uniqueEmail('nobody'))).toBe(NEUTRAL)
+    expect(rs.send).not.toHaveBeenCalled()
+    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
   })
 
-  it('no RESEND_API_KEY: nothing goes to Resend; Supabase Auth sends it (its own mailer); same neutral page', async () => {
+  it('rate-limited (same email within a minute): neither Resend nor Supabase is called, same response', async () => {
+    logs()
+    const email = uniqueEmail('limit')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    expect(await submit(email)).toBe(NEUTRAL)
+    expect(rs.send).toHaveBeenCalledTimes(1)
+    rs.send.mockClear()
+    sb.generateLink.mockClear()
+    // Even in the fallback configuration, a limited request reaches neither path.
     vi.stubEnv('RESEND_API_KEY', '')
-    const email = uniqueEmail('nokey')
-    const fd = new FormData()
-    fd.set('email', email)
-    expect(await expectRedirect(requestPasswordReset(fd))).toBe('/forgot-password?sent=1')
+    expect(await submit(email)).toBe(NEUTRAL)
     expect(rs.send).not.toHaveBeenCalled()
-    expect(rs.keys).toEqual([])
     expect(sb.generateLink).not.toHaveBeenCalled()
-    expect(sb.resetPasswordForEmail).toHaveBeenCalledWith(email, expect.objectContaining({ redirectTo: expect.any(String) }))
+    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
+    expect(sb.hits).toEqual([])
+  })
+
+  it('rate-limited by IP (trusted CF-Connecting-IP, 6th request in 10 min): neither path, same response', async () => {
+    logs()
+    vi.stubEnv('TRUST_CF_CONNECTING_IP', 'true')
+    vi.stubEnv('RESEND_API_KEY', '')
+    hdr.extra = { 'cf-connecting-ip': `203.0.113.${(Date.now() % 200) + 1}` }
+    for (let i = 0; i < 5; i++) expect(await submit(uniqueEmail('ip'))).toBe(NEUTRAL)
+    expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(5)
+    sb.resetPasswordForEmail.mockClear()
+    expect(await submit(uniqueEmail('ip'))).toBe(NEUTRAL)
+    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
+    expect(rs.send).not.toHaveBeenCalled()
+  })
+
+  it('the response is identical in every case (no account enumeration)', async () => {
+    logs()
+    const outcomes: string[] = []
+    const run = async (arrange: () => void, linkFor?: (e: string) => unknown) => {
+      vi.stubEnv('RESEND_API_KEY', FAKE_KEY)
+      vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'dummy-service-role-for-tests')
+      rs.send.mockReset()
+      rs.send.mockResolvedValue({ data: { id: 'email_fake_1' }, error: null })
+      arrange()
+      const email = uniqueEmail('same')
+      sb.generateLink.mockResolvedValue(linkFor ? linkFor(email) : recovery(email))
+      outcomes.push(await submit(email))
+      return email
+    }
+    await run(() => {}) // accepted
+    for (const c of cases) await run(c.arrange) // every fallback case
+    await run(() => {}, () => ({ data: null, error: { message: 'User not found' } })) // unknown account
+    await run(() => {}, (e) => recovery(e, [{ provider: 'google' }])) // Google-only
+    const limited = await run(() => {})
+    const fd = new FormData()
+    fd.set('email', limited)
+    outcomes.push(await expectRedirect(requestPasswordReset(fd))) // throttled
+    sb.resetPasswordForEmail.mockRejectedValueOnce(new Error('supabase down'))
+    await run(() => vi.stubEnv('RESEND_API_KEY', '')) // fallback itself throws
+    expect(new Set(outcomes)).toEqual(new Set([NEUTRAL]))
+    expect(outcomes).toHaveLength(cases.length + 6)
+    expect(RESET_NEUTRAL_MESSAGE).toBe('If an account exists for that email, we sent a reset link.')
   })
 })
 

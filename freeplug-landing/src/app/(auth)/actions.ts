@@ -20,6 +20,12 @@ import { isMailConfigured, sendMail } from '@/lib/email/mailer'
 import { RESET_COOKIE_NAME, resetCookieSecret, verifyResetToken } from '@/lib/auth/reset-cookie'
 import { sendPasswordResetEmail } from '@/lib/email/send'
 import { GoogleSignInEmail } from '@/lib/email/templates/google-sign-in'
+import {
+  RESET_SEND_TIMEOUT_MS,
+  recordResetFallback,
+  resetFallbackReason,
+  type ResetFallbackReason,
+} from '@/lib/email/reset-fallback'
 
 export async function signIn(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim()
@@ -131,22 +137,31 @@ async function clientIp(): Promise<string> {
   return clientIpFrom(await headers())
 }
 
-/**
- * Sends the reset email from our own sender (Resend; EMAIL_FROM / EMAIL_FROM_NAME).
- * Unknown emails get nothing; Google-only accounts get a "sign in with Google" note.
- * Falls back to Supabase Auth's own mailer (the hosted project's email settings, not ours) only when
- * RESEND_API_KEY or the service role key is missing, or when our Resend send fails.
- */
 /** Reset-link base: the local origin in `next dev` on localhost, else emailBaseUrl(). */
 async function resetLinkBaseUrl(): Promise<string> {
   const h = await headers()
   return requestAwareBaseUrl({ host: h.get('host'), forwardedProto: h.get('x-forwarded-proto') })
 }
 
+/**
+ * Sends the reset email from our own sender (Resend; EMAIL_FROM / EMAIL_FROM_NAME).
+ * Unknown emails get nothing; Google-only accounts get a "sign in with Google" note.
+ *
+ * Falls back to Supabase Auth's own mailer (resetPasswordForEmail: the hosted project's email settings)
+ * ONLY when Resend clearly didn't accept the email: RESEND_API_KEY or the service role key missing, a
+ * Resend 4xx/5xx, a network error with no response, or no answer within RESET_SEND_TIMEOUT_MS (a late
+ * success may then mean a duplicate, which is acceptable for a reset). A returned id never falls back.
+ * Every fallback logs a warning with the reason (never the address) and counts on the admin mail banner.
+ * The caller's rate limit runs before any of this, and the caller's response is the same in every case.
+ */
 async function deliverPasswordReset(email: string): Promise<void> {
   const origin = await resetLinkBaseUrl()
+  const noKey = !isMailConfigured()
+  const noServiceRole = !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+  const missing: ResetFallbackReason | null =
+    noKey && noServiceRole ? 'missing_key+missing_service_role' : noKey ? 'missing_key' : noServiceRole ? 'missing_service_role' : null
 
-  if (isMailConfigured() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+  if (!missing) {
     const admin = createAdminClient()
     const { data, error } = await admin.auth.admin.generateLink({ type: 'recovery', email })
     if (error || !data?.properties?.hashed_token) {
@@ -155,20 +170,26 @@ async function deliverPasswordReset(email: string): Promise<void> {
     }
 
     if (isGoogleOnlyUser(data.user)) {
+      // No fallback here: a Supabase reset link would let a Google-only account set a password.
       const res = await sendMail({
         to: email,
         subject: 'How to sign in to Freeplug',
         react: GoogleSignInEmail({ baseUrl: origin }),
       })
-      if (!res.success) console.error('[password-reset] google-only notice failed:', res.error)
+      if (!res.success) console.error('[password-reset] google-only notice not sent:', res.reason, res.status ?? '')
       return
     }
 
-    const res = await sendPasswordResetEmail(email, {
-      resetLink: recoveryConfirmUrl(origin, data.properties.hashed_token),
-    })
-    if (res.success) return
-    console.error('[password-reset] Resend send failed, falling back to Supabase mailer:', res.error)
+    const res = await sendPasswordResetEmail(
+      email,
+      { resetLink: recoveryConfirmUrl(origin, data.properties.hashed_token) },
+      { timeoutMs: RESET_SEND_TIMEOUT_MS }
+    )
+    const fallback = resetFallbackReason(res)
+    if (!fallback) return // Resend accepted it (an id came back).
+    await recordResetFallback(fallback.reason, fallback.status)
+  } else {
+    await recordResetFallback(missing)
   }
 
   const supabase = await createClient()

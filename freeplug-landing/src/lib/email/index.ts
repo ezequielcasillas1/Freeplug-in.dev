@@ -12,7 +12,7 @@ export {
   EMAIL_FROM,
   EMAIL_REPLY_TO,
 } from './mailer'
-export type { MailParams, MailResult } from './mailer'
+export type { MailParams, MailResult, MailFailureReason } from './mailer'
 export {
   sendWelcomeEmail,
   sendPaymentReceivedEmail,
