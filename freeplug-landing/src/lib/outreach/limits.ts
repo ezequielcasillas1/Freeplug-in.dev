@@ -21,7 +21,7 @@ export const PHOTO_LIMITS = {
   maxOriginalBytes: 10 * 1024 * 1024,
   /**
    * After the browser shrinks a photo it must be at most this size, or it is refused before
-   * upload; the server refuses anything bigger too (Netlify's request body limit is about 6 MB).
+   * upload; the server refuses anything bigger too (server actions are capped at 6 MB, body-limit.ts).
    */
   maxUploadBytes: 5 * 1024 * 1024,
   /** Longest side after the browser resize (and again on the server). */

@@ -133,6 +133,9 @@ export async function sendMail(p: MailParams): Promise<MailResult> {
       return { success: false, error: 'Email has no content' }
     }
 
+    // Cloudflare port (Aria A4 #4): on Workers, Resend (HTTPS) should become the primary sender
+    // and SMTP an option only after a real port-465 test on the preview deploy. The switch goes
+    // here (try Resend first when RESEND_API_KEY is set). Waits for Ezequiel's working Resend key.
     if (!isSmtpConfigured()) {
       if (env('RESEND_API_KEY')) return await sendViaResendFallback(p, html, text)
       return { success: false, error: 'SMTP is not configured' }

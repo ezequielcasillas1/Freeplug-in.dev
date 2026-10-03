@@ -56,3 +56,10 @@ next-env.d.ts
 # local agent backups
 .owen-backup-*/
 .arkitect/
+
+# Cloudflare (OpenNext + Wrangler) build output and local secrets. Keep .dev.vars.example.
+/.open-next/
+/.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example

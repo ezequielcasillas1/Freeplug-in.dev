@@ -1,8 +1,8 @@
 import { SERVER_TOO_LARGE } from './copy'
 
 /**
- * Server actions accept at most 6 MB (next.config.ts serverActions.bodySizeLimit "6mb", about
- * Netlify's request body limit). Next.js answers a bigger body with an HTTP 500 ("Body exceeded
+ * Server actions accept at most 6 MB (next.config.ts serverActions.bodySizeLimit "6mb"; our own
+ * cap, well under Cloudflare's 100 MB edge request body limit). Next.js answers a bigger body with an HTTP 500 ("Body exceeded
  * 6mb limit", E394); the proxy calls this first and refuses it cleanly with a 413 and Sable's line
  * instead (Vera QA #4).
  *   * With a Content-Length: the header decides (Node never reads past it).

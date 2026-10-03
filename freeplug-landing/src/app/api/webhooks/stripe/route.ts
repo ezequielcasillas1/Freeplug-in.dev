@@ -31,7 +31,9 @@ export async function POST(request: Request) {
   let event: Stripe.Event
   try {
     const stripe = getStripe()
-    event = stripe.webhooks.constructEvent(body, sig, secret)
+    // Async on purpose (Cloudflare port): on Workers, stripe uses Web Crypto (SubtleCryptoProvider),
+    // which only works from the async verifier; the sync constructEvent throws there.
+    event = await stripe.webhooks.constructEventAsync(body, sig, secret)
   } catch (err) {
     console.error('[webhook/stripe] signature', err)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })

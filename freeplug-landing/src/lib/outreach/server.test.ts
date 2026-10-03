@@ -230,6 +230,9 @@ vi.mock('@/lib/stripe/checkout-customer', () => ({
 }))
 
 const server = await import('./server')
+const { setImageCodec } = await import('./image')
+const { sharpImageCodec } = await import('../../../test/image-codec-sharp')
+setImageCodec(sharpImageCodec)
 
 let jpeg: Blob
 beforeAll(async () => {
@@ -276,7 +279,7 @@ beforeEach(() => {
 })
 
 describe('client IP (Vera QA #3)', () => {
-  it('ignores a client-sent X-Forwarded-For (no trusted-proxy flag, no Netlify header)', async () => {
+  it('ignores a client-sent X-Forwarded-For (only a trusted CF-Connecting-IP counts)', async () => {
     expect(await server.requestIp()).toBe('unknown-ip')
   })
 })

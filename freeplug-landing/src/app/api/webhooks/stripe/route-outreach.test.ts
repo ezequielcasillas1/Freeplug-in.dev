@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const state = { event: null as unknown, setupCalls: [] as unknown[], invoiceCalls: [] as unknown[], setupFails: false, profileUpdates: 0 }
 
 vi.mock('@/lib/stripe/server', () => ({
-  getStripe: () => ({ webhooks: { constructEvent: () => state.event }, subscriptions: { list: async () => ({ data: [] }) } }),
+  getStripe: () => ({ webhooks: { constructEventAsync: async () => state.event }, subscriptions: { list: async () => ({ data: [] }) } }),
 }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({

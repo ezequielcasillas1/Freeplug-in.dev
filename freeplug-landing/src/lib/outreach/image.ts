@@ -1,15 +1,22 @@
 import { randomBytes } from 'node:crypto'
-import sharp from 'sharp'
 import { PHOTO_LIMITS } from './limits'
+import { isJpeg, stripJpegMetadata } from './jpeg-metadata'
 
 /**
  * Upload checks for outreach photos and screenshots (Vera rule 2, Aria section 5):
  *   1. size cap before anything else;
  *   2. magic bytes: JPEG, PNG or WebP only (no SVG, GIF, HEIC or anything renamed);
- *   3. decode and re-encode with sharp to JPEG, which rejects files that only look like images,
- *      applies the EXIF orientation and then drops all metadata (EXIF, GPS, XMP, ICC comments);
- *   4. a random file name; the uploaded name is never used.
+ *   3. decode and re-encode to JPEG through an ImageCodec, which rejects files that only look like
+ *      images, applies the EXIF orientation, fits inside the size cap without enlarging, and
+ *      flattens transparency onto white;
+ *   4. every APPn/COM metadata segment is then stripped from the JPEG bytes here (EXIF, GPS, XMP,
+ *      IPTC, comments), whatever the codec did. This is a Privacy Policy fact; see jpeg-metadata.ts;
+ *   5. a random file name; the uploaded name is never used.
  * The browser already converts HEIC and resizes to JPEG before upload (client-image.ts).
+ *
+ * Codec (Cloudflare port, Oct 3): production uses the Cloudflare Images binding
+ * (image-codec-cloudflare.ts, env.IMAGES). sharp can't load on Workers, so it is NOT imported by
+ * any app file; tests inject the sharp adapter in test/image-codec-sharp.ts with setImageCodec().
  */
 
 export type DetectedImageType = 'jpeg' | 'png' | 'webp'
@@ -44,6 +51,48 @@ export type ImageCheckResult =
   | { ok: true; image: ProcessedImage }
   | { ok: false; reason: 'too_large' | 'bad_type' | 'unreadable' }
 
+/** What a codec must do with one upload. Same numbers as the sharp pipeline before the port. */
+export type ImageReencodeSpec = {
+  /** Fit inside maxWidth x maxHeight (height optional), keep the aspect ratio, never enlarge. */
+  maxWidth: number
+  maxHeight?: number
+  /** JPEG quality, 1-100. */
+  quality: number
+  /** Refuse decoded images with more pixels than this (decompression-bomb guard). */
+  maxInputPixels: number
+}
+
+export type EncodedImage = { data: Uint8Array; width: number; height: number }
+
+/**
+ * Decode + auto-rotate + resize (inside, no enlargement) + flatten on white + JPEG encode.
+ * Must THROW for anything it can't decode; processUploadedImage turns that into 'unreadable'.
+ */
+export interface ImageCodec {
+  readonly name: string
+  reencodeToJpeg(input: Uint8Array, spec: ImageReencodeSpec): Promise<EncodedImage>
+}
+
+let codecOverride: ImageCodec | null = null
+
+/** Tests (and only tests) swap the codec, e.g. for the sharp adapter. Pass null to reset. */
+export function setImageCodec(codec: ImageCodec | null): void {
+  codecOverride = codec
+}
+
+async function currentCodec(): Promise<ImageCodec> {
+  if (codecOverride) return codecOverride
+  // Lazy so that modules which only need detectImageType/randomObjectName don't load the adapter.
+  const { cloudflareImagesCodec } = await import('./image-codec-cloudflare')
+  return cloudflareImagesCodec
+}
+
+export function reencodeSpecFor(kind: 'photo' | 'screenshot'): ImageReencodeSpec {
+  return kind === 'photo'
+    ? { maxWidth: PHOTO_MAX_DIMENSION, maxHeight: PHOTO_MAX_DIMENSION, quality: 85, maxInputPixels: 60_000_000 }
+    : { maxWidth: SCREENSHOT_MAX_WIDTH, quality: 82, maxInputPixels: 120_000_000 }
+}
+
 export async function processUploadedImage(
   input: Uint8Array,
   kind: 'photo' | 'screenshot'
@@ -52,25 +101,13 @@ export async function processUploadedImage(
   if (input.length === 0 || input.length > max) return { ok: false, reason: input.length ? 'too_large' : 'bad_type' }
   if (!detectImageType(input)) return { ok: false, reason: 'bad_type' }
   try {
-    let pipeline = sharp(Buffer.from(input), {
-      failOn: 'error',
-      limitInputPixels: kind === 'photo' ? 60_000_000 : 120_000_000,
-    }).rotate()
-    pipeline =
-      kind === 'photo'
-        ? pipeline.resize({
-            width: PHOTO_MAX_DIMENSION,
-            height: PHOTO_MAX_DIMENSION,
-            fit: 'inside',
-            withoutEnlargement: true,
-          })
-        : pipeline.resize({ width: SCREENSHOT_MAX_WIDTH, withoutEnlargement: true })
-    const { data, info } = await pipeline
-      .flatten({ background: '#ffffff' })
-      .jpeg({ quality: kind === 'photo' ? 85 : 82, mozjpeg: true })
-      .toBuffer({ resolveWithObject: true })
-    return { ok: true, image: { data, width: info.width, height: info.height, bytes: data.length } }
-  } catch {
+    const codec = await currentCodec()
+    const encoded = await codec.reencodeToJpeg(input, reencodeSpecFor(kind))
+    if (!isJpeg(encoded.data) || !(encoded.width > 0) || !(encoded.height > 0)) return { ok: false, reason: 'unreadable' }
+    const data = Buffer.from(stripJpegMetadata(encoded.data))
+    return { ok: true, image: { data, width: encoded.width, height: encoded.height, bytes: data.length } }
+  } catch (e) {
+    console.error('[outreach] image re-encode failed', e instanceof Error ? e.message : 'unknown error')
     return { ok: false, reason: 'unreadable' }
   }
 }

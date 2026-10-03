@@ -2,12 +2,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Live webhooks can't be delivered (freeplug-in.dev doesn't resolve), so events are unit-tested.
-const constructEvent = vi.fn()
+const constructEventAsync = vi.fn()
 const subsList = vi.fn()
 const cancelNotice = vi.fn()
 
 vi.mock('@/lib/stripe/server', () => ({
-  getStripe: () => ({ webhooks: { constructEvent }, subscriptions: { list: subsList } }),
+  getStripe: () => ({ webhooks: { constructEventAsync }, subscriptions: { list: subsList } }),
 }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ from: vi.fn() }) }))
 vi.mock('@/lib/email/cancel-notice', () => ({
@@ -31,7 +31,7 @@ function subscription(over: Record<string, unknown> = {}) {
 }
 
 async function deliver(type: string, obj: unknown) {
-  constructEvent.mockReturnValue({ id: 'evt_1', type, data: { object: obj } })
+  constructEventAsync.mockResolvedValue({ id: 'evt_1', type, data: { object: obj } })
   const res = await POST(
     new Request('http://localhost/api/webhooks/stripe', {
       method: 'POST',
@@ -45,7 +45,7 @@ async function deliver(type: string, obj: unknown) {
 describe('POST /api/webhooks/stripe: website access on subscription events (e)', () => {
   beforeEach(() => {
     process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test'
-    constructEvent.mockReset()
+    constructEventAsync.mockReset()
     subsList.mockReset()
     cancelNotice.mockReset()
     cancelNotice.mockResolvedValue('not_set_to_cancel')
@@ -93,5 +93,32 @@ describe('POST /api/webhooks/stripe: website access on subscription events (e)',
     cancelNotice.mockRejectedValue(new Error('smtp down'))
     const r = await deliver('customer.subscription.updated', subscription({ cancel_at_period_end: true }))
     expect(r.status).toBe(200)
+  })
+})
+
+describe('POST /api/webhooks/stripe: signature check (Cloudflare port, constructEventAsync)', () => {
+  beforeEach(() => {
+    process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test'
+    constructEventAsync.mockReset()
+  })
+
+  it('awaits constructEventAsync with the raw body, the header and the secret', async () => {
+    constructEventAsync.mockResolvedValue({ id: 'evt_x', type: 'ping.unhandled', data: { object: {} } })
+    const res = await POST(
+      new Request('http://localhost/api/webhooks/stripe', { method: 'POST', headers: { 'stripe-signature': 't=1,v1=abc' }, body: '{"raw":true}' })
+    )
+    expect(res.status).toBe(200)
+    expect(constructEventAsync).toHaveBeenCalledWith('{"raw":true}', 't=1,v1=abc', 'whsec_test')
+  })
+
+  it('a rejected (async) signature check is a 400, not a 500', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {})
+    constructEventAsync.mockRejectedValue(new Error('No signatures found matching the expected signature'))
+    const res = await POST(
+      new Request('http://localhost/api/webhooks/stripe', { method: 'POST', headers: { 'stripe-signature': 't=1,v1=bad' }, body: '{}' })
+    )
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ error: 'Invalid signature' })
+    quiet.mockRestore()
   })
 })

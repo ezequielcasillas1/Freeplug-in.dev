@@ -2,66 +2,58 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { SHARED_IP_BUCKET, clientIpFrom, isTrustedClientIp } from './client-ip'
+import { SHARED_IP_BUCKET, TRUST_CF_CONNECTING_IP_ENV, clientIpFrom, isTrustedClientIp } from './client-ip'
 
 const h = (o: Record<string, string>) => new Headers(o)
+const on = { TRUST_CF_CONNECTING_IP: 'true' }
 
-describe('client IP for rate limits (Vera QA #3, refined 12:49 AM)', () => {
-  it('fake X-Forwarded-For without the Netlify header: the shared bucket, never the faked value', () => {
+describe('client IP for rate limits on Cloudflare (Vera QA #3, Aria A5, Oct 3)', () => {
+  it('the shared bucket is still "unknown-ip" and the flag name is TRUST_CF_CONNECTING_IP', () => {
     expect(SHARED_IP_BUCKET).toBe('unknown-ip')
-    const ips = ['1.1.1.1', '2.2.2.2', '3.3.3.3'].map((ip) => clientIpFrom(h({ 'x-forwarded-for': ip, 'x-real-ip': ip }), {}))
-    // Rotating the header lands every request in the same bucket, so the limit still applies.
-    expect(new Set(ips)).toEqual(new Set([SHARED_IP_BUCKET]))
+    expect(TRUST_CF_CONNECTING_IP_ENV).toBe('TRUST_CF_CONNECTING_IP')
   })
 
-  it('fake X-Forwarded-For plus the Netlify header, with TRUST_NETLIFY_IP_HEADER=true: Netlify’s connection IP wins', () => {
-    expect(clientIpFrom(h({ 'x-nf-client-connection-ip': '198.51.100.9', 'x-forwarded-for': '1.2.3.4' }), { TRUST_NETLIFY_IP_HEADER: 'true' })).toBe('198.51.100.9')
+  it('flag on with a valid CF-Connecting-IP (IPv4 or IPv6): that IP', () => {
+    expect(clientIpFrom(h({ 'cf-connecting-ip': '198.51.100.9' }), on)).toBe('198.51.100.9')
+    expect(clientIpFrom(h({ 'cf-connecting-ip': ' 203.0.113.7 ' }), on)).toBe('203.0.113.7')
+    expect(clientIpFrom(h({ 'cf-connecting-ip': '2001:db8:1:2::abcd' }), on)).toBe('2001:db8:1:2::abcd')
   })
 
-  it('neither header: the shared bucket', () => {
-    expect(clientIpFrom(h({}), {})).toBe(SHARED_IP_BUCKET)
-  })
-
-  it('the trusted-proxy flag is off by default and only exactly "true" turns it on', () => {
-    expect(clientIpFrom(h({ 'x-forwarded-for': '1.2.3.4' }), {})).toBe(SHARED_IP_BUCKET)
-    expect(clientIpFrom(h({ 'x-forwarded-for': '1.2.3.4' }), { TRUST_PROXY_HEADERS: '1' })).toBe(SHARED_IP_BUCKET)
-    expect(clientIpFrom(h({ 'x-forwarded-for': '1.2.3.4' }), { TRUST_PROXY_HEADERS: 'false' })).toBe(SHARED_IP_BUCKET)
-  })
-
-  it('with TRUST_PROXY_HEADERS=true: first X-Forwarded-For entry, then X-Real-IP; Netlify still wins', () => {
-    const env = { TRUST_PROXY_HEADERS: 'true' }
-    expect(clientIpFrom(h({ 'x-forwarded-for': '203.0.113.7, 10.0.0.1' }), env)).toBe('203.0.113.7')
-    expect(clientIpFrom(h({ 'x-real-ip': '203.0.113.8' }), env)).toBe('203.0.113.8')
-    expect(clientIpFrom(h({}), env)).toBe(SHARED_IP_BUCKET)
-    expect(clientIpFrom(h({ 'x-nf-client-connection-ip': '198.51.100.9', 'x-forwarded-for': '1.2.3.4' }), env)).toBe('1.2.3.4')
-    expect(clientIpFrom(h({ 'x-nf-client-connection-ip': '198.51.100.9', 'x-forwarded-for': '1.2.3.4' }), { ...env, TRUST_NETLIFY_IP_HEADER: 'true' })).toBe('198.51.100.9')
-  })
-})
-
-describe('TRUST_NETLIFY_IP_HEADER (Vera r2 N6, Jace round 5)', () => {
-  it('off (unset, or anything but exactly "true"): a sent x-nf-client-connection-ip is ignored -> shared bucket', () => {
-    for (const env of [{}, { TRUST_NETLIFY_IP_HEADER: '' }, { TRUST_NETLIFY_IP_HEADER: '1' }, { TRUST_NETLIFY_IP_HEADER: 'TRUE' }, { TRUST_NETLIFY_IP_HEADER: 'false' }]) {
-      expect(clientIpFrom(h({ 'x-nf-client-connection-ip': '198.51.100.9' }), env)).toBe(SHARED_IP_BUCKET)
+  it('flag on with no header, a blank one or garbage: the shared bucket', () => {
+    for (const v of [undefined, '', '   ', 'not-an-ip', '1.2.3.4, 5.6.7.8', '999.1.1.1', '1.2.3', 'fe80::1%eth0', '<script>', 'unknown-ip']) {
+      expect(clientIpFrom(h(v === undefined ? {} : { 'cf-connecting-ip': v }), on)).toBe(SHARED_IP_BUCKET)
     }
   })
 
-  it('off: rotating the Netlify header does not escape the limit (40 values, one bucket)', () => {
-    const ips = Array.from({ length: 40 }, (_, i) => clientIpFrom(h({ 'x-nf-client-connection-ip': `203.0.113.${i}` }), {}))
+  it('flag on with only X-Forwarded-For / X-Real-IP / the old Netlify header: the shared bucket (no fallback)', () => {
+    expect(clientIpFrom(h({ 'x-forwarded-for': '1.2.3.4' }), on)).toBe(SHARED_IP_BUCKET)
+    expect(clientIpFrom(h({ 'x-real-ip': '1.2.3.4' }), on)).toBe(SHARED_IP_BUCKET)
+    expect(clientIpFrom(h({ 'x-nf-client-connection-ip': '198.51.100.9' }), { ...on, TRUST_NETLIFY_IP_HEADER: 'true', TRUST_PROXY_HEADERS: 'true' })).toBe(SHARED_IP_BUCKET)
+    // CF-Connecting-IP wins over a faked XFF.
+    expect(clientIpFrom(h({ 'cf-connecting-ip': '198.51.100.9', 'x-forwarded-for': '1.2.3.4' }), on)).toBe('198.51.100.9')
+  })
+
+  it('flag off (unset, "", "1", "TRUE", "false"): a sent CF-Connecting-IP is ignored', () => {
+    for (const env of [{}, { TRUST_CF_CONNECTING_IP: '' }, { TRUST_CF_CONNECTING_IP: '1' }, { TRUST_CF_CONNECTING_IP: 'TRUE' }, { TRUST_CF_CONNECTING_IP: 'false' }]) {
+      expect(clientIpFrom(h({ 'cf-connecting-ip': '198.51.100.9' }), env)).toBe(SHARED_IP_BUCKET)
+    }
+  })
+
+  it('flag off: rotating the header does not escape the limit (40 values, one bucket)', () => {
+    const ips = Array.from({ length: 40 }, (_, i) => clientIpFrom(h({ 'cf-connecting-ip': `203.0.113.${i}`, 'x-forwarded-for': `10.0.0.${i}` }), {}))
     expect(new Set(ips)).toEqual(new Set([SHARED_IP_BUCKET]))
   })
 
-  it('on: the Netlify header is used; missing or blank falls back to the existing path', () => {
-    const on = { TRUST_NETLIFY_IP_HEADER: 'true' }
-    expect(clientIpFrom(h({ 'x-nf-client-connection-ip': ' 198.51.100.9 ' }), on)).toBe('198.51.100.9')
-    expect(clientIpFrom(h({ 'x-nf-client-connection-ip': '   ' }), on)).toBe(SHARED_IP_BUCKET)
-    expect(clientIpFrom(h({ 'x-forwarded-for': '1.2.3.4' }), on)).toBe(SHARED_IP_BUCKET)
-    expect(clientIpFrom(h({ 'x-forwarded-for': '1.2.3.4' }), { ...on, TRUST_PROXY_HEADERS: 'true' })).toBe('1.2.3.4')
+  it('is documented in .env.example without a value; the Netlify and proxy flags are gone', () => {
+    const example = readFileSync(path.join(__dirname, '../../../.env.example'), 'utf8')
+    expect(example).toMatch(/^TRUST_CF_CONNECTING_IP=$/m)
+    expect(example).not.toMatch(/TRUST_NETLIFY_IP_HEADER/)
+    expect(example).not.toMatch(/^TRUST_PROXY_HEADERS=/m)
   })
 
-  it('is documented in .env.example without a value', () => {
-    const example = readFileSync(path.join(__dirname, '../../../.env.example'), 'utf8')
-    expect(example).toMatch(/^TRUST_NETLIFY_IP_HEADER=$/m)
-    expect(example).toMatch(/^TRUST_PROXY_HEADERS=$/m)
+  it('the source has no X-Forwarded-For, X-Real-IP or Netlify branch left', () => {
+    const src = readFileSync(path.join(__dirname, 'client-ip.ts'), 'utf8').split('\n').filter((l) => !l.trim().startsWith('*') && !l.trim().startsWith('/'))
+    expect(src.join('\n')).not.toMatch(/x-forwarded-for|x-real-ip|x-nf-client|TRUST_NETLIFY|TRUST_PROXY/i)
   })
 })
 

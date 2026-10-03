@@ -43,6 +43,21 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // Cloudflare port (Oct 3): sharp can't load on Workers. App code uses the Images binding
+  // (src/lib/outreach/image-codec-cloudflare.ts); sharp is a devDependency for tests only
+  // (test/image-codec-sharp.ts). A separate rule name so it doesn't replace the block above.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/**/*.test.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [{ name: "sharp", message: "sharp can't run on Cloudflare Workers: use processUploadedImage() (Images binding)." }],
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -50,6 +65,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // OpenNext / Wrangler build output (Cloudflare port).
+    ".open-next/**",
+    ".wrangler/**",
     // Local pre-change backup copies (not part of the app).
     ".owen-backup-*/**",
   ]),

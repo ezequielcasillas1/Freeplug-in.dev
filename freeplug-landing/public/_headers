@@ -1,0 +1,14 @@
+# Cloudflare Workers Static Assets headers (Cloudflare port, Oct 3). These apply ONLY to files
+# Cloudflare serves straight from .open-next/assets without running the Worker (JS/CSS chunks,
+# images, icons). Pages and API routes get the same security headers from next.config.ts
+# headers(); keep both in sync with SITE_SECURITY_HEADERS in src/lib/outreach/headers.ts
+# (headers.test.ts checks). Moved from netlify.toml [[headers]] for = "/*".
+# https://developers.cloudflare.com/workers/static-assets/headers/
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Hashed build output never changes (OpenNext docs: caching static assets).
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

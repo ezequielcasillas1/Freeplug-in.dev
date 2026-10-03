@@ -124,9 +124,9 @@ describe('/claim/resend (round 7)', () => {
   })
 
   it('per-IP limit: 20 per hour per trusted IP across users; without a trusted IP everyone shares one bucket (100 per hour)', async () => {
-    vi.stubEnv('TRUST_NETLIFY_IP_HEADER', 'true')
+    vi.stubEnv('TRUST_CF_CONNECTING_IP', 'true')
     try {
-      h.headers = { 'x-nf-client-connection-ip': '203.0.113.9' }
+      h.headers = { 'cf-connecting-ip': '203.0.113.9' }
       const out: string[] = []
       for (let i = 0; i < 21; i++) {
         h.user = { id: `e2e00000-0000-4000-8000-0000000001${String(i).padStart(2, '0')}`, email: `u${i}@local.test`, email_confirmed_at: null }
@@ -137,11 +137,11 @@ describe('/claim/resend (round 7)', () => {
     } finally {
       vi.unstubAllEnvs()
     }
-    // Header not trusted (flag off): a rotating x-nf header lands in the shared bucket.
+    // Header not trusted (flag off): a rotating CF-Connecting-IP lands in the shared bucket.
     h.hits.clear()
     const shared: string[] = []
     for (let i = 0; i < 101; i++) {
-      h.headers = { 'x-nf-client-connection-ip': `198.51.100.${i % 250}` }
+      h.headers = { 'cf-connecting-ip': `198.51.100.${i % 250}` }
       h.user = { id: `e2e00000-0000-4000-8000-000000002${String(i).padStart(3, '0')}`, email: `s${i}@local.test`, email_confirmed_at: null }
       shared.push((await call()).outcome)
     }

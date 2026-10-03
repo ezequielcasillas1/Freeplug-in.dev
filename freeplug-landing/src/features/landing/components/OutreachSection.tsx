@@ -110,9 +110,15 @@ export function OutreachSection() {
                     <Image
                       src={city.image}
                       alt={city.alt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      // City photos are all 800x600 and sit below the first screen at 375px and desktop:
+                      // explicit size (no layout shift; the aspect box sets the shown size) and lazy load.
+                      width={800}
+                      height={600}
+                      loading="lazy"
+                      // Served as-is (78-156 KB JPGs): keeps /_next/image off the Cloudflare Images
+                      // quota, which is for uploads (Cloudflare port, Oct 3).
+                      unoptimized
+                      className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white">
@@ -214,9 +220,11 @@ export function OutreachSection() {
                     <Image
                       src={img.src}
                       alt={img.alt}
-                      fill
-                      sizes="(max-width: 1024px) 50vw, 25vw"
-                      className="object-cover"
+                      width={800}
+                      height={600}
+                      loading="lazy"
+                      unoptimized
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <p className="absolute bottom-3 left-3 right-3 text-white text-xs font-medium drop-shadow">

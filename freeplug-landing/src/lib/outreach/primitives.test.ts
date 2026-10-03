@@ -1,9 +1,10 @@
 // @vitest-environment node
-import { describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import sharp from 'sharp'
 import { generatePreviewToken, hashPreviewToken, isLinkUsable, isWellFormedToken, linkExpiryFrom, extendedExpiry } from './token'
 import { signSiteCookie, verifySiteCookie } from './cookie'
-import { detectImageType, processUploadedImage } from './image'
+import { detectImageType, processUploadedImage, setImageCodec } from './image'
+import { sharpImageCodec } from '../../../test/image-codec-sharp'
 import { TURNSTILE_TEST_SECRET_KEY, turnstileSecret, verifyTurnstile } from './turnstile'
 import { PHOTO_LIMITS } from './limits'
 
@@ -54,6 +55,10 @@ describe('signed preview cookie', () => {
 })
 
 describe('uploaded images (server backstop)', () => {
+  // sharp can't run on Workers; tests use the same pipeline through the test-only adapter.
+  beforeAll(() => setImageCodec(sharpImageCodec))
+  afterAll(() => setImageCodec(null))
+
   it('refuses a renamed .txt and an SVG by their bytes', async () => {
     const txt = new TextEncoder().encode('hello, this is not a photo')
     const svg = new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>')

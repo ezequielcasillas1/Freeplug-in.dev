@@ -78,7 +78,7 @@ function db() {
 
 // ----------------------------------------------------------------------------- infrastructure
 
-/** Trusted client IP (see clientIpFrom: Netlify's header; X-Forwarded-For only behind a trusted proxy). */
+/** Trusted client IP (see clientIpFrom: CF-Connecting-IP only with TRUST_CF_CONNECTING_IP=true; never X-Forwarded-For). */
 export async function requestIp(): Promise<string> {
   return clientIpFrom(await headers())
 }

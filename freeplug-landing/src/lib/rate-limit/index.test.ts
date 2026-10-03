@@ -56,17 +56,17 @@ describe('shared rate limiter', () => {
     }
     const send = async (headers: Record<string, string>) => rateCheck(rule, clientIpFrom(new Headers(headers), {}))
 
-    it('rotating a fake X-Forwarded-For without the Netlify header', async () => {
+    it('rotating a fake X-Forwarded-For without a trusted CF-Connecting-IP', async () => {
       counting()
       const out = []
       for (let i = 1; i <= 6; i++) out.push(await send({ 'x-forwarded-for': `10.0.0.${i}`, 'x-real-ip': `10.0.1.${i}` }))
       expect(out).toEqual([true, true, true, false, false, false])
     })
 
-    it('rotating a fake X-Forwarded-For next to the Netlify header', async () => {
+    it('rotating a fake X-Forwarded-For next to a trusted CF-Connecting-IP', async () => {
       counting()
       const out = []
-      for (let i = 1; i <= 5; i++) out.push(await rateCheck(rule, clientIpFrom(new Headers({ 'x-nf-client-connection-ip': '198.51.100.9', 'x-forwarded-for': `10.0.0.${i}` }), { TRUST_NETLIFY_IP_HEADER: 'true' })))
+      for (let i = 1; i <= 5; i++) out.push(await rateCheck(rule, clientIpFrom(new Headers({ 'cf-connecting-ip': '198.51.100.9', 'x-forwarded-for': `10.0.0.${i}` }), { TRUST_CF_CONNECTING_IP: 'true' })))
       expect(out).toEqual([true, true, true, false, false])
     })
 
