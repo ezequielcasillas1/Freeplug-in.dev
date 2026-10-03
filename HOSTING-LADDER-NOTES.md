@@ -41,7 +41,7 @@ All customer wording: `freeplug-landing/src/lib/plans/ladder-copy.ts` (PLACEHOLD
   webhook sync (`plan-step-sync.ts`) and read through `plan-snapshot.ts` / `user-entitlements.ts`.
   Stripe is read directly only for a profile that was never synced.
 - **Due dates:** next business day 5 PM America/Chicago, skipping weekends and the holidays in
-  ladder.ts (weekend holidays are not moved to an observed weekday).
+  ladder.ts, with the federal observed-day rule (Sat -> Fri before, Sun -> Mon after; Aria 12:56).
 - **Version check:** the 20260403120000 duplicate pair is pinned by version, filename and sha256.
 
 ## Database

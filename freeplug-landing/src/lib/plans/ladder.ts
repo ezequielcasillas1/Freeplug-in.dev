@@ -100,8 +100,9 @@ export const BUSINESS_TIME_ZONE = 'America/Chicago'
  *   { month, day }            the same date every year (month 1-12)
  *   { month, weekday, nth }   the nth weekday of the month (weekday 0 = Sunday .. 6 = Saturday;
  *                             nth 1-4, or -1 for the last one in the month)
- * A holiday that falls on a weekend is not moved to the Friday or Monday (weekends are skipped
- * anyway). Add the observed day to EXTRA_CLOSED_DATES if you close then too.
+ * Weekend holidays follow the federal rule (Aria, Oct 3 12:56; OBSERVE_WEEKEND_HOLIDAYS below): a
+ * Saturday holiday is observed on the Friday before, a Sunday holiday on the Monday after. New
+ * Year's Day on a Saturday is therefore observed on Dec 31 of the year before.
  */
 export type HolidayRule =
   | { name: string; month: number; day: number }
@@ -116,26 +117,58 @@ export const BUSINESS_HOLIDAYS: readonly HolidayRule[] = [
   { name: 'Christmas Day', month: 12, day: 25 },
 ]
 
+/**
+ * Federal observed-day rule for fixed-date holidays that fall on a weekend: Saturday -> the Friday
+ * before, Sunday -> the Monday after. Set to false to skip only the actual date.
+ */
+export const OBSERVE_WEEKEND_HOLIDAYS: boolean = true
+
 /** One-off closed days ('YYYY-MM-DD', Central calendar date), e.g. '2026-11-27'. Empty for now. */
 export const EXTRA_CLOSED_DATES: readonly string[] = []
 
 const ymd = (y: number, m: number, d: number) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-/** The holidays of one calendar year as 'YYYY-MM-DD' (Central calendar dates), with names. */
-export function holidaysForYear(
-  year: number,
-  rules: readonly HolidayRule[] = BUSINESS_HOLIDAYS
-): { date: string; name: string }[] {
+/** The actual (unmoved) dates of the rules in one calendar year. */
+function actualHolidays(year: number, rules: readonly HolidayRule[]): { y: number; m: number; d: number; name: string; fixed: boolean }[] {
   return rules.map((r) => {
-    if ('day' in r) return { date: ymd(year, r.month, r.day), name: r.name }
+    if ('day' in r) return { y: year, m: r.month, d: r.day, name: r.name, fixed: true }
     if (r.nth === -1) {
       const last = new Date(Date.UTC(year, r.month, 0)).getUTCDate()
       const lastWd = new Date(Date.UTC(year, r.month - 1, last)).getUTCDay()
-      return { date: ymd(year, r.month, last - ((lastWd - r.weekday + 7) % 7)), name: r.name }
+      return { y: year, m: r.month, d: last - ((lastWd - r.weekday + 7) % 7), name: r.name, fixed: false }
     }
     const firstWd = new Date(Date.UTC(year, r.month - 1, 1)).getUTCDay()
-    return { date: ymd(year, r.month, 1 + ((r.weekday - firstWd + 7) % 7) + (r.nth - 1) * 7), name: r.name }
+    return { y: year, m: r.month, d: 1 + ((r.weekday - firstWd + 7) % 7) + (r.nth - 1) * 7, name: r.name, fixed: false }
   })
+}
+
+/**
+ * The days closed for holidays in one calendar year, as 'YYYY-MM-DD' Central calendar dates, sorted.
+ * `date` is the day we close (the observed day when a fixed-date holiday falls on a weekend),
+ * `actual` the holiday itself. Includes next year's New Year's Day when it is observed on Dec 31,
+ * and leaves out this year's when it was observed in the year before.
+ */
+export function holidaysForYear(
+  year: number,
+  rules: readonly HolidayRule[] = BUSINESS_HOLIDAYS,
+  observe: boolean = OBSERVE_WEEKEND_HOLIDAYS
+): { date: string; name: string; actual: string }[] {
+  const out: { date: string; name: string; actual: string }[] = []
+  for (const y of [year - 1, year, year + 1]) {
+    for (const h of actualHolidays(y, rules)) {
+      const at = new Date(Date.UTC(h.y, h.m - 1, h.d))
+      const wd = at.getUTCDay()
+      const shift = observe && h.fixed ? (wd === 6 ? -1 : wd === 0 ? 1 : 0) : 0
+      const closed = new Date(at.getTime() + shift * 86_400_000)
+      if (closed.getUTCFullYear() !== year) continue
+      out.push({
+        date: ymd(closed.getUTCFullYear(), closed.getUTCMonth() + 1, closed.getUTCDate()),
+        name: shift ? `${h.name} (observed)` : h.name,
+        actual: ymd(h.y, h.m, h.d),
+      })
+    }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date))
 }
 
 /** Mon-Fri and not a holiday or extra closed day (a Central calendar date). */
@@ -144,12 +177,13 @@ export function isBusinessDate(
   month: number,
   day: number,
   rules: readonly HolidayRule[] = BUSINESS_HOLIDAYS,
-  extra: readonly string[] = EXTRA_CLOSED_DATES
+  extra: readonly string[] = EXTRA_CLOSED_DATES,
+  observe: boolean = OBSERVE_WEEKEND_HOLIDAYS
 ): boolean {
   const wd = new Date(Date.UTC(year, month - 1, day)).getUTCDay()
   if (wd === 0 || wd === 6) return false
   const date = ymd(year, month, day)
-  return !extra.includes(date) && !holidaysForYear(year, rules).some((h) => h.date === date)
+  return !extra.includes(date) && !holidaysForYear(year, rules, observe).some((h) => h.date === date)
 }
 
 /** Included small edits per billing period at Fast lane and up (no rollover). */
