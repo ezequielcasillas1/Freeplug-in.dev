@@ -16,6 +16,12 @@
  *            E5  Manage billing right after the switch (no ?billing=pending)
  *            E6  the webhook path: Stripe's subscription_schedule.updated at the switch -> released
  *   Clock C  E7  cancel right after the switch, with the finished schedule still attached
+ *   Clock D  E8  the clock LAGS wall time: a wall date past the switch, the clock before it -> still
+ *               pending, nothing released (the app decides on the subscription's clock)
+ *
+ * Next round (Vera/Aria): the app now reads the subscription's test clock itself (frozen_time) and
+ * Stripe's current_phase, so E5, E6 and the E1 lazy read pass WALL time (a month behind the
+ * advanced clocks): the clock running ahead of wall time must still release the finished schedule.
  *
  * TEST MODE ONLY: the key comes from the --env-file, is checked to be sk_test_/rk_test_, is never
  * printed, and every object Stripe returns must be livemode=false.
@@ -100,8 +106,9 @@ async function main(argv) {
   const A = await newClock('schedule lifecycle A')
   const B = await newClock('schedule lifecycle B')
   const C = await newClock('schedule lifecycle C')
-  const [e1, e2, e3, e4, e5, e6, e7] = await Promise.all([startE(A, 'e1'), startE(A, 'e2'), startE(A, 'e3'), startE(B, 'e4'), startE(B, 'e5'), startE(B, 'e6'), startE(C, 'e7')])
-  for (const [n, e] of Object.entries({ e1, e2, e3, e4, e5, e6, e7 })) check(`${n} Fast lane + $6 -> Priority is scheduled for the switch date`, e.down.ok && e.down.kind === 'scheduled' && e.down.step === 'priority', { effectiveAt: e.down.effectiveAt })
+  const D = await newClock('schedule lifecycle D')
+  const [e1, e2, e3, e4, e5, e6, e7, e8] = await Promise.all([startE(A, 'e1'), startE(A, 'e2'), startE(A, 'e3'), startE(B, 'e4'), startE(B, 'e5'), startE(B, 'e6'), startE(C, 'e7'), startE(D, 'e8')])
+  for (const [n, e] of Object.entries({ e1, e2, e3, e4, e5, e6, e7, e8 })) check(`${n} Fast lane + $6 -> Priority is scheduled for the switch date`, e.down.ok && e.down.kind === 'scheduled' && e.down.step === 'priority', { effectiveAt: e.down.effectiveAt })
 
   // E4: cancel while the switch is still ahead (schedule attached, phase 2 in the future)
   {
@@ -113,6 +120,27 @@ async function main(argv) {
       clearedPendingChange: c.clearedPendingChange?.step ?? null,
       items: lk(after),
       invoices: (await invoicesOf(e4.customer)).length,
+    })
+  }
+
+  // E8: clock D is never advanced; a wall date 5 days past the switch must not release the schedule
+  {
+    const s = await fresh(e8.sub)
+    const sched = await stripe.subscriptionSchedules.retrieve(s.schedule)
+    const lagWall = new Date((e8.switchAt + 5 * 86400) * 1000)
+    const clockD = await clockNow(D.id)
+    const outcome = await cp.releaseScheduleIfSwitched(stripe, s.schedule, lagWall)
+    const pending = await cp.pendingPlanChange(stripe, s, lagWall)
+    const found = await routing.findScheduledSubscription(stripe, e8.customer, lagWall)
+    const after = await fresh(e8.sub)
+    check('E8 clock LAGS wall time (wall 5 days past the switch, clock before it): pending, Priority still ahead, schedule kept', sched.test_clock === D.id && outcome === 'pending' && pending?.step === 'priority' && found?.scheduleId === s.schedule && after.schedule === s.schedule, {
+      wall: lagWall.toISOString(),
+      clock: clockD.toISOString(),
+      switchAt: iso(e8.switchAt),
+      scheduleTestClock: sched.test_clock === D.id,
+      outcome,
+      pending: pending ? { step: pending.step, effectiveAt: pending.effectiveAt } : null,
+      scheduleAfter: after.schedule,
     })
   }
 
@@ -183,12 +211,13 @@ async function main(argv) {
     })
   }
 
-  // E5: Manage billing right after the switch
+  // E5: Manage billing right after the switch (wall time: the clock runs a month ahead of it)
   {
     const s = await fresh(e5.sub)
-    const found = await routing.findScheduledSubscription(stripe, e5.customer, nowB)
+    const wall = new Date()
+    const found = await routing.findScheduledSubscription(stripe, e5.customer, wall)
     const after = await fresh(e5.sub)
-    check('E5 Manage billing right after the switch: no ?billing=pending (portal), finished schedule released', found === null && !!s.schedule && after.schedule === null, { scheduleBefore: s.schedule, found, scheduleAfter: after.schedule })
+    check('E5 Manage billing right after the switch, WALL time (clock ahead): no ?billing=pending (portal), finished schedule released', found === null && !!s.schedule && after.schedule === null && wall.getTime() < switchAt * 1000, { wall: wall.toISOString(), clock: nowB.toISOString(), scheduleBefore: s.schedule, found, scheduleAfter: after.schedule })
   }
 
   // E6: the webhook path, with the events Stripe really sent at the switch. Stripe sends no
@@ -214,13 +243,13 @@ async function main(argv) {
       types: [...new Set(types)],
       scheduleUpdatedAtSwitch: schedAtSwitch.length,
     })
-    // route.ts, customer.subscription.updated with sub.schedule set:
+    // route.ts, customer.subscription.updated with sub.schedule set; route.ts passes no now (wall time):
     const fromSubEvent = subUpdated ? subUpdated.data.object.schedule : null
-    const outcome = fromSubEvent ? await cp.releaseScheduleIfSwitched(stripe, typeof fromSubEvent === 'string' ? fromSubEvent : fromSubEvent.id, nowB) : 'no-event'
+    const outcome = fromSubEvent ? await cp.releaseScheduleIfSwitched(stripe, typeof fromSubEvent === 'string' ? fromSubEvent : fromSubEvent.id) : 'no-event'
     const after = await fresh(e6.sub)
-    check('E6 the webhook release (customer.subscription.updated path) releases the finished schedule', outcome === 'released' && after.schedule === null, { outcome, scheduleAfter: after.schedule })
+    check('E6 the webhook release (customer.subscription.updated path, wall time as route.ts) releases the finished schedule', outcome === 'released' && after.schedule === null, { outcome, scheduleAfter: after.schedule })
     // invoice.paid path on an already released schedule: nothing to do
-    const again = await cp.releaseScheduleIfSwitched(stripe, s.schedule, nowB)
+    const again = await cp.releaseScheduleIfSwitched(stripe, s.schedule)
     check('E6 the invoice.paid path afterwards finds it already released (closed), no error', again === 'closed', { again })
   }
 
@@ -244,7 +273,7 @@ async function main(argv) {
     const after = await fresh(e1.sub)
     const cycle = (await invoicesOf(e1.customer)).filter((i) => i.reason === 'subscription_cycle')
     const step = cp.currentLadderStep(after)
-    const pending = await cp.pendingPlanChange(stripe, after, nowA2)
+    const pending = await cp.pendingPlanChange(stripe, after, new Date()) // wall time, clock ~2 months ahead
     const released = await fresh(e1.sub)
     check('E1 at the next switch: Starter x1, tip $0, charged $35 (Starter perks follow plan_step = starter)', lk(after) === 'freeplug_step_starter_monthly x1' && step?.id === 'starter' && cp.subscriptionTipDollars(after) === 0 && cycle[0]?.amount_due === 3500, {
       items: lk(after),
@@ -252,7 +281,7 @@ async function main(argv) {
       perks: step ? { name: step.name, monthlyCents: step.monthlyCents } : null,
       cycleInvoices: cycle.map((i) => [i.amount_due, i.lines]),
     })
-    check('E1 the next read releases that schedule too (lazy release)', pending === null && released.schedule === null, { scheduleBefore: after.schedule, scheduleAfter: released.schedule })
+    check('E1 the next read releases that schedule too (lazy release, WALL time; clock ahead)', pending === null && released.schedule === null, { clock: nowA2.toISOString(), scheduleBefore: after.schedule, scheduleAfter: released.schedule })
   }
 
   out.passed = Object.values(out.checks).filter((c) => c.ok).length

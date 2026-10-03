@@ -123,6 +123,7 @@ const scheduleId = (sub: Pick<Stripe.Subscription, 'schedule'>) => idOf(sub.sche
 
 type ScheduleLike = Pick<Stripe.SubscriptionSchedule, 'id' | 'status' | 'phases'> & {
   current_phase?: { start_date: number; end_date: number } | null
+  test_clock?: string | { id: string } | null
 }
 
 const isOpenSchedule = (s: Pick<Stripe.SubscriptionSchedule, 'status'>) => !s.status || s.status === 'active' || s.status === 'not_started'
@@ -134,10 +135,40 @@ const isOpenSchedule = (s: Pick<Stripe.SubscriptionSchedule, 'status'>) => !s.st
  * invoice.paid, and lazily on the next read), so tip changes, Manage billing and the next switch
  * work right after the switch date instead of a month later.
  */
-export function scheduleHasFutureSwitch(schedule: Pick<Stripe.SubscriptionSchedule, 'status' | 'phases'>, now: Date): boolean {
+export function scheduleHasFutureSwitch(
+  schedule: Pick<Stripe.SubscriptionSchedule, 'status' | 'phases'> & Pick<ScheduleLike, 'current_phase'>,
+  now: Date
+): boolean {
   if (!isOpenSchedule(schedule)) return false
   const nowSec = Math.floor(now.getTime() / 1000)
-  return (schedule.phases ?? []).some((p) => p.start_date > nowSec)
+  const phases = schedule.phases ?? []
+  // A phase still starts after "now" on the subscription's clock: the switch is ahead.
+  if (phases.some((p) => p.start_date > nowSec)) return true
+  // Vera / Aria (Oct 3, next round): decide on Stripe's current_phase. The clock has passed every
+  // phase start, but until Stripe has moved current_phase to the switch (last) phase, the switch
+  // hasn't happened yet: keep it.
+  const last = phases[phases.length - 1]
+  const current = schedule.current_phase
+  return !!current && !!last && current.start_date < last.start_date
+}
+
+/**
+ * "Now" on the subscription's clock: a test clock's frozen_time when the schedule (or subscription)
+ * runs on one, else `wallNow`. Production objects have no test clock, so production costs no extra
+ * call. Test clocks then behave like production (Vera, 68d7e2b report: a clock ahead of or behind wall
+ * time made the wall-clock comparison release too late or too early).
+ */
+export async function subscriptionClockNow(
+  stripe: Stripe,
+  holder: { test_clock?: string | { id: string; frozen_time?: number } | null },
+  wallNow: Date = new Date()
+): Promise<Date> {
+  const clock = holder.test_clock
+  if (!clock) return wallNow
+  if (typeof clock === 'object' && typeof clock.frozen_time === 'number') return new Date(clock.frozen_time * 1000)
+  const id = typeof clock === 'string' ? clock : clock.id
+  const c = await stripe.testHelpers.testClocks.retrieve(id)
+  return new Date(c.frozen_time * 1000)
 }
 
 /** Release a schedule; one that is already released, canceled or completed counts as done. */
@@ -154,17 +185,19 @@ async function releaseSchedule(stripe: Stripe, id: string): Promise<void> {
 export type ScheduleSettleOutcome = 'pending' | 'released' | 'closed'
 
 /**
- * For the webhook (and the lazy read path): release the schedule when no phase starts in the future.
- * 'pending' = a switch is still ahead (left alone); 'closed' = already released/canceled/completed.
+ * For the webhook (and the lazy read path): release the schedule when no phase starts in the future
+ * on the subscription's clock (a test clock's frozen_time, else `now`) and Stripe's current_phase is
+ * the switch phase. 'pending' = a switch is still ahead (left alone); 'closed' = already
+ * released/canceled/completed.
  */
 export async function releaseScheduleIfSwitched(
   stripe: Stripe,
   schedule: string | ScheduleLike,
   now: Date = new Date()
 ): Promise<ScheduleSettleOutcome> {
-  const s = typeof schedule === 'string' ? await stripe.subscriptionSchedules.retrieve(schedule) : schedule
+  const s = (typeof schedule === 'string' ? await stripe.subscriptionSchedules.retrieve(schedule) : schedule) as ScheduleLike
   if (!isOpenSchedule(s)) return 'closed'
-  if (scheduleHasFutureSwitch(s, now)) return 'pending'
+  if (scheduleHasFutureSwitch(s, await subscriptionClockNow(stripe, s, now))) return 'pending'
   await releaseSchedule(stripe, s.id)
   return 'released'
 }
@@ -186,8 +219,13 @@ export async function hasPendingSwitch(stripe: Stripe, sub: Pick<Stripe.Subscrip
 }
 
 async function pendingFromSchedule(stripe: Stripe, schedule: ScheduleLike, now: Date): Promise<PendingPlanChange | null> {
-  const nowSec = Math.floor(now.getTime() / 1000)
-  const next = schedule.phases.find((p) => p.start_date > nowSec)
+  const nowSec = Math.floor((await subscriptionClockNow(stripe, schedule, now)).getTime() / 1000)
+  // The next phase on the subscription's clock; with the clock past it but Stripe's current_phase
+  // not moved yet, that last phase is still the one ahead.
+  const last = schedule.phases[schedule.phases.length - 1]
+  const next =
+    schedule.phases.find((p) => p.start_date > nowSec) ??
+    (schedule.current_phase && last && schedule.current_phase.start_date < last.start_date ? last : undefined)
   if (!next || next.items.length !== 1) return null
   let stepId: PlanStepId | null = isPlanStepId(next.metadata?.plan_step) ? next.metadata.plan_step : null
   if (!stepId) {
@@ -233,7 +271,7 @@ async function scheduleDowngrade(
   now: Date
 ): Promise<string> {
   const schedule = (existing ?? (await stripe.subscriptionSchedules.create({ from_subscription: sub.id }))) as ScheduleLike
-  const nowSec = Math.floor(now.getTime() / 1000)
+  const nowSec = Math.floor((schedule.current_phase ? now : await subscriptionClockNow(stripe, schedule, now)).getTime() / 1000)
   const current =
     schedule.current_phase ?? schedule.phases.find((p) => p.start_date <= nowSec && p.end_date > nowSec) ?? schedule.phases[0]
   const periodEnd = subscriptionPeriodEnd(sub as Stripe.Subscription)

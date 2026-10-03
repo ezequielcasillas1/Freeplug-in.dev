@@ -683,7 +683,52 @@ describe('schedule lifecycle: a switch is pending only while a phase starts in t
     expect(scheduleHasFutureSwitch(switchedSchedule() as never, NOW)).toBe(false)
     expect(scheduleHasFutureSwitch(pendingSchedule() as never, NOW)).toBe(true)
     expect(scheduleHasFutureSwitch({ ...pendingSchedule(), status: 'released' } as never, NOW)).toBe(false)
-    expect(scheduleHasFutureSwitch(pendingSchedule() as never, new Date((NEXT_END + 1) * 1000))).toBe(false)
+    // next round (Vera/Aria): past every phase start, it is released only once Stripe's current_phase is the switch phase
+    expect(scheduleHasFutureSwitch(pendingSchedule() as never, new Date((NEXT_END + 1) * 1000))).toBe(true)
+    expect(scheduleHasFutureSwitch({ ...pendingSchedule(), current_phase: { start_date: NEXT_END, end_date: NEXT_END + 30 * DAY } } as never, new Date((NEXT_END + 1) * 1000))).toBe(false)
+  })
+
+  describe('decides on the subscription clock and Stripe current_phase (Vera/Aria, next round)', () => {
+    const CLOCK = 'clock_1'
+    const onClock = (schedule: Record<string, unknown>, frozen: number) => {
+      const f = sched({ ...schedule, test_clock: CLOCK })
+      const testClocks = { retrieve: vi.fn(async (id: string) => (f.calls.push(`testClocks.retrieve:${id}`), { id, frozen_time: frozen })) }
+      ;(f.raw as unknown as Record<string, unknown>).testHelpers = { testClocks }
+      return { f, testClocks }
+    }
+    const atSwitch = () => ({ ...pendingSchedule(), current_phase: { start_date: NEXT_END, end_date: NEXT_END + 30 * DAY } })
+
+    it('test clock LAGS wall time: wall is past the switch, the clock is not -> pending, nothing released (webhook + lazy read)', async () => {
+      const { f, testClocks } = onClock(pendingSchedule(), NOW_S) // clock still before NEXT_END
+      const wall = new Date((NEXT_END + 5 * DAY) * 1000)
+      expect(await releaseScheduleIfSwitched(f.stripe, 'sub_sched_p', wall)).toBe('pending')
+      expect(await hasPendingSwitch(f.stripe, { schedule: 'sub_sched_p' } as never, wall)).toBe(true)
+      expect(testClocks.retrieve).toHaveBeenCalledWith(CLOCK)
+      expect(f.calls).not.toContain('schedules.release')
+    })
+
+    it('test clock RUNS AHEAD of wall time: the clock passed the switch and Stripe moved current_phase -> released, though wall time is a month earlier', async () => {
+      const { f } = onClock(atSwitch(), NEXT_END + 3600)
+      expect(await releaseScheduleIfSwitched(f.stripe, 'sub_sched_p', NOW)).toBe('released')
+      expect(f.calls).toContain('schedules.release')
+      const g = onClock(atSwitch(), NEXT_END + 3600)
+      expect(await pendingPlanChange(g.f.stripe, { schedule: 'sub_sched_p' } as never, NOW)).toBeNull() // lazy read releases it
+      expect(g.f.calls).toContain('schedules.release')
+    })
+
+    it('the clock is past the switch but Stripe has not moved current_phase yet -> still pending (the next event releases it)', async () => {
+      const { f } = onClock(pendingSchedule(), NEXT_END + 60)
+      expect(await releaseScheduleIfSwitched(f.stripe, 'sub_sched_p', NOW)).toBe('pending')
+      expect(f.calls).not.toContain('schedules.release')
+    })
+
+    it('no test clock (production): wall time, and no test-clock call', async () => {
+      const f = sched(atSwitch())
+      const testClocks = { retrieve: vi.fn() }
+      ;(f.raw as unknown as Record<string, unknown>).testHelpers = { testClocks }
+      expect(await releaseScheduleIfSwitched(f.stripe, 'sub_sched_p', new Date((NEXT_END + 60) * 1000))).toBe('released')
+      expect(testClocks.retrieve).not.toHaveBeenCalled()
+    })
   })
 
   it('Vera B4c: Priority (switched yesterday) -> Starter: no snap-back to Fast lane, no charge, built from the LIVE items', async () => {
@@ -747,11 +792,13 @@ describe('schedule lifecycle: a switch is pending only while a phase starts in t
   })
 
   it('a tip change while the switch is still ahead stays refused (the schedule is left alone)', async () => {
-    const f = sched(pendingSchedule())
+    const s = pendingSchedule()
+    const f = sched(s)
     const sub = live('fast_lane', 6, { schedule: 'sub_sched_p' })
     expect(await changeTip({ stripe: f.stripe, tipPriceId: async () => 'price_tip' }, sub, 3, { now: NOW })).toMatchObject({ ok: false, code: 'pending_change' })
     expect(f.calls).toEqual(['schedules.retrieve'])
-    // and it unblocks the moment the switch phase starts
+    // and it unblocks the moment the switch phase starts (Stripe's current_phase moves to it)
+    s.current_phase = { start_date: NEXT_END, end_date: NEXT_END + 30 * DAY }
     expect(await hasPendingSwitch(f.stripe, sub, new Date((NEXT_END + 1) * 1000))).toBe(false)
     expect(f.calls).toContain('schedules.release')
   })
