@@ -34,7 +34,7 @@ import {
 export const techStack: ReadonlyArray<{ name: string; description: string; icon: LucideIcon }> = [
   {
     name: 'Envato template',
-    description: 'Premium templates our developers have access to, enhanced and filled with your business details.',
+    description: 'Premium templates our developers can access, enhanced with your details.',
     icon: LayoutTemplate,
   },
   { name: 'HTML & CSS', description: 'Plain, lightweight pages that load quickly.', icon: Code },

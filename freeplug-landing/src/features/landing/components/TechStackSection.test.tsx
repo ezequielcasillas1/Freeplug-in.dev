@@ -56,9 +56,9 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
     }
   })
 
-  it("Envato tile: Ezequiel's line (copy file freeplug-landing-tech-stack-copy-2026-10-03.md, Oct 3, 2:12 PM), no price or cost", () => {
+  it("Envato tile: Sable's shortened line (copy file freeplug-landing-tech-stack-copy-2026-10-03.md, Oct 3, 3:10 PM), no price or cost", () => {
     const envato = techStack.find((t) => t.name === 'Envato template')!
-    expect(envato.description).toBe('Premium templates our developers have access to, enhanced and filled with your business details.')
+    expect(envato.description).toBe('Premium templates our developers can access, enhanced with your details.')
     expect(envato.description).not.toMatch(/\$|\d|price|cost|free|licen[cs]/i)
   })
 
