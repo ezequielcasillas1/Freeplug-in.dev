@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { signIn, signInWithGoogle } from '../actions'
 import { Button } from '@/components/ui/button'
+import { isGoogleSignInEnabled } from '@/lib/auth/google-enabled'
 
 export const metadata: Metadata = {
   title: 'Log In | Freeplug',
@@ -37,6 +38,7 @@ function GoogleIcon() {
 
 export default async function LoginPage({ searchParams }: Props) {
   const q = await searchParams
+  const google = await isGoogleSignInEnabled()
   const next = q.next ?? '/dashboard'
 
   return (
@@ -57,26 +59,31 @@ export default async function LoginPage({ searchParams }: Props) {
         </p>
       ) : null}
 
-      {/* Google Sign In */}
-      <form action={signInWithGoogle} className="mb-6">
-        {q.next ? <input type="hidden" name="next" value={next} /> : null}
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 rounded-lg text-gray-700 bg-white hover:bg-zinc-50 font-medium transition-colors"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
-      </form>
+      {/* Google: hidden when the Supabase Auth server has the provider off (local Docker stack) */}
+      {google ? (
+        <>
+          {/* Google Sign In */}
+          <form action={signInWithGoogle} className="mb-6">
+            {q.next ? <input type="hidden" name="next" value={next} /> : null}
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 rounded-lg text-gray-700 bg-white hover:bg-zinc-50 font-medium transition-colors"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </button>
+          </form>
 
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-zinc-200" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">or</span>
-        </div>
-      </div>
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-zinc-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">or</span>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       <form action={signIn} className="space-y-4">
         <input type="hidden" name="next" value={next} />

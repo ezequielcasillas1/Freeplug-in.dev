@@ -9,6 +9,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { safeNext } from '@/lib/auth/safe-next'
 import { requestAwareBaseUrl } from '@/lib/site'
+import { GOOGLE_DISABLED_MESSAGE, isGoogleSignInEnabled } from '@/lib/auth/google-enabled'
 import { PASSWORD_MIN_LENGTH, isGoogleOnlyUser, recoveryConfirmUrl } from '@/lib/auth/password-reset'
 import { isResetThrottled } from '@/lib/auth/reset-rate-limit'
 import { runAfterResponse } from '@/lib/background'
@@ -119,9 +120,22 @@ export async function signOut() {
 }
 
 export async function signInWithGoogle(formData?: FormData) {
-  const supabase = await createClient()
-  const origin = appBaseUrl()
   const next = formNext(formData)
+  if (!(await isGoogleSignInEnabled())) {
+    redirect(
+      '/login?error=' + encodeURIComponent(GOOGLE_DISABLED_MESSAGE) + (next ? `&next=${encodeURIComponent(next)}` : '')
+    )
+  }
+
+  const supabase = await createClient()
+  // The PKCE code-verifier cookie is set on the host the user is on; the callback must come back to
+  // that same host or the code exchange can't find the verifier. requestAwareBaseUrl only follows the
+  // Host header in `next dev` on localhost / 127.0.0.1; elsewhere it is NEXT_PUBLIC_APP_URL as before.
+  const h = await headers()
+  const origin = requestAwareBaseUrl(
+    { host: h.get('host'), forwardedProto: h.get('x-forwarded-proto') },
+    { fallback: appBaseUrl() }
+  )
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
