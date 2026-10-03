@@ -170,3 +170,85 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     expect(cfg.metadata).toEqual({ freeplug_ladder_probe: 'v1' })
   })
 })
+
+describe('stripe-test-setup-ladder: --tag-probes (condition 4, test mode only)', () => {
+  function probeFake(live = false) {
+    const obj = (o: Record<string, unknown>) => ({ livemode: live, metadata: {}, ...o })
+    const state = {
+      customer: obj({ id: setup.PROBE_CUSTOMER_ID, metadata: { freeplug_probe: setup.PROBE_TAG } }) as Record<string, unknown> & { metadata: Record<string, string> },
+      subs: [obj({ id: 'sub_done', status: 'canceled' }), obj({ id: 'sub_live', status: 'active' })] as Array<Record<string, unknown>>,
+      products: new Map<string, Record<string, unknown>>([
+        ['freeplug_probe_legacy_hosting', obj({ id: 'freeplug_probe_legacy_hosting', active: true })],
+        ['freeplug_probe_legacy_addon_pro', obj({ id: 'freeplug_probe_legacy_addon_pro', active: true })],
+        ['freeplug_hosting_ladder', obj({ id: 'freeplug_hosting_ladder', active: false })],
+        ['freeplug_step_starter', obj({ id: 'freeplug_step_starter', active: true })],
+      ]),
+      prices: [obj({ id: 'price_old', product: 'freeplug_hosting_ladder', active: false }), obj({ id: 'price_step', product: 'freeplug_step_starter', active: true })] as Array<Record<string, unknown>>,
+      configs: [obj({ id: 'bpc_probe', active: false, metadata: { freeplug_ladder_probe: 'v1' } }), obj({ id: 'bpc_ladder', active: true })] as Array<Record<string, unknown>>,
+    }
+    const merge = (o: Record<string, unknown>, p: Record<string, unknown>) =>
+      Object.assign(o, p, { metadata: { ...(o.metadata as object), ...((p.metadata as object) ?? {}) } })
+    const stripe = {
+      customers: {
+        retrieve: vi.fn(async () => state.customer),
+        list: vi.fn(async () => ({ data: [] })),
+        update: vi.fn(async (_id: string, p: Record<string, unknown>) => merge(state.customer, p)),
+      },
+      subscriptions: {
+        list: vi.fn(async () => ({ data: state.subs })),
+        update: vi.fn(async (id: string, p: Record<string, unknown>) => merge(state.subs.find((s) => s.id === id)!, p)),
+      },
+      products: {
+        retrieve: vi.fn(async (id: string) => {
+          const p = state.products.get(id)
+          if (!p) throw Object.assign(new Error('No such product'), { statusCode: 404 })
+          return p
+        }),
+        update: vi.fn(async (id: string, p: Record<string, unknown>) => merge(state.products.get(id)!, p)),
+      },
+      prices: {
+        list: vi.fn(async (q: { product: string }) => ({ data: state.prices.filter((p) => p.product === q.product) })),
+        update: vi.fn(async (id: string, p: Record<string, unknown>) => merge(state.prices.find((x) => x.id === id)!, p)),
+      },
+      billingPortal: {
+        configurations: {
+          list: vi.fn(async () => ({ data: state.configs })),
+          update: vi.fn(async (id: string, p: Record<string, unknown>) => merge(state.configs.find((c) => c.id === id)!, p)),
+        },
+      },
+    }
+    return { stripe, state }
+  }
+
+  it('archives the probe products and tags customer, live probe subs, products, prices and the probe portal config', async () => {
+    const f = probeFake()
+    const changes = await setup.tagProbeLeftovers(f.stripe, quiet)
+    expect(f.state.customer.metadata).toMatchObject({ probe: 'true', freeplug_probe: setup.PROBE_TAG })
+    for (const id of setup.PROBE_PRODUCT_IDS) expect(f.state.products.get(id)).toMatchObject({ active: false, metadata: { probe: 'true' } })
+    expect(f.state.products.get('freeplug_hosting_ladder')).toMatchObject({ active: false, metadata: { probe: 'true' } })
+    expect(f.state.prices.find((p) => p.id === 'price_old')).toMatchObject({ active: false, metadata: { probe: 'true' } })
+    expect(f.state.configs[0]).toMatchObject({ id: 'bpc_probe', active: false, metadata: { probe: 'true' } })
+    expect(f.stripe.subscriptions.update).toHaveBeenCalledTimes(1)
+    expect(f.stripe.subscriptions.update).toHaveBeenCalledWith('sub_live', { metadata: { probe: 'true' } })
+    expect(changes.length).toBeGreaterThan(0)
+    // never touches the six sold step products/prices or the ladder portal configuration
+    expect(f.state.products.get('freeplug_step_starter')).toMatchObject({ active: true, metadata: {} })
+    expect(f.state.prices.find((p) => p.id === 'price_step')).toMatchObject({ active: true, metadata: {} })
+    expect(f.state.configs[1]).toMatchObject({ id: 'bpc_ladder', active: true, metadata: {} })
+    // and deletes nothing
+    expect(Object.keys(f.stripe.products)).not.toContain('del')
+  })
+
+  it('second run changes nothing', async () => {
+    const f = probeFake()
+    await setup.tagProbeLeftovers(f.stripe, quiet)
+    expect(await setup.tagProbeLeftovers(f.stripe, quiet)).toEqual([])
+  })
+
+  it('refuses before writing if Stripe answers with a live-mode object', async () => {
+    const f = probeFake(true)
+    await expect(setup.tagProbeLeftovers(f.stripe, quiet)).rejects.toThrow(/not a test-mode object/)
+    expect(f.stripe.customers.update).not.toHaveBeenCalled()
+    expect(f.stripe.products.update).not.toHaveBeenCalled()
+  })
+})

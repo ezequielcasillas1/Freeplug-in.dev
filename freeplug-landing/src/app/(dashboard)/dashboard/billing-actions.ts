@@ -11,9 +11,8 @@ import { resolvePlanStep } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changePlanStep } from '@/lib/stripe/change-plan'
 import { getStepPriceId } from '@/lib/stripe/prices'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
-import { supabasePlanStepStore, syncPlanStepForCustomer } from '@/lib/plans/plan-step-sync'
+import { syncPlanSnapshotForCustomer } from '@/lib/stripe/sync-checkout-customer'
 import {
   CHANGE_PLAN_ENDING,
   CHANGE_PLAN_PAYMENT_FAILED,
@@ -121,10 +120,7 @@ export async function changeHostingPlan(planStep: string): Promise<{ ok: boolean
     const stripe = getStripe()
     const snapshot = await loadPlanSnapshotRow(supabase, user.id)
     if (!snapshot?.plan_step_synced_at) {
-      await syncPlanStepForCustomer(
-        { stripe, store: supabasePlanStepStore(createAdminClient() as unknown as Parameters<typeof supabasePlanStepStore>[0]) },
-        customerId
-      )
+      await syncPlanSnapshotForCustomer(stripe, customerId)
     }
     const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe) }, live[0], step.id)
     revalidatePath('/dashboard')

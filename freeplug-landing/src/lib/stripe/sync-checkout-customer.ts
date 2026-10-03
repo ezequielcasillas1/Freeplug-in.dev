@@ -1,6 +1,7 @@
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { supabasePlanStepStore, syncPlanStepForCustomer } from '@/lib/plans/plan-step-sync'
 
 /** Stripe Checkout Session ids look like cs_test_… / cs_live_…; reject anything else before calling Stripe. */
 const CHECKOUT_SESSION_ID_RE = /^cs_(test|live)_[A-Za-z0-9]{1,250}$/
@@ -52,4 +53,17 @@ export async function syncStripeCustomerFromCheckoutSession(
   } catch (e) {
     console.error('[checkout/success] session sync failed', e instanceof Error ? e.message : e)
   }
+}
+
+/**
+ * Fallback for the webhook before an in-app plan move (Aria, Oct 3 12:25): a profile that was never
+ * synced gets its plan snapshot from Stripe first (the same columns the customer.subscription.*
+ * webhook writes), so the move itself only reaches perks through the webhook. Throws on failure;
+ * the caller then refuses the move.
+ */
+export async function syncPlanSnapshotForCustomer(stripe: Stripe, customerId: string) {
+  return syncPlanStepForCustomer(
+    { stripe, store: supabasePlanStepStore(createAdminClient() as unknown as Parameters<typeof supabasePlanStepStore>[0]) },
+    customerId
+  )
 }

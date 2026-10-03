@@ -5,6 +5,10 @@
  *   node scripts/stripe-test-setup-ladder.mjs --env-file <path to a file with STRIPE_SECRET_KEY=...>
  *        [--dry-run]   read only: list what exists and what would be created or changed
  *        [--probe]     also run the proration / Billing Portal probes on a tagged test customer
+ *        [--probe-conditions]  Aria's 12:25 conditions against Stripe with the app's own code:
+ *                      failed-card upgrade, upgrade over a pending downgrade, cancel vs downgrade
+ *                      both ways, a non-sellable target, and the webhook events Stripe emits
+ *        [--tag-probes] archive the probe products and tag every probe leftover metadata.probe=true
  *
  * TEST MODE ONLY. The key is read from the --env-file (only the STRIPE_SECRET_KEY line), never
  * from the shell environment, and never printed. Anything but an sk_test_ / rk_test_ key is
@@ -373,6 +377,181 @@ export async function runProbes(stripe, ladder, setup, { log = console.log } = {
   return out
 }
 
+/** Probe leftovers (test mode): customer, products, portal configuration. */
+export const PROBE_CUSTOMER_ID = 'cus_VNH3Xkqqq8PPGA'
+export const PROBE_PRODUCT_IDS = ['freeplug_probe_legacy_hosting', 'freeplug_probe_legacy_addon_pro']
+
+/**
+ * Condition 4 (Aria, Oct 3 12:25): archive (set inactive) the probe products and their prices, and
+ * tag every probe leftover metadata.probe=true. TEST MODE ONLY (every object must say
+ * livemode=false before it is changed). Nothing is deleted. Returns the change log.
+ */
+export async function tagProbeLeftovers(stripe, { log = console.log, retiredProductIds = RETIRED_PRODUCT_IDS } = {}) {
+  const changes = []
+  const note = (what, id, before, after) => changes.push({ what, id, before, after })
+  // customer (found by id, or by the probe tag)
+  let customer = null
+  try {
+    customer = await stripe.customers.retrieve(PROBE_CUSTOMER_ID)
+  } catch {
+    const found = await stripe.customers.list({ email: PROBE_EMAIL, limit: 10 })
+    customer = found.data.find((c) => c.metadata?.freeplug_probe === PROBE_TAG) ?? null
+  }
+  if (customer && !customer.deleted) {
+    assertTestObject(customer, 'probe customer')
+    if (customer.metadata?.probe !== 'true') {
+      const after = await stripe.customers.update(customer.id, { metadata: { probe: 'true' } })
+      note('customer', customer.id, { probe: customer.metadata?.probe ?? null }, { probe: after.metadata.probe })
+    }
+    // live probe subscriptions get the tag too (canceled ones can't be changed and are left as is)
+    const subs = await stripe.subscriptions.list({ customer: customer.id, status: 'all', limit: 100 })
+    for (const sub of subs.data) {
+      assertTestObject(sub, 'probe subscription')
+      if (!['canceled', 'incomplete_expired'].includes(sub.status) && sub.metadata?.probe !== 'true') {
+        await stripe.subscriptions.update(sub.id, { metadata: { probe: 'true' } })
+        note('subscription', sub.id, { probe: sub.metadata?.probe ?? null }, { probe: 'true' })
+      }
+    }
+  }
+  // probe products: archive + tag; their active prices: inactive + tag
+  for (const id of [...PROBE_PRODUCT_IDS, ...retiredProductIds]) {
+    let product
+    try {
+      product = assertTestObject(await stripe.products.retrieve(id), `product ${id}`)
+    } catch (e) {
+      if (e instanceof SetupRefused) throw e
+      continue
+    }
+    const want = { active: false, metadata: { probe: 'true', ...(retiredProductIds.includes(id) ? { freeplug_leftover: 'first test run (single product), replaced by freeplug_step_*' } : {}) } }
+    if (product.active !== false || product.metadata?.probe !== 'true') {
+      const prices = await stripe.prices.list({ product: id, limit: 100 })
+      for (const price of prices.data) {
+        assertTestObject(price, `price ${price.id}`)
+        if (price.active || price.metadata?.probe !== 'true') {
+          await stripe.prices.update(price.id, { active: false, metadata: { probe: 'true' } })
+          note('price', price.id, { active: price.active, probe: price.metadata?.probe ?? null }, { active: false, probe: 'true' })
+        }
+      }
+      const after = await stripe.products.update(id, want)
+      note('product', id, { active: product.active, probe: product.metadata?.probe ?? null }, { active: after.active, probe: after.metadata.probe })
+    }
+  }
+  // probe portal configuration(s): inactive + tag
+  const cfgs = await stripe.billingPortal.configurations.list({ limit: 100 })
+  for (const cfg of cfgs.data) {
+    assertTestObject(cfg, `portal configuration ${cfg.id}`)
+    if (!cfg.metadata?.freeplug_ladder_probe) continue
+    if (cfg.active || cfg.metadata?.probe !== 'true') {
+      const after = await stripe.billingPortal.configurations.update(cfg.id, { active: false, metadata: { probe: 'true' } })
+      note('portal configuration', cfg.id, { active: cfg.active, probe: cfg.metadata?.probe ?? null }, { active: after.active, probe: after.metadata.probe })
+    }
+  }
+  log(JSON.stringify({ tagProbeLeftovers: changes.length ? changes : 'nothing to change (already tagged)' }, null, 2))
+  return changes
+}
+
+/**
+ * Aria's 12:25 plan-switch conditions against Stripe TEST MODE, using the app's own code
+ * (src/lib/stripe/change-plan.ts): every subscription is created on the tagged probe customer with
+ * metadata.probe=true and canceled at the end. Returns (and logs) what Stripe answered.
+ */
+export async function runConditionProbes(stripe, ladder, setup, { log = console.log } = {}) {
+  const { createJiti } = await import('jiti')
+  const here = path.dirname(fileURLToPath(import.meta.url))
+  const cp = await createJiti(import.meta.url).import(path.join(here, '..', 'src', 'lib', 'stripe', 'change-plan.ts'))
+  const priceIdFor = async (id) => setup.priceIds[id]
+  const lk = (sub) => sub.items.data.map((i) => i.price.lookup_key ?? i.price.id).join(' + ')
+  const iso = (t) => (t ? new Date(t * 1000).toISOString() : null)
+  const out = { startedAt: new Date().toISOString() }
+  const customer = assertTestObject(await stripe.customers.retrieve(PROBE_CUSTOMER_ID), 'probe customer')
+  const visa = await stripe.paymentMethods.attach('pm_card_visa', { customer: customer.id })
+  const setDefaultCard = (pm) => stripe.customers.update(customer.id, { invoice_settings: { default_payment_method: pm } })
+  await setDefaultCard(visa.id)
+  const tag = { type: 'hosting', freeplug_probe: PROBE_TAG, probe: 'true' }
+  const created = []
+  const newSub = async (step) => {
+    const s = assertTestObject(await stripe.subscriptions.create({ customer: customer.id, items: [{ price: setup.priceIds[step] }], metadata: { ...tag, plan_step: step } }), 'probe subscription')
+    created.push(s.id)
+    return s
+  }
+  const fresh = (id) => stripe.subscriptions.retrieve(id, { expand: ['latest_invoice'] })
+  const since = Math.floor(Date.now() / 1000) - 5
+
+  // C1: upgrade with a failing card (pending_if_incomplete): old plan kept, invoice voided
+  let s1 = await newSub('starter')
+  const failPm = await stripe.paymentMethods.attach('pm_card_chargeCustomerFail', { customer: customer.id })
+  await setDefaultCard(failPm.id)
+  const r1 = await cp.changePlanStep({ stripe, priceIdFor }, await fresh(s1.id), 'fast_lane')
+  s1 = await fresh(s1.id)
+  out.C1_failedCardUpgrade = { result: r1, itemsNow: lk(s1), pending_update: s1.pending_update, latestInvoice: { id: s1.latest_invoice?.id, status: s1.latest_invoice?.status } }
+  // retry with a good card: a new request (idempotency key carries the voided invoice id)
+  await setDefaultCard(visa.id)
+  const r1b = await cp.changePlanStep({ stripe, priceIdFor }, await fresh(s1.id), 'fast_lane')
+  s1 = await fresh(s1.id)
+  out.C1b_retryWithGoodCard = { result: r1b, itemsNow: lk(s1), invoice: { status: s1.latest_invoice?.status, total: s1.latest_invoice?.total, billing_reason: s1.latest_invoice?.billing_reason } }
+
+  // C2: downgrade pending, shown with its date; then upgrade releases the schedule first
+  let s2 = await newSub('priority')
+  const d2 = await cp.changePlanStep({ stripe, priceIdFor }, await fresh(s2.id), 'starter')
+  s2 = await fresh(s2.id)
+  const pend2 = await cp.pendingPlanChange(stripe, s2)
+  out.C2_downgradeScheduled = { result: d2, itemsNow: lk(s2), schedule: s2.schedule, pendingShownOnPlansPage: pend2, periodEnd: iso(s2.items.data[0].current_period_end) }
+  const u2 = await cp.changePlanStep({ stripe, priceIdFor }, s2, 'fast_lane')
+  s2 = await fresh(s2.id)
+  out.C2_upgradeOverPendingDowngrade = { result: u2, itemsNow: lk(s2), scheduleAfter: s2.schedule ?? null, invoice: { status: s2.latest_invoice?.status, total: s2.latest_invoice?.total } }
+
+  // C3: failing card while a downgrade is pending: schedule released, upgrade not applied, downgrade put back
+  let s3 = await newSub('priority')
+  await cp.changePlanStep({ stripe, priceIdFor }, await fresh(s3.id), 'starter')
+  s3 = await fresh(s3.id)
+  await setDefaultCard(failPm.id)
+  const r3 = await cp.changePlanStep({ stripe, priceIdFor }, s3, 'fast_lane')
+  await setDefaultCard(visa.id)
+  s3 = await fresh(s3.id)
+  out.C3_failedUpgradeOverPendingDowngrade = { result: r3, itemsNow: lk(s3), pending_update: s3.pending_update, pendingAfter: await cp.pendingPlanChange(stripe, s3) }
+
+  // C4: downgrade then cancel (s3 still has its downgrade): Stripe refuses a direct cancel; the app releases first
+  try {
+    await stripe.subscriptions.update(s3.id, { cancel_at_period_end: true })
+    out.C4_directCancelWithSchedule = 'allowed'
+  } catch (e) {
+    out.C4_directCancelWithSchedule = redact(String(e?.message ?? e).slice(0, 220))
+  }
+  const c4 = await cp.cancelPlanAtPeriodEnd(stripe, s3)
+  s3 = await fresh(s3.id)
+  out.C4_downgradeThenCancel = { result: c4, cancel_at_period_end: s3.cancel_at_period_end, scheduleAfter: s3.schedule ?? null, itemsNow: lk(s3) }
+
+  // C5: cancel then downgrade: refused by the app, nothing created in Stripe
+  const r5 = await cp.changePlanStep({ stripe, priceIdFor }, s3, 'starter')
+  s3 = await fresh(s3.id)
+  out.C5_cancelThenDowngrade = { result: r5, scheduleAfter: s3.schedule ?? null, cancel_at_period_end: s3.cancel_at_period_end }
+
+  // C6: a non-sellable target is refused before any Stripe write
+  const r6 = await cp.changePlanStep({ stripe, priceIdFor }, await fresh(s2.id), 'leads')
+  out.C6_nonSellableTarget = { result: r6, itemsNow: lk(await fresh(s2.id)) }
+
+  // C7: what Stripe emits (the webhook is the only thing that changes entitlements)
+  await new Promise((r) => setTimeout(r, 5000))
+  const events = []
+  for await (const e of stripe.events.list({ created: { gte: since }, limit: 100 })) {
+    const obj = e.data.object
+    const subId = obj.object === 'subscription' ? obj.id : obj.subscription
+    if (!created.includes(subId)) continue
+    events.push({ sub: subId, type: e.type, changed: e.data.previous_attributes ? Object.keys(e.data.previous_attributes) : undefined })
+  }
+  out.C7_events = events.reverse()
+
+  for (const id of created) {
+    const s = await stripe.subscriptions.retrieve(id)
+    if (s.schedule) await stripe.subscriptionSchedules.release(typeof s.schedule === 'string' ? s.schedule : s.schedule.id).catch(() => undefined)
+    if (!['canceled', 'incomplete_expired'].includes(s.status)) await stripe.subscriptions.cancel(id)
+  }
+  out.cleanup = `${created.length} probe subscriptions canceled (metadata.probe=true): ${created.join(', ')}`
+  out.finishedAt = new Date().toISOString()
+  log(JSON.stringify(out, null, 2))
+  return out
+}
+
 async function main(argv) {
   const arg = (name) => {
     const i = argv.indexOf(name)
@@ -387,6 +566,8 @@ async function main(argv) {
   console.log(`portal configuration: ${setup.portalConfigurationId ?? '(none yet)'}`)
   if (setup.portalConfigurationId) console.log(`set STRIPE_PORTAL_CONFIGURATION_ID=${setup.portalConfigurationId} (not a secret)`)
   if (argv.includes('--probe') && !argv.includes('--dry-run')) await runProbes(stripe, ladder, setup)
+  if (argv.includes('--probe-conditions') && !argv.includes('--dry-run')) await runConditionProbes(stripe, ladder, setup)
+  if (argv.includes('--tag-probes') && !argv.includes('--dry-run')) await tagProbeLeftovers(stripe)
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
