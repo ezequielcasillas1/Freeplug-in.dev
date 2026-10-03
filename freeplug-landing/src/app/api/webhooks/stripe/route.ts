@@ -193,6 +193,9 @@ export async function POST(request: Request) {
       const { error: updErr } = await admin
         .from('profiles')
         .update({
+          // Everything paid, tips included (Aria, Oct 3 3:31 PM CT): this column feeds the "Total Paid"
+          // displays. Pay-to-own will use its own ledger built from invoice lines, not this counter
+          // (read-modify-write; see HOSTING-LADDER-NOTES.md "Buyout: existing pieces").
           cumulative_website_value_paid_cents: prev + inv.amount_paid,
           updated_at: new Date().toISOString(),
         })

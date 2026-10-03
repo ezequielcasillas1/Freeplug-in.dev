@@ -118,10 +118,12 @@ export const TIP_TOTAL_RANGES: Record<PlanStepId, { minDollars: number; maxDolla
 }
 
 /**
- * Nudge (Oct 3): when the chosen total is within this many dollars of the NEXT step's price and that
- * step is sellable, the slider suggests switching instead. No nudge from the top step.
+ * Nudge (Aria, Oct 3 round 5b): when the chosen total is within this many dollars of the NEXT step's
+ * price and that step is sellable, the slider suggests switching instead. No nudge from the top step.
+ * With 5: Starter $50–54, Priority $60–64, Fast lane $70–74 (only once Leads is sold), Leads $80–84,
+ * Get found $95–99; Growth partner has no next step.
  */
-export const TIP_NUDGE_WITHIN_DOLLARS = 10
+export const TIP_NUDGE_WINDOW_DOLLARS = 5
 
 /**
  * "Done by end of next business day (Mon-Fri, excluding holidays)" (Fast lane and up): a TARGET,

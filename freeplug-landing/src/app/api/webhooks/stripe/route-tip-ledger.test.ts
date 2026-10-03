@@ -63,10 +63,15 @@ describe('webhook invoice.paid: billing_ledger.tip_cents (the tipping system)', 
     vi.spyOn(console, 'warn').mockImplementation(() => undefined)
   })
 
-  it('Fast lane $65 + $5 tip: amount 7000, tip_cents 500; the paid total is unchanged', async () => {
+  it('Fast lane $65 + $5 tip: ledger amount 7000 with tip_cents 500; the Total Paid counter adds everything paid, tip included (7000)', async () => {
     expect(await paid([stepLine(6500), tipLine(500)], 7000)).toBe(200)
     expect(h.inserts).toEqual([{ profile_id: 'p1', stripe_invoice_id: 'in_1', amount_cents: 7000, tip_cents: 500 }])
-    expect(h.profileUpdates[0]).toMatchObject({ cumulative_website_value_paid_cents: 8000 })
+    expect(h.profileUpdates[0]).toMatchObject({ cumulative_website_value_paid_cents: 1000 + 7000 })
+  })
+
+  it('no tip: the counter adds the amount paid', async () => {
+    await paid([stepLine(6500)], 6500)
+    expect(h.profileUpdates[0]).toMatchObject({ cumulative_website_value_paid_cents: 1000 + 6500 })
   })
 
   it('no tip line: tip_cents 0', async () => {
@@ -77,6 +82,7 @@ describe('webhook invoice.paid: billing_ledger.tip_cents (the tipping system)', 
   it('tip_cents never exceeds what was paid (the DB check is 0..amount)', async () => {
     await paid([stepLine(-6000), tipLine(900)], 400)
     expect(h.inserts[0]).toMatchObject({ amount_cents: 400, tip_cents: 400 })
+    expect(h.profileUpdates[0]).toMatchObject({ cumulative_website_value_paid_cents: 1000 + 400 })
   })
 
   it.each(['42703', 'PGRST204'])('before the migration (%s): the row is saved without tip_cents, never lost', async (code) => {

@@ -3,7 +3,7 @@
 import {
   PLAN_STEPS,
   TIP_LOOKUP_KEY,
-  TIP_NUDGE_WITHIN_DOLLARS,
+  TIP_NUDGE_WINDOW_DOLLARS,
   TIP_PRODUCT_ID,
   TIP_TOTAL_RANGES,
   TIP_UNIT_CENTS,
@@ -100,11 +100,11 @@ export function nextStepUp(step: Pick<PlanStep, 'rank'>): PlanStep | null {
 export type TipNudge = { next: PlanStep; perk: PlanPerk }
 
 /**
- * Nudge: with a tip, when the monthly total is within TIP_NUDGE_WITHIN_DOLLARS of the next step's
+ * Nudge: with a tip, when the monthly total is within TIP_NUDGE_WINDOW_DOLLARS of the next step's
  * price and the next step is sellable, suggest switching to it. Never from the top step, never for a
  * $0 tip, never toward a step that isn't sold.
  */
-export function tipNudge(step: Pick<PlanStep, 'rank' | 'monthlyCents'>, tipDollars: number, within: number = TIP_NUDGE_WITHIN_DOLLARS): TipNudge | null {
+export function tipNudge(step: Pick<PlanStep, 'rank' | 'monthlyCents'>, tipDollars: number, within: number = TIP_NUDGE_WINDOW_DOLLARS): TipNudge | null {
   if (tipDollars <= 0) return null
   const next = nextStepUp(step)
   if (!next || !next.sellable || next.adds.length === 0) return null

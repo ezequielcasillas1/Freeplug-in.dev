@@ -419,12 +419,12 @@ describe('the tipping system: slider before checkout and in the claim flow', () 
     await waitFor(() => expect(onChoosePlan).toHaveBeenCalledWith({ planStep: 'fast_lane', tipDollars: 7 }))
   })
 
-  it('nudge: within $10 of the next sellable step it offers the switch; the button picks that step (tip reset)', () => {
+  it('nudge: within $5 of the next sellable step it offers the switch; the button picks that step (tip reset)', () => {
     const { container } = render(<HostingCheckoutCard />)
     pickStep(container, 'starter')
-    fireEvent.change(slider(), { target: { value: '44' } })
+    fireEvent.change(slider(), { target: { value: '49' } })
     expect(screen.queryByTestId('tip-nudge')).toBeNull()
-    fireEvent.change(slider(), { target: { value: '45' } })
+    fireEvent.change(slider(), { target: { value: '50' } })
     expect(screen.getByTestId('tip-nudge')).toHaveTextContent('Priority is $55 and adds a place ahead of lower plans when you ask for changes. Switch instead?')
     fireEvent.click(screen.getByRole('button', { name: 'Choose Priority' }))
     expect(row(container, 'priority')).toHaveAttribute('data-selected', 'true')

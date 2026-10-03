@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { PLAN_STEPS, TIP_LOOKUP_KEY, TIP_TOTAL_RANGES, stepById, type PlanStepId } from './ladder'
+import { PLAN_STEPS, TIP_LOOKUP_KEY, TIP_NUDGE_WINDOW_DOLLARS, TIP_TOTAL_RANGES, stepById, type PlanStepId } from './ladder'
 import { invoiceTipCents, isTipPrice, parseTipDollars, tierItems, tipDollarsOfItems, tipItemOf, tipLineItems, tipNudge, tipRangeFor } from './tips'
 import * as copy from './ladder-copy'
 import { planStripLine } from '@/lib/stripe/plan-line'
@@ -86,19 +86,47 @@ describe('tip item helpers (tier lookup with a tip item)', () => {
   })
 })
 
-describe('nudge: within $10 of the next sellable step', () => {
-  it('Starter: $45+ suggests Priority (its main perk); $44 does not; $0 tip never', () => {
-    expect(tipNudge(stepById('starter'), 10)).toEqual({ next: stepById('priority'), perk: 'priorityQueue' })
+describe('nudge: within $5 of the next sellable step (Aria, round 5b)', () => {
+  it('one ladder.ts constant: TIP_NUDGE_WINDOW_DOLLARS = 5', () => {
+    expect(TIP_NUDGE_WINDOW_DOLLARS).toBe(5)
+  })
+  it('Starter: $50-54 suggests Priority (its main perk); $49 does not; $0 tip never', () => {
+    expect(tipNudge(stepById('starter'), 15)).toEqual({ next: stepById('priority'), perk: 'priorityQueue' })
     expect(tipNudge(stepById('starter'), 19)?.next.id).toBe('priority')
-    expect(tipNudge(stepById('starter'), 9)).toBeNull()
+    expect(tipNudge(stepById('starter'), 14)).toBeNull()
+    expect(tipNudge(stepById('starter'), 10)).toBeNull()
     expect(tipNudge(stepById('starter'), 0)).toBeNull()
   })
-  it('Priority: any tip suggests Fast lane (its first perk, the included small edit)', () => {
-    expect(tipNudge(stepById('priority'), 1)).toEqual({ next: stepById('fast_lane'), perk: 'includedSmallEdit' })
+  it('Priority: $60-64 suggests Fast lane (its first perk, the included small edit); $59 does not', () => {
+    expect(tipNudge(stepById('priority'), 5)).toEqual({ next: stepById('fast_lane'), perk: 'includedSmallEdit' })
+    expect(tipNudge(stepById('priority'), 9)?.next.id).toBe('fast_lane')
+    expect(tipNudge(stepById('priority'), 4)).toBeNull()
+    expect(tipNudge(stepById('priority'), 1)).toBeNull()
+  })
+  it('the window for every step with a next step (if that step were sold): Fast lane 70-74, Leads 80-84, Get found 95-99', () => {
+    const windowOf = (id: PlanStepId) => {
+      const s = stepById(id)
+      const r = TIP_TOTAL_RANGES[id]
+      const hits: number[] = []
+      for (let total = r.minDollars; total <= r.maxDollars; total++) {
+        const gap = total - s.monthlyCents / 100
+        const next = PLAN_STEPS.find((x) => x.rank === s.rank + 1)
+        if (!next) continue
+        if (next.monthlyCents / 100 - total <= TIP_NUDGE_WINDOW_DOLLARS && gap > 0) hits.push(total)
+      }
+      return hits.length ? [hits[0], hits[hits.length - 1]] : null
+    }
+    expect(windowOf('starter')).toEqual([50, 54])
+    expect(windowOf('priority')).toEqual([60, 64])
+    expect(windowOf('fast_lane')).toEqual([70, 74])
+    expect(windowOf('leads')).toEqual([80, 84])
+    expect(windowOf('get_found')).toEqual([95, 99])
+    expect(windowOf('growth')).toBeNull()
   })
   it('no nudge toward a step that is not sold, and none from the top step', () => {
     expect(stepById('leads').sellable).toBe(false)
     expect(tipNudge(stepById('fast_lane'), 9)).toBeNull()
+    expect(tipNudge(stepById('fast_lane'), 5)).toBeNull()
     expect(tipNudge(stepById('growth'), 20)).toBeNull()
   })
   it('the nudge sentence names the next step, its price and perk', () => {
@@ -143,5 +171,19 @@ describe('migration 20261003200000_tipping (static; the live check ran against l
   it('the profiles guard trigger covers plan_tip_cents on insert and update (customers cannot set it)', () => {
     expect(sql).toMatch(/new\.plan_tip_cents is null then/)
     expect(sql).toMatch(/new\.plan_tip_cents is not distinct from old\.plan_tip_cents then/)
+  })
+})
+
+describe('"Total Paid" counter counts everything paid, tips included (Aria, Oct 3 3:31 PM CT)', () => {
+  const read = (rel: string) => readFileSync(path.join(__dirname, '../../', rel), 'utf8')
+  it('the webhook adds the full amount paid (no tip carve-out, no flag)', () => {
+    const route = read('app/api/webhooks/stripe/route.ts')
+    expect(route).toMatch(/cumulative_website_value_paid_cents: prev \+ inv\.amount_paid,/)
+    expect(route).not.toMatch(/buyoutValueCents|BUYOUT_COUNTS_TIPS/)
+    expect(read('lib/plans/ladder.ts')).not.toMatch(/BUYOUT_COUNTS_TIPS/)
+  })
+  it('the admin "Paid (cumulative)" column and the customer "Total Paid" read the same column the webhook writes', () => {
+    expect(read('app/admin/AdminCustomersTable.tsx')).toMatch(/r\.cumulative_website_value_paid_cents/)
+    expect(read('app/(dashboard)/dashboard/dashboard-actions.ts')).toMatch(/totalPaidCents: profile\?\.cumulative_website_value_paid_cents/)
   })
 })

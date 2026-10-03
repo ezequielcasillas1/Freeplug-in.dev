@@ -153,6 +153,9 @@ export const INVOICES_HEADING = 'Invoices'
 export const INVOICES_EMPTY = 'No invoices yet.'
 export const INVOICE_STATUS_LABEL = { paid: 'Paid', open: 'Due', uncollectible: 'Unpaid' } as const
 export const VIEW_INVOICE = 'View'
+/** [Sable] Invoice list (round 5b): the tip as its own line under an invoice that has one ("Plan $65.00 · Tip $5.00"). */
+export const INVOICE_PLAN_PART = (amount: string) => `Plan ${amount}`
+export const INVOICE_TIP_PART = (amount: string) => `Tip ${amount}`
 export const DOWNLOAD_INVOICE_PDF = 'PDF'
 
 /**

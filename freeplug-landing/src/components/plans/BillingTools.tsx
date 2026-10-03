@@ -2,7 +2,9 @@ import type { InvoiceRow } from '@/lib/stripe/billing-routing'
 import {
   BILLING_HEADING,
   DOWNLOAD_INVOICE_PDF,
+  INVOICE_PLAN_PART,
   INVOICE_STATUS_LABEL,
+  INVOICE_TIP_PART,
   INVOICES_EMPTY,
   INVOICES_HEADING,
   UPDATE_CARD_BUTTON,
@@ -49,6 +51,12 @@ export function BillingTools({
                   <span className="w-28 text-gray-700">{day(inv.created)}</span>
                   <span className="w-24 font-medium text-gray-900">{money(inv.totalCents, inv.currency)}</span>
                   <span className="w-16 text-gray-600">{INVOICE_STATUS_LABEL[inv.status]}</span>
+                  {/* The tip on its own line, read right after the amount; shown under the links on wider screens. */}
+                  {inv.tipCents > 0 ? (
+                    <span className="w-full text-xs text-gray-600 sm:order-last sm:pl-[7.75rem]" data-testid="invoice-tip">
+                      {INVOICE_PLAN_PART(money(inv.totalCents - inv.tipCents, inv.currency))} · {INVOICE_TIP_PART(money(inv.tipCents, inv.currency))}
+                    </span>
+                  ) : null}
                   {inv.hostedUrl ? (
                     <a href={inv.hostedUrl} target="_blank" rel="noopener noreferrer" className="text-[#ba3d3d] underline">
                       {VIEW_INVOICE}

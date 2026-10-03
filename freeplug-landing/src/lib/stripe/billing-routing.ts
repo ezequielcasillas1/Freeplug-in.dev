@@ -1,6 +1,7 @@
 import type Stripe from 'stripe'
 import { isLiveSubscriptionStatus } from './subscription-status'
 import { billingPortalSessionParams } from './portal'
+import { invoiceTipCents } from '../plans/tips'
 
 /**
  * Billing while a plan switch is planned (Aria, Oct 3 12:56).
@@ -52,6 +53,8 @@ export type InvoiceRow = {
   number: string | null
   created: string
   totalCents: number
+  /** The tipping system: the tip part of this invoice (its tip lines; 0 when none or a credit). */
+  tipCents: number
   currency: string
   status: 'paid' | 'open' | 'uncollectible'
   hostedUrl: string | null
@@ -77,6 +80,9 @@ export async function listInvoicesForCustomer(
       number: inv.number ?? null,
       created: new Date(inv.created * 1000).toISOString(),
       totalCents: inv.total,
+      // Invoices from invoices.list carry their first lines (ours have at most a few), so the tip
+      // part is read from the tip price lines without another request.
+      tipCents: Math.min(invoiceTipCents(inv as Parameters<typeof invoiceTipCents>[0]), Math.max(inv.total, 0)),
       currency: inv.currency,
       status: inv.status,
       hostedUrl: inv.hosted_invoice_url ?? null,
