@@ -1,42 +1,67 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Code2, Layers, Zap, Lock, Smartphone, Search, Gauge, Shield } from 'lucide-react'
+import {
+  Cloud,
+  Code,
+  Gauge,
+  Grid3x3,
+  LayoutTemplate,
+  Mail,
+  Search,
+  Shield,
+  ShieldCheck,
+  Smartphone,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { fadeInUp, staggerContainer, cardVariants, techLogoVariants } from '../animations/landing.variants'
 
-const techLogos = [
-  { name: 'React', color: '#61DAFB', icon: '⚛️' },
-  { name: 'Next.js', color: '#000000', icon: '▲' },
-  { name: 'TypeScript', color: '#3178C6', icon: 'TS' },
-  { name: 'Tailwind', color: '#06B6D4', icon: '🎨' },
-  { name: 'Vercel', color: '#000000', icon: '▼' },
-  { name: 'Supabase', color: '#3ECF8E', icon: '⚡' },
+/**
+ * The stack 72 After builds local business sites on (Lina's layout + Sable's copy, Oct 3 2026).
+ * One list: add a stack later by adding entries here. Icons are monochrome lucide icons, not brand logos.
+ */
+export const techStack: ReadonlyArray<{ name: string; description: string; icon: LucideIcon }> = [
+  {
+    name: 'Envato template',
+    description: 'A professionally designed, licensed template, filled with your business details.',
+    icon: LayoutTemplate,
+  },
+  { name: 'HTML & CSS', description: 'Plain, lightweight pages that load quickly.', icon: Code },
+  { name: 'Bootstrap 5', description: 'A layout that fits phones, tablets and computers.', icon: Grid3x3 },
+  { name: 'Cloudflare', description: 'Hosts your site and provides the SSL certificate for https.', icon: Cloud },
+  {
+    name: 'Cloudflare Turnstile',
+    description: 'Filters out spam bots on your quote form, without picture puzzles.',
+    icon: ShieldCheck,
+  },
+  { name: 'Resend', description: 'Emails each quote request to you.', icon: Mail },
 ]
 
 const techFeatures = [
   {
     icon: Zap,
-    title: 'Lightning Fast',
-    description: 'Sub-second load times with optimized assets and edge delivery',
+    title: 'Fast Loading',
+    description: "Lightweight pages served from Cloudflare's network.",
     gradient: 'from-amber-400 to-orange-500',
   },
   {
     icon: Smartphone,
     title: 'Mobile First',
-    description: 'Responsive design that looks perfect on every device',
+    description: 'A responsive layout that adjusts to phones, tablets and computers.',
     gradient: 'from-blue-400 to-indigo-500',
   },
   {
     icon: Search,
-    title: 'SEO Optimized',
-    description: 'Built-in SEO best practices to help you rank higher',
+    title: 'SEO Basics Included',
+    description: 'Clear page titles, descriptions and business details that search engines can read.',
     gradient: 'from-green-400 to-emerald-500',
   },
   {
     icon: Shield,
-    title: 'Secure by Default',
-    description: 'HTTPS, secure headers, and best security practices',
+    title: 'Secure Connection',
+    description: "HTTPS on every page through Cloudflare's SSL.",
     gradient: 'from-purple-400 to-violet-500',
   },
 ]
@@ -45,7 +70,7 @@ export function TechStackSection() {
   return (
     <section id="services" className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-to-br from-[#ba3d3d]/5 to-transparent rounded-full blur-3xl" />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           variants={staggerContainer}
@@ -64,17 +89,17 @@ export function TechStackSection() {
             variants={fadeInUp}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
           >
-            Built With{' '}
+            Built On{' '}
             <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-              Modern Tech
+              Proven Tools
             </span>
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             className="text-lg text-gray-600 max-w-2xl mx-auto"
           >
-            We use cutting-edge technologies to ensure your website is fast, 
-            secure, and future-proof.
+            Every local business site we build uses the same setup: lightweight pages, a layout that works on
+            phones, a quote form that filters out spam, and a secure https address.
           </motion.p>
         </motion.div>
 
@@ -83,25 +108,24 @@ export function TechStackSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-16"
+          className="grid grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6 max-w-5xl mx-auto mb-16"
+          data-testid="tech-stack-tiles"
         >
-          {techLogos.map((tech, index) => (
+          {techStack.map((tech) => (
             <motion.div
               key={tech.name}
               variants={techLogoVariants}
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              className="group relative"
+              whileHover={{ scale: 1.1 }}
+              className="group flex flex-col items-center text-center"
+              data-testid="tech-tile"
             >
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-lg shadow-gray-200/50 flex items-center justify-center border border-gray-100 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-gray-300/50 group-hover:-translate-y-1">
-                <span className="text-2xl sm:text-3xl">{tech.icon}</span>
+                <tech.icon className="w-7 h-7 sm:w-8 sm:h-8 text-gray-700" aria-hidden="true" strokeWidth={1.75} />
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileHover={{ opacity: 1, y: 0 }}
-                className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-gray-600 bg-white px-2 py-1 rounded shadow-sm"
-              >
+              <span className="mt-3 text-xs sm:text-sm font-medium text-gray-600 leading-snug line-clamp-2 break-words">
                 {tech.name}
-              </motion.div>
+              </span>
+              <span className="hidden lg:block mt-1 text-xs text-gray-500 leading-snug">{tech.description}</span>
             </motion.div>
           ))}
         </motion.div>
