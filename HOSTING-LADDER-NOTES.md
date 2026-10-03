@@ -121,8 +121,8 @@ range, 0 = no tip item) and is used by checkout, claim save, publish and the tip
   ends at the phase change.
 - Display: plan strip and claim summary "Fast lane · $65/month + $5 tip"; admin "$65/mo + $5 tip".
 - Webhook: `billing_ledger.tip_cents` = the tip lines of the paid invoice (capped at amount_paid), with a
-  fallback insert without the column before the migration. `cumulative_website_value_paid_cents` still
-  counts the full amount (open question for Aria: should tips count toward buyout value?).
+  fallback insert without the column before the migration. `cumulative_website_value_paid_cents` counts
+  the full amount, tips included (Aria, 3:31 PM CT, round 5b; see "Buyout: existing pieces").
 - Sable's confirm lines: zero-total line only at exactly $0.00; "This replaces your planned switch to X"
   only with a pending downgrade; the tip-ends lines only with a tip. Downgrades have no confirm, so the
   downgrade tip line sits under the downgrade button (Lina 3a: the "what happens" line under the
@@ -152,6 +152,81 @@ SUPABASE_SERVICE_ROLE_KEY / STRIPE_WEBHOOK_SECRET from process.env (they win ove
 `npm run dev|build|test` must also run through `safe`. `npm run upload:preview` and
 `cf:upload:production` pass the whole environment to wrangler, which picks up CLOUDFLARE_API_TOKEN
 implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
+
+## Round 5b (Oct 3, about 3:30 PM CT): Aria's items, Sable's final tip copy, Lina's slider
+- **Nudge window** (Aria 1): `TIP_NUDGE_WINDOW_DOLLARS = 5` in ladder.ts (was "within $10"). The nudge
+  shows from $5 below the next sellable step: Starter $50–54, Priority $60–64, Fast lane $70–74 (only
+  once Leads is sold), Leads $80–84, Get found $95–99; none from Growth partner.
+- **"Total Paid" counter** (Aria 2, reversed 3:31 PM CT): the webhook adds the full `amount_paid`, tips
+  included. The short-lived `BUYOUT_COUNTS_TIPS` flag was dropped (no flag, nothing to flip).
+- **Invoice list tip line** (Aria 3): `InvoiceRow.tipCents` (billing-routing.ts, tip lines of the
+  invoice's first page of lines, capped at the total); BillingTools shows "Plan $55.00 · Tip $4.00"
+  (`INVOICE_PLAN_PART` / `INVOICE_TIP_PART`, [Sable] placeholders).
+- **How the tip reads on Stripe** (test invoice 0TJQATSY-0001, review user 3, $59): line description
+  "4 × Freeplug: optional monthly tip (at $1.00 / month)"; PDF row "Freeplug: optional monthly tip | Qty 4 |
+  $1.00 | $4.00" (period Oct 3–Nov 3, 2026), listed ABOVE "Freeplug Hosting: Priority | 1 | $55.00".
+  Script: `/workspace/owen/devstack/invoice-tip-line.mjs` (read-only, test key only).
+- **Tip ranges after launch** (Aria 4, follow-up, no code): before any range change after launch, publish
+  should list the customers whose tip falls outside the new range and keep their tip until they change
+  it, not refuse.
+- **Sable's final tip copy** (3:20 PM CT, `/workspace/copy/freeplug-ladder-round5-tip-copy-2026-10-03.md`):
+  all `TIP_*` strings swapped, `TIP_COPY_STATUS` = FINAL; `TIP_PRODUCT_NAME` unchanged. New
+  `TIP_IN_PROGRESS` for a tip change while the change-plan lock is held (was `UPGRADE_IN_PROGRESS`).
+  priority.ts: new `PRIORITY_HELP_ANSWER`; the unused `PRIORITY_DASHBOARD_LINE` ("front of our queue")
+  removed. `HELP_PAYMENT_METHOD`, `CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE` and help b-5 pinned word for word to
+  Sable's 3:15 PM re-locks (help-chat-content.test.ts).
+- **Lina's slider** (3:19 PM): enabled slider has a hint (`TIP_SLIDER_HINT`), − / + buttons (44×44, $1,
+  clamped, disabled at the ends, "Lower tip by $1" / "Raise tip by $1"), end labels in tip amounts
+  ("No tip" / "$19 tip") in every state including the nudge; the range keeps aria-valuetext in dollars.
+  Locked (switch planned): no bar, one read-only row (Lock icon + "$4 tip a month", `TIP_LOCKED_AMOUNT`
+  [Sable] placeholder) and `TIP_LOCKED_NOTE(date)`; with no tip, "No tip" + `TIP_CHANGE_PENDING`. Same
+  component in Plans, the checkout card and claim step 3 (step 4 is a summary, no slider).
+- **Downgrade button short date** (Lina): "Switch to Starter on Nov 3" (`formatShortPlanDate`, year only
+  when not the current year); hint lines keep the full date. One line at 375.
+- **Request page** (Lina): the Manage billing button under the close-blocked message is now a "Cancel
+  options" text link to `/dashboard/cancel` (`CANCEL_OPTIONS_LINK`).
+- **Envato tile** (Sable 3:10 PM): "Premium templates our developers can access, enhanced with your
+  details." Wraps to 3 lines at 1280 and 1440; hidden at 375 (descriptions are desktop only).
+
+## Buyout: existing pieces (for Aria's pay-to-own card)
+Nothing here changes until Aria's card is approved. Ezequiel wants a pay-to-own option; today there is
+only a quoted buyout.
+- **Buyout request flag:** `website_requests.is_buyout` (boolean, default false):
+  `supabase/migrations/20260925204500_website_requests_is_buyout.sql:25`; a price requires it
+  (`website_requests_buyout_price_requires_is_buyout`, same file :77-79). Set by
+  `requestBuyoutQuote` (`src/app/(dashboard)/dashboard/buyout-actions.ts:14`) via `recordBuyoutRequest`
+  (`src/lib/buyout/buyout.ts:138`).
+- **Buyout price (owner-set):** `website_requests.buyout_price_cents`:
+  `supabase/migrations/20260925204000_website_requests_buyout_price_cents.sql:23` (guard trigger :35-70,
+  service role only). Admin field: `AdminBuyoutPriceCell` (`src/app/admin/AdminBuyoutCell.tsx:31`),
+  rendered in `src/app/admin/AdminRequestRow.tsx:102`, saved by `adminSetBuyoutPrice`
+  (`src/app/admin/actions.ts:177`); badge `AdminBuyoutBadge` (`AdminBuyoutCell.tsx:15`).
+- **Paid-total counter:** `profiles.cumulative_website_value_paid_cents`
+  (`supabase/migrations/20260402120000_profiles_and_website_requests.sql:6`). Written by the webhook
+  (`src/app/api/webhooks/stripe/route.ts:192-198`, full amount paid, tips included; there is no
+  `BUYOUT_COUNTS_TIPS` flag any more) and by the admin override `adminSetProfileCumulativeWebsiteValuePaid`
+  (`src/app/admin/actions.ts:136`, cell `src/app/admin/AdminCumulativePaidCell.tsx:12`). Read by the admin
+  "Paid (cumulative)" column (`src/app/admin/AdminCustomersTable.tsx:133,155-160`), the dashboard "Total
+  Paid" (`src/app/(dashboard)/dashboard/QuickStats.tsx:33-35` via `dashboard-actions.ts:345`), the cancel
+  page data (`src/app/(dashboard)/dashboard/cancel/actions.ts:69,86,96`), and the old handoff RPC
+  `acknowledge_website_transfer()` (`supabase/migrations/20260404100000_close_website_request_rpcs.sql:46`:
+  counter >= `website_value_target_cents`; granted to authenticated, no app caller today).
+- **Pay-to-own must not use this counter.** It will get its own `ownership_credits` ledger built from
+  invoice lines (tier lines only, per Aria's rules), summed, not this running total.
+- **Known drift (note only, no fix now):** the invoice.paid profile total (`route.ts` about 184-204) is
+  read-modify-write: it inserts the `billing_ledger` row, then writes `prev + amount_paid`. If that
+  update fails, Stripe's redelivery hits the ledger's unique index (23505) and stops, so the increment is
+  lost for good; two invoices paid at the same moment can also overwrite each other. Pay-to-own progress
+  must be SUM-based (e.g. SUM over the ledger), never this counter.
+- **Buyout cards (dashboard, not landing):** `BuyoutCard` (`src/app/(dashboard)/dashboard/BuyoutCard.tsx`),
+  on the dashboard home as `DashboardBuyoutCard` (`src/app/(dashboard)/dashboard/page.tsx:199-203`,
+  `alreadyRequested` from `is_buyout`) and the cancel page (`src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:227,300`);
+  button `BuyoutRequestButton.tsx:49`. The landing page has no buyout card.
+- **Buyout copy:** `src/lib/buyout/buyout.ts:21-37` (`BUYOUT_DASHBOARD_HEADING` / `_BODY`,
+  `BUYOUT_REQUEST_LABEL`, `BUYOUT_THANKS`, `BUYOUT_CANCEL_HEADING` / `_BODY`, `BUYOUT_FAQ_QUESTION` /
+  `_ANSWER`, admin badge/labels); FAQ `src/app/faq/page.tsx:44-46`; help chat 'buy-website'
+  (`src/lib/help/help-chat-content.ts`, `BUYOUT_FAQ_ANSWER`); cancel help answer
+  (`src/app/(dashboard)/dashboard/help/page.tsx:102`).
 
 ## Not built (Part B)
 L2 AI editor + quota enforcement, leads report job, form-fill storage, GBP API, SMS, L3.
