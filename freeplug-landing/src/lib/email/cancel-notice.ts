@@ -5,8 +5,8 @@ import { formatBillingDate, stripeTimestampToDate, subscriptionPeriodEnd } from 
 
 /**
  * Sends the "Your Freeplug hosting is canceled" email once per cancellation (cancel_at_period_end becomes
- * true, or cancel_at is set). Called from the Stripe webhook on customer.subscription.updated, because
- * cancelling happens in the Stripe billing portal.
+ * true, or cancel_at is set). Called from the Stripe webhook on customer.subscription.updated, which
+ * Stripe sends after the in-app cancel (the billing portal's cancel is off since 4d02033).
  *
  * Two layers of "once" (round 6):
  *  - Per cancellation, across events: the subscription's Stripe metadata records which cancellation was

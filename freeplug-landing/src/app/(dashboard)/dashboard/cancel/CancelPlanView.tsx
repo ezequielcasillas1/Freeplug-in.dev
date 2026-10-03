@@ -2,7 +2,13 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cancelHostingAtPeriodEnd, resumePlan } from '../billing-actions'
 import { ResumePlanSubmit } from '../ResumePlanSubmit'
-import { CANCEL_FAILED_MESSAGE, CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE, TIP_TOTAL_LINE } from '@/lib/plans/ladder-copy'
+import {
+  CANCEL_FAILED_MESSAGE,
+  CANCEL_IN_APP_LINE,
+  CANCEL_PLAN_BUTTON,
+  CANCEL_WITH_PENDING_NOTE,
+  TIP_TOTAL_LINE,
+} from '@/lib/plans/ladder-copy'
 import type { CancelPageData } from './actions'
 import type { OutreachPlanBox } from '../outreach-dashboard'
 import { OutreachPlanCard } from '../OutreachPlanCard'
@@ -345,9 +351,9 @@ export function CancelPlanView({
               <XCircle className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
               <div className="flex-1">
                 <h3 className="font-semibold text-red-900">Cancel Your Subscription</h3>
-                <p className="text-sm text-red-800 mt-1 mb-4">
-                  If you still want to cancel, you can do so through the Stripe billing portal.
-                  Your access continues until the end of your current billing period.
+                {/* Vera N1: the in-app button at the bottom of this box is the only cancel (no portal). */}
+                <p className="text-sm text-red-800 mt-1 mb-4" data-testid="cancel-in-app-line">
+                  {CANCEL_IN_APP_LINE}
                 </p>
                 {/* Website access warning (Sable, swappable constant), directly above the button. */}
                 <div

@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { CancelPageData, SubscriptionInfo } from './actions'
-import { CANCEL_FAILED_MESSAGE, CANCEL_PLAN_BUTTON } from '@/lib/plans/ladder-copy'
+import { CANCEL_FAILED_MESSAGE, CANCEL_IN_APP_LINE, CANCEL_PLAN_BUTTON } from '@/lib/plans/ladder-copy'
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...rest }: { children: React.ReactNode; href: string }) => (
@@ -235,6 +235,22 @@ describe('Cancel page outreach card (round 12, 4:03 AM)', () => {
     render(<CancelPlanView data={data({ subscriptions: [sub()] })} outreachBox="plan" />)
     expect(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })).toBeInTheDocument()
     expect(screen.queryByTestId('outreach-plan-card')).toBeNull()
+  })
+
+  it('Vera N1 / Sable final: the cancel box says to use the button at the bottom of it, once, never the billing portal', () => {
+    const { container } = render(<CancelPlanView data={data({ subscriptions: [sub()] })} />)
+    const line = screen.getByTestId('cancel-in-app-line')
+    expect(line.textContent).toBe(
+      'If you still want to cancel, use the button at the bottom of this box. Your access continues until the end of your current billing period.'
+    )
+    expect(line.textContent).toBe(CANCEL_IN_APP_LINE)
+    // the access sentence shows once (the old portal paragraph is gone, not kept alongside)
+    expect(container.textContent!.split('Your access continues until the end of your current billing period.')).toHaveLength(2)
+    expect(container.textContent).not.toMatch(/billing portal|Stripe/i)
+    // the button at the bottom of this box is the last thing in it
+    const box = line.parentElement!
+    const cancelBtn = screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })
+    expect(box.lastElementChild).toContainElement(cancelBtn)
   })
 
   it('a pending downgrade: cancel happens in the app (it also cancels the switch), not in the billing portal', () => {

@@ -144,6 +144,13 @@ export const KEEP_PLAN_BUTTON = (name: string) => `Keep ${name}`
 export const CANCEL_WITH_PENDING_NOTE = (name: string, date: string) =>
   `You have a switch to ${name} planned for ${date}. Canceling your plan also cancels that switch.`
 export const CANCEL_PLAN_BUTTON = 'Cancel my plan at the end of this billing period'
+/**
+ * [Final, Sable, Oct 3 ~5:52 PM; Vera N1] Cancel page "Cancel Your Subscription" box. The only cancel is
+ * the in-app button at the bottom of that box (the billing portal's cancel is off since 4d02033). Replaces
+ * the old portal line and its access sentence (one paragraph, so the access sentence shows once).
+ */
+export const CANCEL_IN_APP_LINE =
+  'If you still want to cancel, use the button at the bottom of this box. Your access continues until the end of your current billing period.'
 
 /**
  * [Sable] FINAL (4:32 PM CT; Aria Oct 3 4:05 PM): "Resume plan" failed. The customer is never sent to the
