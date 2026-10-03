@@ -24,6 +24,7 @@ import {
   PLAN_CHANGE_TIP_ENDS_ON,
   TIP_CHANGE_PENDING,
   TIP_CHANGE_NOTE,
+  TIP_CHANGE_ENDING,
   TIP_LOCKED_NOTE,
   TIP_SLIDER_HINT,
 } from '@/lib/plans/ladder-copy'
@@ -608,6 +609,19 @@ describe('the tipping system: tip box on the Plans page (next bill, no modal)', 
     expect(await within(box).findByTestId('tip-change-notice')).toHaveTextContent('Your tip is updated. Your next bill will be $71 on November 3, 2026.')
   })
 
+  it('plan set to end: Update tip shows TIP_CHANGE_ENDING in the tip box (Sable 4:32 PM), not the plan-switch line', async () => {
+    const a = tipActions()
+    a.onPreviewTip.mockImplementationOnce((async () => ({ ok: false as const, message: TIP_CHANGE_ENDING })) as unknown as typeof a.onPreviewTip)
+    switching({ currentStepId: 'fast_lane', currentPlanLines: ['Fast lane · $65/month + $2 tip'], currentTipDollars: 2, ...a })
+    const box = screen.getByTestId('tip-change-box')
+    fireEvent.change(within(box).getByRole('slider'), { target: { value: '71' } })
+    fireEvent.click(within(box).getByTestId('tip-change-button'))
+    await waitFor(() => expect(box).toHaveTextContent("Your plan is set to end, so your tip can't be changed. Choose Resume plan first."))
+    expect(box).not.toHaveTextContent('then switch')
+    expect(within(box).queryByTestId('tip-change-confirm')).toBeNull()
+    expect(a.onChangeTip).not.toHaveBeenCalled()
+  })
+
   it('Vera B2: every Confirm sends the confirm id of ITS preview (one Stripe key per Confirm), so A -> B -> A gets new ids', async () => {
     const a = tipActions()
     switching({ currentStepId: 'fast_lane', currentPlanLines: ['x'], currentTipDollars: 2, ...a })
@@ -632,7 +646,7 @@ describe('the tipping system: tip box on the Plans page (next bill, no modal)', 
     expect(within(box).queryByRole('slider')).toBeNull()
     expect(within(box).queryByTestId('tip-ends')).toBeNull()
     expect(within(box).queryByRole('button', { name: /tip by \$1/ })).toBeNull()
-    expect(within(box).getByTestId('tip-locked-amount')).toHaveTextContent('$2 tip a month')
+    expect(within(box).getByTestId('tip-locked-amount')).toHaveTextContent('$2 monthly tip')
     expect(within(box).getByTestId('tip-locked').querySelector('svg')).not.toBeNull() // the Lock icon
     expect(within(box).getByTestId('tip-locked-note')).toHaveTextContent(TIP_LOCKED_NOTE('November 3, 2026'))
     expect(within(box).getByTestId('tip-locked-note')).toHaveTextContent(

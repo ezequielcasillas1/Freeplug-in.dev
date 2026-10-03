@@ -36,7 +36,7 @@ import {
   TIP_NEXT_BILL_NO_DATE,
   TIP_NOT_FOR_PLAN,
   TIP_OUT_OF_RANGE,
-  CHANGE_PLAN_ENDING as TIP_PLAN_ENDING,
+  TIP_CHANGE_ENDING,
 } from '@/lib/plans/ladder-copy'
 
 /**
@@ -322,7 +322,7 @@ export type ChangeTipResponse = { ok: boolean; message: string }
 
 function tipRefusalMessage(code: TipChangeRefusal | 'mismatch' | 'rate_limited'): string {
   if (code === 'pending_change') return TIP_CHANGE_PENDING
-  if (code === 'ending') return TIP_PLAN_ENDING
+  if (code === 'ending') return TIP_CHANGE_ENDING
   if (code === 'no_tip_plan') return TIP_NOT_FOR_PLAN
   if (code === 'out_of_range') return TIP_OUT_OF_RANGE
   return TIP_CHANGE_UNAVAILABLE

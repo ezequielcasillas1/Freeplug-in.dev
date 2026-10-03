@@ -129,7 +129,8 @@ export const CHANGE_PLAN_UPGRADED = (name: string) =>
 export const CHANGE_PLAN_SCHEDULED = (name: string, date: string) =>
   `You'll move to ${name} on ${date}. You keep your current plan until then.`
 export const CHANGE_PLAN_UNCHANGED = "You're on this plan. Any planned change has been cancelled."
-export const CHANGE_PLAN_ENDING = 'Your plan is set to end. Resume it first, then switch.'
+/** [Sable] FINAL (4:32 PM CT): a plan switch while the plan is set to end; names the real button. */
+export const CHANGE_PLAN_ENDING = 'Your plan is set to end. Choose Resume plan first, then switch.'
 export const CHANGE_PLAN_PAYMENT_FAILED =
   "We couldn't charge your card, so your plan didn't change. Update your payment method in Manage billing and try again."
 export const CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST =
@@ -145,12 +146,12 @@ export const CANCEL_WITH_PENDING_NOTE = (name: string, date: string) =>
 export const CANCEL_PLAN_BUTTON = 'Cancel my plan at the end of this billing period'
 
 /**
- * PLACEHOLDER (Sable; Aria Oct 3 4:05 PM): "Resume plan" failed. The customer is never sent to the
+ * [Sable] FINAL (4:32 PM CT; Aria Oct 3 4:05 PM): "Resume plan" failed. The customer is never sent to the
  * billing portal; they get the support contact (src/lib/site.ts) instead.
  */
-export const RESUME_FAILED_MESSAGE = `We couldn't resume your plan. Please contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY} and we'll help.`
-/** PLACEHOLDER (Sable; Aria Oct 3 4:05 PM): the in-app cancel (the only cancel) failed. */
-export const CANCEL_FAILED_MESSAGE = `We couldn't cancel your plan just now. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY}.`
+export const RESUME_FAILED_MESSAGE = `We couldn't resume your plan, so it's still set to end. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY} and we'll help.`
+/** [Sable] FINAL (4:32 PM CT): the in-app cancel (the only cancel) failed. */
+export const CANCEL_FAILED_MESSAGE = `We couldn't cancel your plan just now, so nothing has changed. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY}.`
 /** PLACEHOLDER (Sable/Wren): Plans page billing (Aria, Oct 3 12:56). */
 export const BILLING_PENDING_NOTICE = (name: string, date: string) =>
   `You have a switch to ${name} planned for ${date}, so billing is handled here until then. You can update your card and see your invoices below.`
@@ -162,9 +163,9 @@ export const INVOICES_HEADING = 'Invoices'
 export const INVOICES_EMPTY = 'No invoices yet.'
 export const INVOICE_STATUS_LABEL = { paid: 'Paid', open: 'Due', uncollectible: 'Unpaid' } as const
 export const VIEW_INVOICE = 'View'
-/** [Sable] Invoice list (round 5b): the tip as its own line under an invoice that has one ("Plan $65.00 · Tip $5.00"). */
+/** [Sable] FINAL (4:32 PM CT): invoice list, the tip as its own part ("Plan $55.00 · Optional tip $4.00"). */
 export const INVOICE_PLAN_PART = (amount: string) => `Plan ${amount}`
-export const INVOICE_TIP_PART = (amount: string) => `Tip ${amount}`
+export const INVOICE_TIP_PART = (amount: string) => `Optional tip ${amount}`
 export const DOWNLOAD_INVOICE_PDF = 'PDF'
 
 /**
@@ -277,11 +278,11 @@ export const TIP_END_MAX = (max: string) => `${max} tip`
 export const TIP_LOWER_LABEL = 'Lower tip by $1'
 export const TIP_RAISE_LABEL = 'Raise tip by $1'
 /**
- * [Sable] PLACEHOLDER (Lina's wording, not in Sable's 3:19 list): the read-only row in "Your monthly
- * tip" while a switch is planned (the bar is hidden).
+ * [Sable] FINAL (4:32 PM CT): the read-only row in "Your monthly tip" while a switch is planned (the bar
+ * is hidden). Matches "Your $X monthly tip ends…".
  */
-export const TIP_LOCKED_AMOUNT = (tip: string) => `${tip} tip a month`
-/** [Sable] FINAL (3:19 PM CT): grey line under the locked row; `date` is the switch date ("November 3, 2026"). */
+export const TIP_LOCKED_AMOUNT = (tip: string) => `${tip} monthly tip`
+/** [Sable] FINAL (3:19 PM CT; unchanged at 4:32): grey line under the locked row; `date` is the switch date ("November 3, 2026"). */
 export const TIP_LOCKED_NOTE = (date: string) =>
   `Your tip ends on ${date}, when your planned switch starts. You can choose a new tip after that.`
 /** [Sable] Nudge when the total is within TIP_NUDGE_WINDOW_DOLLARS ($5) below the next sellable plan. */
@@ -319,6 +320,8 @@ export const TIP_CHANGED = (nextBill: string) => `Your tip is updated. ${nextBil
 /** [Sable] Plans page: a switch is planned, so the tip can't change now. */
 export const TIP_CHANGE_PENDING =
   "Tips can't be changed while a plan switch is planned. Once the switch starts, you can choose a new tip."
+/** [Sable] FINAL (4:32 PM CT, new): tip box only, while the plan is set to end (replaces the plan-switch line there). */
+export const TIP_CHANGE_ENDING = "Your plan is set to end, so your tip can't be changed. Choose Resume plan first."
 /** [Sable] Plans page: grandfathered plan (no slider). */
 export const TIP_NOT_FOR_PLAN = "Tips aren't available on your plan."
 /** [Sable] Server refused the amount (outside the plan's range). */

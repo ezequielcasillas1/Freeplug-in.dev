@@ -8,11 +8,11 @@ const row = (over: Partial<InvoiceRow>): InvoiceRow => ({
 })
 
 describe('BillingTools invoice list: the tip on its own line (round 5b)', () => {
-  it('an invoice with a tip shows "Plan $65.00 · Tip $5.00" under its total; one without shows no tip line', () => {
+  it('an invoice with a tip shows "Plan $65.00 · Optional tip $5.00" under its total; one without shows no tip line', () => {
     render(<BillingTools updateCardAction={async () => undefined} invoices={[row({ id: 'in_tip', totalCents: 7000, tipCents: 500 }), row({ id: 'in_plain' })]} />)
     const items = screen.getAllByRole('listitem')
     expect(items[0]).toHaveTextContent('$70.00')
-    expect(within(items[0]).getByTestId('invoice-tip')).toHaveTextContent('Plan $65.00 · Tip $5.00')
+    expect(within(items[0]).getByTestId('invoice-tip')).toHaveTextContent('Plan $65.00 · Optional tip $5.00')
     expect(within(items[1]).queryByTestId('invoice-tip')).toBeNull()
   })
 })

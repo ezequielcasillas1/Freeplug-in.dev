@@ -164,8 +164,8 @@ implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
 - **"Total Paid" counter** (Aria 2, reversed 3:31 PM CT): the webhook adds the full `amount_paid`, tips
   included. The short-lived `BUYOUT_COUNTS_TIPS` flag was dropped (no flag, nothing to flip).
 - **Invoice list tip line** (Aria 3): `InvoiceRow.tipCents` (billing-routing.ts, tip lines of the
-  invoice's first page of lines, capped at the total); BillingTools shows "Plan $55.00 · Tip $4.00"
-  (`INVOICE_PLAN_PART` / `INVOICE_TIP_PART`, [Sable] placeholders).
+  invoice's first page of lines, capped at the total); BillingTools shows "Plan $55.00 · Optional tip $4.00"
+  (`INVOICE_PLAN_PART` / `INVOICE_TIP_PART`, Sable FINAL 4:32 PM).
 - **How the tip reads on Stripe** (test invoice 0TJQATSY-0001, review user 3, $59): line description
   "4 × Freeplug: optional monthly tip (at $1.00 / month)"; PDF row "Freeplug: optional monthly tip | Qty 4 |
   $1.00 | $4.00" (period Oct 3–Nov 3, 2026), listed ABOVE "Freeplug Hosting: Priority | 1 | $55.00".
@@ -196,8 +196,8 @@ implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
 - **Lina's slider** (3:19 PM): enabled slider has a hint (`TIP_SLIDER_HINT`), − / + buttons (44×44, $1,
   clamped, disabled at the ends, "Lower tip by $1" / "Raise tip by $1"), end labels in tip amounts
   ("No tip" / "$19 tip") in every state including the nudge; the range keeps aria-valuetext in dollars.
-  Locked (switch planned): no bar, one read-only row (Lock icon + "$4 tip a month", `TIP_LOCKED_AMOUNT`
-  [Sable] placeholder) and `TIP_LOCKED_NOTE(date)`; with no tip, "No tip" + `TIP_CHANGE_PENDING`. Same
+  Locked (switch planned): no bar, one read-only row (Lock icon + "$4 monthly tip", `TIP_LOCKED_AMOUNT`,
+  Sable FINAL 4:32 PM) and `TIP_LOCKED_NOTE(date)`; with no tip, "No tip" + `TIP_CHANGE_PENDING`. Same
   component in Plans, the checkout card and claim step 3 (step 4 is a summary, no slider).
 - **Downgrade button short date** (Lina): "Switch to Starter on Nov 3" (`formatShortPlanDate`, year only
   when not the current year); hint lines keep the full date. One line at 375.
@@ -255,6 +255,20 @@ only a quoted buyout.
   `_ANSWER`, admin badge/labels); FAQ `src/app/faq/page.tsx:44-46`; help chat 'buy-website'
   (`src/lib/help/help-chat-content.ts`, `BUYOUT_FAQ_ANSWER`); cancel help answer
   (`src/app/(dashboard)/dashboard/help/page.tsx:102`).
+
+## Sable's final wording, 4:32 PM CT (billing fix batch 68d7e2b)
+Source: `/workspace/copy/freeplug-ladder-round5-tip-copy-2026-10-03.md`, "Added 4:32 PM CT". All in ladder-copy.ts,
+pinned word for word in ladder-copy.test.ts:
+- `RESUME_FAILED_MESSAGE`: "We couldn't resume your plan, so it's still set to end. Please try again in a moment, or
+  contact us at support@freeplug-in.dev or 737-392-5612 and we'll help." (email/phone from src/lib/site.ts)
+- `CANCEL_FAILED_MESSAGE`: "We couldn't cancel your plan just now, so nothing has changed. Please try again in a
+  moment, or contact us at support@freeplug-in.dev or 737-392-5612."
+- `INVOICE_PLAN_PART` / `INVOICE_TIP_PART`: "Plan $55.00 · Optional tip $4.00".
+- `TIP_LOCKED_AMOUNT`: "$4 monthly tip". `TIP_LOCKED_NOTE` is not in the 4:32 list, so it keeps the 3:19 wording.
+- `CHANGE_PLAN_ENDING` (plan switch): "Your plan is set to end. Choose Resume plan first, then switch."
+- `TIP_CHANGE_ENDING` (new, tip box only; the tip refusal used to reuse the plan-switch line): "Your plan is set to
+  end, so your tip can't be changed. Choose Resume plan first."
+- The dashboard tab stays "Cancel"; the locked file now says "Cancel" too (DashboardChrome.test.tsx checks both).
 
 ## Not built (Part B)
 L2 AI editor + quota enforcement, leads report job, form-fill storage, GBP API, SMS, L3.

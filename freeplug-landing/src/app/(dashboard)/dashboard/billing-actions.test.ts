@@ -151,9 +151,9 @@ vi.mock('@/lib/stripe/server', () => ({
   }),
 }))
 
-import { cancelHostingAtPeriodEnd, changeHostingPlan, changeTipAction, openBillingPortal, previewPlanChange, resumePlan, updatePaymentMethod } from './billing-actions'
+import { cancelHostingAtPeriodEnd, changeHostingPlan, changeTipAction, openBillingPortal, previewPlanChange, previewTipChangeAction, resumePlan, updatePaymentMethod } from './billing-actions'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { RESUME_FAILED_MESSAGE, STEP_NOT_SELLABLE_MESSAGE, TIP_IN_PROGRESS, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
+import { CHANGE_PLAN_ENDING, RESUME_FAILED_MESSAGE, STEP_NOT_SELLABLE_MESSAGE, TIP_CHANGE_ENDING, TIP_IN_PROGRESS, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
 
 const ladderSub = (id: string, over: Record<string, unknown> = {}) => {
   const s = PLAN_STEPS.find((p) => p.id === id)!
@@ -336,6 +336,15 @@ describe('Resume plan (Aria 4:05 PM): clears only cancel_at_period_end, under th
     expect(calls).toEqual(['stripe.subscriptions.update(resume)'])
     expect(updateParams).toEqual([{ cancel_at_period_end: false }])
     expect(lockEvents).toEqual(['claim:ok:60', 'release:ok'])
+  })
+
+  it('plan set to end (Sable 4:32 PM): a tip preview/change gets TIP_CHANGE_ENDING, a plan switch gets CHANGE_PLAN_ENDING; nothing written', async () => {
+    liveSubs = [ending()]
+    expect(await previewTipChangeAction(3)).toEqual({ ok: false, message: TIP_CHANGE_ENDING })
+    expect(await changeTipAction(3)).toEqual({ ok: false, message: TIP_CHANGE_ENDING })
+    expect(await changeHostingPlan('fast_lane')).toMatchObject({ ok: false, message: CHANGE_PLAN_ENDING })
+    expect(updateParams).toEqual([])
+    expect(TIP_CHANGE_ENDING).not.toBe(CHANGE_PLAN_ENDING)
   })
 
   it('the error shown on /dashboard?hosting=resume_failed has the support contact', () => {
