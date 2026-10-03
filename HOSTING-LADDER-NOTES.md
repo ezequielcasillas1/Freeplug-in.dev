@@ -31,6 +31,11 @@ All customer wording: `freeplug-landing/src/lib/plans/ladder-copy.ts` (PLACEHOLD
   only, never committed). **Without it the app refuses to open the portal** (Plans page "billing
   unavailable"); it never falls back to the account's default configuration. TEST id:
   `bpc_1UMaHXLOdeLTrjapNGnb5tDp`. Cancel and resume happen only in the app, under the change-plan lock.
+  Before launch (checklist below): the business name in the portal header and the Stripe Link setting
+  on the card form, both live-account settings.
+- Accepted (Aria, Oct 3 4:40 PM): batch 68d7e2b, including the Stripe invoice PDF limits (tip row above
+  the plan row; "(at $1.00 / month)" wording). Webhooks: `customer.subscription.updated` plus the lazy
+  release on read are enough; no `subscription_schedule.updated` subscription.
 
 ## Aria's conditions (Oct 3, 12:25)
 - **Sellable:** `PLAN_STEPS[].sellable`. Leads, Get found, Growth partner = false ("Coming soon")
@@ -211,9 +216,18 @@ implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
   account only at launch, with Ezequiel's yes (the script refuses live keys today; the launch run needs
   a reviewed live variant). Put the live bpc_ id in the hosted `STRIPE_PORTAL_CONFIGURATION_ID`. Until it
   is set, Manage billing / Update card show "billing unavailable" (by design).
-- **Webhook endpoint events:** add `subscription_schedule.updated` to the endpoint (optional; the
-  schedule release also runs on `customer.subscription.updated` and `invoice.paid`, which are already
-  sent).
+- **Portal / business name in the portal header:** the Stripe customer portal header shows the account's
+  public business name, which in test mode reads "ezequiel casillas" (screenshots
+  `/workspace/owen/portal-card-only-*.png`). Set it in the live account's public business details before
+  launch (it's the account's name, not part of the portal configuration; the configuration's headline
+  "Freeplug: update your card" is separate).
+- **Stripe Link on the card form:** the portal's card form offers Link ("Save my information for faster
+  checkout", email + phone). That's an account setting (Payment methods), not the portal configuration
+  or app code. Decide on or off for the live account before launch.
+- **Webhook events: no change needed** (Aria, Oct 3 4:40 PM). `subscription_schedule.updated` is NOT
+  added to the endpoint: Stripe doesn't send it at the switch anyway (test clock E6), and
+  `customer.subscription.updated` (plus `invoice.paid`) and the lazy release on read are enough. The
+  handler for it stays in route.ts, harmless if it ever arrives.
 - Migrations 20261003200000 / 20261003210000 (and r13's 20261003220000) before the deploy.
 
 ## Buyout: existing pieces (for Aria's pay-to-own card)
