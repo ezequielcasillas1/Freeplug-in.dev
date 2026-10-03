@@ -10,7 +10,7 @@ import {
   subscriptionPeriodStart,
 } from '@/lib/stripe/subscription-dates'
 import { subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
-import { entitlementsForSubscription } from '@/lib/stripe/active-subscription'
+import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
 
@@ -124,6 +124,15 @@ export async function getEnhancedDashboardData(
         limit: 10,
       })
 
+      // Perks shown on the live plan come from the webhook-written snapshot (profiles), so a plan
+      // move shows its new perks once Stripe's customer.subscription.updated webhook has landed.
+      let planEntitlements: Entitlements | null = null
+      try {
+        planEntitlements = (await getUserEntitlements(supabase, user.id, profile.stripe_customer_id, stripe)).entitlements
+      } catch (e) {
+        console.error('[dashboard] entitlements failed', e instanceof Error ? e.message : e)
+      }
+
       for (const sub of subs.data) {
         const items = sub.items.data
         if (items.length === 0) continue
@@ -141,14 +150,8 @@ export async function getEnhancedDashboardData(
           amount += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
         }
         const price = items[0].price
-        let entitlements: Entitlements | null = null
-        try {
-          entitlements = await entitlementsForSubscription(sub, async (id) =>
-            (await stripe.products.retrieve(id)) as unknown as { id: string; name: string }
-          )
-        } catch (e) {
-          console.error('[dashboard] entitlements failed', e instanceof Error ? e.message : e)
-        }
+        const entitlements: Entitlements | null =
+          sub.status === 'active' || sub.status === 'trialing' ? planEntitlements : null
 
         subscriptions.push({
           id: sub.id,

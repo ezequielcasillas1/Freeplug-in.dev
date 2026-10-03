@@ -1,6 +1,6 @@
 import { HelpChat } from '@/components/help/HelpChat'
 import { createClient } from '@/lib/supabase/server'
-import { getEntitlements } from '@/lib/stripe/active-subscription'
+import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { sendHelpChangeRequest } from '../request-website/actions'
 
 /**
@@ -22,7 +22,7 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
       .maybeSingle()
     if (prof?.stripe_customer_id) {
       try {
-        hasIncludedEdit = (await getEntitlements(prof.stripe_customer_id)).includedEditsPerMonth > 0
+        hasIncludedEdit = (await getUserEntitlements(supabase, user.id, prof.stripe_customer_id)).entitlements.includedEditsPerMonth > 0
       } catch (e) {
         // Only hides the optional included-edit note; the chat still works.
         console.error('[help] entitlements lookup failed', e instanceof Error ? e.message : e)

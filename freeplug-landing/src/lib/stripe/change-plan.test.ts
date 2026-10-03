@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type Stripe from 'stripe'
 import { PLAN_STEPS, type PlanStepId } from '@/lib/plans/ladder'
-import { changePlanStep, planMove, subscriptionMonthlyCents } from './change-plan'
+import { cancelPlanAtPeriodEnd, changePlanStep, pendingPlanChange, planMove, subscriptionMonthlyCents } from './change-plan'
 
 const step = (id: PlanStepId) => PLAN_STEPS.find((s) => s.id === id)!
 const ladderSub = (id: PlanStepId, over: Record<string, unknown> = {}) =>
@@ -30,21 +30,42 @@ const legacySub = (hosting: number, addon: number) =>
     },
   }) as unknown as Stripe.Subscription
 
-function fakeStripe(opts: { pendingUpdate?: boolean } = {}) {
+const NOW = new Date('2026-10-03T17:00:00Z')
+const NOW_S = Math.floor(NOW.getTime() / 1000)
+const PERIOD_END = 1_793_726_938 // Nov 3 2026
+
+function fakeStripe(opts: { pendingUpdate?: boolean; cardError?: boolean; pendingStep?: PlanStepId | null; phaseMetadata?: boolean } = {}) {
   const calls: string[] = []
+  const pendingStep = opts.pendingStep === undefined ? 'priority' : opts.pendingStep
   const stripe = {
     subscriptions: {
-      update: vi.fn(async (id: string) => {
-        calls.push('subscriptions.update')
-        return { id, pending_update: opts.pendingUpdate ? { expires_at: 1 } : null, latest_invoice: { status: opts.pendingUpdate ? 'open' : 'paid' } }
+      update: vi.fn(async (id: string, params: Record<string, unknown>) => {
+        calls.push(params.cancel_at_period_end ? 'subscriptions.update(cancel)' : 'subscriptions.update')
+        if (opts.cardError && !params.cancel_at_period_end) throw Object.assign(new Error('Your card was declined.'), { type: 'StripeCardError', code: 'card_declined' })
+        return { id, pending_update: opts.pendingUpdate ? { expires_at: 1 } : null, latest_invoice: { id: 'in_new', status: opts.pendingUpdate ? 'open' : 'paid' } }
       }),
     },
+    invoices: { voidInvoice: vi.fn(async (id: string) => (calls.push(`invoices.void:${id}`), { id, status: 'void' })) },
+    prices: { retrieve: vi.fn(async (id: string) => (calls.push('prices.retrieve'), { id, lookup_key: `freeplug_step_${id.replace('price_', '')}_monthly` })) },
     subscriptionSchedules: {
       create: vi.fn(async () => {
         calls.push('schedules.create')
         return { id: 'sub_sched_1', current_phase: { start_date: 1_790_000_000, end_date: 1_792_600_000 }, phases: [{ start_date: 1_790_000_000, end_date: 1_792_600_000, items: [{ price: 'price_leads', quantity: 1 }] }] }
       }),
-      retrieve: vi.fn(async () => ({ id: 'sub_sched_0', current_phase: { start_date: 1, end_date: 2 }, phases: [{ start_date: 1, end_date: 2, items: [{ price: 'price_leads', quantity: 1 }] }] })),
+      retrieve: vi.fn(async () => {
+        calls.push('schedules.retrieve')
+        return {
+          id: 'sub_sched_0',
+          status: 'active',
+          current_phase: { start_date: NOW_S - 86_400, end_date: PERIOD_END },
+          phases: [
+            { start_date: NOW_S - 86_400, end_date: PERIOD_END, items: [{ price: 'price_leads', quantity: 1 }], metadata: {} },
+            ...(pendingStep
+              ? [{ start_date: PERIOD_END, end_date: PERIOD_END + 2_592_000, items: [{ price: `price_${pendingStep}`, quantity: 1 }], metadata: opts.phaseMetadata === false ? {} : { plan_step: pendingStep } }]
+              : []),
+          ],
+        }
+      }),
       update: vi.fn(async () => (calls.push('schedules.update'), {})),
       release: vi.fn(async () => (calls.push('schedules.release'), {})),
     },
@@ -72,18 +93,37 @@ describe('planMove', () => {
 describe('changePlanStep (upgrades now + prorated, downgrades at period end)', () => {
   it('upgrade: replaces the item with the step price, always_invoice, pending_if_incomplete, idempotent', async () => {
     const f = fakeStripe()
-    const r = await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter'), 'leads')
-    expect(r).toEqual({ ok: true, kind: 'upgraded', step: 'leads', invoiceStatus: 'paid' })
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter'), 'fast_lane')
+    expect(r).toEqual({ ok: true, kind: 'upgraded', step: 'fast_lane', invoiceStatus: 'paid' })
     const [id, params, opts] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
     expect(id).toBe('sub_1')
-    expect(params).toMatchObject({ items: [{ id: 'si_1', price: 'price_leads', quantity: 1 }], proration_behavior: 'always_invoice', payment_behavior: 'pending_if_incomplete' })
-    expect(opts.idempotencyKey).toBe('plan-move:sub_1:price_starter:leads')
+    expect(params).toMatchObject({ items: [{ id: 'si_1', price: 'price_fast_lane', quantity: 1 }], proration_behavior: 'always_invoice', payment_behavior: 'pending_if_incomplete' })
+    expect(opts.idempotencyKey).toBe('plan-move:sub_1:price_starter:fast_lane:none')
     expect(f.raw.subscriptionSchedules.create).not.toHaveBeenCalled()
   })
 
-  it('upgrade with a failed card: Stripe keeps the old plan (pending update) and we say so', async () => {
+  it('upgrade with a failed card: Stripe keeps the old plan (pending update), we void its invoice and say so', async () => {
     const f = fakeStripe({ pendingUpdate: true })
-    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter'), 'growth')).toMatchObject({ ok: false, code: 'payment_failed' })
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter'), 'fast_lane')).toEqual({
+      ok: false,
+      code: 'payment_failed',
+      message: expect.any(String),
+      pendingRestored: null,
+    })
+    expect(f.calls).toEqual(['subscriptions.update', 'invoices.void:in_new'])
+  })
+
+  it('a card error thrown by Stripe is also a clean payment_failed (nothing else written)', async () => {
+    const f = fakeStripe({ cardError: true })
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter'), 'priority')).toMatchObject({ ok: false, code: 'payment_failed' })
+    expect(f.calls).toEqual(['subscriptions.update'])
+  })
+
+  it('a retry after a failed card is a new Stripe request (idempotency key carries the latest invoice)', async () => {
+    const f = fakeStripe()
+    await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter', { latest_invoice: 'in_void_1' }), 'priority')
+    const [, , opts] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, unknown, { idempotencyKey: string }]
+    expect(opts.idempotencyKey).toBe('plan-move:sub_1:price_starter:priority:in_void_1')
   })
 
   it('downgrade: no subscription update; a schedule moves to the step price at the period end', async () => {
@@ -107,15 +147,25 @@ describe('changePlanStep (upgrades now + prorated, downgrades at period end)', (
 
   it('an upgrade while a downgrade is pending releases the schedule first', async () => {
     const f = fakeStripe()
-    await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('leads', { schedule: 'sub_sched_0' }), 'growth')
-    expect(f.calls).toEqual(['schedules.release', 'subscriptions.update'])
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, ladderSub('priority', { schedule: 'sub_sched_0' }), 'fast_lane')
+    expect(r).toMatchObject({ ok: true, kind: 'upgraded', step: 'fast_lane' })
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update'])
+  })
+
+  it('an upgrade that fails on the card after releasing a pending downgrade puts the downgrade back', async () => {
+    const f = fakeStripe({ pendingUpdate: true, pendingStep: 'starter' })
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, ladderSub('priority', { schedule: 'sub_sched_0' }), 'fast_lane')
+    expect(r).toMatchObject({ ok: false, code: 'payment_failed', pendingRestored: true })
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update', 'invoices.void:in_new', 'schedules.create', 'schedules.update'])
+    const [, params] = f.raw.subscriptionSchedules.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionScheduleUpdateParams]
+    expect(params.phases?.[1]).toMatchObject({ items: [{ price: 'price_starter', quantity: 1 }], metadata: { plan_step: 'starter' } })
   })
 
   it('a grandfathered plan moves only when the customer picks a step: all old items are replaced on upgrade', async () => {
     const f = fakeStripe()
-    await changePlanStep({ stripe: f.stripe, priceIdFor }, legacySub(4000, 1500), 'growth')
+    await changePlanStep({ stripe: f.stripe, priceIdFor }, legacySub(4000, 1500), 'fast_lane')
     const [, params] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams]
-    expect(params.items).toEqual([{ id: 'si_h', price: 'price_growth', quantity: 1 }, { id: 'si_a', deleted: true }])
+    expect(params.items).toEqual([{ id: 'si_h', price: 'price_fast_lane', quantity: 1 }, { id: 'si_a', deleted: true }])
   })
 
   it('refuses an ending or ended plan, and a missing price, without writing anything', async () => {
@@ -123,8 +173,81 @@ describe('changePlanStep (upgrades now + prorated, downgrades at period end)', (
     expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter', { cancel_at_period_end: true }), 'leads')).toMatchObject({ code: 'ending' })
     expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter', { status: 'canceled' }), 'leads')).toMatchObject({ code: 'not_live' })
     expect(
-      await changePlanStep({ stripe: f.stripe, priceIdFor: async () => { throw new Error('no price') } }, ladderSub('starter'), 'leads')
+      await changePlanStep({ stripe: f.stripe, priceIdFor: async () => { throw new Error('no price') } }, ladderSub('starter'), 'priority')
     ).toMatchObject({ code: 'price' })
     expect(f.calls).toEqual([])
+  })
+
+  it('sellable=false: refuses moving TO the step (up or down) on the server, without writing', async () => {
+    const f = fakeStripe()
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('starter'), 'leads')).toMatchObject({ ok: false, code: 'not_sellable' })
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('growth'), 'get_found')).toMatchObject({ ok: false, code: 'not_sellable' })
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, legacySub(4000, 1500), 'growth')).toMatchObject({ ok: false, code: 'not_sellable' })
+    expect(f.calls).toEqual([])
+  })
+
+  it('sellable=false: a customer already on the step keeps it, can keep it, and can move to a sellable step', async () => {
+    const f = fakeStripe()
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('growth', { schedule: 'sub_sched_0' }), 'growth')).toEqual({ ok: true, kind: 'unchanged', step: 'growth' })
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('growth'), 'fast_lane')).toMatchObject({ ok: true, kind: 'scheduled', step: 'fast_lane' })
+  })
+})
+
+describe('pending downgrade (shown on the Plans page with its date)', () => {
+  it('reads the next phase: step from phase metadata, date = phase start', async () => {
+    const f = fakeStripe({ pendingStep: 'priority' })
+    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_0' }, NOW)).toEqual({
+      step: 'priority',
+      effectiveAt: new Date(PERIOD_END * 1000).toISOString(),
+      scheduleId: 'sub_sched_0',
+    })
+    expect(f.calls).toEqual(['schedules.retrieve'])
+  })
+  it('falls back to the price lookup key when the phase has no metadata', async () => {
+    const f = fakeStripe({ pendingStep: 'starter', phaseMetadata: false })
+    expect(await pendingPlanChange(f.stripe, { schedule: { id: 'sub_sched_0' } as unknown as Stripe.SubscriptionSchedule }, NOW)).toMatchObject({ step: 'starter' })
+  })
+  it('null without a schedule or without a later phase', async () => {
+    const f = fakeStripe({ pendingStep: null })
+    expect(await pendingPlanChange(f.stripe, { schedule: null }, NOW)).toBeNull()
+    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_0' }, NOW)).toBeNull()
+  })
+})
+
+describe('cancel at period end vs a pending downgrade (both orders)', () => {
+  it('downgrade then cancel: the schedule is released FIRST, then cancel_at_period_end is set', async () => {
+    const f = fakeStripe({ pendingStep: 'priority' })
+    const sub = ladderSub('leads')
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, sub, 'priority')).toMatchObject({ ok: true, kind: 'scheduled' })
+    f.calls.length = 0
+    const r = await cancelPlanAtPeriodEnd(f.stripe, ladderSub('leads', { schedule: 'sub_sched_1' }), NOW)
+    expect(r).toEqual({ ok: true, kind: 'canceled', clearedPendingChange: { step: 'priority', effectiveAt: new Date(PERIOD_END * 1000).toISOString(), scheduleId: 'sub_sched_0' } })
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update(cancel)'])
+    const [, params, o] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Record<string, unknown>, { idempotencyKey: string }]
+    expect(params).toEqual({ cancel_at_period_end: true })
+    expect(o.idempotencyKey).toBe('plan-cancel:sub_1:sub_sched_1')
+  })
+
+  it('cancel then downgrade: refused cleanly (resume first), nothing written', async () => {
+    const f = fakeStripe()
+    expect(await cancelPlanAtPeriodEnd(f.stripe, ladderSub('leads'), NOW)).toMatchObject({ ok: true, kind: 'canceled', clearedPendingChange: null })
+    f.calls.length = 0
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('leads', { cancel_at_period_end: true }), 'priority')).toMatchObject({ ok: false, code: 'ending' })
+    expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('leads', { cancel_at: PERIOD_END }), 'fast_lane')).toMatchObject({ ok: false, code: 'ending' })
+    expect(f.calls).toEqual([])
+  })
+
+  it('cancel on a plan already ending changes nothing; an ended plan is not_live', async () => {
+    const f = fakeStripe()
+    expect(await cancelPlanAtPeriodEnd(f.stripe, ladderSub('leads', { cancel_at_period_end: true }), NOW)).toMatchObject({ kind: 'already_ending' })
+    expect(await cancelPlanAtPeriodEnd(f.stripe, ladderSub('leads', { status: 'canceled' }), NOW)).toMatchObject({ ok: false, code: 'not_live' })
+    expect(f.calls).toEqual([])
+  })
+})
+
+describe('entitlements are never written by a plan move', () => {
+  it('changePlanStep and cancelPlanAtPeriodEnd only take Stripe (no profile/plan_step store exists in their deps)', () => {
+    expect(changePlanStep.length).toBe(3)
+    expect(cancelPlanAtPeriodEnd.length).toBe(2)
   })
 })

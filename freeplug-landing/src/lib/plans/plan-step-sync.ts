@@ -1,9 +1,14 @@
 import type Stripe from 'stripe'
 import type { PlanStepId } from './ladder'
 import { getEntitlements } from '@/lib/stripe/active-subscription'
+import { snapshotOf, type PlanSnapshot } from './plan-snapshot'
 
 /**
- * Webhook: cache the customer's plan step on profiles.plan_step (admin queue order + badge).
+ * Webhook: write the customer's entitlement snapshot on profiles (plan_step, plan_legacy,
+ * plan_legacy_addon, plan_monthly_cents, plan_step_synced_at). This is the ONLY writer: the app
+ * reads perks from the snapshot (src/lib/plans/plan-snapshot.ts), so entitlements change when this
+ * webhook runs, not when a plan move's API call returns or a schedule is created (a schedule
+ * leaves the subscription's items as they are, so a re-sync then writes the same step).
  *
  * Retry-safe and order-independent: on every customer.subscription.created|updated|deleted it
  * recomputes the step from the customer's CURRENT live subscriptions in Stripe (lookup key or
@@ -12,8 +17,8 @@ import { getEntitlements } from '@/lib/stripe/active-subscription'
  * 500 and Stripe redelivers.
  */
 export interface PlanStepStore {
-  /** Writes plan_step + plan_step_synced_at for the profile(s) with this Stripe customer; returns rows changed. */
-  writePlanStep(customerId: string, stepId: PlanStepId | null, syncedAt: string): Promise<number>
+  /** Writes the snapshot + plan_step_synced_at for the profile(s) with this Stripe customer; returns rows changed. */
+  writePlanStep(customerId: string, snapshot: PlanSnapshot, syncedAt: string): Promise<number>
 }
 
 export type PlanStepSyncResult = { outcome: 'synced' | 'no_profile'; stepId: PlanStepId | null }
@@ -22,13 +27,12 @@ export async function syncPlanStepForCustomer(
   deps: { stripe: Stripe; store: PlanStepStore; now?: () => Date },
   customerId: string
 ): Promise<PlanStepSyncResult> {
-  const ent = await getEntitlements(customerId, deps.stripe)
-  const stepId = ent.step?.id ?? null
-  const rows = await deps.store.writePlanStep(customerId, stepId, (deps.now?.() ?? new Date()).toISOString())
-  return { outcome: rows > 0 ? 'synced' : 'no_profile', stepId }
+  const snapshot = snapshotOf(await getEntitlements(customerId, deps.stripe))
+  const rows = await deps.store.writePlanStep(customerId, snapshot, (deps.now?.() ?? new Date()).toISOString())
+  return { outcome: rows > 0 ? 'synced' : 'no_profile', stepId: snapshot.stepId }
 }
 
-/** Service-role store (profiles is owner-select only; no client can write plan_step). */
+/** Service-role store (a guard trigger stops customers writing any snapshot column). */
 export function supabasePlanStepStore(admin: {
   from: (t: 'profiles') => {
     update: (v: Record<string, unknown>) => {
@@ -37,10 +41,16 @@ export function supabasePlanStepStore(admin: {
   }
 }): PlanStepStore {
   return {
-    async writePlanStep(customerId, stepId, syncedAt) {
+    async writePlanStep(customerId, snapshot, syncedAt) {
       const { data, error } = await admin
         .from('profiles')
-        .update({ plan_step: stepId, plan_step_synced_at: syncedAt })
+        .update({
+          plan_step: snapshot.stepId,
+          plan_legacy: snapshot.legacy,
+          plan_legacy_addon: snapshot.legacyAddon,
+          plan_monthly_cents: snapshot.monthlyCents,
+          plan_step_synced_at: syncedAt,
+        })
         .eq('stripe_customer_id', customerId)
         .select('id')
       if (error) throw new Error(`profiles plan_step update: ${error.message}`)

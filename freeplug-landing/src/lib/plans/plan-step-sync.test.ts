@@ -107,9 +107,10 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const store = memStore()
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
+    const snap = { stepId: 'fast_lane', legacy: false, legacyAddon: null, monthlyCents: 6500 }
     expect(store.calls).toEqual([
-      ['cus_1', 'fast_lane', '2026-10-03T17:00:00.000Z'],
-      ['cus_1', 'fast_lane', '2026-10-03T17:00:00.000Z'],
+      ['cus_1', snap, '2026-10-03T17:00:00.000Z'],
+      ['cus_1', snap, '2026-10-03T17:00:00.000Z'],
     ])
   })
 
@@ -117,7 +118,7 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const { stripe } = fakeStripe([sub([ladderItem('growth')], { status: 'canceled' }), sub([ladderItem('leads')], { status: 'incomplete' })])
     const store = memStore()
     expect(await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')).toEqual({ outcome: 'synced', stepId: null })
-    expect(store.calls[0][1]).toBeNull()
+    expect(store.calls[0][1]).toEqual({ stepId: null, legacy: false, legacyAddon: null, monthlyCents: null })
   })
 
   it('reports no_profile when no profile has the customer id', async () => {
@@ -153,7 +154,38 @@ describe('syncPlanStepForCustomer (webhook)', () => {
       }),
     }
     const store = supabasePlanStepStore(admin as unknown as Parameters<typeof supabasePlanStepStore>[0])
-    expect(await store.writePlanStep('cus_1', 'leads', 't')).toBe(1)
-    expect(seen).toEqual(['profiles', { plan_step: 'leads', plan_step_synced_at: 't' }, 'stripe_customer_id', 'cus_1'])
+    expect(await store.writePlanStep('cus_1', { stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500 }, 't')).toBe(1)
+    expect(seen).toEqual([
+      'profiles',
+      { plan_step: 'priority', plan_legacy: true, plan_legacy_addon: 'pro', plan_monthly_cents: 5500, plan_step_synced_at: 't' },
+      'stripe_customer_id',
+      'cus_1',
+    ])
+  })
+
+  it('a grandfathered plan is written as legacy with its add-on and total', async () => {
+    const { stripe } = fakeStripe([sub([legacyHosting(4000), legacyAddonAdhoc(1500)])])
+    const store = memStore()
+    await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
+    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500 })
+  })
+
+  it('creating a downgrade schedule fires customer.subscription.updated with only `schedule` changed: the re-sync writes the SAME step', async () => {
+    // Test mode, Oct 3: subscription_schedule.created, then customer.subscription.updated with
+    // previous_attributes = { schedule }. Items stay on the current price until the phase starts.
+    const before = sub([ladderItem('leads')])
+    const afterSchedule = sub([ladderItem('leads')], { schedule: 'sub_sched_1' })
+    const a = memStore()
+    const b = memStore()
+    await syncPlanStepForCustomer({ stripe: fakeStripe([before]).stripe, store: a, now: NOW }, 'cus_1')
+    await syncPlanStepForCustomer({ stripe: fakeStripe([afterSchedule]).stripe, store: b, now: NOW }, 'cus_1')
+    expect(b.calls[0][1]).toEqual(a.calls[0][1])
+    expect((b.calls[0][1] as { stepId: string }).stepId).toBe('leads')
+  })
+
+  it('the step changes only when Stripe says the subscription itself changed (phase start or upgrade applied)', async () => {
+    const store = memStore()
+    await syncPlanStepForCustomer({ stripe: fakeStripe([sub([ladderItem('priority')])]).stripe, store, now: NOW }, 'cus_1')
+    expect((store.calls[0][1] as { stepId: string }).stepId).toBe('priority')
   })
 })

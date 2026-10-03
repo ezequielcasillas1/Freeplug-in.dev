@@ -9,7 +9,7 @@ vi.mock('next/link', () => ({
     </a>
   ),
 }))
-vi.mock('../billing-actions', () => ({ openBillingPortal: vi.fn(), resumePlan: vi.fn() }))
+vi.mock('../billing-actions', () => ({ openBillingPortal: vi.fn(), resumePlan: vi.fn(), cancelHostingAtPeriodEnd: vi.fn() }))
 vi.mock('../buyout-actions', () => ({ requestBuyoutQuote: vi.fn(async () => ({ ok: true, alreadyRequested: false })) }))
 
 const { CancelPlanView } = await import('./CancelPlanView')
@@ -207,5 +207,12 @@ describe('Cancel page outreach card (round 12, 4:03 AM)', () => {
     render(<CancelPlanView data={data({ subscriptions: [sub()] })} outreachBox="plan" />)
     expect(screen.getByRole('button', { name: 'Open billing portal to cancel' })).toBeInTheDocument()
     expect(screen.queryByTestId('outreach-plan-card')).toBeNull()
+  })
+
+  it('a pending downgrade: cancel happens in the app (it also cancels the switch), not in the billing portal', () => {
+    render(<CancelPlanView data={data({ subscriptions: [sub({ pendingChange: { stepName: 'Priority', effectiveAt: new Date('2026-11-03T17:14:00Z') } })] })} />)
+    expect(screen.getByTestId('cancel-pending-note')).toHaveTextContent('You have a switch to Priority planned for Nov 3, 2026. Canceling your plan also cancels that switch.')
+    expect(screen.getByRole('button', { name: 'Cancel my plan at the end of this billing period' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Open billing portal to cancel' })).toBeNull()
   })
 })

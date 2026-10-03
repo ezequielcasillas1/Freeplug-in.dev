@@ -11,7 +11,10 @@ import {
   CHANGE_PLAN_BUTTON,
   CHANGE_PLAN_CURRENT,
   CHANGE_PLAN_HELP,
+  COMING_SOON_LABEL,
   CONTINUE_TO_PAYMENT,
+  KEEP_PLAN_BUTTON,
+  PENDING_CHANGE_LINE,
   EVERYTHING_IN,
   LADDER_HEADING,
   LADDER_SUBHEADING,
@@ -57,6 +60,8 @@ type Props = {
    * now and prorated, downgrades at the next billing date.
    */
   onChangePlan?: (planStep: PlanStepId) => Promise<{ ok: boolean; message: string }>
+  /** With a live plan: a downgrade waiting for the next billing date (date already formatted). */
+  pendingChange?: { stepId: PlanStepId; date: string } | null
 }
 
 export function HostingCheckoutCard({
@@ -69,8 +74,14 @@ export function HostingCheckoutCard({
   noteAboveButton,
   currentStepId = null,
   onChangePlan,
+  pendingChange = null,
 }: Props) {
-  const [planStep, setPlanStep] = useState<PlanStepId>(currentStepId ?? PLAN_STEPS[0].id)
+  // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
+  // customer is already on. The server refuses them too (checkout, claim, publish, switching).
+  const pickable = (id: PlanStepId) => id === currentStepId || PLAN_STEPS.some((s) => s.id === id && s.sellable)
+  const [planStep, setPlanStep] = useState<PlanStepId>(
+    currentStepId ?? PLAN_STEPS.find((s) => s.sellable)?.id ?? PLAN_STEPS[0].id
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -131,6 +142,10 @@ export function HostingCheckoutCard({
   const canSwitch = hasLivePlan && Boolean(onChangePlan)
   const selectable = canPay || canSwitch
   const selectedName = PLAN_STEPS.find((s) => s.id === planStep)?.name ?? ''
+  const pendingName = pendingChange ? (PLAN_STEPS.find((s) => s.id === pendingChange.stepId)?.name ?? '') : ''
+  // Picking the current step is only an action while a downgrade is pending ("Keep <step>").
+  const keepingCurrent = planStep === currentStepId
+  const switchDisabled = loading || (keepingCurrent && !pendingChange) || !pickable(planStep)
 
   const shell =
     embedded
@@ -147,19 +162,22 @@ export function HostingCheckoutCard({
           {PLAN_STEPS.map((step, i) => {
             const selected = planStep === step.id
             const lines = i === 0 ? STARTER_BASE_LINES : step.adds.map((perk) => PERK_LINES[perk])
+            const canPick = selectable && pickable(step.id)
             return (
               <label
                 key={step.id}
                 data-plan-step={step.id}
+                data-sellable={step.sellable ? 'true' : 'false'}
                 className={`flex items-start gap-3 rounded-lg border p-3 ${
                   selected ? 'border-[#ba3d3d]' : 'border-gray-200'
-                } ${selectable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                } ${canPick ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
               >
                 <input
                   type="radio"
                   name="plan-step"
                   value={step.id}
                   checked={selected}
+                  disabled={!pickable(step.id)}
                   onChange={() => setPlanStep(step.id)}
                   className="mt-1 text-[#ba3d3d] focus:ring-[#ba3d3d]"
                 />
@@ -172,7 +190,12 @@ export function HostingCheckoutCard({
                         {CHANGE_PLAN_CURRENT}
                       </span>
                     ) : null}
-                    {MOST_POPULAR_STEP === step.id ? (
+                    {!step.sellable ? (
+                      <span className="rounded bg-amber-100 px-1.5 text-[11px] font-semibold text-amber-800" data-testid="coming-soon">
+                        {COMING_SOON_LABEL}
+                      </span>
+                    ) : null}
+                    {MOST_POPULAR_STEP === step.id && step.sellable ? (
                       <span className="rounded bg-[#ba3d3d]/10 px-1.5 text-[11px] font-semibold text-[#ba3d3d]">
                         {MOST_POPULAR_LABEL}
                       </span>
@@ -202,14 +225,20 @@ export function HostingCheckoutCard({
           </div>
           {canSwitch ? (
             <div className="mb-3">
+              {pendingChange ? (
+                <p className="mb-3 text-sm font-medium text-amber-800" data-testid="pending-change" role="status">
+                  {PENDING_CHANGE_LINE(pendingName, pendingChange.date)}
+                </p>
+              ) : null}
               <p className="mb-3 text-sm text-gray-500">{CHANGE_PLAN_HELP}</p>
-              <Button
-                className="w-full"
-                size="lg"
-                onClick={switchPlan}
-                disabled={loading || planStep === currentStepId}
-              >
-                {loading ? <Loader2 className="animate-spin" size={22} /> : CHANGE_PLAN_BUTTON(selectedName)}
+              <Button className="w-full" size="lg" onClick={switchPlan} disabled={switchDisabled}>
+                {loading ? (
+                  <Loader2 className="animate-spin" size={22} />
+                ) : keepingCurrent && pendingChange ? (
+                  KEEP_PLAN_BUTTON(selectedName)
+                ) : (
+                  CHANGE_PLAN_BUTTON(selectedName)
+                )}
               </Button>
             </div>
           ) : null}
@@ -228,7 +257,7 @@ export function HostingCheckoutCard({
             className="w-full"
             size="lg"
             onClick={startHostingCheckout}
-            disabled={loading}
+            disabled={loading || !pickable(planStep)}
           >
             {loading ? (
               <Loader2 className="animate-spin" size={22} />

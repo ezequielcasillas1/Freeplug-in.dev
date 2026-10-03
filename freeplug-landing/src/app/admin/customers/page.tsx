@@ -1,7 +1,7 @@
 import { getAuthSummariesByUserIds } from '@/lib/admin/auth-users'
 import { isMailConfigured } from '@/lib/admin/mail'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getEntitlements } from '@/lib/stripe/active-subscription'
+import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { adminPlanBadge, type AdminPlanBadge } from '@/lib/plans/admin-badge'
 import {
   adminAccessLabel,
@@ -64,7 +64,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
       .filter((p) => p.stripe_customer_id)
       .map(async (p) => {
         try {
-          const ent = await getEntitlements(p.stripe_customer_id as string)
+          const { entitlements: ent } = await getUserEntitlements(admin, p.id as string, p.stripe_customer_id as string)
           planTotals.set(p.id, ent.monthlyCents > 0 ? ent.monthlyCents : null)
           planBadges.set(p.id, adminPlanBadge(ent))
         } catch (e) {

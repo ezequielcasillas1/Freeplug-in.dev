@@ -5,7 +5,7 @@ vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPorta
 
 import { HostingCheckoutCard } from './HostingCheckoutCard'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { MOST_POPULAR_LABEL, PERK_LINES } from '@/lib/plans/ladder-copy'
+import { COMING_SOON_LABEL, MOST_POPULAR_LABEL, PERK_LINES } from '@/lib/plans/ladder-copy'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -30,12 +30,12 @@ describe('HostingCheckoutCard (hosting ladder, Oct 3)', () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ error: 'stop' }), { status: 400 }))
     vi.stubGlobal('fetch', fetchMock)
     const { container } = render(<HostingCheckoutCard />)
-    fireEvent.click(within(container.querySelector('[data-plan-step="get_found"]') as HTMLElement).getByRole('radio'))
+    fireEvent.click(within(container.querySelector('[data-plan-step="priority"]') as HTMLElement).getByRole('radio'))
     fireEvent.click(screen.getByRole('button'))
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
     expect(url).toBe('/api/checkout/hosting')
-    expect(JSON.parse(init.body as string)).toEqual({ planStep: 'get_found' })
+    expect(JSON.parse(init.body as string)).toEqual({ planStep: 'priority' })
     expect(await screen.findByText('stop')).toBeInTheDocument()
   })
 
@@ -76,5 +76,39 @@ describe('HostingCheckoutCard switch mode (live plan)', () => {
     render(<HostingCheckoutCard currentPlanLines={['Hosting + Pro add-on · $55.00/month']} currentStepId={null} onChangePlan={vi.fn()} />)
     expect(screen.queryByTestId('current-step')).toBeNull()
     expect(screen.getByRole('button', { name: 'Switch to Starter' })).toBeEnabled()
+  })
+
+  it('sellable=false steps show "Coming soon" and cannot be picked; the default is the first sellable step', () => {
+    const { container } = render(<HostingCheckoutCard />)
+    for (const st of PLAN_STEPS) {
+      const card = container.querySelector(`[data-plan-step="${st.id}"]`) as HTMLElement
+      const radio = within(card).getByRole('radio') as HTMLInputElement
+      expect(radio.disabled).toBe(!st.sellable)
+      expect(within(card).queryByText(COMING_SOON_LABEL) !== null).toBe(!st.sellable)
+    }
+    expect((container.querySelector('[data-plan-step="starter"] input') as HTMLInputElement).checked).toBe(true)
+  })
+
+  it('a customer already on a non-sellable step sees it as current and pickable ("keep"), others still coming soon', () => {
+    const { container } = render(
+      <HostingCheckoutCard currentPlanLines={['Freeplug Hosting: Growth partner · $100.00/month']} currentStepId="growth" onChangePlan={vi.fn()} />
+    )
+    expect((container.querySelector('[data-plan-step="growth"] input') as HTMLInputElement).disabled).toBe(false)
+    expect((container.querySelector('[data-plan-step="leads"] input') as HTMLInputElement).disabled).toBe(true)
+  })
+
+  it('shows a pending downgrade with its date; picking the current step offers "Keep <step>"', async () => {
+    const onChangePlan = vi.fn(async () => ({ ok: true, message: 'kept' }))
+    render(
+      <HostingCheckoutCard
+        currentPlanLines={['Freeplug Hosting: Fast lane · $65.00/month']}
+        currentStepId="fast_lane"
+        onChangePlan={onChangePlan}
+        pendingChange={{ stepId: 'starter', date: 'November 3, 2026' }}
+      />
+    )
+    expect(screen.getByTestId('pending-change')).toHaveTextContent('Changing to Starter on November 3, 2026. You keep your current plan until then.')
+    fireEvent.click(screen.getByRole('button', { name: 'Keep Fast lane' }))
+    await waitFor(() => expect(onChangePlan).toHaveBeenCalledWith('fast_lane'))
   })
 })

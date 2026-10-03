@@ -31,4 +31,12 @@ describe('20261003180000_plan_steps.sql matches ladder.ts', () => {
     expect(sql).toMatch(/force row level security/)
     expect(sql).toMatch(/unique \(user_id, period_start\)/)
   })
+
+  it('the guard trigger covers every webhook-written snapshot column (perks come from them)', () => {
+    const guard = sql.slice(sql.indexOf('create or replace function public.profiles_guard_plan_step()'), sql.indexOf('revoke all on function public.profiles_guard_plan_step()'))
+    for (const col of ['plan_step', 'plan_step_synced_at', 'plan_legacy', 'plan_legacy_addon', 'plan_monthly_cents']) {
+      expect(sql).toMatch(new RegExp(`add column if not exists ${col} `))
+      expect(guard).toContain(`new.${col} is not distinct from old.${col}`)
+    }
+  })
 })

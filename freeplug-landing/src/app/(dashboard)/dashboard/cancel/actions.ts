@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import type Stripe from 'stripe'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
+import { pendingPlanChange } from '@/lib/stripe/change-plan'
+import { stepById } from '@/lib/plans/ladder'
 
 export type SubscriptionInfo = {
   id: string
@@ -15,6 +17,8 @@ export type SubscriptionInfo = {
   currentPeriodEnd: Date | null
   cancelAtPeriodEnd: boolean
   canceledAt: Date | null
+  /** A ladder downgrade waiting for the next billing date (subscription schedule), else null. */
+  pendingChange?: { stepName: string; effectiveAt: Date } | null
 }
 
 export type CancelPageData = {
@@ -132,6 +136,11 @@ async function loadSubscriptions(
     if (sub.status === 'canceled' || info.cancelAtPeriodEnd) {
       canceledSubscriptions.push(info)
     } else if (sub.status === 'active' || sub.status === 'trialing') {
+      if (sub.schedule) {
+        // Stripe won't cancel a plan a schedule manages; the page cancels in the app instead.
+        const pending = await pendingPlanChange(stripe, sub).catch(() => null)
+        info.pendingChange = pending ? { stepName: stepById(pending.step).name, effectiveAt: new Date(pending.effectiveAt) } : null
+      }
       subscriptions.push(info)
     }
   }

@@ -7,7 +7,7 @@ import { sendAdminMail } from '@/lib/admin/mail'
 import { publicMailError } from '@/lib/email/mailer'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseBuyoutPriceInput } from '@/lib/buyout/buyout'
-import { getEntitlements } from '@/lib/stripe/active-subscription'
+import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { getStripe } from '@/lib/stripe/server'
 import { subscriptionPeriodStart } from '@/lib/stripe/subscription-dates'
 import { recordIncludedEdit } from '@/lib/plans/included-edits'
@@ -243,7 +243,8 @@ export async function adminMarkSmallEdit(
   let ent, periodStart: Date | null = null
   try {
     const stripe = getStripe()
-    ent = await getEntitlements(customerId, stripe)
+    // Perks from the webhook-written snapshot (Stripe only for a never-synced profile).
+    ent = (await getUserEntitlements(admin, req.user_id as string, customerId, stripe)).entitlements
     const subs = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 10 })
     periodStart = subs.data[0] ? subscriptionPeriodStart(subs.data[0]) : null
   } catch (e) {

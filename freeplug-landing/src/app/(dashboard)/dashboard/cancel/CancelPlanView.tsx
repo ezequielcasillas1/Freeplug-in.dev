@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { openBillingPortal, resumePlan } from '../billing-actions'
+import { cancelHostingAtPeriodEnd, openBillingPortal, resumePlan } from '../billing-actions'
+import { CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE } from '@/lib/plans/ladder-copy'
 import type { CancelPageData } from './actions'
 import type { OutreachPlanBox } from '../outreach-dashboard'
 import { OutreachPlanCard } from '../OutreachPlanCard'
@@ -78,6 +79,7 @@ export function CancelPlanView({
   }
 
   const hasActiveSubscriptions = data.subscriptions.length > 0
+  const pendingChange = data.subscriptions.find((s) => s.pendingChange)?.pendingChange ?? null
   const hasCanceledSubscriptions = data.canceledSubscriptions.length > 0
   // Canceled but still running: resume the existing plan instead of buying a second one.
   const hasEndingSubscription = data.canceledSubscriptions.some(
@@ -351,11 +353,26 @@ export function CancelPlanView({
                     </p>
                   </div>
                 </div>
-                <form action={openBillingPortal}>
-                  <Button type="submit" variant="destructive" size="sm">
-                    Open billing portal to cancel
-                  </Button>
-                </form>
+                {pendingChange ? (
+                  // A downgrade is planned: Stripe can't cancel a plan with a planned switch, so the
+                  // app cancels it (and the switch) instead of the billing portal.
+                  <>
+                    <p className="text-sm text-red-800 mb-3" data-testid="cancel-pending-note">
+                      {CANCEL_WITH_PENDING_NOTE(pendingChange.stepName, formatBillingDate(pendingChange.effectiveAt))}
+                    </p>
+                    <form action={cancelHostingAtPeriodEnd}>
+                      <Button type="submit" variant="destructive" size="sm">
+                        {CANCEL_PLAN_BUTTON}
+                      </Button>
+                    </form>
+                  </>
+                ) : (
+                  <form action={openBillingPortal}>
+                    <Button type="submit" variant="destructive" size="sm">
+                      Open billing portal to cancel
+                    </Button>
+                  </form>
+                )}
               </div>
             </div>
           </div>

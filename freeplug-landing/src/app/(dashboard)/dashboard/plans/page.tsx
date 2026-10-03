@@ -3,8 +3,11 @@ import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
-import { describeLiveSubscriptions, getEntitlements } from '@/lib/stripe/active-subscription'
+import { describeLiveSubscriptions, formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import type { PlanStepId } from '@/lib/plans/ladder'
+import { getUserEntitlements } from '@/lib/plans/user-entitlements'
+import { pendingPlanChange } from '@/lib/stripe/change-plan'
+import { getStripe } from '@/lib/stripe/server'
 import { changeHostingPlan } from '../billing-actions'
 import { DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 
@@ -41,6 +44,7 @@ export default async function DashboardPlansPage() {
   // A customer with a live plan gets Manage billing instead of a second checkout.
   let currentPlanLines: string[] = []
   let currentStepId: PlanStepId | null = null
+  let pendingChange: { stepId: PlanStepId; date: string } | null = null
   const { data: prof } = await supabase
     .from('profiles')
     .select('stripe_customer_id')
@@ -50,8 +54,17 @@ export default async function DashboardPlansPage() {
     try {
       currentPlanLines = await describeLiveSubscriptions(prof.stripe_customer_id)
       if (currentPlanLines.length > 0) {
-        const ent = await getEntitlements(prof.stripe_customer_id)
+        // Current step = the webhook-written snapshot (changes when Stripe's webhook lands).
+        const { entitlements: ent } = await getUserEntitlements(supabase, user!.id, prof.stripe_customer_id)
         currentStepId = ent.step && !ent.legacy ? ent.step.id : null
+        // A downgrade waiting for the next billing date (subscription schedule), with its date.
+        const live = (await listLiveSubscriptions(prof.stripe_customer_id)).filter(
+          (s) => s.status === 'active' || s.status === 'trialing'
+        )
+        if (live.length === 1 && live[0].schedule) {
+          const p = await pendingPlanChange(getStripe(), live[0])
+          if (p) pendingChange = { stepId: p.step, date: formatPlanEndDate(new Date(p.effectiveAt)) }
+        }
       }
     } catch (e) {
       // Stripe unreachable: show the normal card; the checkout API still refuses a second plan.
@@ -71,6 +84,7 @@ export default async function DashboardPlansPage() {
           currentPlanLines={currentPlanLines}
           currentStepId={currentStepId}
           onChangePlan={changeHostingPlan}
+          pendingChange={pendingChange}
         />
         <MaintenancePlanCard
           embedded

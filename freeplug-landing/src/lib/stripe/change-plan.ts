@@ -1,22 +1,37 @@
 import type Stripe from 'stripe'
 // Relative import on purpose: scripts/stripe-test-setup-ladder.mjs loads this file (jiti) for the
 // test-mode probes, outside Next's "@/" alias.
-import { stepById, stepByLookupKey, type PlanStep, type PlanStepId } from '../plans/ladder'
+import { isPlanStepId, stepById, stepByLookupKey, type PlanStep, type PlanStepId } from '../plans/ladder'
 
 /**
  * Moving a live hosting subscription to a ladder step (Aria section 6.4). Done in the app, not the
  * Billing Portal: Stripe's portal can only schedule a period-end downgrade between prices of the
  * same product, and a product can't hold two monthly prices in a portal configuration (checked in
- * test mode, Oct 3), so the portal can't give a monthly ladder "downgrades at period end".
+ * test mode, Oct 3), so the portal can't give a monthly ladder "downgrades at period end". The
+ * ladder portal configuration keeps plan switching OFF.
  *
  *   upgrade   (step price > what the subscription costs now): immediate. Items are replaced by
- *             the step price, proration_behavior=always_invoice (time-based difference charged
- *             now), payment_behavior=pending_if_incomplete (if the card fails, Stripe keeps the
- *             old plan; nothing half-changes).
+ *             the step price with proration_behavior=always_invoice (the time-based difference is
+ *             invoiced and charged right away) and payment_behavior=pending_if_incomplete: if the
+ *             card fails, Stripe does NOT apply the change (subscription.pending_update holds it);
+ *             we then void that invoice so nothing can apply it later, and the old plan stays.
+ *             A pending downgrade is released FIRST (and put back if the card fails).
  *   downgrade (step price < now): at period end, through a subscription schedule (phase 1 = the
  *             current items until current_period_end, phase 2 = the step price, then released).
  *             Nobody gets a mid-month credit; perks stay until the period ends.
  *   same step: nothing changes (a pending downgrade is cancelled).
+ *
+ * Nothing here writes entitlements. profiles.plan_step and the perks change only when the Stripe
+ * webhook (customer.subscription.created/updated/deleted) re-syncs from Stripe's actual subscription
+ * (src/lib/plans/plan-step-sync.ts); creating a schedule leaves the subscription's items unchanged.
+ *
+ * sellable=false steps (ladder.ts) can't be moved TO; a customer already on one keeps it, and
+ * picking it again ("keep my plan") still cancels a pending downgrade.
+ *
+ * Cancel vs downgrade: Stripe refuses cancel_at_period_end on a subscription managed by a schedule
+ * ("updating any cancelation behavior directly is not allowed", test mode Oct 3), so
+ * cancelPlanAtPeriodEnd() releases the pending downgrade first; a plan that is already set to end
+ * can't be switched (resume it first).
  *
  * Grandfathered plans move only when the customer picks a step (never automatically). Their
  * "now" amount is the subscription's monthly total (hosting + add-on); an equal-priced step is
@@ -24,13 +39,18 @@ import { stepById, stepByLookupKey, type PlanStep, type PlanStepId } from '../pl
  */
 export type PlanMove = 'upgrade' | 'downgrade' | 'same'
 
+export type PendingPlanChange = { step: PlanStepId; effectiveAt: string; scheduleId: string }
+
 export type ChangePlanResult =
   | { ok: true; kind: 'upgraded'; step: PlanStepId; invoiceStatus: string | null }
   | { ok: true; kind: 'scheduled'; step: PlanStepId; effectiveAt: string }
   | { ok: true; kind: 'unchanged'; step: PlanStepId }
-  | { ok: false; code: 'not_live' | 'ending' | 'price' | 'payment_failed'; message: string }
+  | { ok: false; code: 'payment_failed'; message: string; pendingRestored: boolean | null }
+  | { ok: false; code: 'not_live' | 'ending' | 'price' | 'not_sellable'; message: string }
 
-type Sub = Pick<Stripe.Subscription, 'id' | 'status' | 'cancel_at_period_end' | 'cancel_at' | 'schedule' | 'items'>
+type Sub = Pick<Stripe.Subscription, 'id' | 'status' | 'cancel_at_period_end' | 'cancel_at' | 'schedule' | 'items'> & {
+  latest_invoice?: string | { id: string } | null
+}
 
 export function subscriptionMonthlyCents(sub: Pick<Stripe.Subscription, 'items'>): number {
   return sub.items.data.reduce((sum, item) => {
@@ -52,60 +72,44 @@ export function planMove(current: PlanStep | null, currentCents: number, target:
   return 'downgrade'
 }
 
-const scheduleId = (sub: Sub) => (typeof sub.schedule === 'string' ? sub.schedule : (sub.schedule?.id ?? null))
+const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : (v?.id ?? null))
+const scheduleId = (sub: Pick<Stripe.Subscription, 'schedule'>) => idOf(sub.schedule as string | { id: string } | null)
 
-export async function changePlanStep(
-  deps: { stripe: Stripe; priceIdFor: (id: PlanStepId) => Promise<string>; now?: () => Date },
-  sub: Sub,
-  targetId: PlanStepId
-): Promise<ChangePlanResult> {
-  const { stripe } = deps
-  const target = stepById(targetId)
-  if (sub.status !== 'active' && sub.status !== 'trialing') {
-    return { ok: false, code: 'not_live', message: 'No active hosting plan to change.' }
+/**
+ * The downgrade waiting in the subscription's schedule (the next phase, if it is one ladder price),
+ * or null. Read-only: used by the Plans page ("Changing to X on <date>") and before releasing.
+ */
+export async function pendingPlanChange(
+  stripe: Stripe,
+  sub: Pick<Stripe.Subscription, 'schedule'>,
+  now: Date = new Date()
+): Promise<PendingPlanChange | null> {
+  const id = scheduleId(sub)
+  if (!id) return null
+  const schedule = await stripe.subscriptionSchedules.retrieve(id)
+  if (schedule.status && schedule.status !== 'active' && schedule.status !== 'not_started') return null
+  const nowSec = Math.floor(now.getTime() / 1000)
+  const next = schedule.phases.find((p) => p.start_date > nowSec)
+  if (!next || next.items.length !== 1) return null
+  let stepId: PlanStepId | null = isPlanStepId(next.metadata?.plan_step) ? next.metadata.plan_step : null
+  if (!stepId) {
+    const price = next.items[0].price
+    const p = typeof price === 'string' ? await stripe.prices.retrieve(price) : (price as Stripe.Price)
+    stepId = stepByLookupKey(p.lookup_key)?.id ?? null
   }
-  if (sub.cancel_at_period_end || sub.cancel_at) {
-    return { ok: false, code: 'ending', message: 'This plan is set to end. Resume it first.' }
-  }
-  const current = currentLadderStep(sub)
-  const move = planMove(current, subscriptionMonthlyCents(sub), target)
-  const pending = scheduleId(sub)
+  return stepId ? { step: stepId, effectiveAt: new Date(next.start_date * 1000).toISOString(), scheduleId: schedule.id } : null
+}
 
-  if (move === 'same') {
-    if (pending) await stripe.subscriptionSchedules.release(pending)
-    return { ok: true, kind: 'unchanged', step: target.id }
-  }
-
-  let priceId: string
-  try {
-    priceId = await deps.priceIdFor(target.id)
-  } catch {
-    return { ok: false, code: 'price', message: 'This plan is not available right now.' }
-  }
-
-  if (move === 'upgrade') {
-    if (pending) await stripe.subscriptionSchedules.release(pending)
-    const [first, ...rest] = sub.items.data
-    const items: Stripe.SubscriptionUpdateParams.Item[] = [
-      { id: first.id, price: priceId, quantity: 1 },
-      ...rest.map((i) => ({ id: i.id, deleted: true as const })),
-    ]
-    const updated = await stripe.subscriptions.update(
-      sub.id,
-      { items, proration_behavior: 'always_invoice', payment_behavior: 'pending_if_incomplete', expand: ['latest_invoice'] },
-      { idempotencyKey: `plan-move:${sub.id}:${sub.items.data.map((i) => i.price.id).join('+')}:${target.id}` }
-    )
-    if (updated.pending_update) {
-      return { ok: false, code: 'payment_failed', message: 'The card was not charged, so the plan did not change.' }
-    }
-    const inv = updated.latest_invoice
-    return { ok: true, kind: 'upgraded', step: target.id, invoiceStatus: inv && typeof inv !== 'string' ? (inv.status ?? null) : null }
-  }
-
-  // downgrade at period end
-  const schedule = pending
-    ? await stripe.subscriptionSchedules.retrieve(pending)
-    : await stripe.subscriptionSchedules.create({ from_subscription: sub.id })
+async function scheduleDowngrade(
+  stripe: Stripe,
+  subId: string,
+  existingScheduleId: string | null,
+  priceId: string,
+  target: PlanStepId
+): Promise<string> {
+  const schedule = existingScheduleId
+    ? await stripe.subscriptionSchedules.retrieve(existingScheduleId)
+    : await stripe.subscriptionSchedules.create({ from_subscription: subId })
   const phase = schedule.current_phase ?? schedule.phases[0]
   const start = 'start_date' in phase ? phase.start_date : schedule.phases[0].start_date
   const end = 'end_date' in phase ? phase.end_date : schedule.phases[0].end_date
@@ -121,9 +125,124 @@ export async function changePlanStep(
         items: [{ price: priceId, quantity: 1 }],
         proration_behavior: 'none',
         duration: { interval: 'month', interval_count: 1 },
-        metadata: { plan_step: target.id },
+        metadata: { plan_step: target },
       },
     ],
   })
-  return { ok: true, kind: 'scheduled', step: target.id, effectiveAt: new Date(end * 1000).toISOString() }
+  return new Date(end * 1000).toISOString()
+}
+
+const isCardError = (e: unknown) =>
+  !!e && typeof e === 'object' && ((e as { type?: string }).type === 'StripeCardError' || (e as { code?: string }).code === 'card_declined')
+
+const PAYMENT_FAILED = 'The card was not charged, so the plan did not change.'
+
+export async function changePlanStep(
+  deps: { stripe: Stripe; priceIdFor: (id: PlanStepId) => Promise<string>; now?: () => Date; log?: (msg: string) => void },
+  sub: Sub,
+  targetId: PlanStepId
+): Promise<ChangePlanResult> {
+  const { stripe } = deps
+  const log = deps.log ?? ((m: string) => console.error(m))
+  const target = stepById(targetId)
+  if (sub.status !== 'active' && sub.status !== 'trialing') {
+    return { ok: false, code: 'not_live', message: 'No active hosting plan to change.' }
+  }
+  if (sub.cancel_at_period_end || sub.cancel_at) {
+    return { ok: false, code: 'ending', message: 'This plan is set to end. Resume it first.' }
+  }
+  const current = currentLadderStep(sub)
+  const move = planMove(current, subscriptionMonthlyCents(sub), target)
+  const pending = scheduleId(sub)
+
+  if (move === 'same') {
+    if (pending) await stripe.subscriptionSchedules.release(pending)
+    return { ok: true, kind: 'unchanged', step: target.id }
+  }
+  if (!target.sellable) {
+    return { ok: false, code: 'not_sellable', message: `${target.name} is not sold yet.` }
+  }
+
+  let priceId: string
+  try {
+    priceId = await deps.priceIdFor(target.id)
+  } catch {
+    return { ok: false, code: 'price', message: 'This plan is not available right now.' }
+  }
+
+  if (move === 'upgrade') {
+    // Release a pending downgrade first (Aria, Oct 3 12:25). Remember it so a failed card puts it back.
+    let restore: PendingPlanChange | null = null
+    if (pending) {
+      restore = await pendingPlanChange(stripe, sub, deps.now?.()).catch(() => null)
+      await stripe.subscriptionSchedules.release(pending)
+    }
+    const putBack = async (): Promise<boolean | null> => {
+      if (!restore) return null
+      try {
+        await scheduleDowngrade(stripe, sub.id, null, await deps.priceIdFor(restore.step), restore.step)
+        return true
+      } catch (e) {
+        log(`[change-plan] could not restore the pending downgrade on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`)
+        return false
+      }
+    }
+    const [first, ...rest] = sub.items.data
+    const items: Stripe.SubscriptionUpdateParams.Item[] = [
+      { id: first.id, price: priceId, quantity: 1 },
+      ...rest.map((i) => ({ id: i.id, deleted: true as const })),
+    ]
+    let updated: Stripe.Subscription
+    try {
+      updated = await stripe.subscriptions.update(
+        sub.id,
+        { items, proration_behavior: 'always_invoice', payment_behavior: 'pending_if_incomplete', expand: ['latest_invoice'] },
+        // Double-click safe; the latest invoice id makes a retry after a failed card a NEW request
+        // (a reused key would replay the failed response for 24 hours).
+        { idempotencyKey: `plan-move:${sub.id}:${sub.items.data.map((i) => i.price.id).join('+')}:${target.id}:${idOf(sub.latest_invoice) ?? 'none'}` }
+      )
+    } catch (e) {
+      if (!isCardError(e)) throw e
+      return { ok: false, code: 'payment_failed', message: PAYMENT_FAILED, pendingRestored: await putBack() }
+    }
+    if (updated.pending_update) {
+      // Not applied. Void the open invoice so a later retry or card update can't apply it.
+      const inv = updated.latest_invoice
+      const invId = idOf(inv as string | { id: string } | null)
+      const invStatus = inv && typeof inv !== 'string' ? inv.status : null
+      if (invId && (invStatus === 'open' || invStatus === null)) {
+        await stripe.invoices.voidInvoice(invId).catch((e) => log(`[change-plan] could not void ${invId}: ${e instanceof Error ? e.message : String(e)}`))
+      }
+      return { ok: false, code: 'payment_failed', message: PAYMENT_FAILED, pendingRestored: await putBack() }
+    }
+    const inv = updated.latest_invoice
+    return { ok: true, kind: 'upgraded', step: target.id, invoiceStatus: inv && typeof inv !== 'string' ? (inv.status ?? null) : null }
+  }
+
+  // downgrade at period end
+  const effectiveAt = await scheduleDowngrade(stripe, sub.id, pending, priceId, target.id)
+  return { ok: true, kind: 'scheduled', step: target.id, effectiveAt }
+}
+
+export type CancelPlanResult =
+  | { ok: true; kind: 'canceled' | 'already_ending'; clearedPendingChange: PendingPlanChange | null }
+  | { ok: false; code: 'not_live'; message: string }
+
+/**
+ * Cancel at period end, clearing a pending downgrade first (Stripe refuses cancel_at_period_end
+ * while a schedule manages the subscription). Already ending: nothing to do.
+ */
+export async function cancelPlanAtPeriodEnd(stripe: Stripe, sub: Sub, now: Date = new Date()): Promise<CancelPlanResult> {
+  if (sub.status !== 'active' && sub.status !== 'trialing') {
+    return { ok: false, code: 'not_live', message: 'No active hosting plan to cancel.' }
+  }
+  if (sub.cancel_at_period_end || sub.cancel_at) return { ok: true, kind: 'already_ending', clearedPendingChange: null }
+  const pending = scheduleId(sub)
+  let cleared: PendingPlanChange | null = null
+  if (pending) {
+    cleared = await pendingPlanChange(stripe, sub, now).catch(() => null)
+    await stripe.subscriptionSchedules.release(pending)
+  }
+  await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true }, { idempotencyKey: `plan-cancel:${sub.id}:${pending ?? 'none'}` })
+  return { ok: true, kind: 'canceled', clearedPendingChange: cleared }
 }

@@ -6,11 +6,13 @@
 --
 --   1. outreach_sites.plan_step     claim step 3 choice (service role only; the table already has
 --                                   no customer grants and a service-role-only guard trigger).
---   2. profiles.plan_step (+ plan_step_synced_at)
---                                   cache of the customer's current step, written by the Stripe
---                                   webhook with the service role (admin queue order + badge).
---                                   Stripe stays the source of truth. Guard trigger: only the
---                                   server may set it.
+--   2. profiles.plan_step (+ plan_legacy, plan_legacy_addon, plan_monthly_cents,
+--      plan_step_synced_at)        the customer's entitlement snapshot, written ONLY by the Stripe
+--                                   webhook (service role) from Stripe's actual subscription. The
+--                                   app reads perks from it, so a plan move changes perks when the
+--                                   customer.subscription.updated webhook lands, never when a
+--                                   schedule is created or an API call returns (Aria, Oct 3 12:25).
+--                                   Guard trigger: only the server may set these columns.
 --   3. website_requests.due_by      "done by end of next business day" (Fast lane and up), set by
 --                                   an admin action. Customers have an UPDATE policy on their open
 --                                   requests, so a guard trigger stops them setting it.
@@ -54,17 +56,39 @@ alter table public.profiles
   add column if not exists plan_step text;
 alter table public.profiles
   add column if not exists plan_step_synced_at timestamptz;
+alter table public.profiles
+  add column if not exists plan_legacy boolean not null default false;
+alter table public.profiles
+  add column if not exists plan_legacy_addon text;
+alter table public.profiles
+  add column if not exists plan_monthly_cents integer;
 
 alter table public.profiles
   drop constraint if exists profiles_plan_step_check;
 alter table public.profiles
   add constraint profiles_plan_step_check
   check (plan_step is null or plan_step in ('starter', 'priority', 'fast_lane', 'leads', 'get_found', 'growth'));
+alter table public.profiles
+  drop constraint if exists profiles_plan_legacy_addon_check;
+alter table public.profiles
+  add constraint profiles_plan_legacy_addon_check
+  check (plan_legacy_addon is null or (plan_legacy and plan_legacy_addon in ('basic', 'plus', 'pro')));
+alter table public.profiles
+  drop constraint if exists profiles_plan_monthly_cents_check;
+alter table public.profiles
+  add constraint profiles_plan_monthly_cents_check
+  check (plan_monthly_cents is null or plan_monthly_cents >= 0);
 
 comment on column public.profiles.plan_step is
   'Cache of the customer''s current hosting ladder step (or the step a grandfathered plan''s monthly total reaches), written by the Stripe webhook (service role). Stripe is the source of truth. Customers cannot set it (trigger profiles_guard_plan_step).';
 comment on column public.profiles.plan_step_synced_at is
-  'When the Stripe webhook last recomputed profiles.plan_step.';
+  'When the Stripe webhook last recomputed the plan snapshot (plan_step, plan_legacy, plan_legacy_addon, plan_monthly_cents). Null = never synced: the app reads Stripe directly until the first webhook.';
+comment on column public.profiles.plan_legacy is
+  'True for a grandfathered (pre-ladder slider/add-on) plan: perks come from plan_legacy_addon, not the ladder step. Webhook-written.';
+comment on column public.profiles.plan_legacy_addon is
+  'Grandfathered add-on tier (basic/plus/pro) of a legacy plan, else null. Webhook-written.';
+comment on column public.profiles.plan_monthly_cents is
+  'Monthly total of the live hosting plan (hosting + any legacy add-on), in cents. Webhook-written.';
 
 -- Same rule as website_requests_guard_is_buyout: service_role, or the owner roles outside a
 -- customer API request. Anyone else (authenticated / anon, including through a SECURITY DEFINER
@@ -80,12 +104,17 @@ declare
     nullif(current_setting('request.jwt.claim.role', true), '')
   );
 begin
-  if tg_op = 'INSERT' and new.plan_step is null and new.plan_step_synced_at is null then
+  if tg_op = 'INSERT'
+     and new.plan_step is null and new.plan_step_synced_at is null
+     and new.plan_legacy is not true and new.plan_legacy_addon is null and new.plan_monthly_cents is null then
     return new;
   end if;
   if tg_op = 'UPDATE'
      and new.plan_step is not distinct from old.plan_step
-     and new.plan_step_synced_at is not distinct from old.plan_step_synced_at then
+     and new.plan_step_synced_at is not distinct from old.plan_step_synced_at
+     and new.plan_legacy is not distinct from old.plan_legacy
+     and new.plan_legacy_addon is not distinct from old.plan_legacy_addon
+     and new.plan_monthly_cents is not distinct from old.plan_monthly_cents then
     return new;
   end if;
 
@@ -96,7 +125,7 @@ begin
   end if;
 
   raise exception using
-    message = 'plan_step can only be set by the server (service role).',
+    message = 'plan_step and the plan snapshot can only be set by the server (service role).',
     errcode = '42501';
 end;
 $$;
