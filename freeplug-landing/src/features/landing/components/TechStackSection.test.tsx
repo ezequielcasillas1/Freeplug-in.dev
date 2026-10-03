@@ -56,6 +56,12 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
     }
   })
 
+  it("Envato tile: Ezequiel's line (copy file freeplug-landing-tech-stack-copy-2026-10-03.md, Oct 3, 2:12 PM), no price or cost", () => {
+    const envato = techStack.find((t) => t.name === 'Envato template')!
+    expect(envato.description).toBe('Premium templates our developers have access to, enhanced and filled with your business details.')
+    expect(envato.description).not.toMatch(/\$|\d|price|cost|free|licen[cs]/i)
+  })
+
   it('shows each tile line on desktop only', () => {
     render(<TechStackSection />)
     const tiles = screen.getAllByTestId('tech-tile')
