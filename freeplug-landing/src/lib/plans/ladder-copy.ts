@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
 import { PLAN_STEPS, customerAiEditsPerMonth, showAiEditQuota, stepById, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
 
 /** "$35" style, from ladder.ts (never hard-code a price in copy). */
@@ -142,6 +143,14 @@ export const KEEP_PLAN_BUTTON = (name: string) => `Keep ${name}`
 export const CANCEL_WITH_PENDING_NOTE = (name: string, date: string) =>
   `You have a switch to ${name} planned for ${date}. Canceling your plan also cancels that switch.`
 export const CANCEL_PLAN_BUTTON = 'Cancel my plan at the end of this billing period'
+
+/**
+ * PLACEHOLDER (Sable; Aria Oct 3 4:05 PM): "Resume plan" failed. The customer is never sent to the
+ * billing portal; they get the support contact (src/lib/site.ts) instead.
+ */
+export const RESUME_FAILED_MESSAGE = `We couldn't resume your plan. Please contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY} and we'll help.`
+/** PLACEHOLDER (Sable; Aria Oct 3 4:05 PM): the in-app cancel (the only cancel) failed. */
+export const CANCEL_FAILED_MESSAGE = `We couldn't cancel your plan just now. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY}.`
 /** PLACEHOLDER (Sable/Wren): Plans page billing (Aria, Oct 3 12:56). */
 export const BILLING_PENDING_NOTICE = (name: string, date: string) =>
   `You have a switch to ${name} planned for ${date}, so billing is handled here until then. You can update your card and see your invoices below.`

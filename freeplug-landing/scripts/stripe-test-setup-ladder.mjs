@@ -36,7 +36,8 @@
  *     prices of the SAME product, so a monthly ladder can't get "downgrade at period end" from
  *     the portal. Plan moves therefore happen in the app (src/lib/stripe/change-plan.ts).
  *   - A NON-default Billing Portal configuration (metadata.freeplug_ladder=v1): payment method
- *     update, invoice history, cancel at period end; plan switching OFF (the app does moves, so
+ *     update only (Aria 4:05 PM; the app uses the dedicated one from scripts/stripe-portal-config.mjs);
+ *     plan switching OFF (the app does moves, so
  *     nobody gets an immediate mid-month downgrade credit). Id -> STRIPE_PORTAL_CONFIGURATION_ID.
  *   - Retired: the single product freeplug_hosting_ladder from the first test run is archived
  *     once none of its prices is active.
@@ -105,12 +106,13 @@ export function priceMatches(price, step, productId = step.productId) {
 export function desiredPortalConfig() {
   return {
     business_profile: { headline: 'Freeplug hosting plan' },
+    // Card only (Aria, Oct 3 4:05 PM), the same flags as scripts/stripe-portal-config.mjs, whose
+    // dedicated configuration is the one the app uses. Plan moves, cancel and resume are in the app.
     features: {
       customer_update: { enabled: false },
-      invoice_history: { enabled: true },
+      invoice_history: { enabled: false },
       payment_method_update: { enabled: true },
-      subscription_cancel: { enabled: true, mode: 'at_period_end', proration_behavior: 'none' },
-      // Plan moves are done in the app: upgrades now + prorated, downgrades at period end.
+      subscription_cancel: { enabled: false },
       subscription_update: { enabled: false },
     },
     metadata: { freeplug_ladder: PORTAL_TAG },

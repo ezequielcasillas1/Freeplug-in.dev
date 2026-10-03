@@ -23,10 +23,14 @@ All customer wording: `freeplug-landing/src/lib/plans/ladder-copy.ts` (PLACEHOLD
   upgrades immediate and prorated (`always_invoice`, `pending_if_incomplete`), downgrades at period end
   (subscription schedule). Reason: the Billing Portal can't hold two monthly prices of one product,
   and only schedules period-end downgrades between prices of the same product.
-- Billing Portal: a non-default configuration (switching off; payment method, invoices, cancel at
-  period end). Optional env **`STRIPE_PORTAL_CONFIGURATION_ID`** (bpc_..., not a secret) selects it;
-  unset = Stripe's default configuration. Not added to `.env.example` / `.dev.vars.example` on
-  purpose (no env files in ladder commits); add it there when the port's env docs are next edited.
+- Billing Portal (Aria, Oct 3 4:05 PM): **card only**. Every portal session (Manage billing and Update
+  card) is a `payment_method_update` flow that returns to `/dashboard/plans`, on a dedicated
+  configuration with only `payment_method_update` on (`subscription_cancel`, `subscription_update`,
+  `customer_update`, `invoice_history` off), made by `scripts/stripe-portal-config.mjs` (refuses a live
+  key). Its id goes in **`STRIPE_PORTAL_CONFIGURATION_ID`** (bpc_..., not a secret; local `.env.local`
+  only, never committed). **Without it the app refuses to open the portal** (Plans page "billing
+  unavailable"); it never falls back to the account's default configuration. TEST id:
+  `bpc_1UMaHXLOdeLTrjapNGnb5tDp`. Cancel and resume happen only in the app, under the change-plan lock.
 
 ## Aria's conditions (Oct 3, 12:25)
 - **Sellable:** `PLAN_STEPS[].sellable`. Leads, Get found, Growth partner = false ("Coming soon")
@@ -187,6 +191,16 @@ implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
   options" text link to `/dashboard/cancel` (`CANCEL_OPTIONS_LINK`).
 - **Envato tile** (Sable 3:10 PM): "Premium templates our developers can access, enhanced with your
   details." Wraps to 3 lines at 1280 and 1440; hidden at 375 (descriptions are desktop only).
+
+## Launch checklist (Stripe live; each needs Ezequiel's yes)
+- **Live card-only portal configuration:** run `scripts/stripe-portal-config.mjs` against the LIVE
+  account only at launch, with Ezequiel's yes (the script refuses live keys today; the launch run needs
+  a reviewed live variant). Put the live bpc_ id in the hosted `STRIPE_PORTAL_CONFIGURATION_ID`. Until it
+  is set, Manage billing / Update card show "billing unavailable" (by design).
+- **Webhook endpoint events:** add `subscription_schedule.updated` to the endpoint (optional; the
+  schedule release also runs on `customer.subscription.updated` and `invoice.paid`, which are already
+  sent).
+- Migrations 20261003200000 / 20261003210000 (and r13's 20261003220000) before the deploy.
 
 ## Buyout: existing pieces (for Aria's pay-to-own card)
 Nothing here changes until Aria's card is approved. Ezequiel wants a pay-to-own option; today there is

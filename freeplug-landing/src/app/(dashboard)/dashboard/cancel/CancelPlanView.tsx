@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { cancelHostingAtPeriodEnd, openBillingPortal, resumePlan } from '../billing-actions'
-import { CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE, TIP_TOTAL_LINE } from '@/lib/plans/ladder-copy'
+import { cancelHostingAtPeriodEnd, resumePlan } from '../billing-actions'
+import { CANCEL_FAILED_MESSAGE, CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE, TIP_TOTAL_LINE } from '@/lib/plans/ladder-copy'
 import type { CancelPageData } from './actions'
 import type { OutreachPlanBox } from '../outreach-dashboard'
 import { OutreachPlanCard } from '../OutreachPlanCard'
@@ -55,8 +55,11 @@ export function CancelPlanView({
   buyoutRequested = false,
   onBuyoutRequest = requestBuyoutQuote,
   outreachBox = null,
+  cancelError = false,
 }: {
   data: CancelPageData
+  /** ?cancel_error=1: the in-app cancel failed (CANCEL_FAILED_MESSAGE, with the support contact). */
+  cancelError?: boolean
   /** The customer already has an open buyout request (card shows the thank-you line). */
   buyoutRequested?: boolean
   /** Injectable for the preview harness; defaults to the real server action. */
@@ -364,25 +367,24 @@ export function CancelPlanView({
                   </div>
                 </div>
                 {pendingChange ? (
-                  // A downgrade is planned: Stripe can't cancel a plan with a planned switch, so the
-                  // app cancels it (and the switch) instead of the billing portal.
-                  <>
-                    <p className="text-sm text-red-800 mb-3" data-testid="cancel-pending-note">
-                      {CANCEL_WITH_PENDING_NOTE(pendingChange.stepName, formatBillingDate(pendingChange.effectiveAt))}
-                    </p>
-                    <form action={cancelHostingAtPeriodEnd}>
-                      <Button type="submit" variant="destructive" size="sm">
-                        {CANCEL_PLAN_BUTTON}
-                      </Button>
-                    </form>
-                  </>
-                ) : (
-                  <form action={openBillingPortal}>
-                    <Button type="submit" variant="destructive" size="sm">
-                      Open billing portal to cancel
-                    </Button>
-                  </form>
-                )}
+                  // A downgrade is planned: canceling also cancels the switch (the schedule is released
+                  // first, inside the change-plan lock).
+                  <p className="text-sm text-red-800 mb-3" data-testid="cancel-pending-note">
+                    {CANCEL_WITH_PENDING_NOTE(pendingChange.stepName, formatBillingDate(pendingChange.effectiveAt))}
+                  </p>
+                ) : null}
+                {cancelError ? (
+                  <p className="text-sm text-red-800 mb-3" role="alert" data-testid="cancel-error">
+                    {CANCEL_FAILED_MESSAGE}
+                  </p>
+                ) : null}
+                {/* The only cancel (Aria, Oct 3 4:05 PM): in the app, under the change-plan lock. The
+                    billing portal's cancel is off. */}
+                <form action={cancelHostingAtPeriodEnd}>
+                  <Button type="submit" variant="destructive" size="sm">
+                    {CANCEL_PLAN_BUTTON}
+                  </Button>
+                </form>
               </div>
             </div>
           </div>

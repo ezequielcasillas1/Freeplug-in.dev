@@ -4,6 +4,7 @@ import { ensureProfile } from '@/lib/supabase/ensure-profile'
 import type { EvaluationStatus, ProfileRow } from '@/types/supabase'
 import { Button } from '@/components/ui/button'
 import { openBillingPortal } from './billing-actions'
+import { RESUME_FAILED_MESSAGE } from '@/lib/plans/ladder-copy'
 import { getEnhancedDashboardData } from './dashboard-actions'
 import { QuickStats } from './QuickStats'
 import { AccountCard } from './AccountCard'
@@ -29,6 +30,7 @@ type Props = {
     checkout?: string
     session_id?: string
     password_reset?: string
+    hosting?: string
   }>
 }
 
@@ -139,6 +141,16 @@ export default async function DashboardPage({ searchParams }: Props) {
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
       <p className="text-gray-600 mb-6">Welcome back! Here is an overview of your account.</p>
+
+      {q.hosting === 'resume_failed' ? (
+        <p
+          className="mb-6 rounded-lg bg-red-50 border border-red-200 text-red-900 px-4 py-3 text-sm"
+          role="alert"
+          data-testid="resume-failed"
+        >
+          {RESUME_FAILED_MESSAGE}
+        </p>
+      ) : null}
 
       {q.password_reset === '1' ? (
         <p

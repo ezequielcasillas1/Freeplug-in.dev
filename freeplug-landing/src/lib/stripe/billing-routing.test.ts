@@ -35,6 +35,9 @@ describe('paymentMethodUpdateSessionParams', () => {
       flow_data: { type: 'payment_method_update', after_completion: { type: 'redirect', redirect: { return_url: 'https://x/plans?card=updated' } } },
     })
   })
+  it('refuses without the configuration id (never the default configuration)', () => {
+    expect(() => paymentMethodUpdateSessionParams('cus_1', 'https://x/plans', {})).toThrow(/STRIPE_PORTAL_CONFIGURATION_ID/)
+  })
 })
 
 describe('listInvoicesForCustomer (in-app invoice list)', () => {

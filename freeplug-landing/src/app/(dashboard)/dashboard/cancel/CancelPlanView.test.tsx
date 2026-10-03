@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { CancelPageData, SubscriptionInfo } from './actions'
+import { CANCEL_FAILED_MESSAGE, CANCEL_PLAN_BUTTON } from '@/lib/plans/ladder-copy'
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...rest }: { children: React.ReactNode; href: string }) => (
@@ -87,7 +88,7 @@ describe('CancelPlanView', () => {
       )
     ).toBeInTheDocument()
     const warning = screen.getByTestId('cancel-access-warning')
-    const cancelBtn = screen.getByRole('button', { name: 'Open billing portal to cancel' })
+    const cancelBtn = screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })
     // Keep card comes before the warning; nothing but the warning between it and the button.
     expect(keep.compareDocumentPosition(warning) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(warning.nextElementSibling).toContainElement(cancelBtn)
@@ -118,6 +119,12 @@ describe('CancelPlanView', () => {
     expect(screen.getByText('$35.00/month')).toBeInTheDocument()
   })
 
+  it('Vera 5b: Starter + $11 reads "$35.00 + $11.00 tip = $46.00/month"', () => {
+    render(<CancelPlanView data={data({ subscriptions: [sub({ productName: 'Freeplug Hosting: Starter', amount: 3500, tipCents: 1100 })] })} />)
+    expect(screen.getByText('$35.00 + $11.00 tip = $46.00/month')).toBeInTheDocument()
+    expect(screen.queryByText('$35.00/month')).toBeNull()
+  })
+
   it('shows the thank-you line when a buyout request is already open', () => {
     render(<CancelPlanView data={data({ subscriptions: [sub()] })} buyoutRequested />)
     expect(screen.getByTestId('buyout-thanks')).toBeInTheDocument()
@@ -137,7 +144,7 @@ describe('CancelPlanView for outreach customers (round 12)', () => {
     expect(screen.getByTestId('plan-waiting').textContent).toBe(WAITING)
     expect(screen.getByTestId('plan-waiting').className).toBe('text-gray-600')
     noForbidden(container.textContent)
-    expect(screen.queryByRole('button', { name: 'Open billing portal to cancel' })).toBeNull()
+    expect(screen.queryByRole('button', { name: CANCEL_PLAN_BUTTON })).toBeNull()
     expect(container.querySelector('a[href="/dashboard/plans"]')).toBeNull()
     expect(screen.queryByTestId('buyout-card-cancel')).toBeNull()
   })
@@ -167,7 +174,7 @@ describe('CancelPlanView for outreach customers (round 12)', () => {
 
   it('after Live with a real plan: the existing cancel flow', () => {
     const { container } = render(<CancelPlanView data={data({ subscriptions: [sub()] })} outreachBox="plan" />)
-    expect(screen.getByRole('button', { name: 'Open billing portal to cancel' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })).toBeInTheDocument()
     expect(screen.getByText('Your Active Services')).toBeInTheDocument()
     expect(screen.queryByTestId('cancel-outreach-plan')).toBeNull()
     noForbidden(container.textContent)
@@ -222,7 +229,7 @@ describe('Cancel page outreach card (round 12, 4:03 AM)', () => {
 
   it('with a real plan: the normal cancel flow (its cancel button) is back, no outreach card', () => {
     render(<CancelPlanView data={data({ subscriptions: [sub()] })} outreachBox="plan" />)
-    expect(screen.getByRole('button', { name: 'Open billing portal to cancel' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })).toBeInTheDocument()
     expect(screen.queryByTestId('outreach-plan-card')).toBeNull()
   })
 
@@ -230,6 +237,25 @@ describe('Cancel page outreach card (round 12, 4:03 AM)', () => {
     render(<CancelPlanView data={data({ subscriptions: [sub({ pendingChange: { stepName: 'Priority', effectiveAt: new Date('2026-11-03T17:14:00Z') } })] })} />)
     expect(screen.getByTestId('cancel-pending-note')).toHaveTextContent('You have a switch to Priority planned for Nov 3, 2026. Canceling your plan also cancels that switch.')
     expect(screen.getByRole('button', { name: 'Cancel my plan at the end of this billing period' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Open billing portal to cancel' })).toBeNull()
+    expect(screen.queryByRole('button', { name: /billing portal/i })).toBeNull()
+  })
+})
+
+describe('cancel goes only through the app (Aria, Oct 3 4:05 PM)', () => {
+  it('no billing-portal cancel anywhere; the in-app cancel button with or without a pending switch', () => {
+    const { unmount } = render(<CancelPlanView data={data({ subscriptions: [sub()] })} />)
+    expect(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /billing portal/i })).toBeNull()
+    unmount()
+    render(<CancelPlanView data={data({ subscriptions: [sub({ pendingChange: { stepName: 'Priority', effectiveAt: new Date('2026-11-03T17:14:00Z') } })] })} />)
+    expect(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })).toBeInTheDocument()
+    expect(screen.getByTestId('cancel-pending-note')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /billing portal/i })).toBeNull()
+  })
+  it('?cancel_error=1: the failure line with the support contact', () => {
+    render(<CancelPlanView data={data({ subscriptions: [sub()] })} cancelError />)
+    expect(screen.getByTestId('cancel-error')).toHaveTextContent(CANCEL_FAILED_MESSAGE)
+    expect(CANCEL_FAILED_MESSAGE).toContain('support@freeplug-in.dev')
+    expect(CANCEL_FAILED_MESSAGE).toContain('737-392-5612')
   })
 })

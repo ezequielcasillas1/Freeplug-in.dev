@@ -5,7 +5,8 @@ import { CancelPlanView } from './CancelPlanView'
 import { getClaimedSiteForUser } from '@/lib/outreach/server'
 import { outreachCancelBox } from '../outreach-dashboard'
 
-export default async function CancelPage() {
+export default async function CancelPage({ searchParams }: { searchParams?: Promise<{ cancel_error?: string }> }) {
+  const q = (await searchParams) ?? {}
   const supabase = await createClient()
   const {
     data: { user },
@@ -41,6 +42,7 @@ export default async function CancelPage() {
       data={data}
       buyoutRequested={openRequest?.is_buyout === true}
       outreachBox={outreachSite ? outreachCancelBox(outreachSite, data) : null}
+      cancelError={q.cancel_error === '1'}
     />
   )
 }

@@ -18,10 +18,16 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' | 'starter11' }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('local mock: simulated Stripe outage') } } }
+    if (stripe.mode === 'starter11') {
+      // Vera 5b: Starter + $11, plan item first (the order the app now creates)
+      const plan = { quantity: 1, price: { id: 'price_st', lookup_key: 'freeplug_step_starter_monthly', product: { name: 'Freeplug Hosting: Starter' }, unit_amount: 3500, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
+      const tip = { quantity: 11, price: { id: 'price_tip', lookup_key: 'freeplug_tip_monthly', product: { name: 'Optional monthly tip' }, unit_amount: 100, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
+      return { subscriptions: { list: async () => ({ data: [{ id: 'sub_s', status: 'active', cancel_at_period_end: false, canceled_at: null, schedule: null, items: { data: [plan, tip] } }] }) } }
+    }
     if (stripe.mode === 'tip') {
       // Vera bug 4: Fast lane + $6, with the TIP item listed first (Stripe's item order isn't guaranteed).
       const tip = { quantity: 6, price: { id: 'price_tip', lookup_key: 'freeplug_tip_monthly', product: { name: 'Optional monthly tip' }, unit_amount: 100, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
@@ -71,6 +77,12 @@ describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => 
     const d = await getCancelPageData()
     expect(d?.subscriptions).toHaveLength(1)
     expect(d?.subscriptions[0]).toMatchObject({ productName: 'Freeplug Hosting: Fast lane', amount: 6500, tipCents: 600, interval: 'month' })
+  })
+
+  it('Vera 5b: Starter + $11 shows the plan ($35) and the $11 tip (was "Starter $35.00 / month")', async () => {
+    stripe.mode = 'starter11'
+    const d = await getCancelPageData()
+    expect(d?.subscriptions[0]).toMatchObject({ productName: 'Freeplug Hosting: Starter', amount: 3500, tipCents: 1100 })
   })
 
   it('regular (default): the Stripe error still propagates (unchanged)', async () => {

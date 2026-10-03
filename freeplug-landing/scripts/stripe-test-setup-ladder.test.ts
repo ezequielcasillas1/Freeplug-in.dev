@@ -117,7 +117,7 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     const cfg = f.stripe.billingPortal.configurations.create.mock.calls[0][0] as ReturnType<typeof setup.desiredPortalConfig>
     // Plan moves happen in the app (change-plan.ts): the portal must not switch plans.
     expect(cfg.features.subscription_update).toEqual({ enabled: false })
-    expect(cfg.features.subscription_cancel).toMatchObject({ enabled: true, mode: 'at_period_end' })
+    expect(cfg.features.subscription_cancel).toEqual({ enabled: false }) // card only (Aria 4:05 PM)
     expect(cfg.features.payment_method_update).toEqual({ enabled: true })
     expect(cfg).not.toHaveProperty('is_default')
     expect(r.portalConfigurationId).toMatch(/^bpc_/)

@@ -86,6 +86,7 @@ vi.mock('@/lib/rate-limit', () => ({
 let previewFails = false
 let updateKeyInUse = false
 let updateDelayMs = 0
+let updateFails: Error | null = null
 const updateParams: Record<string, unknown>[] = []
 const previewParams: Record<string, unknown>[] = []
 const PERIOD_END = 1_793_726_938
@@ -111,8 +112,11 @@ vi.mock('@/lib/stripe/server', () => ({
       },
       update: async (id: string, params: Record<string, unknown>) => {
         updateParams.push(params)
-        calls.push(params.cancel_at_period_end ? 'stripe.subscriptions.update(cancel)' : 'stripe.subscriptions.update(items)')
+        calls.push(
+          params.cancel_at_period_end ? 'stripe.subscriptions.update(cancel)' : params.cancel_at_period_end === false ? 'stripe.subscriptions.update(resume)' : 'stripe.subscriptions.update(items)'
+        )
         if (updateDelayMs) await new Promise((r) => setTimeout(r, updateDelayMs))
+        if (updateFails) throw updateFails
         if (updateKeyInUse) throw Object.assign(new Error('another in-progress request'), { type: 'StripeIdempotencyError', code: 'idempotency_key_in_use' })
         return { id, pending_update: null, latest_invoice: { id: 'in_1', status: 'paid' } }
       },
@@ -147,9 +151,9 @@ vi.mock('@/lib/stripe/server', () => ({
   }),
 }))
 
-import { cancelHostingAtPeriodEnd, changeHostingPlan, changeTipAction, openBillingPortal, previewPlanChange, updatePaymentMethod } from './billing-actions'
+import { cancelHostingAtPeriodEnd, changeHostingPlan, changeTipAction, openBillingPortal, previewPlanChange, resumePlan, updatePaymentMethod } from './billing-actions'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { STEP_NOT_SELLABLE_MESSAGE, TIP_IN_PROGRESS, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
+import { RESUME_FAILED_MESSAGE, STEP_NOT_SELLABLE_MESSAGE, TIP_IN_PROGRESS, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
 
 const ladderSub = (id: string, over: Record<string, unknown> = {}) => {
   const s = PLAN_STEPS.find((p) => p.id === id)!
@@ -214,9 +218,27 @@ describe('changeHostingPlan (server action)', () => {
   })
 })
 
-describe('cancelHostingAtPeriodEnd (server action, cancel page with a pending downgrade)', () => {
+describe('cancelHostingAtPeriodEnd (the only cancel, under the change-plan lock; Aria 4:05 PM)', () => {
   beforeEach(() => {
     calls.length = 0
+    lockEvents.length = 0
+    locks.clear()
+  })
+
+  it('no pending change: the app cancels at period end itself (no portal), inside the lock', async () => {
+    liveSubs = [ladderSub('starter')]
+    await expect(cancelHostingAtPeriodEnd()).rejects.toMatchObject({ url: '/dashboard/cancel?canceled=1' })
+    expect(calls).toEqual(['stripe.subscriptions.update(cancel)'])
+    expect(calls).not.toContain('stripe.billingPortal.sessions.create')
+    expect(lockEvents).toEqual(['claim:ok:60', 'release:ok'])
+  })
+
+  it('a held lock (a plan or tip change in flight): no Stripe call, error flag', async () => {
+    liveSubs = [ladderSub('starter')]
+    locks.set('u1', { claimId: 'other', expiresAt: Date.now() + 30_000 })
+    await expect(cancelHostingAtPeriodEnd()).rejects.toMatchObject({ url: '/dashboard/cancel?cancel_error=1' })
+    expect(calls).toEqual([])
+    locks.clear()
   })
 
   it('downgrade then cancel: releases the schedule, then sets cancel_at_period_end', async () => {
@@ -232,19 +254,39 @@ describe('cancelHostingAtPeriodEnd (server action, cancel page with a pending do
   })
 })
 
-describe('Manage billing while a plan switch is planned (Aria, Oct 3 12:56)', () => {
+describe('Manage billing: card-only portal (Aria 4:05 PM); Plans page while a switch is planned (12:56)', () => {
+  const CARD_ONLY_SESSION = {
+    customer: 'cus_1',
+    return_url: 'https://app.test/dashboard/plans?card=updated',
+    configuration: 'bpc_cardonly1',
+    flow_data: {
+      type: 'payment_method_update',
+      after_completion: { type: 'redirect', redirect: { return_url: 'https://app.test/dashboard/plans?card=updated' } },
+    },
+  }
   beforeEach(() => {
     calls.length = 0
     portalSessions.length = 0
     subscriptionsListFails = false
+    process.env.STRIPE_PORTAL_CONFIGURATION_ID = 'bpc_cardonly1'
   })
 
-  it('no schedule: Manage billing opens the Billing Portal as before', async () => {
+  it('no schedule: Manage billing opens a payment_method_update flow on the dedicated configuration, back to Plans', async () => {
     liveSubs = [ladderSub('fast_lane')]
     await expect(openBillingPortal()).rejects.toMatchObject({ url: 'https://billing.stripe.test/session/x' })
     expect(calls).toEqual(['stripe.subscriptions.list', 'stripe.billingPortal.sessions.create'])
-    expect(portalSessions[0]).toMatchObject({ customer: 'cus_1', return_url: 'https://app.test/dashboard' })
-    expect(portalSessions[0]).not.toHaveProperty('flow_data')
+    expect(portalSessions[0]).toEqual(CARD_ONLY_SESSION)
+  })
+
+  it('without STRIPE_PORTAL_CONFIGURATION_ID the portal is refused (no session, never the default configuration)', async () => {
+    delete process.env.STRIPE_PORTAL_CONFIGURATION_ID
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    liveSubs = [ladderSub('fast_lane')]
+    await expect(openBillingPortal()).rejects.toMatchObject({ url: '/dashboard/plans?billing=unavailable' })
+    await expect(updatePaymentMethod()).rejects.toMatchObject({ url: '/dashboard/plans?billing=unavailable' })
+    expect(calls).not.toContain('stripe.billingPortal.sessions.create')
+    expect(err).toHaveBeenCalledWith('[billing] portal refused:', expect.stringContaining('STRIPE_PORTAL_CONFIGURATION_ID'))
+    err.mockRestore()
   })
 
   it('with a schedule: Manage billing goes to the Plans page notice; no portal session at all', async () => {
@@ -272,14 +314,55 @@ describe('Manage billing while a plan switch is planned (Aria, Oct 3 12:56)', ()
     liveSubs = [ladderSub('fast_lane', { schedule })]
     await expect(updatePaymentMethod()).rejects.toMatchObject({ url: 'https://billing.stripe.test/session/x' })
     expect(calls).toEqual(['stripe.billingPortal.sessions.create'])
-    expect(portalSessions[0]).toEqual({
-      customer: 'cus_1',
-      return_url: 'https://app.test/dashboard/plans?card=updated',
-      flow_data: {
-        type: 'payment_method_update',
-        after_completion: { type: 'redirect', redirect: { return_url: 'https://app.test/dashboard/plans?card=updated' } },
-      },
-    })
+    expect(portalSessions[0]).toEqual(CARD_ONLY_SESSION)
+  })
+})
+
+describe('Resume plan (Aria 4:05 PM): clears only cancel_at_period_end, under the lock; never the portal', () => {
+  beforeEach(() => {
+    calls.length = 0
+    updateParams.length = 0
+    lockEvents.length = 0
+    locks.clear()
+    updateFails = null
+    process.env.STRIPE_PORTAL_CONFIGURATION_ID = 'bpc_cardonly1'
+  })
+  // Stripe's real shape after a cancel at period end: BOTH fields set (Vera 5b R1)
+  const ending = () => ladderSub('starter', { cancel_at_period_end: true, cancel_at: PERIOD_END })
+
+  it('success: one update with ONLY cancel_at_period_end:false, inside the lock, back to the dashboard', async () => {
+    liveSubs = [ending()]
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resumed' })
+    expect(calls).toEqual(['stripe.subscriptions.update(resume)'])
+    expect(updateParams).toEqual([{ cancel_at_period_end: false }])
+    expect(lockEvents).toEqual(['claim:ok:60', 'release:ok'])
+  })
+
+  it('the error shown on /dashboard?hosting=resume_failed has the support contact', () => {
+    expect(RESUME_FAILED_MESSAGE).toContain('support@freeplug-in.dev')
+    expect(RESUME_FAILED_MESSAGE).toContain('737-392-5612')
+  })
+
+  it('a forced Stripe failure: the support error page, no portal session, lock released', async () => {
+    liveSubs = [ending()]
+    updateFails = new Error('Received both cancel_at_period_end and cancel_at parameters. Please pass in only one.')
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    expect(calls).not.toContain('stripe.billingPortal.sessions.create')
+    expect(lockEvents).toEqual(['claim:ok:60', 'release:ok'])
+    err.mockRestore()
+  })
+
+  it('nothing to resume, or the lock held: the support error, no Stripe write, no portal', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    liveSubs = [ladderSub('starter')]
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    liveSubs = [ending()]
+    locks.set('u1', { claimId: 'other', expiresAt: Date.now() + 30_000 })
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    expect(calls).toEqual([])
+    locks.clear()
+    err.mockRestore()
   })
 })
 

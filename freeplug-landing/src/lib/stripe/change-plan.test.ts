@@ -512,6 +512,19 @@ describe('the tipping system: tip item vs plan changes', () => {
     expect(f.tip()).toBe(4) // next bill $59, matching what the customer was told
   })
 
+  it('Vera 5b repro (T-tip-api.log): Starter $11 -> $4 -> $11 -> $4 within 3 s: every change applies, Stripe ends at $4 ($39 next bill)', async () => {
+    let sub = tipped('starter', 11)
+    const f = idemStripe(sub)
+    for (const [to, confirmId] of [[4, 'confirm-5b-1'], [11, 'confirm-5b-2'], [4, 'confirm-5b-3']] as [number, string][]) {
+      const r = await changeTip(f.deps, sub, to, { userId: 'u1', now: NOW, confirmId }) // same second, same minute
+      expect(r).toMatchObject({ ok: true, kind: 'changed', tipDollars: to, nextAmountCents: 3500 + to * 100 })
+      expect(f.tip()).toBe(to)
+      sub = f.live()
+    }
+    expect(f.update).toHaveBeenCalledTimes(3)
+    expect(f.tip()).toBe(4) // was: stayed at $11 ($46) while the app said $39
+  })
+
   it('Vera B2, old key shape: the guard catches a replayed response (no "updated" message), even if a key repeats', async () => {
     let sub = tipped('priority', 9)
     const f = idemStripe(sub)

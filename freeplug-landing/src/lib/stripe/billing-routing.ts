@@ -14,12 +14,16 @@ import { hasPendingSwitch } from './change-plan'
  * portal's navigation in a flow and, with after_completion = redirect, sends the customer straight
  * back, so the session can only change the card. Invoices are listed IN THE APP (Stripe's hosted
  * invoice page and PDF links), not through the portal: no portal flow is invoice-only.
+ * Since Aria's 4:05 PM ruling every portal session (Manage billing too) is that card-only flow on the
+ * dedicated configuration (portal.ts).
  */
 
 /** Where Manage billing goes while a plan switch is planned. */
 export const PLANS_PENDING_BILLING_PATH = '/dashboard/plans?billing=pending'
 /** Where the card-update flow returns (also its after-completion redirect). */
 export const PLANS_CARD_RETURN_PATH = '/dashboard/plans?card=updated'
+/** Where a failed "Resume plan" lands: the dashboard shows RESUME_FAILED_MESSAGE (support contact). Never the portal. */
+export const RESUME_FAILED_PATH = '/dashboard?hosting=resume_failed'
 
 /**
  * The customer's live subscription with a plan switch AHEAD, if any. "Pending" means only that a
@@ -40,19 +44,17 @@ export async function findScheduledSubscription(
   return null
 }
 
-/** Portal session params for the card-only flow (works with or without a schedule). */
+/**
+ * Portal session params for the card-only flow (Manage billing and Update card). Same as
+ * billingPortalSessionParams (portal.ts): the dedicated configuration plus a payment_method_update
+ * flow; throws PortalNotConfiguredError without STRIPE_PORTAL_CONFIGURATION_ID.
+ */
 export function paymentMethodUpdateSessionParams(
   customer: string,
   returnUrl: string,
   env: Record<string, string | undefined> = process.env
 ): Stripe.BillingPortal.SessionCreateParams {
-  return {
-    ...billingPortalSessionParams(customer, returnUrl, env),
-    flow_data: {
-      type: 'payment_method_update',
-      after_completion: { type: 'redirect', redirect: { return_url: returnUrl } },
-    },
-  }
+  return billingPortalSessionParams(customer, returnUrl, env)
 }
 
 export type InvoiceRow = {

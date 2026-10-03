@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
 import { resumeEndingSubscriptions } from '@/lib/stripe/resume-hosting'
-import { billingPortalSessionParams } from '@/lib/stripe/portal'
-import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH } from '@/lib/stripe/billing-routing'
+import { PortalNotConfiguredError } from '@/lib/stripe/portal'
+import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_FAILED_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changePlanStep, changeTip, previewPlanStepChange, previewTipChange, type TipChangeRefusal } from '@/lib/stripe/change-plan'
@@ -39,6 +39,12 @@ import {
   CHANGE_PLAN_ENDING as TIP_PLAN_ENDING,
 } from '@/lib/plans/ladder-copy'
 
+/**
+ * Manage billing (Aria, Oct 3 4:05 PM): a card-only portal session (payment_method_update flow on the
+ * dedicated configuration) that returns to the Plans page. Never the full portal: without
+ * STRIPE_PORTAL_CONFIGURATION_ID, or if Stripe fails, the Plans page shows "billing unavailable".
+ * While a plan switch is ahead, the Plans page notice instead (Aria, Oct 3 12:56 / 3:43 PM).
+ */
 export async function openBillingPortal() {
   const supabase = await createClient()
   const {
@@ -71,18 +77,26 @@ export async function openBillingPortal() {
   }
   if (scheduled) redirect(PLANS_PENDING_BILLING_PATH)
 
-  const session = await stripe.billingPortal.sessions.create(
-    billingPortalSessionParams(customerId, `${appBaseUrl()}/dashboard`)
-  )
+  redirect((await cardOnlyPortalUrl(customerId)) ?? '/dashboard/plans?billing=unavailable')
+}
 
-  if (session.url) {
-    redirect(session.url)
+/** The card-only portal session URL, or null (no configuration id, or Stripe failed). */
+async function cardOnlyPortalUrl(customerId: string): Promise<string | null> {
+  try {
+    const session = await getStripe().billingPortal.sessions.create(
+      paymentMethodUpdateSessionParams(customerId, `${appBaseUrl()}${PLANS_CARD_RETURN_PATH}`)
+    )
+    return session.url ?? null
+  } catch (e) {
+    if (e instanceof PortalNotConfiguredError) console.error('[billing] portal refused:', e.message)
+    else console.error('[billing] card update session failed', e instanceof Error ? e.message : e)
+    return null
   }
 }
 
 /**
- * Plans page "Update card": a Billing Portal session limited to the payment_method_update flow
- * (no portal navigation; returns to the Plans page when done). Same with or without a planned switch.
+ * Plans page "Update card": the same card-only portal session (no portal navigation; returns to the
+ * Plans page when done). Same with or without a planned switch.
  */
 export async function updatePaymentMethod() {
   const supabase = await createClient()
@@ -95,23 +109,15 @@ export async function updatePaymentMethod() {
   const customerId = prof?.stripe_customer_id
   if (!customerId) redirect('/dashboard/plans?billing=unavailable')
 
-  let url: string | null = null
-  try {
-    const session = await getStripe().billingPortal.sessions.create(
-      paymentMethodUpdateSessionParams(customerId, `${appBaseUrl()}${PLANS_CARD_RETURN_PATH}`)
-    )
-    url = session.url ?? null
-  } catch (e) {
-    console.error('[billing] card update session failed', e instanceof Error ? e.message : e)
-  }
-  redirect(url ?? '/dashboard/plans?billing=unavailable')
+  redirect((await cardOnlyPortalUrl(customerId)) ?? '/dashboard/plans?billing=unavailable')
 }
 
 /**
- * Dashboard "Resume plan" (shown while hosting is canceled but the paid period is still running):
- * undo the scheduled cancellation on the existing subscription, so there is no second plan and no
- * new charge. If nothing could be resumed here, fall back to the Stripe billing portal.
- * (When hosting has already ended, the dashboard shows "Restart hosting", which goes to checkout.)
+ * Dashboard / cancel page "Resume plan" (shown while hosting is canceled but the paid period is still
+ * running): clears cancel_at_period_end on the existing subscription, so there is no second plan and
+ * no new charge. Runs under the change-plan lock (Aria 4:05 PM). If nothing could be resumed, an
+ * error with the support contact; never the billing portal. (When hosting has already ended, the
+ * dashboard shows "Restart hosting", which goes to checkout.)
  */
 export async function resumePlan() {
   const supabase = await createClient()
@@ -132,16 +138,17 @@ export async function resumePlan() {
   let resumed = 0
   if (customerId) {
     try {
-      resumed = await resumeEndingSubscriptions(getStripe(), customerId)
+      const lock = await withPlanChangeLock(lockStore(), user.id, () => resumeEndingSubscriptions(getStripe(), customerId))
+      if (lock.ok) resumed = lock.value
+      else console.error('[resumePlan] lock', lock.code)
     } catch (e) {
       console.error('[resumePlan] resume failed', e instanceof Error ? e.message : e)
     }
   }
-  if (resumed > 0) {
-    redirect('/dashboard?hosting=resumed')
-  }
-  await openBillingPortal()
-  redirect('/dashboard')
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/cancel')
+  revalidatePath('/dashboard/plans')
+  redirect(resumed > 0 ? '/dashboard?hosting=resumed' : RESUME_FAILED_PATH)
 }
 
 /**
@@ -272,10 +279,10 @@ async function runHostingPlanChange(
 }
 
 /**
- * Cancel page, when a downgrade is pending: cancel at period end in the app. Stripe refuses
- * cancel_at_period_end on a subscription a schedule manages, so the pending downgrade is released
- * first (src/lib/stripe/change-plan.ts cancelPlanAtPeriodEnd). Without a pending downgrade the
- * cancel page keeps using the billing portal.
+ * Cancel page "Cancel my plan": the ONLY cancel (Aria, Oct 3 4:05 PM; the portal's cancel is off).
+ * Cancel at period end in the app, under the change-plan lock. Stripe refuses cancel_at_period_end on
+ * a subscription a schedule manages, so an attached schedule is released first, inside the lock
+ * (src/lib/stripe/change-plan.ts cancelPlanAtPeriodEnd).
  */
 export async function cancelHostingAtPeriodEnd(): Promise<void> {
   const supabase = await createClient()
@@ -288,11 +295,13 @@ export async function cancelHostingAtPeriodEnd(): Promise<void> {
   let done = false
   if (customerId) {
     try {
-      const live = (await listLiveSubscriptions(customerId)).filter((s) => s.status === 'active' || s.status === 'trialing')
-      if (live.length === 1) {
-        const r = await cancelPlanAtPeriodEnd(getStripe(), live[0])
-        done = r.ok
-      }
+      const lock = await withPlanChangeLock(lockStore(), user.id, async () => {
+        const live = (await listLiveSubscriptions(customerId)).filter((s) => s.status === 'active' || s.status === 'trialing')
+        if (live.length !== 1) return false
+        return (await cancelPlanAtPeriodEnd(getStripe(), live[0])).ok
+      })
+      if (lock.ok) done = lock.value
+      else console.error('[cancelHostingAtPeriodEnd] lock', lock.code)
     } catch (e) {
       console.error('[cancelHostingAtPeriodEnd] failed', e instanceof Error ? e.message : e)
     }
