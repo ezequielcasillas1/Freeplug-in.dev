@@ -8,10 +8,46 @@ import type { PlanStepId } from '@/lib/plans/ladder'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { getStripe } from '@/lib/stripe/server'
-import { changeHostingPlan } from '../billing-actions'
-import { DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
+import { changeHostingPlan, updatePaymentMethod } from '../billing-actions'
+import { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE, DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
+import { stepById } from '@/lib/plans/ladder'
+import { BillingTools } from '@/components/plans/BillingTools'
+import { listInvoicesForCustomer, type InvoiceRow } from '@/lib/stripe/billing-routing'
 
-export default async function DashboardPlansPage() {
+type Props = { searchParams: Promise<{ billing?: string; card?: string }> }
+
+/** Invoice list for the Billing section; null when Stripe can't be reached. */
+async function loadInvoices(customerId: string): Promise<InvoiceRow[] | null> {
+  try {
+    return await listInvoicesForCustomer(getStripe(), customerId)
+  } catch (e) {
+    console.error('[plans] invoice list failed', e instanceof Error ? e.message : e)
+    return null
+  }
+}
+
+function BillingNotices({ billing, card, pendingChange }: { billing?: string; card?: string; pendingChange: { stepId: PlanStepId; date: string } | null }) {
+  return (
+    <>
+      {billing === 'pending' && pendingChange ? (
+        <div role="status" data-testid="billing-pending-notice" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 max-w-2xl mb-6">
+          {BILLING_PENDING_NOTICE(stepById(pendingChange.stepId).name, pendingChange.date)}
+        </div>
+      ) : null}
+      {billing === 'unavailable' ? (
+        <div role="status" data-testid="billing-unavailable" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 max-w-2xl mb-6">
+          {BILLING_UNAVAILABLE}
+        </div>
+      ) : null}
+      {card === 'updated' ? (
+        <p role="status" data-testid="card-updated" className="text-sm text-green-800 mb-6">{CARD_UPDATED_NOTICE}</p>
+      ) : null}
+    </>
+  )
+}
+
+export default async function DashboardPlansPage({ searchParams }: Props) {
+  const { billing, card } = (await searchParams) ?? {}
   const supabase = await createClient()
   const {
     data: { user },
@@ -20,6 +56,11 @@ export default async function DashboardPlansPage() {
     user != null && (await isPlansCheckoutAllowed(supabase, user.id))
 
   if (!allowed) {
+    // A Stripe customer still gets the card update and invoices (Manage billing can land here).
+    const { data: gated } = user
+      ? await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single()
+      : { data: null }
+    const gatedInvoices = gated?.stripe_customer_id ? await loadInvoices(gated.stripe_customer_id) : undefined
     return (
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Plans</h1>
@@ -37,6 +78,12 @@ export default async function DashboardPlansPage() {
         >
           Request a website
         </Link>
+        {gatedInvoices !== undefined ? (
+          <>
+            <div className="mt-8"><BillingNotices billing={billing} card={card} pendingChange={null} /></div>
+            <BillingTools updateCardAction={updatePaymentMethod} invoices={gatedInvoices} />
+          </>
+        ) : null}
       </div>
     )
   }
@@ -72,12 +119,15 @@ export default async function DashboardPlansPage() {
     }
   }
 
+  const invoices = prof?.stripe_customer_id ? await loadInvoices(prof.stripe_customer_id) : undefined
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Plans</h1>
       <p className="text-gray-600 mb-8 max-w-2xl">
         {DASHBOARD_PLANS_INTRO}
       </p>
+      <BillingNotices billing={billing} card={card} pendingChange={pendingChange} />
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl">
         <HostingCheckoutCard
           embedded
@@ -91,6 +141,7 @@ export default async function DashboardPlansPage() {
           ctaHref="/dashboard/request-website?focus=maintenance"
         />
       </div>
+      {invoices !== undefined ? <BillingTools updateCardAction={updatePaymentMethod} invoices={invoices} /> : null}
     </div>
   )
 }

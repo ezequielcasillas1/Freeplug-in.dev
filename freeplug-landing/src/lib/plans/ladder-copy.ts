@@ -139,6 +139,19 @@ export const KEEP_PLAN_BUTTON = (name: string) => `Keep ${name}`
 export const CANCEL_WITH_PENDING_NOTE = (name: string, date: string) =>
   `You have a switch to ${name} planned for ${date}. Canceling your plan also cancels that switch.`
 export const CANCEL_PLAN_BUTTON = 'Cancel my plan at the end of this billing period'
+/** PLACEHOLDER (Sable/Wren): Plans page billing (Aria, Oct 3 12:56). */
+export const BILLING_PENDING_NOTICE = (name: string, date: string) =>
+  `You have a switch to ${name} planned for ${date}, so billing is handled here until then. You can update your card and see your invoices below.`
+export const BILLING_UNAVAILABLE = "We couldn't open billing right now. Try again, or email support@freeplug-in.dev."
+export const BILLING_HEADING = 'Billing'
+export const UPDATE_CARD_BUTTON = 'Update card'
+export const CARD_UPDATED_NOTICE = 'Thanks. If you saved a new card, we use it for your next payment.'
+export const INVOICES_HEADING = 'Invoices'
+export const INVOICES_EMPTY = 'No invoices yet.'
+export const INVOICE_STATUS_LABEL = { paid: 'Paid', open: 'Due', uncollectible: 'Unpaid' } as const
+export const VIEW_INVOICE = 'View'
+export const DOWNLOAD_INVOICE_PDF = 'PDF'
+
 /**
  * PROPOSED for Sable, NOT wired: the [STRICT] double-charge message (active-subscription.ts
  * ALREADY_HAS_PLAN_MESSAGE, "Use Manage billing to change it.") stays until Sable re-locks it;

@@ -6,6 +6,7 @@ import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
 import { resumeEndingSubscriptions } from '@/lib/stripe/resume-hosting'
 import { billingPortalSessionParams } from '@/lib/stripe/portal'
+import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changePlanStep } from '@/lib/stripe/change-plan'
@@ -45,6 +46,17 @@ export async function openBillingPortal() {
   }
 
   const stripe = getStripe()
+  // A planned switch (subscription schedule): billing is handled on the Plans page, never the portal
+  // (Aria, Oct 3 12:56). If Stripe can't tell us, don't open the portal either.
+  let scheduled: Awaited<ReturnType<typeof findScheduledSubscription>> = null
+  try {
+    scheduled = await findScheduledSubscription(stripe, customerId)
+  } catch (e) {
+    console.error('[billing] schedule check failed', e instanceof Error ? e.message : e)
+    redirect('/dashboard/plans?billing=unavailable')
+  }
+  if (scheduled) redirect(PLANS_PENDING_BILLING_PATH)
+
   const session = await stripe.billingPortal.sessions.create(
     billingPortalSessionParams(customerId, `${appBaseUrl()}/dashboard`)
   )
@@ -52,6 +64,33 @@ export async function openBillingPortal() {
   if (session.url) {
     redirect(session.url)
   }
+}
+
+/**
+ * Plans page "Update card": a Billing Portal session limited to the payment_method_update flow
+ * (no portal navigation; returns to the Plans page when done). Same with or without a planned switch.
+ */
+export async function updatePaymentMethod() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login?next=/dashboard/plans')
+
+  const { data: prof } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single()
+  const customerId = prof?.stripe_customer_id
+  if (!customerId) redirect('/dashboard/plans?billing=unavailable')
+
+  let url: string | null = null
+  try {
+    const session = await getStripe().billingPortal.sessions.create(
+      paymentMethodUpdateSessionParams(customerId, `${appBaseUrl()}${PLANS_CARD_RETURN_PATH}`)
+    )
+    url = session.url ?? null
+  } catch (e) {
+    console.error('[billing] card update session failed', e instanceof Error ? e.message : e)
+  }
+  redirect(url ?? '/dashboard/plans?billing=unavailable')
 }
 
 /**

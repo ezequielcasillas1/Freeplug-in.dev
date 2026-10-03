@@ -45,9 +45,26 @@ vi.mock('@/lib/stripe/active-subscription', async (orig) => ({
   listLiveSubscriptions: async () => liveSubs,
 }))
 const PERIOD_END = 1_793_726_938
+const portalSessions: Record<string, unknown>[] = []
+let subscriptionsListFails = false
+vi.mock('@/lib/stripe/config', () => ({ appBaseUrl: () => 'https://app.test' }))
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => ({
+    billingPortal: {
+      sessions: {
+        create: async (params: Record<string, unknown>) => {
+          calls.push('stripe.billingPortal.sessions.create')
+          portalSessions.push(params)
+          return { url: 'https://billing.stripe.test/session/x' }
+        },
+      },
+    },
     subscriptions: {
+      list: async () => {
+        calls.push('stripe.subscriptions.list')
+        if (subscriptionsListFails) throw new Error('stripe down')
+        return { data: liveSubs }
+      },
       update: async (id: string, params: Record<string, unknown>) => {
         calls.push(params.cancel_at_period_end ? 'stripe.subscriptions.update(cancel)' : 'stripe.subscriptions.update(items)')
         return { id, pending_update: null, latest_invoice: { id: 'in_1', status: 'paid' } }
@@ -75,7 +92,7 @@ vi.mock('@/lib/stripe/server', () => ({
   }),
 }))
 
-import { cancelHostingAtPeriodEnd, changeHostingPlan } from './billing-actions'
+import { cancelHostingAtPeriodEnd, changeHostingPlan, openBillingPortal, updatePaymentMethod } from './billing-actions'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
 import { STEP_NOT_SELLABLE_MESSAGE } from '@/lib/plans/ladder-copy'
 
@@ -157,5 +174,55 @@ describe('cancelHostingAtPeriodEnd (server action, cancel page with a pending do
     liveSubs = []
     await expect(cancelHostingAtPeriodEnd()).rejects.toMatchObject({ url: '/dashboard/cancel?cancel_error=1' })
     expect(calls).toEqual([])
+  })
+})
+
+describe('Manage billing while a plan switch is planned (Aria, Oct 3 12:56)', () => {
+  beforeEach(() => {
+    calls.length = 0
+    portalSessions.length = 0
+    subscriptionsListFails = false
+  })
+
+  it('no schedule: Manage billing opens the Billing Portal as before', async () => {
+    liveSubs = [ladderSub('fast_lane')]
+    await expect(openBillingPortal()).rejects.toMatchObject({ url: 'https://billing.stripe.test/session/x' })
+    expect(calls).toEqual(['stripe.subscriptions.list', 'stripe.billingPortal.sessions.create'])
+    expect(portalSessions[0]).toMatchObject({ customer: 'cus_1', return_url: 'https://app.test/dashboard' })
+    expect(portalSessions[0]).not.toHaveProperty('flow_data')
+  })
+
+  it('with a schedule: Manage billing goes to the Plans page notice; no portal session at all', async () => {
+    liveSubs = [ladderSub('fast_lane', { schedule: 'sub_sched_1' })]
+    await expect(openBillingPortal()).rejects.toMatchObject({ url: '/dashboard/plans?billing=pending' })
+    expect(calls).toEqual(['stripe.subscriptions.list'])
+  })
+
+  it('an ended subscription with a leftover schedule does not count', async () => {
+    liveSubs = [ladderSub('fast_lane', { status: 'canceled', schedule: 'sub_sched_old' })]
+    await expect(openBillingPortal()).rejects.toMatchObject({ url: 'https://billing.stripe.test/session/x' })
+  })
+
+  it('if Stripe cannot say whether a schedule exists, the portal is not opened', async () => {
+    subscriptionsListFails = true
+    await expect(openBillingPortal()).rejects.toMatchObject({ url: '/dashboard/plans?billing=unavailable' })
+    expect(calls).not.toContain('stripe.billingPortal.sessions.create')
+  })
+
+  it.each([
+    ['without a schedule', null],
+    ['with a schedule', 'sub_sched_1'],
+  ])('Update card %s: a portal session limited to the payment_method_update flow, back to Plans', async (_label, schedule) => {
+    liveSubs = [ladderSub('fast_lane', { schedule })]
+    await expect(updatePaymentMethod()).rejects.toMatchObject({ url: 'https://billing.stripe.test/session/x' })
+    expect(calls).toEqual(['stripe.billingPortal.sessions.create'])
+    expect(portalSessions[0]).toEqual({
+      customer: 'cus_1',
+      return_url: 'https://app.test/dashboard/plans?card=updated',
+      flow_data: {
+        type: 'payment_method_update',
+        after_completion: { type: 'redirect', redirect: { return_url: 'https://app.test/dashboard/plans?card=updated' } },
+      },
+    })
   })
 })
