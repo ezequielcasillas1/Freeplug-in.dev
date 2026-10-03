@@ -6,10 +6,10 @@ import { createClient } from '@/lib/supabase/server'
 import { describeLiveSubscriptions, formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import type { PlanStepId } from '@/lib/plans/ladder'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
-import { pendingPlanChange, subscriptionMonthlyCents } from '@/lib/stripe/change-plan'
+import { pendingPlanChange, subscriptionMonthlyCents, subscriptionTipDollars } from '@/lib/stripe/change-plan'
 import { subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { getStripe } from '@/lib/stripe/server'
-import { changeHostingPlan, previewPlanChange, updatePaymentMethod } from '../billing-actions'
+import { changeHostingPlan, changeTipAction, previewPlanChange, previewTipChangeAction, updatePaymentMethod } from '../billing-actions'
 import { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE, DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 import { stepById } from '@/lib/plans/ladder'
 import { BillingTools } from '@/components/plans/BillingTools'
@@ -95,6 +95,7 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
   let pendingChange: { stepId: PlanStepId; date: string } | null = null
   let currentMonthlyCents: number | null = null
   let renewalDate: string | null = null
+  let currentTipDollars = 0
   const { data: prof } = await supabase
     .from('profiles')
     .select('stripe_customer_id')
@@ -114,6 +115,8 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
         if (live.length === 1) {
           // Button direction and "Switch to X on <date>" (Lina §3a) use what the plan costs now.
           currentMonthlyCents = subscriptionMonthlyCents(live[0])
+          // The tipping system: the tip item on the live subscription (never part of the plan price).
+          currentTipDollars = subscriptionTipDollars(live[0])
           const end = subscriptionPeriodEnd(live[0])
           renewalDate = end ? formatPlanEndDate(end) : null
           if (live[0].schedule) {
@@ -150,6 +153,9 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
           onChangePlan={changeHostingPlan}
           onPreviewChange={previewPlanChange}
           pendingChange={pendingChange}
+          currentTipDollars={currentTipDollars}
+          onPreviewTip={previewTipChangeAction}
+          onChangeTip={changeTipAction}
         />
         <MaintenancePlanCard
           embedded

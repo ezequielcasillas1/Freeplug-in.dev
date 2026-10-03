@@ -6,7 +6,9 @@ import { Loader2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { openBillingPortal } from '@/app/(dashboard)/dashboard/billing-actions'
-import type { ChangeHostingPlanResult, PlanPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
+import type { ChangeHostingPlanResult, ChangeTipResponse, PlanPreviewResponse, TipPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
+import { TipSlider, tipTotalText } from './TipSlider'
+import { TipChangeBox } from './TipChangeBox'
 import { PLAN_STEPS, type PlanStep, type PlanStepId } from '@/lib/plans/ladder'
 import { PRORATION_DATE_MAX_AGE_SECONDS, planMove, type PlanMove } from '@/lib/plans/plan-direction'
 import {
@@ -39,6 +41,10 @@ import {
   UPGRADE_CONFIRM_FALLBACK,
   UPGRADE_CONFIRM_LINE,
   UPGRADE_PREVIEW_EXPIRED,
+  UPGRADE_CONFIRM_ZERO,
+  UPGRADE_REPLACES_PENDING,
+  PLAN_CHANGE_TIP_ENDS,
+  PLAN_CHANGE_TIP_ENDS_ON,
 } from '@/lib/plans/ladder-copy'
 
 function formatDollars(cents: number): string {
@@ -76,7 +82,7 @@ type Props = {
    * Choose-plan mode (outreach claim step 3): the button saves the plan through this callback
    * instead of opening Checkout; nothing is charged. Returns an error message or null.
    */
-  onChoosePlan?: (plan: { planStep: PlanStepId }) => Promise<string | null>
+  onChoosePlan?: (plan: { planStep: PlanStepId; tipDollars: number }) => Promise<string | null>
   /** Button label in choose-plan mode. */
   chooseLabel?: string
   /** Button label in choose-plan mode that names the pick (Lina §2: "Choose <Name>"). Wins over chooseLabel. */
@@ -104,13 +110,20 @@ type Props = {
   bare?: boolean
   /** Phones: the action area becomes a sticky bottom bar (claim step 3, Plans page). */
   stickyOnPhone?: boolean
+  /** The tipping system: show the optional tip slider before checkout / choose-plan (default true). */
+  showTip?: boolean
+  /** With a live plan: the current monthly tip in whole dollars (0 = none). */
+  currentTipDollars?: number
+  /** With a live ladder plan: tip box actions (server actions previewTipChangeAction / changeTipAction). */
+  onPreviewTip?: (tipDollars: number) => Promise<TipPreviewResponse>
+  onChangeTip?: (tipDollars: number) => Promise<ChangeTipResponse>
 }
 
 /** Upgrade confirm states (Lina §3a). Downgrades and checkout never enter it. */
 type ConfirmState =
   | { phase: 'idle'; expired: boolean }
   | { phase: 'loading'; step: PlanStepId }
-  | { phase: 'confirm' | 'submitting'; step: PlanStepId; text: string; prorationDate?: number }
+  | { phase: 'confirm' | 'submitting'; step: PlanStepId; text: string; extra: string[]; prorationDate?: number }
 
 export function HostingCheckoutCard({
   embedded = false,
@@ -130,6 +143,10 @@ export function HostingCheckoutCard({
   layout = 'stacked',
   bare = false,
   stickyOnPhone = false,
+  showTip = true,
+  currentTipDollars = 0,
+  onPreviewTip,
+  onChangeTip,
 }: Props) {
   // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
   // customer is already on. The server refuses them too (checkout, claim, publish, switching).
@@ -137,6 +154,8 @@ export function HostingCheckoutCard({
   const [planStep, setPlanStep] = useState<PlanStepId>(
     currentStepId ?? PLAN_STEPS.find((s) => s.sellable)?.id ?? PLAN_STEPS[0].id
   )
+  // The tipping system: whole dollars on top of the selected step (0 = no tip). Resets on every pick.
+  const [tipDollars, setTipDollars] = useState(0)
   const [loading, setLoading] = useState(false)
   const [keeping, setKeeping] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -182,6 +201,12 @@ export function HostingCheckoutCard({
   const nowCents = currentMonthlyCents ?? currentStep?.monthlyCents ?? 0
   const direction: PlanMove = planMove(currentStep, nowCents, selected)
   const pendingName = pendingChange ? stepOf(pendingChange.stepId).name : ''
+  const tipText = currentTipDollars > 0 ? formatDollars(currentTipDollars * 100) : null
+  /** Lines under the upgrade confirm (Sable 2:20 PM): the planned switch it replaces, the tip it ends. */
+  const upgradeExtras = [
+    ...(pendingChange ? [UPGRADE_REPLACES_PENDING(pendingName)] : []),
+    ...(tipText ? [PLAN_CHANGE_TIP_ENDS(tipText)] : []),
+  ]
 
   async function runChange(step: PlanStepId, prorationDate?: number) {
     if (!onChangePlan) return
@@ -224,13 +249,18 @@ export function HostingCheckoutCard({
     try {
       const p = await onPreviewChange(step)
       if (p.ok && p.nextDate) {
-        text = UPGRADE_CONFIRM_LINE(name, formatCharge(p.amountDueCents), formatDollars(p.nextAmountCents), p.nextDate)
+        // Exactly $0.00 today (credit covers it, or a same-price move): Sable's zero line. A partial
+        // credit keeps the normal line with the real amount, no breakdown.
+        text =
+          p.amountDueCents === 0
+            ? UPGRADE_CONFIRM_ZERO(name, formatDollars(p.nextAmountCents), p.nextDate)
+            : UPGRADE_CONFIRM_LINE(name, formatCharge(p.amountDueCents), formatDollars(p.nextAmountCents), p.nextDate)
       }
       prorationDate = p.prorationDate ?? undefined
     } catch {
       // network: the fallback line, and the server charges at the time of Confirm
     }
-    setConfirm({ phase: 'confirm', step, text, prorationDate })
+    setConfirm({ phase: 'confirm', step, text, extra: upgradeExtras, prorationDate })
     timer.current = setTimeout(() => closeConfirm(true), CONFIRM_OPEN_MS)
   }
 
@@ -259,6 +289,8 @@ export function HostingCheckoutCard({
 
   function pick(id: PlanStepId) {
     setPlanStep(id)
+    // The slider starts at the new step's price (no tip) after every pick.
+    setTipDollars(0)
     // A new pick closes an open confirm (its amount was for the old pick).
     if (confirm.phase === 'confirm') {
       clearTimer()
@@ -271,7 +303,7 @@ export function HostingCheckoutCard({
     setLoading(true)
     if (onChoosePlan) {
       try {
-        const message = await onChoosePlan({ planStep })
+        const message = await onChoosePlan({ planStep, tipDollars })
         if (message) setError(message)
       } finally {
         setLoading(false)
@@ -282,7 +314,7 @@ export function HostingCheckoutCard({
       const res = await fetch('/api/checkout/hosting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planStep }),
+        body: JSON.stringify({ planStep, tipDollars }),
       })
       const data = (await res.json()) as { url?: string; error?: string }
       if (!res.ok) {
@@ -443,6 +475,9 @@ export function HostingCheckoutCard({
           ? CHANGE_PLAN_BUTTON_ON(selected.name, renewalDate)
           : CHANGE_PLAN_BUTTON(selected.name)
   const switchHelp = direction === 'upgrade' ? CHANGE_PLAN_HELP_UP : direction === 'downgrade' ? CHANGE_PLAN_HELP_DOWN : null
+  // Downgrades have no confirm, so the tip line sits under the downgrade button, with the "what
+  // happens" line (Lina §3a pattern), and again in the pending box once the switch is planned.
+  const downgradeTipLine = direction === 'downgrade' && tipText && renewalDate ? PLAN_CHANGE_TIP_ENDS_ON(tipText, renewalDate) : null
   const switchDisabled = loading || keeping || direction === 'same' || !pickable(selected.id) || confirm.phase !== 'idle'
 
   const messages = (
@@ -455,10 +490,18 @@ export function HostingCheckoutCard({
       {error ? <p className="mb-3 text-sm text-red-600 sm:mb-0 sm:mt-4">{error}</p> : null}
     </div>
   )
+  const tipping = showTip && canPay
   const phoneSummary = stickyOnPhone ? (
     <p className="mb-2 text-xs text-gray-600 sm:hidden" data-testid="sticky-summary">
-      {selected.name} · {formatDollars(selected.monthlyCents)}
-      {PER_MONTH}
+      {selected.name} ·{' '}
+      {tipping && tipDollars > 0 ? (
+        tipTotalText(selected, tipDollars)
+      ) : (
+        <>
+          {formatDollars(selected.monthlyCents)}
+          {PER_MONTH}
+        </>
+      )}
     </p>
   ) : null
 
@@ -467,7 +510,11 @@ export function HostingCheckoutCard({
       {messages}
       {/* Live region: "Calculating…" and the confirm line are read out (Lina §3a). */}
       <p role="status" aria-live="polite" className="sr-only" data-testid="confirm-live">
-        {confirm.phase === 'loading' ? UPGRADE_CALCULATING : confirm.phase === 'confirm' || confirm.phase === 'submitting' ? confirm.text : ''}
+        {confirm.phase === 'loading'
+          ? UPGRADE_CALCULATING
+          : confirm.phase === 'confirm' || confirm.phase === 'submitting'
+            ? [confirm.text, ...confirm.extra].join(' ')
+            : ''}
       </p>
       {confirm.phase === 'loading' ? (
         <div data-testid="upgrade-calculating">
@@ -482,6 +529,13 @@ export function HostingCheckoutCard({
           <p className="mb-3 text-sm text-gray-900" aria-hidden="true">
             {confirm.text}
           </p>
+          {confirm.extra.length > 0 ? (
+            <div className="-mt-1 mb-3 space-y-1 text-sm text-gray-600" aria-hidden="true" data-testid="upgrade-confirm-extra">
+              {confirm.extra.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          ) : null}
           <Button ref={confirmRef} className="w-full" size="lg" onClick={onConfirm} disabled={confirm.phase === 'submitting'}>
             {confirm.phase === 'submitting' ? <Loader2 className="animate-spin" size={22} aria-label={UPGRADE_CONFIRM_BUTTON} /> : UPGRADE_CONFIRM_BUTTON}
           </Button>
@@ -498,6 +552,11 @@ export function HostingCheckoutCard({
           {switchHelp ? (
             <p className="mt-2 text-sm text-gray-500" data-testid="switch-help">
               {switchHelp}
+            </p>
+          ) : null}
+          {downgradeTipLine ? (
+            <p className="mt-1 text-sm text-gray-500" data-testid="switch-help-tip">
+              {downgradeTipLine}
             </p>
           ) : null}
           {confirm.phase === 'idle' && confirm.expired ? (
@@ -539,12 +598,22 @@ export function HostingCheckoutCard({
           {canSwitch && pendingChange ? (
             <div role="status" data-testid="pending-change" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
               <p>{PENDING_CHANGE_LINE(pendingName, pendingChange.date)}</p>
+              {tipText ? <p className="mt-1" data-testid="pending-tip-ends">{PLAN_CHANGE_TIP_ENDS_ON(tipText, pendingChange.date)}</p> : null}
               {currentStep ? (
                 <Button variant="secondary" size="sm" className="mt-3 w-full sm:w-auto" onClick={keepCurrent} disabled={keeping || loading}>
                   {keeping ? <Loader2 className="animate-spin" size={18} /> : KEEP_PLAN_BUTTON(currentStep.name)}
                 </Button>
               ) : null}
             </div>
+          ) : null}
+          {canSwitch && currentStep && currentStep.sellable && onPreviewTip && onChangeTip ? (
+            <TipChangeBox
+              step={currentStep}
+              currentTipDollars={currentTipDollars}
+              locked={Boolean(pendingChange)}
+              onPreviewTip={onPreviewTip}
+              onChangeTip={onChangeTip}
+            />
           ) : null}
         </div>
       ) : null}
@@ -586,6 +655,11 @@ export function HostingCheckoutCard({
           </div>
         ) : null}
       </fieldset>
+      {tipping ? (
+        <div className="mb-6" data-testid="tip-area">
+          <TipSlider step={selected} tipDollars={tipDollars} onChange={setTipDollars} onPickStep={pick} disabled={loading} />
+        </div>
+      ) : null}
       {hasLivePlan ? (
         <>
           {canSwitch ? <div className="mb-3">{switchArea}</div> : null}

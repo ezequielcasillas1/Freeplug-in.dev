@@ -1,7 +1,7 @@
 import { AdminCumulativePaidCell } from './AdminCumulativePaidCell'
 import { AdminQuickEmail } from './AdminQuickEmail'
 import Link from 'next/link'
-import { adminPlanBadge, type AdminPlanBadge } from '@/lib/plans/admin-badge'
+import { adminPlanAmount, adminPlanBadge, type AdminPlanBadge } from '@/lib/plans/admin-badge'
 import { entitlementsFor } from '@/lib/plans/ladder'
 import { adminMarkUnsoldPurchaseReviewed } from './actions'
 import type { WebsiteAccessStatus } from '@/lib/website-access'
@@ -16,6 +16,8 @@ export type CustomerRowView = {
   stripe_customer_id: string | null
   /** Monthly total of active plans (hosting + add-on), null when unknown or no Stripe customer. */
   planMonthlyCents: number | null
+  /** The tipping system: monthly tip in cents, shown as its own part ("+ $5 tip"). */
+  planTipCents?: number | null
   /** Hosting-ladder step badge (replaces the Priority-only badge); null when unknown. */
   planBadge?: AdminPlanBadge | null
   /**
@@ -167,8 +169,7 @@ export function AdminCustomersTable({
                   '—'
                 )}
                 {r.planMonthlyCents ? (
-                  <span className="mt-1 flex flex-wrap items-center gap-1 font-sans">
-                    <span className="whitespace-nowrap">${(r.planMonthlyCents / 100).toFixed(2)}/mo</span>
+                  <span className="mt-1 flex flex-wrap items-center gap-1 font-sans" data-testid="admin-plan-amount">
                     <AdminStepBadge
                       badge={
                         r.planBadge !== undefined
@@ -179,6 +180,7 @@ export function AdminCustomersTable({
                             })
                       }
                     />
+                    <span className="whitespace-nowrap">{adminPlanAmount(r.planMonthlyCents, r.planTipCents ?? 0)}</span>
                   </span>
                 ) : null}
                 <AdminUnsoldPurchaseBadge flag={r.unsoldPurchase ?? null} />

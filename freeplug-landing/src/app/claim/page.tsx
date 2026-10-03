@@ -22,7 +22,7 @@ import {
   STEP4_HEADING,
   fill,
 } from '@/lib/outreach/copy'
-import { CLAIM_STEP3_BODY, LADDER_SUBHEADING } from '@/lib/plans/ladder-copy'
+import { CLAIM_STEP3_BODY, LADDER_SUBHEADING, PLAN_STRIP_TIP } from '@/lib/plans/ladder-copy'
 import { ClaimAddCardButton, ClaimChangePlanLink, ClaimDetailsStep, ClaimPlanStep, ClaimWaiting } from './ClaimSteps'
 import { ClaimStartForm } from './ClaimStartForm'
 import { claimStartToken, liveClaimRedirect, shouldAutoClaim } from './start/claim-redirect'
@@ -174,7 +174,12 @@ export default async function ClaimPage({ searchParams }: Props) {
               <div className="flex justify-between gap-4">
                 <dt className="text-gray-500">{site.business_name}</dt>
                 <dd className="flex items-baseline gap-3">
-                  <span>{step4Plan ? `${step4Plan.name} · ${formatMonthly(step4Plan.monthlyCents)}` : ''}</span>
+                  {/* The tipping system: the tip shows as its own part ("Fast lane · $65/month + $5 tip"). */}
+                  <span data-testid="claim-plan-summary">
+                    {step4Plan
+                      ? `${step4Plan.name} · ${formatMonthly(step4Plan.monthlyCents)}${(site.plan_tip_dollars ?? 0) > 0 ? PLAN_STRIP_TIP(`$${site.plan_tip_dollars}`) : ''}`
+                      : ''}
+                  </span>
                   {/* Optional "Change" (Lina §2): back to step 3; only before the card is saved. */}
                   {step4Plan ? <ClaimChangePlanLink /> : null}
                 </dd>

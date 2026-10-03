@@ -77,6 +77,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
 
   // Plan step + monthly total from Stripe (step badge). A failed lookup just shows no amount.
   const planTotals = new Map<string, number | null>()
+  const planTips = new Map<string, number>()
   const planBadges = new Map<string, AdminPlanBadge | null>()
   // Website access (hosting required) from Stripe, for the badge column and the offline filter.
   // Taking a site offline or restoring it stays manual.
@@ -88,6 +89,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
         try {
           const { entitlements: ent } = await getUserEntitlements(admin, p.id as string, p.stripe_customer_id as string)
           planTotals.set(p.id, ent.monthlyCents > 0 ? ent.monthlyCents : null)
+          planTips.set(p.id, ent.tipCents ?? 0)
           planBadges.set(p.id, adminPlanBadge(ent))
         } catch (e) {
           console.error('[admin/customers] plan lookup failed', e instanceof Error ? e.message : e)
@@ -115,6 +117,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
       cumulative_website_value_paid_cents: p.cumulative_website_value_paid_cents,
       stripe_customer_id: p.stripe_customer_id,
       planMonthlyCents: planTotals.get(p.id) ?? null,
+      planTipCents: planTips.get(p.id) ?? 0,
       planBadge: planBadges.get(p.id) ?? null,
       websiteAccess: access.get(p.id) ?? null,
       unsoldPurchase: unsold.get(p.id) ?? null,
