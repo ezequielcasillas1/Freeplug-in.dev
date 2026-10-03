@@ -3,19 +3,16 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cookies, headers } from 'next/headers'
-import { clientIpFrom, isTrustedClientIp } from '@/lib/rate-limit/client-ip'
+import { clientIpFrom } from '@/lib/rate-limit/client-ip'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { safeNext } from '@/lib/auth/safe-next'
 import { requestAwareBaseUrl } from '@/lib/site'
-import {
-  PASSWORD_MIN_LENGTH,
-  isGoogleOnlyUser,
-  isResetThrottledForEmail,
-  isResetThrottledForIp,
-  recoveryConfirmUrl,
-} from '@/lib/auth/password-reset'
+import { PASSWORD_MIN_LENGTH, isGoogleOnlyUser, recoveryConfirmUrl } from '@/lib/auth/password-reset'
+import { isResetThrottled } from '@/lib/auth/reset-rate-limit'
+import { runAfterResponse } from '@/lib/background'
+import { createAnonClient } from '@/lib/supabase/anon'
 import { isMailConfigured, sendMail } from '@/lib/email/mailer'
 import { RESET_COOKIE_NAME, resetCookieSecret, verifyResetToken } from '@/lib/auth/reset-cookie'
 import { sendPasswordResetEmail } from '@/lib/email/send'
@@ -147,15 +144,17 @@ async function resetLinkBaseUrl(): Promise<string> {
  * Sends the reset email from our own sender (Resend; EMAIL_FROM / EMAIL_FROM_NAME).
  * Unknown emails get nothing; Google-only accounts get a "sign in with Google" note.
  *
+ * Runs AFTER the response (runAfterResponse → ctx.waitUntil on Workers), so it must not touch request-scoped
+ * APIs: the caller passes `origin`, and the Supabase fallback uses a cookie-less anon client.
+ *
  * Falls back to Supabase Auth's own mailer (resetPasswordForEmail: the hosted project's email settings)
  * ONLY when Resend clearly didn't accept the email: RESEND_API_KEY or the service role key missing, a
- * Resend 4xx/5xx, a network error with no response, or no answer within RESET_SEND_TIMEOUT_MS (a late
- * success may then mean a duplicate, which is acceptable for a reset). A returned id never falls back.
- * Every fallback logs a warning with the reason (never the address) and counts on the admin mail banner.
- * The caller's rate limit runs before any of this, and the caller's response is the same in every case.
+ * Resend 4xx/5xx, a network error with no response, no answer within RESET_SEND_TIMEOUT_MS (a late success
+ * may then mean a duplicate, acceptable for a reset), or our template failing to render (logged at ERROR
+ * with template + locale, counted separately). A returned id never falls back. Every fallback is logged
+ * (never the address) and counted on the admin mail banner.
  */
-async function deliverPasswordReset(email: string): Promise<void> {
-  const origin = await resetLinkBaseUrl()
+async function deliverPasswordReset(email: string, origin: string): Promise<void> {
   const noKey = !isMailConfigured()
   const noServiceRole = !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
   const missing: ResetFallbackReason | null =
@@ -165,7 +164,7 @@ async function deliverPasswordReset(email: string): Promise<void> {
     const admin = createAdminClient()
     const { data, error } = await admin.auth.admin.generateLink({ type: 'recovery', email })
     if (error || !data?.properties?.hashed_token) {
-      // Most often "user not found": send nothing, the page still shows the neutral message.
+      // Most often "user not found": send nothing (the response already went out, identical either way).
       return
     }
 
@@ -175,6 +174,7 @@ async function deliverPasswordReset(email: string): Promise<void> {
         to: email,
         subject: 'How to sign in to Freeplug',
         react: GoogleSignInEmail({ baseUrl: origin }),
+        template: 'google-sign-in',
       })
       if (!res.success) console.error('[password-reset] google-only notice not sent:', res.reason, res.status ?? '')
       return
@@ -187,34 +187,41 @@ async function deliverPasswordReset(email: string): Promise<void> {
     )
     const fallback = resetFallbackReason(res)
     if (!fallback) return // Resend accepted it (an id came back).
-    await recordResetFallback(fallback.reason, fallback.status)
+    await recordResetFallback(fallback)
   } else {
-    await recordResetFallback(missing)
+    await recordResetFallback({ reason: missing, status: null })
   }
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  const { error } = await createAnonClient().auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/callback?next=/reset-password`,
   })
   if (error) console.error('[password-reset] Supabase mailer error:', error.message)
 }
 
+/**
+ * Forgot-password (Aria, round 5): validate, rate-limit (DB-backed, fails open to the in-memory limit for
+ * the reset only), then answer immediately with the same neutral response in every case. The account lookup
+ * and the send run after the response in ctx.waitUntil, so the response time doesn't depend on whether the
+ * account exists. No sleeps or padding.
+ */
 export async function requestPasswordReset(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   if (!email || !email.includes('@')) {
     redirect('/forgot-password?error=' + encodeURIComponent('Enter the email you use to sign in.'))
   }
 
+  // Request-scoped values first (the background task can't read them).
   const ip = await clientIp()
-  const throttled =
-    // No per-IP throttle on the shared bucket (everyone without a trusted IP), only per email (Vera r2 N6).
-    (isTrustedClientIp(ip) && isResetThrottledForIp(ip)) || isResetThrottledForEmail(email)
+  const origin = await resetLinkBaseUrl()
+
+  let throttled = false
+  try {
+    throttled = await isResetThrottled(email, ip)
+  } catch (e) {
+    console.error('[password-reset] rate limit check failed:', e instanceof Error ? e.message : e)
+  }
   if (!throttled) {
-    try {
-      await deliverPasswordReset(email)
-    } catch (e) {
-      console.error('[password-reset]', e instanceof Error ? e.message : e)
-    }
+    void runAfterResponse('password-reset', () => deliverPasswordReset(email, origin))
   }
 
   // Same response whether or not the account exists (or the request was throttled).

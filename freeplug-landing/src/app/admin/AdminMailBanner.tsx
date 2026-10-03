@@ -25,6 +25,14 @@ export async function AdminMailBanner() {
           {fallback.source === 'instance' ? ' — counted on this server instance only' : ''}. Check the server logs.
         </p>
       ) : null}
+      {fallback.templateErrors > 0 ? (
+        <p className="text-red-700 font-medium" data-testid="reset-template-error">
+          Template errors: {fallback.templateErrors} password reset{fallback.templateErrors === 1 ? '' : 's'} could not be
+          rendered in the last {RESET_FALLBACK_WINDOW_HOURS} h and went out through the Supabase mailer instead
+          {fallback.lastTemplateError ? ` (last: ${fallback.lastTemplateError}${fallback.lastTemplateErrorAt ? `, ${fallback.lastTemplateErrorAt}` : ''})` : ''}
+          {fallback.source === 'instance' ? ' — counted on this server instance only' : ''}. Fix the template.
+        </p>
+      ) : null}
     </div>
   )
 }

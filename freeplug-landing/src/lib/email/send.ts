@@ -26,6 +26,7 @@ export async function sendWelcomeEmail(
   return sendMail({
     to,
     subject: 'Welcome to Freeplug!',
+    template: 'welcome',
     react: WelcomeEmail({ userName }),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
@@ -49,6 +50,7 @@ export async function sendPaymentReceivedEmail(
   return sendMail({
     to,
     subject: `Payment received - ${params.amount}`,
+    template: 'payment-received',
     react: PaymentReceivedEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
@@ -69,6 +71,7 @@ export async function sendRequestStatusUpdateEmail(
   return sendMail({
     to,
     subject: `Request Update: ${params.businessName}`,
+    template: 'request-status-update',
     react: RequestStatusUpdateEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
@@ -89,6 +92,7 @@ export async function sendSubscriptionCancelledEmail(
   return sendMail({
     to,
     subject: SUBSCRIPTION_CANCELLED_SUBJECT,
+    template: 'subscription-cancelled',
     react: SubscriptionCancelledEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
@@ -110,6 +114,7 @@ export async function sendBillingReminderEmail(
   return sendMail({
     to,
     subject: `Upcoming billing reminder - ${params.amount} on ${params.billingDate}`,
+    template: 'billing-reminder',
     react: BillingReminderEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
@@ -129,6 +134,7 @@ export async function sendPasswordResetEmail(
   return sendMail({
     to,
     subject: 'Reset your Freeplug password',
+    template: 'password-reset',
     react: PasswordResetEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,

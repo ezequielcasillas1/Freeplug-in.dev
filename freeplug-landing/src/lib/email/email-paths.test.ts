@@ -16,6 +16,31 @@ vi.mock('resend', () => ({
   },
 }))
 
+// Template render switch (template_error path). Everything else uses the real react-email render.
+const rx = vi.hoisted(() => ({ failRender: false }))
+vi.mock('@react-email/components', async (orig) => {
+  const real = await orig<typeof import('@react-email/components')>()
+  return {
+    ...real,
+    render: (...args: Parameters<typeof real.render>) => {
+      if (rx.failRender) throw new Error('boom in template')
+      return real.render(...args)
+    },
+  }
+})
+
+// Cloudflare ctx.waitUntil stand-in: collects background work so tests can await it (or see it pending).
+const bg = vi.hoisted(() => ({ tasks: [] as Promise<unknown>[], noContext: false }))
+vi.mock('@opennextjs/cloudflare', () => ({
+  getCloudflareContext: () => {
+    if (bg.noContext) throw new Error('not in a Workers request')
+    return { ctx: { waitUntil: (p: Promise<unknown>) => bg.tasks.push(p) }, env: {} }
+  },
+}))
+async function settle() {
+  while (bg.tasks.length) await Promise.all(bg.tasks.splice(0))
+}
+
 // Next.js request APIs.
 vi.mock('next/navigation', () => ({
   redirect: (url: string) => {
@@ -37,10 +62,22 @@ const sb = vi.hoisted(() => ({
   resetPasswordForEmail: vi.fn(),
   hits: [] as { bucket: string; key_hash: string; hit_at: string }[],
   dbDown: false,
+  rpcDown: false,
+  rpc: vi.fn(),
 }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     auth: { admin: { generateLink: sb.generateLink } },
+    // public.rate_check stand-in on the same table: true (and a hit) when under the limit.
+    rpc: async (fn: string, a: { p_bucket: string; p_key: string; p_limit: number; p_window_seconds: number }) => {
+      sb.rpc(fn, a)
+      if (sb.rpcDown) return { data: null, error: { message: 'rate_check unavailable' } }
+      const since = new Date(Date.now() - a.p_window_seconds * 1000).toISOString()
+      const n = sb.hits.filter((h) => h.bucket === a.p_bucket && h.key_hash === a.p_key && h.hit_at >= since).length
+      if (n >= a.p_limit) return { data: false, error: null }
+      sb.hits.push({ bucket: a.p_bucket, key_hash: a.p_key, hit_at: new Date().toISOString() })
+      return { data: true, error: null }
+    },
     from: (table: string) => {
       if (table !== 'rate_limit_hits') throw new Error(`unexpected table ${table}`)
       return {
@@ -71,6 +108,10 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { resetPasswordForEmail: sb.resetPasswordForEmail } }),
+}))
+// The reset fallback runs in the background, so it uses the cookie-less anon client.
+vi.mock('@/lib/supabase/anon', () => ({
+  createAnonClient: () => ({ auth: { resetPasswordForEmail: sb.resetPasswordForEmail } }),
 }))
 
 // Stripe (webhook + cancel notice), in memory.
@@ -148,6 +189,11 @@ beforeEach(() => {
   sb.resetPasswordForEmail.mockResolvedValue({ error: null })
   sb.hits.length = 0
   sb.dbDown = false
+  sb.rpcDown = false
+  sb.rpc.mockReset()
+  rx.failRender = false
+  bg.tasks.length = 0
+  bg.noContext = false
   hdr.extra = {}
   __resetFallbackMemoryForTests()
   vi.stubEnv('RESEND_API_KEY', FAKE_KEY)
@@ -314,8 +360,11 @@ describe('password reset (requestPasswordReset): Resend first, loud Supabase fal
   async function submit(email: string): Promise<string> {
     const fd = new FormData()
     fd.set('email', email)
-    return expectRedirect(requestPasswordReset(fd))
+    const url = await expectRedirect(requestPasswordReset(fd))
+    await settle() // the lookup + send run after the response (ctx.waitUntil)
+    return url
   }
+  const fallbackHits = () => sb.hits.filter((h) => h.bucket === RESET_FALLBACK_BUCKET).map((h) => [h.bucket, h.key_hash])
 
   type Case = {
     name: string
@@ -392,6 +441,12 @@ describe('password reset (requestPasswordReset): Resend first, loud Supabase fal
     expect(resetFallbackReason({ success: false, reason: 'network', status: null, error: 'x' })).toEqual({ reason: 'resend_network', status: null })
     expect(resetFallbackReason({ success: false, reason: 'timeout', error: 'x' })).toEqual({ reason: 'resend_timeout', status: null })
     expect(resetFallbackReason({ success: false, reason: 'local_error', error: 'x' })).toEqual({ reason: 'resend_local_error', status: null })
+    expect(resetFallbackReason({ success: false, reason: 'template_error', template: 'password-reset', locale: 'en', error: 'x' })).toEqual({
+      reason: 'template_error',
+      status: null,
+      template: 'password-reset',
+      locale: 'en',
+    })
     expect(RESET_SEND_TIMEOUT_MS).toBe(8000)
   })
 
@@ -400,7 +455,7 @@ describe('password reset (requestPasswordReset): Resend first, loud Supabase fal
     vi.stubEnv('RESEND_API_KEY', '')
     await submit(uniqueEmail('count'))
     await submit(uniqueEmail('count'))
-    expect(sb.hits.map((h) => [h.bucket, h.key_hash])).toEqual([
+    expect(fallbackHits()).toEqual([
       [RESET_FALLBACK_BUCKET, 'missing_key'],
       [RESET_FALLBACK_BUCKET, 'missing_key'],
     ])
@@ -415,7 +470,7 @@ describe('password reset (requestPasswordReset): Resend first, loud Supabase fal
     logs()
     vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', '')
     await submit(uniqueEmail('inst'))
-    expect(sb.hits).toEqual([])
+    expect(fallbackHits()).toEqual([])
     expect(await getResetFallbackStatus()).toMatchObject({ count: 1, lastReason: 'missing_service_role', source: 'instance' })
     vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'dummy-service-role-for-tests')
     sb.dbDown = true
@@ -468,7 +523,8 @@ describe('password reset (requestPasswordReset): Resend first, loud Supabase fal
     expect(rs.send).not.toHaveBeenCalled()
     expect(sb.generateLink).not.toHaveBeenCalled()
     expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
-    expect(sb.hits).toEqual([])
+    expect(fallbackHits()).toEqual([])
+    expect(bg.tasks).toEqual([]) // nothing scheduled
   })
 
   it('rate-limited by IP (trusted CF-Connecting-IP, 6th request in 10 min): neither path, same response', async () => {
@@ -506,11 +562,160 @@ describe('password reset (requestPasswordReset): Resend first, loud Supabase fal
     const fd = new FormData()
     fd.set('email', limited)
     outcomes.push(await expectRedirect(requestPasswordReset(fd))) // throttled
+    await settle()
     sb.resetPasswordForEmail.mockRejectedValueOnce(new Error('supabase down'))
     await run(() => vi.stubEnv('RESEND_API_KEY', '')) // fallback itself throws
     expect(new Set(outcomes)).toEqual(new Set([NEUTRAL]))
     expect(outcomes).toHaveLength(cases.length + 6)
     expect(RESET_NEUTRAL_MESSAGE).toBe('If an account exists for that email, we sent a reset link.')
+  })
+})
+
+describe('password reset: template errors, DB rate limit (fail open), response before the work', () => {
+  const NEUTRAL = '/forgot-password?sent=1'
+  const recovery = (email: string, identities: { provider: string }[] = [{ provider: 'email' }]) => ({
+    data: { properties: { hashed_token: 'hashed_tok_1' }, user: { id: 'u1', email, identities } },
+    error: null,
+  })
+  const quiet = () => ({
+    warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
+    error: vi.spyOn(console, 'error').mockImplementation(() => {}),
+    info: vi.spyOn(console, 'info').mockImplementation(() => {}),
+  })
+  const form = (email: string) => {
+    const fd = new FormData()
+    fd.set('email', email)
+    return fd
+  }
+  function deferred<T>() {
+    let resolve!: (v: T) => void
+    let settled = false
+    const promise = new Promise<T>((r) => (resolve = (v) => ((settled = true), r(v))))
+    return { promise, resolve, isSettled: () => settled }
+  }
+
+  it('template render failure: falls back once, ERROR log with template + locale (no recipient), banner counts it separately', async () => {
+    const l = quiet()
+    const email = uniqueEmail('tmpl')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    rx.failRender = true
+    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
+    await settle()
+    expect(rs.send).not.toHaveBeenCalled()
+    expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(1)
+    const errors = l.error.mock.calls.map((c) => c.map(String).join(' '))
+    expect(errors.some((m) => m.includes('reason=template_error template=password-reset locale=en'))).toBe(true)
+    expect(errors.some((m) => m.includes('TEMPLATE ERROR') && m.includes('template=password-reset locale=en'))).toBe(true)
+    expect(l.warn.mock.calls.flat().join(' ')).not.toContain('FALLBACK') // ERROR level, not a warning
+    expect([...l.warn.mock.calls, ...l.error.mock.calls].flat().map(String).join(' ')).not.toContain(email)
+    rx.failRender = false
+    const status = await getResetFallbackStatus()
+    expect(status).toMatchObject({ count: 0, templateErrors: 1, lastTemplateError: 'password-reset/en', source: 'database' })
+    const html = renderToStaticMarkup(await AdminMailBanner())
+    expect(html).toContain('Template errors: 1 password reset could not be')
+    expect(html).toContain('password-reset/en')
+    expect(html).not.toContain('Email degraded')
+  })
+
+  it('uses the DB-backed rate_check for the reset (hashed keys, per email and per trusted IP)', async () => {
+    quiet()
+    vi.stubEnv('TRUST_CF_CONNECTING_IP', 'true')
+    hdr.extra = { 'cf-connecting-ip': '198.51.100.7' }
+    const email = uniqueEmail('db')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    await expectRedirect(requestPasswordReset(form(email)))
+    await settle()
+    const buckets = sb.rpc.mock.calls.map(([fn, a]) => [fn, a.p_bucket, a.p_limit, a.p_window_seconds])
+    expect(buckets).toEqual([
+      ['rate_check', 'reset_ip', 5, 600],
+      ['rate_check', 'reset_email', 1, 60],
+    ])
+    expect(JSON.stringify(sb.rpc.mock.calls)).not.toContain(email)
+    expect(JSON.stringify(sb.rpc.mock.calls)).not.toContain('198.51.100.7')
+  })
+
+  it('rate_check DB error: fails OPEN for the reset (warning, in-memory limit takes over)', async () => {
+    const l = quiet()
+    sb.rpcDown = true
+    const email = uniqueEmail('open')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
+    await settle()
+    expect(rs.send).toHaveBeenCalledTimes(1) // went through despite the DB error
+    expect(l.warn.mock.calls.flat().join(' ')).toContain('rate limit database unavailable (reset_email); using the in-memory limit (fail open)')
+    // The in-memory limit now applies: the same address again within a minute is throttled.
+    rs.send.mockClear()
+    sb.generateLink.mockClear()
+    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
+    await settle()
+    expect(sb.generateLink).not.toHaveBeenCalled()
+    expect(rs.send).not.toHaveBeenCalled()
+  })
+
+  it('answers before a stubbed send resolves (real account)', async () => {
+    quiet()
+    const email = uniqueEmail('fast')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    const d = deferred<{ data: { id: string }; error: null }>()
+    rs.send.mockReturnValue(d.promise)
+    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
+    expect(d.isSettled()).toBe(false) // the response is out while the send is still pending
+    expect(bg.tasks).toHaveLength(1) // handed to ctx.waitUntil
+    d.resolve({ data: { id: 'late_1' }, error: null })
+    await settle()
+    expect(rs.send).toHaveBeenCalledTimes(1)
+    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
+  })
+
+  it('answers before the account lookup resolves (unknown account)', async () => {
+    quiet()
+    const lookup = deferred<{ data: null; error: { message: string } }>()
+    sb.generateLink.mockReturnValue(lookup.promise)
+    expect(await expectRedirect(requestPasswordReset(form(uniqueEmail('fast-unknown'))))).toBe(NEUTRAL)
+    expect(lookup.isSettled()).toBe(false)
+    expect(bg.tasks).toHaveLength(1)
+    lookup.resolve({ data: null, error: { message: 'User not found' } })
+    await settle()
+    expect(rs.send).not.toHaveBeenCalled()
+    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
+  })
+
+  it('a failure thrown inside waitUntil is still logged (and never reaches the response)', async () => {
+    const l = quiet()
+    sb.generateLink.mockRejectedValue(new Error('supabase admin unreachable'))
+    expect(await expectRedirect(requestPasswordReset(form(uniqueEmail('throws'))))).toBe(NEUTRAL)
+    await settle()
+    expect(l.error.mock.calls.map((c) => c.map(String).join(' '))).toContain('[password-reset] background task failed: supabase admin unreachable')
+  })
+
+  it('no Workers context (next dev / tests): the work still runs, and errors are still logged', async () => {
+    const l = quiet()
+    bg.noContext = true
+    const email = uniqueEmail('local')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
+    await vi.waitFor(() => expect(rs.send).toHaveBeenCalledTimes(1))
+    sb.generateLink.mockRejectedValue(new Error('lookup failed'))
+    expect(await expectRedirect(requestPasswordReset(form(uniqueEmail('local'))))).toBe(NEUTRAL)
+    await vi.waitFor(() =>
+      expect(l.error.mock.calls.map((c) => c.map(String).join(' '))).toContain('[password-reset] background task failed: lookup failed')
+    )
+  })
+
+  it('throttled: the same response, no lookup, nothing scheduled', async () => {
+    quiet()
+    const email = uniqueEmail('thr')
+    sb.generateLink.mockResolvedValue(recovery(email))
+    await expectRedirect(requestPasswordReset(form(email)))
+    await settle()
+    sb.generateLink.mockClear()
+    rs.send.mockClear()
+    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
+    expect(bg.tasks).toEqual([])
+    await settle()
+    expect(sb.generateLink).not.toHaveBeenCalled()
+    expect(rs.send).not.toHaveBeenCalled()
+    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
   })
 })
 

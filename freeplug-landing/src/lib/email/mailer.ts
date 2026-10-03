@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 import { render, toPlainText } from '@react-email/components'
 import { getResend, isResendConfigured } from './resend'
+import { DEFAULT_EMAIL_LOCALE } from './locales'
 
 /**
  * Outbound mail for every email the app sends itself (Resend primary, Oct 3, Jace). nodemailer/SMTP is
@@ -91,22 +92,34 @@ export type MailParams = {
    * where a duplicate is acceptable (the password reset).
    */
   timeoutMs?: number
+  /** Template name for logs (e.g. 'password-reset'); never personal data. */
+  template?: string
+  /** Template locale for logs (default DEFAULT_EMAIL_LOCALE). */
+  locale?: string
 }
 
 /**
  * Why a send failed. Resend did NOT accept the email in every case except possibly 'timeout' (the request
  * may have reached Resend):
  *   not_configured  RESEND_API_KEY missing, nothing attempted
- *   local_error     failed before any request (template render, no content)
+ *   template_error  the React template threw while rendering (nothing sent; template + locale attached)
+ *   local_error     failed before any request for another reason (no content)
  *   http            Resend answered with a 4xx/5xx (status; null if the error body had none)
  *   network         no response at all (DNS, connection reset, the SDK's "Unable to fetch data")
  *   timeout         no answer within timeoutMs
  */
-export type MailFailureReason = 'not_configured' | 'local_error' | 'http' | 'network' | 'timeout'
+export type MailFailureReason = 'not_configured' | 'template_error' | 'local_error' | 'http' | 'network' | 'timeout'
 
 export type MailResult =
   | { success: true; id: string }
-  | { success: false; error: string; reason: MailFailureReason; status?: number | null }
+  | {
+      success: false
+      error: string
+      reason: MailFailureReason
+      status?: number | null
+      template?: string
+      locale?: string
+    }
 
 const TIMED_OUT = Symbol('timeout')
 
@@ -130,8 +143,19 @@ export async function sendMail(p: MailParams): Promise<MailResult> {
       if (!text) text = toPlainText(html)
     }
   } catch (err) {
-    console.error(`[email] template render failed; not sent: "${p.subject}"`)
-    return { success: false, reason: 'local_error', error: err instanceof Error ? err.message : 'Render failed' }
+    const template = p.template ?? 'unknown'
+    const locale = p.locale ?? DEFAULT_EMAIL_LOCALE
+    console.error(
+      `[email] TEMPLATE ERROR: render failed: template=${template} locale=${locale}; not sent: "${p.subject}":`,
+      err instanceof Error ? err.message : err
+    )
+    return {
+      success: false,
+      reason: 'template_error',
+      template,
+      locale,
+      error: err instanceof Error ? err.message : 'Render failed',
+    }
   }
   if (!html && !text) {
     return { success: false, reason: 'local_error', error: 'Email has no content' }
