@@ -6,12 +6,16 @@ import type Stripe from 'stripe'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { stepById } from '@/lib/plans/ladder'
+import { tierItems, tipDollarsOfItems } from '@/lib/plans/tips'
 
 export type SubscriptionInfo = {
   id: string
   status: Stripe.Subscription.Status
   productName: string
+  /** The plan (tier) price × quantity, without the tip. */
   amount: number
+  /** The monthly tip on this subscription (0 = none); shown next to the plan price (Vera bug 4). */
+  tipCents?: number
   interval: string
   /** Null when Stripe sends no period end (shown as a fallback, never "Invalid Date"). */
   currentPeriodEnd: Date | null
@@ -112,7 +116,8 @@ async function loadSubscriptions(
   })
 
   for (const sub of subs.data) {
-    const item = sub.items.data[0]
+    // The plan item, never the tip item (item order isn't guaranteed); the tip is shown on its own.
+    const item = tierItems(sub.items.data)[0] ?? sub.items.data[0]
     if (!item) continue
 
     const price = item.price
@@ -125,7 +130,8 @@ async function loadSubscriptions(
       id: sub.id,
       status: sub.status,
       productName: product.name,
-      amount: price.unit_amount ?? 0,
+      amount: (price.unit_amount ?? 0) * (item.quantity ?? 1),
+      tipCents: tipDollarsOfItems(sub.items.data) * 100,
       interval: price.recurring?.interval ?? 'month',
       // Period dates live on the subscription items in current Stripe API versions.
       currentPeriodEnd: subscriptionPeriodEnd(sub),

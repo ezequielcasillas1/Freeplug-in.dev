@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cancelHostingAtPeriodEnd, openBillingPortal, resumePlan } from '../billing-actions'
-import { CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE } from '@/lib/plans/ladder-copy'
+import { CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE, TIP_TOTAL_LINE } from '@/lib/plans/ladder-copy'
 import type { CancelPageData } from './actions'
 import type { OutreachPlanBox } from '../outreach-dashboard'
 import { OutreachPlanCard } from '../OutreachPlanCard'
@@ -37,6 +37,16 @@ import {
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
+}
+
+/**
+ * "$65.00/month", or with a tip Sable's final TIP_TOTAL_LINE: "$65.00 + $6.00 tip = $71.00/month"
+ * (Vera bug 4: the cancel page showed the plan price only).
+ */
+function priceLine(sub: { amount: number; tipCents?: number; interval: string }): string {
+  const tip = sub.tipCents ?? 0
+  if (tip > 0 && sub.interval === 'month') return TIP_TOTAL_LINE(formatCents(sub.amount), formatCents(tip), formatCents(sub.amount + tip))
+  return `${formatCents(sub.amount)}/${sub.interval}`
 }
 
 /** Cancel page body (split from page.tsx so it can be rendered with sample data for QA shots). */
@@ -129,7 +139,7 @@ export function CancelPlanView({
                   <div>
                     <h3 className="font-semibold text-gray-900">{sub.productName}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {formatCents(sub.amount)}/{sub.interval}
+                      {priceLine(sub)}
                     </p>
                   </div>
                   <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
@@ -162,7 +172,7 @@ export function CancelPlanView({
                   <div>
                     <h3 className="font-semibold text-gray-900">{sub.productName}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {formatCents(sub.amount)}/{sub.interval}
+                      {priceLine(sub)}
                     </p>
                   </div>
                   <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">

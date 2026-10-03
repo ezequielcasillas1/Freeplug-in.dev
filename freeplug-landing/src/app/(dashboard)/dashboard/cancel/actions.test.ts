@@ -18,10 +18,16 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('local mock: simulated Stripe outage') } } }
+    if (stripe.mode === 'tip') {
+      // Vera bug 4: Fast lane + $6, with the TIP item listed first (Stripe's item order isn't guaranteed).
+      const tip = { quantity: 6, price: { id: 'price_tip', lookup_key: 'freeplug_tip_monthly', product: { name: 'Optional monthly tip' }, unit_amount: 100, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
+      const plan = { quantity: 1, price: { id: 'price_fl', lookup_key: 'freeplug_step_fast_lane_monthly', product: { name: 'Freeplug Hosting: Fast lane' }, unit_amount: 6500, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
+      return { subscriptions: { list: async () => ({ data: [{ id: 'sub_t', status: 'active', cancel_at_period_end: false, canceled_at: null, schedule: null, items: { data: [tip, plan] } }] }) } }
+    }
     return {
       subscriptions: {
         list: async () => ({
@@ -58,6 +64,13 @@ describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => 
     stripe.mode = 'error'
     const d = await getCancelPageData({ tolerateStripeErrors: true })
     expect(d).toMatchObject({ hasStripeCustomer: true, subscriptions: [], canceledSubscriptions: [], subscriptionsLoaded: false })
+  })
+
+  it('Vera bug 4: a tipped plan shows the plan item (not the tip item) and the tip separately', async () => {
+    stripe.mode = 'tip'
+    const d = await getCancelPageData()
+    expect(d?.subscriptions).toHaveLength(1)
+    expect(d?.subscriptions[0]).toMatchObject({ productName: 'Freeplug Hosting: Fast lane', amount: 6500, tipCents: 600, interval: 'month' })
   })
 
   it('regular (default): the Stripe error still propagates (unchanged)', async () => {

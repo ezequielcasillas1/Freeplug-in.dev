@@ -101,6 +101,23 @@ describe('CancelPlanView', () => {
     ).toBeInTheDocument()
   })
 
+  it('Vera bug 4: a tipped plan shows plan + tip = total (Sable TIP_TOTAL_LINE); no tip keeps "$35.00/month"', () => {
+    const { unmount } = render(
+      <CancelPlanView
+        data={data({
+          subscriptions: [sub({ productName: 'Freeplug Hosting: Fast lane', amount: 6500, tipCents: 600 })],
+          canceledSubscriptions: [sub({ id: 'sub_2', productName: 'Freeplug Hosting: Fast lane', amount: 6500, tipCents: 200, cancelAtPeriodEnd: true })],
+        })}
+      />
+    )
+    expect(screen.getByText('$65.00 + $6.00 tip = $71.00/month')).toBeInTheDocument()
+    expect(screen.getByText('$65.00 + $2.00 tip = $67.00/month')).toBeInTheDocument()
+    expect(screen.queryByText('$65.00/month')).toBeNull()
+    unmount()
+    render(<CancelPlanView data={data({ subscriptions: [sub()] })} />)
+    expect(screen.getByText('$35.00/month')).toBeInTheDocument()
+  })
+
   it('shows the thank-you line when a buyout request is already open', () => {
     render(<CancelPlanView data={data({ subscriptions: [sub()] })} buyoutRequested />)
     expect(screen.getByTestId('buyout-thanks')).toBeInTheDocument()
