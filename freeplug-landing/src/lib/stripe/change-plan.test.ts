@@ -12,6 +12,11 @@ import {
   previewPlanStepChange,
   subscriptionMonthlyCents,
   upgradeIdempotencyKey,
+  currentLadderStep,
+  subscriptionTipDollars,
+  upgradeItems,
+  changeTip,
+  previewTipChange,
 } from './change-plan'
 
 const step = (id: PlanStepId) => PLAN_STEPS.find((s) => s.id === id)!
@@ -296,6 +301,7 @@ describe('upgrade confirm: preview + proration_date (Aria, Oct 3 1:34 PM)', () =
       currency: 'usd',
       nextAmountCents: 6500,
       nextBillingAt: new Date(PERIOD_END * 1000).toISOString(),
+      tipDollars: 0,
     })
     expect(f.createPreview).toHaveBeenCalledWith({
       subscription: 'sub_1',
@@ -373,5 +379,112 @@ describe('upgrade confirm: preview + proration_date (Aria, Oct 3 1:34 PM)', () =
     expect(upgradeIdempotencyKey(sub, 'priority', { prorationDate: 100, userId: 'u2' })).not.toBe(k)
     expect(upgradeIdempotencyKey(sub, 'fast_lane', { prorationDate: 100, userId: 'u1' })).not.toBe(k)
     expect(upgradeIdempotencyKey(sub, 'priority', { prorationDate: 101, userId: 'u1' })).not.toBe(k)
+  })
+})
+
+// ------------------------------------------------------------------ the tipping system (Oct 3)
+
+describe('the tipping system: tip item vs plan changes', () => {
+  const TIP_PRICE = { id: 'price_tip', lookup_key: 'freeplug_tip_monthly', unit_amount: 100, recurring: { interval: 'month' }, product: 'freeplug_tip' }
+  const tipped = (id: PlanStepId, tip: number, over: Record<string, unknown> = {}, tipFirst = false) => {
+    const sub = ladderSub(id, over) as unknown as { items: { data: Record<string, unknown>[] } }
+    sub.items.data[0].current_period_end = PERIOD_END
+    const tipItem = { id: 'si_tip', quantity: tip, price: TIP_PRICE, current_period_end: PERIOD_END }
+    sub.items.data = tipFirst ? [tipItem, ...sub.items.data] : [...sub.items.data, tipItem]
+    return sub as unknown as Stripe.Subscription
+  }
+  const tipDeps = (f: ReturnType<typeof fakeStripe>) => ({ stripe: f.stripe, priceIdFor, tipPriceId: async () => 'price_tip' })
+
+  it('tier lookup ignores the tip item (any order); the plan price never includes the tip', () => {
+    for (const first of [false, true]) {
+      const s = tipped('priority', 7, {}, first)
+      expect(currentLadderStep(s)?.id).toBe('priority')
+      expect(subscriptionMonthlyCents(s)).toBe(5500)
+      expect(subscriptionTipDollars(s)).toBe(7)
+    }
+    // Priority + $9 tip ($64) moving to Fast lane ($65) is an upgrade, not "same"
+    expect(planMove(currentLadderStep(tipped('priority', 9)), subscriptionMonthlyCents(tipped('priority', 9)), step('fast_lane'))).toBe('upgrade')
+  })
+
+  it('upgrade keeps the TIER item (even when the tip item comes first) and deletes the tip: the tip resets to $0', async () => {
+    expect(upgradeItems(tipped('starter', 10, {}, true), 'price_fast_lane')).toEqual([
+      { id: 'si_1', price: 'price_fast_lane', quantity: 1 },
+      { id: 'si_tip', deleted: true },
+    ])
+    const f = fakeStripe()
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor }, tipped('starter', 10), 'fast_lane')
+    expect(r).toMatchObject({ ok: true, kind: 'upgraded' })
+    const [, params] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams]
+    expect(params.items).toEqual([{ id: 'si_1', price: 'price_fast_lane', quantity: 1 }, { id: 'si_tip', deleted: true }])
+  })
+
+  it('the upgrade preview includes the tip removal (same items as the update) and reports the tip it ends', async () => {
+    const f = fakeStripe()
+    const createPreview = vi.fn(async () => ({ amount_due: 2000, currency: 'usd' }))
+    ;(f.raw as unknown as { invoices: Record<string, unknown> }).invoices.createPreview = createPreview
+    const p = await previewPlanStepChange({ stripe: f.stripe, priceIdFor }, tipped('starter', 10), 'fast_lane', NOW_S)
+    expect(p).toMatchObject({ ok: true, amountDueCents: 2000, nextAmountCents: 6500, tipDollars: 10 })
+    expect(createPreview).toHaveBeenCalledWith({
+      subscription: 'sub_1',
+      subscription_details: { items: [{ id: 'si_1', price: 'price_fast_lane', quantity: 1 }, { id: 'si_tip', deleted: true }], proration_behavior: 'always_invoice', proration_date: NOW_S },
+    })
+  })
+
+  it('downgrade: the schedule keeps the tip until the switch, and the next phase holds ONLY the new step price', async () => {
+    const f = fakeStripe()
+    ;(f.raw.subscriptionSchedules.create as unknown as { mockImplementationOnce: (fn: () => unknown) => void }).mockImplementationOnce(async () => ({
+      id: 'sub_sched_1',
+      current_phase: { start_date: 1_790_000_000, end_date: 1_792_600_000 },
+      phases: [{ start_date: 1_790_000_000, end_date: 1_792_600_000, items: [{ price: 'price_fast_lane', quantity: 1 }, { price: 'price_tip', quantity: 6 }] }],
+    }))
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor }, tipped('fast_lane', 6), 'priority')
+    expect(r).toMatchObject({ ok: true, kind: 'scheduled', step: 'priority' })
+    const [, params] = f.raw.subscriptionSchedules.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionScheduleUpdateParams]
+    expect(params.phases?.[0].items).toEqual([{ price: 'price_fast_lane', quantity: 1 }, { price: 'price_tip', quantity: 6 }])
+    expect(params.phases?.[1].items).toEqual([{ price: 'price_priority', quantity: 1 }])
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+
+  it('tip change: next cycle only (proration none), up / down / to $0 / added; one key per minute and amount', async () => {
+    const cases: [number, number | null, unknown][] = [
+      [6, 9, [{ id: 'si_tip', quantity: 9 }]],
+      [6, 2, [{ id: 'si_tip', quantity: 2 }]],
+      [6, 0, [{ id: 'si_tip', deleted: true }]],
+      [0, 4, [{ price: 'price_tip', quantity: 4 }]],
+    ]
+    for (const [from, to, items] of cases) {
+      const f = fakeStripe()
+      const sub = from > 0 ? tipped('fast_lane', from) : tipped('fast_lane', 0)
+      if (from === 0) (sub.items.data as unknown[]).pop()
+      const r = await changeTip(tipDeps(f), sub, to, { userId: 'u1', now: NOW })
+      expect(r).toMatchObject({ ok: true, kind: 'changed', tipDollars: to, nextAmountCents: 6500 + (to ?? 0) * 100, nextBillingAt: new Date(PERIOD_END * 1000).toISOString() })
+      const [id, params, opts] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
+      expect(id).toBe('sub_1')
+      expect(params).toEqual({ items, proration_behavior: 'none' })
+      expect(opts.idempotencyKey).toBe(`tip-change:u1:sub_1:${from}:${to}:${Math.floor(NOW.getTime() / 60000)}`)
+    }
+  })
+
+  it('tip change refused without a Stripe write: out of range, not a whole dollar, a planned switch, an ending plan, a grandfathered plan', async () => {
+    const f = fakeStripe()
+    const d = tipDeps(f)
+    expect(await changeTip(d, tipped('fast_lane', 1), 10)).toMatchObject({ ok: false, code: 'out_of_range' }) // Fast lane: $65..$74
+    expect(await changeTip(d, tipped('fast_lane', 1), 2.5)).toMatchObject({ ok: false, code: 'out_of_range' })
+    expect(await changeTip(d, tipped('fast_lane', 1), -1)).toMatchObject({ ok: false, code: 'out_of_range' })
+    expect(await changeTip(d, tipped('fast_lane', 1, { schedule: 'sub_sched_0' }), 3)).toMatchObject({ ok: false, code: 'pending_change' })
+    expect(await changeTip(d, tipped('fast_lane', 1, { cancel_at_period_end: true }), 3)).toMatchObject({ ok: false, code: 'ending' })
+    expect(await changeTip(d, legacySub(4000, 1500), 3)).toMatchObject({ ok: false, code: 'no_tip_plan' })
+    expect(await changeTip(d, tipped('fast_lane', 3), 3)).toMatchObject({ ok: true, kind: 'unchanged' })
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+
+  it('tip preview: Stripe upcoming invoice with proration none ("Your next bill"), nothing written', async () => {
+    const f = fakeStripe()
+    const createPreview = vi.fn(async () => ({ amount_due: 7400, currency: 'usd' }))
+    ;(f.raw as unknown as { invoices: Record<string, unknown> }).invoices.createPreview = createPreview
+    const p = await previewTipChange(tipDeps(f), tipped('fast_lane', 3), 9)
+    expect(p).toEqual({ ok: true, step: 'fast_lane', tipDollars: 9, nextAmountCents: 7400, currency: 'usd', nextBillingAt: new Date(PERIOD_END * 1000).toISOString(), unchanged: false })
+    expect(createPreview).toHaveBeenCalledWith({ subscription: 'sub_1', subscription_details: { items: [{ id: 'si_tip', quantity: 9 }], proration_behavior: 'none' } })
+    expect(f.calls).toEqual([])
   })
 })

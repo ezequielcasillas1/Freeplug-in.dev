@@ -34,16 +34,48 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
   }),
 }))
-vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ from: () => ({}) }) }))
+// Change-plan lock (migration 20261003210000): an in-memory stand-in for plan_change_lock_claim /
+// _release with the same semantics (one atomic check-and-set per call, 60 s expiry, release only by
+// the same claim). Kept out of `calls`, which records Stripe traffic.
+const locks = new Map<string, { claimId: string; expiresAt: number }>()
+const lockEvents: string[] = []
+let lockRpcFails = false
+let claimSeq = 0
+const lockRpc = async (fn: string, args: Record<string, unknown>) => {
+  if (lockRpcFails) return { data: null, error: { message: 'function public.plan_change_lock_claim does not exist', code: 'PGRST202' } }
+  const user = String(args.p_user_id)
+  if (fn === 'plan_change_lock_claim') {
+    const held = locks.get(user)
+    if (held && held.expiresAt > Date.now()) return (lockEvents.push('claim:held'), { data: null, error: null })
+    const claimId = `00000000-0000-4000-8000-${String(++claimSeq).padStart(12, '0')}`
+    locks.set(user, { claimId, expiresAt: Date.now() + Number(args.p_ttl_seconds) * 1000 })
+    lockEvents.push(`claim:ok:${args.p_ttl_seconds}`)
+    return { data: claimId, error: null }
+  }
+  if (fn === 'plan_change_lock_release') {
+    const held = locks.get(user)
+    const mine = held?.claimId === args.p_claim_id
+    if (mine) locks.delete(user)
+    lockEvents.push(mine ? 'release:ok' : 'release:not-mine')
+    return { data: mine, error: null }
+  }
+  return { data: null, error: { message: `unknown rpc ${fn}` } }
+}
+vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ from: () => ({}), rpc: lockRpc }) }))
 vi.mock('@/lib/plans/plan-step-sync', () => ({
   syncPlanStepForCustomer: (...a: unknown[]) => syncMock(...(a as [])),
   supabasePlanStepStore: () => ({}),
 }))
 vi.mock('@/lib/stripe/prices', () => ({ getStepPriceId: async (id: string) => `price_${id}` }))
 const listedCustomers: string[] = []
+let liveListFails = false
 vi.mock('@/lib/stripe/active-subscription', async (orig) => ({
   ...(await orig<typeof import('@/lib/stripe/active-subscription')>()),
-  listLiveSubscriptions: async (customerId: string) => (listedCustomers.push(customerId), liveSubs),
+  listLiveSubscriptions: async (customerId: string) => {
+    listedCustomers.push(customerId)
+    if (liveListFails) throw new Error('stripe down')
+    return liveSubs
+  },
 }))
 let rateAllowed = true
 const rateKeys: string[] = []
@@ -53,6 +85,7 @@ vi.mock('@/lib/rate-limit', () => ({
 }))
 let previewFails = false
 let updateKeyInUse = false
+let updateDelayMs = 0
 const updateParams: Record<string, unknown>[] = []
 const previewParams: Record<string, unknown>[] = []
 const PERIOD_END = 1_793_726_938
@@ -79,6 +112,7 @@ vi.mock('@/lib/stripe/server', () => ({
       update: async (id: string, params: Record<string, unknown>) => {
         updateParams.push(params)
         calls.push(params.cancel_at_period_end ? 'stripe.subscriptions.update(cancel)' : 'stripe.subscriptions.update(items)')
+        if (updateDelayMs) await new Promise((r) => setTimeout(r, updateDelayMs))
         if (updateKeyInUse) throw Object.assign(new Error('another in-progress request'), { type: 'StripeIdempotencyError', code: 'idempotency_key_in_use' })
         return { id, pending_update: null, latest_invoice: { id: 'in_1', status: 'paid' } }
       },
@@ -317,7 +351,7 @@ describe('previewPlanChange + confirm (Aria, Oct 3 1:34 PM)', () => {
     const pd = (r as { prorationDate: number }).prorationDate
     updateKeyInUse = true
     try {
-      expect(await changeHostingPlan('fast_lane', pd)).toEqual({ ok: false, message: UPGRADE_IN_PROGRESS })
+      expect(await changeHostingPlan('fast_lane', pd)).toEqual({ ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' })
     } finally {
       updateKeyInUse = false
     }
@@ -327,5 +361,66 @@ describe('previewPlanChange + confirm (Aria, Oct 3 1:34 PM)', () => {
     expect(await changeHostingPlan('fast_lane', '1790000000' as unknown as number)).toMatchObject({ ok: false })
     expect(await changeHostingPlan('fast_lane', 1.5)).toMatchObject({ ok: false })
     expect(calls.filter((c) => c.startsWith('stripe.'))).toEqual([])
+  })
+})
+
+describe('change-plan lock (Aria, Oct 3: per-user claimed row, 60 s, claim before any Stripe call)', () => {
+  beforeEach(() => {
+    calls.length = 0
+    updateParams.length = 0
+    listedCustomers.length = 0
+    lockEvents.length = 0
+    locks.clear()
+    lockRpcFails = false
+    updateDelayMs = 0
+    snapshotRow = SYNCED
+  })
+
+  it('two concurrent Confirms with a downgrade pending: exactly one upgrade, one charge, the downgrade released; the other gets UPGRADE_IN_PROGRESS and never calls Stripe', async () => {
+    liveSubs = [ladderSub('priority', { schedule: 'sub_sched_1' })]
+    updateDelayMs = 30 // the first upgrade is still running when the second Confirm arrives
+    const pd = Math.floor(Date.now() / 1000)
+    const [a, b] = await Promise.all([changeHostingPlan('fast_lane', pd), changeHostingPlan('fast_lane', pd)])
+    const results = [a, b]
+    expect(results.filter((r) => r.ok)).toHaveLength(1)
+    expect(results.filter((r) => !r.ok)).toEqual([{ ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' }])
+    // One Stripe pass only: one subscription read, the schedule released once, one always_invoice update (one charge).
+    expect(listedCustomers).toEqual(['cus_1'])
+    expect(calls).toEqual(['stripe.schedules.retrieve', 'stripe.schedules.release', 'stripe.subscriptions.update(items)'])
+    expect(updateParams).toHaveLength(1)
+    expect(updateParams[0]).toMatchObject({ proration_behavior: 'always_invoice' })
+    expect(lockEvents).toEqual(['claim:ok:60', 'claim:held', 'release:ok'])
+    expect(locks.size).toBe(0)
+  })
+
+  it('the lock is released in finally, also when the change throws, so the next change can run', async () => {
+    liveSubs = [ladderSub('starter')]
+    liveListFails = true
+    try {
+      expect(await changeHostingPlan('fast_lane')).toMatchObject({ ok: false })
+    } finally {
+      liveListFails = false
+    }
+    expect(lockEvents).toEqual(['claim:ok:60', 'release:ok'])
+    expect(await changeHostingPlan('fast_lane')).toMatchObject({ ok: true })
+    expect(locks.size).toBe(0)
+  })
+
+  it('a held lock refuses without any Stripe call; an expired one is taken over', async () => {
+    liveSubs = [ladderSub('starter')]
+    locks.set('u1', { claimId: 'other', expiresAt: Date.now() + 30_000 })
+    expect(await changeHostingPlan('fast_lane')).toEqual({ ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' })
+    expect(calls).toEqual([])
+    expect(listedCustomers).toEqual([])
+    locks.set('u1', { claimId: 'other', expiresAt: Date.now() - 1 })
+    expect(await changeHostingPlan('fast_lane')).toMatchObject({ ok: true })
+  })
+
+  it('fails closed: if the lock cannot be claimed (DB down, migration missing) nothing reaches Stripe', async () => {
+    liveSubs = [ladderSub('starter')]
+    lockRpcFails = true
+    expect(await changeHostingPlan('fast_lane')).toMatchObject({ ok: false })
+    expect(calls).toEqual([])
+    expect(listedCustomers).toEqual([])
   })
 })

@@ -765,6 +765,33 @@ describe('claim step 3: choose a hosting ladder step (Oct 3)', () => {
     expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBeNull()
   })
 
+  it('the tipping system: stores the chosen whole-dollar tip with the step; no tip = 0', async () => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: null, setup_completed_at: null })
+    expect(await server.saveChosenPlan(userId, { planStep: 'fast_lane', tipDollars: 7 })).toEqual({ ok: true })
+    expect(state.sites.find((x) => x.id === site.id)).toMatchObject({ plan_step: 'fast_lane', plan_tip_dollars: 7 })
+    expect(await server.saveChosenPlan(userId, { planStep: 'starter' })).toEqual({ ok: true })
+    expect(state.sites.find((x) => x.id === site.id)).toMatchObject({ plan_step: 'starter', plan_tip_dollars: 0 })
+  })
+
+  it.each([
+    ['starter', 20],
+    ['priority', 10],
+    ['fast_lane', -1],
+  ])('the tipping system: refuses a tip outside the %s range (%d), nothing saved', async (planStep, tipDollars) => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: null, setup_completed_at: null })
+    expect(await server.saveChosenPlan(userId, { planStep, tipDollars })).toMatchObject({ ok: false, code: tipDollars < 0 ? 'invalid' : 'tip_out_of_range' })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBeNull()
+  })
+
+  it('the tipping system: "Change" on step 4 clears the tip with the step', async () => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: 'fast_lane', plan_tip_dollars: 5, setup_completed_at: null })
+    expect(await server.clearChosenPlan(userId)).toEqual({ ok: true })
+    expect(state.sites.find((x) => x.id === site.id)).toMatchObject({ plan_step: null, plan_tip_dollars: null })
+  })
+
   it('is locked once a card is saved for a step, and once live', async () => {
     const a = randomUUID()
     addSite({ claimed_by: a, plan_step: 'starter', setup_completed_at: '2026-09-27T05:00:00Z' })

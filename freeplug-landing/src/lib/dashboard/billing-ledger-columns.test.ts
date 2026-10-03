@@ -113,7 +113,7 @@ describe('billing_ledger columns selected by the app exist in the migrations', (
   const defined = migrationColumns(sql)
 
   it('parses the billing_ledger columns from the migrations', () => {
-    expect([...defined].sort()).toEqual(['amount_cents', 'created_at', 'id', 'profile_id', 'stripe_invoice_id'])
+    expect([...defined].sort()).toEqual(['amount_cents', 'created_at', 'id', 'profile_id', 'stripe_invoice_id', 'tip_cents'])
   })
 
   it('finds the app selects (guard is not vacuous) and each resolves to a string', () => {

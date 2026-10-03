@@ -1,33 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import {
-  PRIORITY_HELP_ANSWER,
-  PRIORITY_MIN_MONTHLY_CENTS,
-  monthlyCents,
-  planMonthlyTotalCents,
-  qualifiesForPriority,
-} from './priority'
+import * as priority from './priority'
+import { PRIORITY_HELP_ANSWER, PRIORITY_MIN_MONTHLY_CENTS } from './priority'
+import { stepById } from './ladder'
 
-describe('Priority threshold', () => {
-  it('$55 shows Priority and $50 does not', () => {
-    expect(qualifiesForPriority(5500)).toBe(true)
-    expect(qualifiesForPriority(5000)).toBe(false)
-    expect(qualifiesForPriority(5499)).toBe(false)
+describe('Priority comes from the step, not the amount paid', () => {
+  it('the threshold constant is the Priority step price (copy only)', () => {
+    expect(PRIORITY_MIN_MONTHLY_CENTS).toBe(stepById('priority').monthlyCents)
   })
 
-  it('counts hosting plus add-on from active plans only', () => {
-    // $40 hosting + $15 Pro add-on on one plan = $55
-    expect(
-      planMonthlyTotalCents([{ status: 'active', amount: 4000 + 1500, interval: 'month' }])
-    ).toBe(5500)
-    expect(
-      qualifiesForPriority(
-        planMonthlyTotalCents([{ status: 'active', amount: 3500 + 1500, interval: 'month' }])
-      )
-    ).toBe(false)
-    expect(planMonthlyTotalCents([{ status: 'canceled', amount: 10000, interval: 'month' }])).toBe(
-      0
-    )
-    expect(monthlyCents(66000, 'year')).toBe(5500)
+  it('the total-based helpers are gone (a tip must never buy Priority)', () => {
+    const mod = priority as Record<string, unknown>
+    for (const name of ['qualifiesForPriority', 'priorityRankForMonthlyCents', 'planMonthlyTotalCents', 'monthlyCents']) {
+      expect(mod[name], name).toBeUndefined()
+    }
   })
 
   it('help answer states the same threshold as the constant', () => {

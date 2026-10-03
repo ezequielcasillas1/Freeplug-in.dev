@@ -9,6 +9,7 @@ import {
   type OutreachBillingStore,
   type OutreachSitePatch,
   LEGACY_PLAN_PUBLISH_ERROR,
+  TIP_OUT_OF_RANGE_PUBLISH_ERROR,
   STEP_NOT_SELLABLE_PUBLISH_ERROR,
 } from './billing'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
@@ -170,6 +171,37 @@ describe('admin Publish (off-session subscription)', () => {
       expect(f.row.publish_status).not.toBe('failed')
     }
   )
+
+  it('the tipping system: the saved tip becomes the $1 tip price x tip dollars, with tip_dollars metadata', async () => {
+    const f = fakeStore(site({ plan_step: 'fast_lane', plan_tip_dollars: 7 }))
+    const s = fakeStripe('active')
+    const res = await publishOutreachSite({ stripe: s.stripe, store: f.store, tipPriceId: async () => 'price_tip' }, 'site-1', { claimerVerified: true })
+    expect(res).toMatchObject({ ok: true, status: 'live' })
+    const [params] = s.create.mock.calls[0] as unknown as [Stripe.SubscriptionCreateParams]
+    expect(params.items).toEqual([
+      { price: 'price_fast_lane', quantity: 1 },
+      { price: 'price_tip', quantity: 7 },
+    ])
+    expect((params.metadata as Record<string, string>).tip_dollars).toBe('7')
+  })
+
+  it('the tipping system: no tip = no tip item and the tip price is never looked up', async () => {
+    const f = fakeStore(site({ plan_step: 'priority', plan_tip_dollars: 0 }))
+    const s = fakeStripe('active')
+    const tipPriceId = vi.fn(async () => 'price_tip')
+    await publishOutreachSite({ stripe: s.stripe, store: f.store, tipPriceId }, 'site-1', { claimerVerified: true })
+    const [params] = s.create.mock.calls[0] as unknown as [Stripe.SubscriptionCreateParams]
+    expect(params.items).toEqual([{ price: 'price_priority', quantity: 1 }])
+    expect(tipPriceId).not.toHaveBeenCalled()
+  })
+
+  it('the tipping system: a saved tip outside the step range is refused (nothing charged, admin told why)', async () => {
+    const f = fakeStore(site({ plan_step: 'starter', plan_tip_dollars: 25 }))
+    const s = fakeStripe('active')
+    const res = await publishOutreachSite({ stripe: s.stripe, store: f.store, tipPriceId: async () => 'price_tip' }, 'site-1', { claimerVerified: true })
+    expect(res).toEqual({ ok: false, status: 'refused', error: TIP_OUT_OF_RANGE_PUBLISH_ERROR })
+    expect(s.create).not.toHaveBeenCalled()
+  })
 
   it('a missing step price fails the publish (no subscription, site stays unpublished)', async () => {
     const f = fakeStore(site({ plan_step: 'priority' }))

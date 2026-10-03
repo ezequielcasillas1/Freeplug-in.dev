@@ -13,7 +13,7 @@ import {
 import { nextBusinessDayDue } from './due-by'
 import { adminPlanBadge } from './admin-badge'
 import { periodStartDate, recordIncludedEdit, type IncludedEditStore } from './included-edits'
-import { PRIORITY_MIN_MONTHLY_CENTS, qualifiesForPriority } from './priority'
+import { PRIORITY_MIN_MONTHLY_CENTS } from './priority'
 
 describe('hosting ladder config (Aria card, Oct 3)', () => {
   it('has the six fixed steps, prices, AI-edit quotas and lookup keys from the card', () => {
@@ -86,8 +86,8 @@ describe('hosting ladder config (Aria card, Oct 3)', () => {
 
   it('Priority threshold is the Priority step price (one source)', () => {
     expect(PRIORITY_MIN_MONTHLY_CENTS).toBe(5500)
-    expect(qualifiesForPriority(5499)).toBe(false)
-    expect(qualifiesForPriority(5500)).toBe(true)
+    expect(entitlementsFor({ stepId: 'starter' }).priorityRank).toBe(0)
+    expect(entitlementsFor({ stepId: 'priority' }).priorityRank).toBe(1)
   })
 })
 

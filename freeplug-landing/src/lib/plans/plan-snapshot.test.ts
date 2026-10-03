@@ -28,7 +28,7 @@ describe('plan snapshot (webhook-written entitlements)', () => {
   })
 
   it('no plan -> no perks', () => {
-    expect(snapshotOf(NO_PLAN_ENTITLEMENTS)).toEqual({ stepId: null, legacy: false, legacyAddon: null, monthlyCents: null })
+    expect(snapshotOf(NO_PLAN_ENTITLEMENTS)).toEqual({ stepId: null, legacy: false, legacyAddon: null, monthlyCents: null, tipCents: 0 })
     expect(entitlementsFromSnapshot(row(snapshotOf(NO_PLAN_ENTITLEMENTS)))).toEqual(NO_PLAN_ENTITLEMENTS)
   })
 })

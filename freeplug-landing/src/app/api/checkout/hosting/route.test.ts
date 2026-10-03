@@ -66,7 +66,9 @@ vi.mock('@/lib/stripe/checkout-context', () => ({
 
 import { POST } from './route'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { resetStepPriceCache } from '@/lib/stripe/prices'
+import { resetStepPriceCache, resetTipPriceCache } from '@/lib/stripe/prices'
+import { TIP_LOOKUP_KEY, TIP_PRODUCT_ID } from '@/lib/plans/ladder'
+import { TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
 
 /** Test-mode prices by lookup key, amounts from ladder.ts. */
 function ladderPrices(over: (p: Record<string, unknown>) => Record<string, unknown> = (p) => p) {
@@ -84,6 +86,17 @@ function ladderPrices(over: (p: Record<string, unknown>) => Record<string, unkno
       })
     ),
   }
+}
+
+const tipPrice = {
+  id: 'price_tip',
+  lookup_key: TIP_LOOKUP_KEY,
+  product: TIP_PRODUCT_ID,
+  active: true,
+  currency: 'usd',
+  unit_amount: 100,
+  type: 'recurring',
+  recurring: { interval: 'month', interval_count: 1 },
 }
 
 function req(body: unknown = { planStep: 'fast_lane' }) {
@@ -111,7 +124,10 @@ describe('POST /api/checkout/hosting', () => {
     ])
       m.mockReset()
     resetStepPriceCache()
-    pricesList.mockResolvedValue(ladderPrices())
+    resetTipPriceCache()
+    pricesList.mockImplementation(async (q: { lookup_keys: string[] }) =>
+      q.lookup_keys[0] === TIP_LOOKUP_KEY ? { data: [tipPrice] } : ladderPrices()
+    )
     outreachWaiting.mockResolvedValue(false)
     customersList.mockResolvedValue({ data: [] })
     customersCreate.mockResolvedValue({ id: 'cus_new' })
@@ -370,8 +386,10 @@ describe('POST /api/checkout/hosting', () => {
         const [params] = sessionsCreate.mock.calls[0]
         expect(params.line_items).toEqual([{ price: `price_${id}`, quantity: 1 }])
         expect(JSON.stringify(params)).not.toContain('price_data')
-        expect(params.metadata).toEqual({ type: 'hosting', plan_step: id })
-        expect(params.subscription_data.metadata).toMatchObject({ type: 'hosting', plan_step: id })
+        expect(params.metadata).toEqual({ type: 'hosting', plan_step: id, tip_dollars: '0' })
+        expect(params.subscription_data.metadata).toMatchObject({ type: 'hosting', plan_step: id, tip_dollars: '0' })
+        // no tip: the tip price is never even looked up
+        expect(pricesList.mock.calls.some(([q]) => q.lookup_keys.includes(TIP_LOOKUP_KEY))).toBe(false)
       }
     )
 
@@ -403,6 +421,63 @@ describe('POST /api/checkout/hosting', () => {
     it('503 when Stripe cannot list prices', async () => {
       pricesList.mockRejectedValue(new Error('network'))
       expect((await POST(req({ planStep: 'starter' }))).status).toBe(503)
+    })
+  })
+
+  describe('the tipping system (optional monthly tip)', () => {
+    beforeEach(() => subsList.mockResolvedValue({ data: [] }))
+
+    it('a $5 tip on Fast lane: the step price x1 + the $1 tip price x5 ($70), tip_dollars metadata on session and subscription', async () => {
+      const res = await POST(req({ planStep: 'fast_lane', tipDollars: 5 }))
+      expect(res.status).toBe(200)
+      const [params] = sessionsCreate.mock.calls[0]
+      expect(params.line_items).toEqual([
+        { price: 'price_fast_lane', quantity: 1 },
+        { price: 'price_tip', quantity: 5 },
+      ])
+      expect(params.metadata).toMatchObject({ plan_step: 'fast_lane', tip_dollars: '5' })
+      expect(params.subscription_data.metadata).toMatchObject({ plan_step: 'fast_lane', tip_dollars: '5' })
+    })
+
+    it.each([
+      ['over the range max', 'starter', 20],
+      ['negative', 'priority', -1],
+      ['not whole dollars', 'fast_lane', 2.5],
+      ['a string', 'fast_lane', '3'],
+    ])('400 tip_out_of_range when the tip is %s; nothing reaches Stripe', async (_l, planStep, tipDollars) => {
+      const res = await POST(req({ planStep, tipDollars }))
+      expect(res.status).toBe(400)
+      expect(await res.json()).toEqual({ error: TIP_OUT_OF_RANGE, code: 'tip_out_of_range' })
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it('the range top is allowed (Starter $35 + $19 = $54)', async () => {
+      expect((await POST(req({ planStep: 'starter', tipDollars: 19 }))).status).toBe(200)
+      expect(sessionsCreate.mock.calls[0][0].line_items[1]).toEqual({ price: 'price_tip', quantity: 19 })
+    })
+
+    it('503 (fails closed) when the tip price is missing or drifted, only if a tip was chosen', async () => {
+      pricesList.mockImplementation(async (q: { lookup_keys: string[] }) =>
+        q.lookup_keys[0] === TIP_LOOKUP_KEY ? { data: [{ ...tipPrice, unit_amount: 200 }] } : ladderPrices()
+      )
+      expect((await POST(req({ planStep: 'fast_lane', tipDollars: 3 }))).status).toBe(503)
+      expect(sessionsCreate).not.toHaveBeenCalled()
+      expect((await POST(req({ planStep: 'fast_lane', tipDollars: 0 }))).status).toBe(200)
+    })
+
+    it('an open session is reused only for the same step AND the same tip; the idempotency key includes the tip', async () => {
+      sessionsList.mockResolvedValue({
+        data: [{ id: 'cs_open', mode: 'subscription', url: 'https://x/open', metadata: { type: 'hosting', plan_step: 'fast_lane', tip_dollars: '5' } }],
+      })
+      const same = await POST(req({ planStep: 'fast_lane', tipDollars: 5 }))
+      expect((await same.json()).url).toBe('https://x/open')
+      expect(sessionsCreate).not.toHaveBeenCalled()
+      await POST(req({ planStep: 'fast_lane', tipDollars: 6 }))
+      expect(sessionsExpire).toHaveBeenCalledWith('cs_open')
+      expect(sessionsCreate).toHaveBeenCalledTimes(1)
+      sessionsList.mockResolvedValue({ data: [] })
+      await POST(req({ planStep: 'fast_lane', tipDollars: 7 }))
+      expect(sessionsCreate.mock.calls[0][1].idempotencyKey).not.toBe(sessionsCreate.mock.calls[1][1].idempotencyKey)
     })
   })
 })

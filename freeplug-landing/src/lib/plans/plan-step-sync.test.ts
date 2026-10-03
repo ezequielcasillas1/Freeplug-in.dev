@@ -107,7 +107,7 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const store = memStore()
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
-    const snap = { stepId: 'fast_lane', legacy: false, legacyAddon: null, monthlyCents: 6500 }
+    const snap = { stepId: 'fast_lane', legacy: false, legacyAddon: null, monthlyCents: 6500, tipCents: 0 }
     expect(store.calls).toEqual([
       ['cus_1', snap, '2026-10-03T17:00:00.000Z'],
       ['cus_1', snap, '2026-10-03T17:00:00.000Z'],
@@ -118,7 +118,7 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const { stripe } = fakeStripe([sub([ladderItem('growth')], { status: 'canceled' }), sub([ladderItem('leads')], { status: 'incomplete' })])
     const store = memStore()
     expect(await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')).toEqual({ outcome: 'synced', stepId: null })
-    expect(store.calls[0][1]).toEqual({ stepId: null, legacy: false, legacyAddon: null, monthlyCents: null })
+    expect(store.calls[0][1]).toEqual({ stepId: null, legacy: false, legacyAddon: null, monthlyCents: null, tipCents: 0 })
   })
 
   it('reports no_profile when no profile has the customer id', async () => {
@@ -154,10 +154,10 @@ describe('syncPlanStepForCustomer (webhook)', () => {
       }),
     }
     const store = supabasePlanStepStore(admin as unknown as Parameters<typeof supabasePlanStepStore>[0])
-    expect(await store.writePlanStep('cus_1', { stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500 }, 't')).toBe(1)
+    expect(await store.writePlanStep('cus_1', { stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500, tipCents: 0 }, 't')).toBe(1)
     expect(seen).toEqual([
       'profiles',
-      { plan_step: 'priority', plan_legacy: true, plan_legacy_addon: 'pro', plan_monthly_cents: 5500, plan_step_synced_at: 't' },
+      { plan_step: 'priority', plan_legacy: true, plan_legacy_addon: 'pro', plan_monthly_cents: 5500, plan_step_synced_at: 't', plan_tip_cents: 0 },
       'stripe_customer_id',
       'cus_1',
     ])
@@ -167,7 +167,7 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const { stripe } = fakeStripe([sub([legacyHosting(4000), legacyAddonAdhoc(1500)])])
     const store = memStore()
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
-    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500 })
+    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500, tipCents: 0 })
   })
 
   it('creating a downgrade schedule fires customer.subscription.updated with only `schedule` changed: the re-sync writes the SAME step', async () => {
@@ -187,5 +187,60 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const store = memStore()
     await syncPlanStepForCustomer({ stripe: fakeStripe([sub([ladderItem('priority')])]).stripe, store, now: NOW }, 'cus_1')
     expect((store.calls[0][1] as { stepId: string }).stepId).toBe('priority')
+  })
+})
+
+describe('the tipping system: entitlements come from the step price only', () => {
+  const tipItem = (dollars: number): Item => ({ price: { id: 'price_tip', lookup_key: 'freeplug_tip_monthly', unit_amount: 100, recurring: { interval: 'month' }, product: 'freeplug_tip', metadata: {} }, quantity: dollars })
+  const noProduct = async (id: string) => ({ id, name: 'x' })
+
+  it('Starter + a $20 tip is NOT Priority (rank 0, no priority queue), and the tip is carried separately', async () => {
+    const e = await entitlementsForSubscription(sub([ladderItem('starter'), tipItem(20)]), noProduct)
+    expect(e.step?.id).toBe('starter')
+    expect(e.priorityRank).toBe(0)
+    expect(e.monthlyCents).toBe(3500)
+    expect(e.tipCents).toBe(2000)
+  })
+
+  it('the tier is found whatever the item order (tip item first)', async () => {
+    const e = await entitlementsForSubscription(sub([tipItem(5), ladderItem('fast_lane')]), noProduct)
+    expect(e.step?.id).toBe('fast_lane')
+    expect(e.includedEditsPerMonth).toBe(1)
+    expect(e.tipCents).toBe(500)
+  })
+
+  it('a legacy plan never counts a tip item into its hosting amount (no Priority bought by a tip)', async () => {
+    const e = await entitlementsForSubscription(sub([legacyHosting(4000), tipItem(19)]), noProduct)
+    expect(e.legacy).toBe(true)
+    expect(e.monthlyCents).toBe(4000)
+    expect(e.priorityRank).toBe(0)
+  })
+
+  it('the webhook snapshot writes plan_tip_cents next to the step', async () => {
+    const { stripe } = fakeStripe([sub([ladderItem('priority'), tipItem(7)])])
+    const store = memStore()
+    await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
+    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: false, legacyAddon: null, monthlyCents: 5500, tipCents: 700 })
+  })
+
+  it('before the tipping migration: the snapshot is still written without plan_tip_cents (no webhook 500)', async () => {
+    const seen: Record<string, unknown>[] = []
+    const admin = {
+      from: () => ({
+        update: (v: Record<string, unknown>) => ({
+          eq: () => ({
+            select: async () => {
+              seen.push(v)
+              return 'plan_tip_cents' in v
+                ? { data: null, error: { message: "Could not find the 'plan_tip_cents' column of 'profiles' in the schema cache", code: 'PGRST204' } }
+                : { data: [{ id: 'u1' }], error: null }
+            },
+          }),
+        }),
+      }),
+    }
+    const store = supabasePlanStepStore(admin as unknown as Parameters<typeof supabasePlanStepStore>[0])
+    expect(await store.writePlanStep('cus_1', { stepId: 'starter', legacy: false, legacyAddon: null, monthlyCents: 3500, tipCents: 500 }, 't')).toBe(1)
+    expect(seen.map((v) => 'plan_tip_cents' in v)).toEqual([true, false])
   })
 })

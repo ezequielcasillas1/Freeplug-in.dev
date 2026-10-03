@@ -26,6 +26,7 @@ vi.mock('@/lib/plans/user-entitlements', async () => {
 })
 vi.mock('@/lib/stripe/change-plan', () => ({
   subscriptionMonthlyCents: () => 6500,
+  subscriptionTipDollars: (sub: { tip?: number }) => sub.tip ?? 0,
   pendingPlanChange: async (_s: unknown, sub: { schedule: string | null }) =>
     sub.schedule ? { step: 'starter', effectiveAt: '2026-11-03T17:48:16.000Z', scheduleId: sub.schedule } : null,
 }))
@@ -44,12 +45,16 @@ vi.mock('../billing-actions', () => ({
   previewPlanChange: vi.fn(),
   updatePaymentMethod: vi.fn(),
   openBillingPortal: vi.fn(),
+  previewTipChangeAction: vi.fn(),
+  changeTipAction: vi.fn(),
 }))
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({
   changeHostingPlan: vi.fn(),
   previewPlanChange: vi.fn(),
   updatePaymentMethod: vi.fn(),
   openBillingPortal: vi.fn(),
+  previewTipChangeAction: vi.fn(),
+  changeTipAction: vi.fn(),
 }))
 
 import DashboardPlansPage from './page'
