@@ -3,6 +3,7 @@ import { AdminQuickEmail } from './AdminQuickEmail'
 import Link from 'next/link'
 import { adminPlanBadge, type AdminPlanBadge } from '@/lib/plans/admin-badge'
 import { entitlementsFor } from '@/lib/plans/ladder'
+import { adminMarkUnsoldPurchaseReviewed } from './actions'
 import type { WebsiteAccessStatus } from '@/lib/website-access'
 
 export type CustomerRowView = {
@@ -17,6 +18,11 @@ export type CustomerRowView = {
   planMonthlyCents: number | null
   /** Hosting-ladder step badge (replaces the Priority-only badge); null when unknown. */
   planBadge?: AdminPlanBadge | null
+  /**
+   * Checkout completed for a step that was no longer sellable (plan_unsold_purchases, not reviewed
+   * yet). Honored; shown as a badge until marked reviewed.
+   */
+  unsoldPurchase?: { id: string; stepName: string; createdAt: string } | null
   /** Website access badge (null = never had hosting, or Stripe lookup failed). */
   websiteAccess: { status: WebsiteAccessStatus; label: string } | null
   updated_at: string
@@ -175,6 +181,7 @@ export function AdminCustomersTable({
                     />
                   </span>
                 ) : null}
+                <AdminUnsoldPurchaseBadge flag={r.unsoldPurchase ?? null} />
               </td>
               <td className="p-3 min-w-[110px] max-w-[160px]">
                 <WebsiteAccessBadge access={r.websiteAccess} />
@@ -204,6 +211,30 @@ export function AdminStepBadge({ badge }: { badge: AdminPlanBadge | null }) {
       }
     >
       {badge.label}
+    </span>
+  )
+}
+
+/**
+ * "Bought a step that wasn't sold" (Aria, Oct 3 12:56): the checkout completed after the step's
+ * sellable flag turned off. The plan is honored; this badge stays until someone marks it reviewed.
+ */
+export function AdminUnsoldPurchaseBadge({ flag }: { flag: CustomerRowView['unsoldPurchase'] }) {
+  if (!flag) return null
+  return (
+    <span className="mt-1 flex flex-wrap items-center gap-1 font-sans" data-testid="unsold-purchase-badge">
+      <span
+        className="rounded bg-amber-100 px-1 text-[10px] font-semibold text-amber-900"
+        title={`Checkout completed ${new Date(flag.createdAt).toLocaleString()} for a step that was not for sale. Honored.`}
+      >
+        Bought {flag.stepName} (not for sale)
+      </span>
+      <form action={adminMarkUnsoldPurchaseReviewed}>
+        <input type="hidden" name="id" value={flag.id} />
+        <button type="submit" className="text-[10px] text-zinc-600 underline">
+          Mark reviewed
+        </button>
+      </form>
     </span>
   )
 }

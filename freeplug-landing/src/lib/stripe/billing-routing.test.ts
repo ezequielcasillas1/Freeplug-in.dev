@@ -1,10 +1,8 @@
 // @vitest-environment node
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { findScheduledSubscription, listInvoicesForCustomer, paymentMethodUpdateSessionParams } from './billing-routing'
 
-vi.mock('./server', () => ({ getStripe: () => ({}) }))
-
-const subs = (data: unknown[]) => ({ subscriptions: { list: vi.fn(async () => ({ data })) } }) as never
+const subs = (data: unknown[]) => ({ subscriptions: { list: async () => ({ data }) } }) as never
 
 describe('findScheduledSubscription', () => {
   it('null without a schedule', async () => {
@@ -33,9 +31,10 @@ describe('paymentMethodUpdateSessionParams', () => {
 describe('listInvoicesForCustomer (in-app invoice list)', () => {
   it('newest first as Stripe returns them; drafts and voided invoices left out', async () => {
     const inv = (id: string, status: string) => ({ id, status, number: `N-${id}`, created: 1_790_000_000, total: 6500, currency: 'usd', hosted_invoice_url: `https://invoice.stripe.test/${id}`, invoice_pdf: `https://pdf.stripe.test/${id}` })
-    const list = vi.fn(async () => ({ data: [inv('in_1', 'paid'), inv('in_2', 'void'), inv('in_3', 'draft'), inv('in_4', 'open'), inv('in_5', 'uncollectible')] }))
+    const calls: unknown[] = []
+    const list = async (q: unknown) => (calls.push(q), ({ data: [inv('in_1', 'paid'), inv('in_2', 'void'), inv('in_3', 'draft'), inv('in_4', 'open'), inv('in_5', 'uncollectible')] }))
     const rows = await listInvoicesForCustomer({ invoices: { list } } as never, 'cus_1')
-    expect(list).toHaveBeenCalledWith({ customer: 'cus_1', limit: 12 })
+    expect(calls).toEqual([{ customer: 'cus_1', limit: 12 }])
     expect(rows.map((r) => [r.id, r.status])).toEqual([['in_1', 'paid'], ['in_4', 'open'], ['in_5', 'uncollectible']])
     expect(rows[0]).toMatchObject({ number: 'N-in_1', totalCents: 6500, currency: 'usd', hostedUrl: 'https://invoice.stripe.test/in_1', pdfUrl: 'https://pdf.stripe.test/in_1', created: new Date(1_790_000_000_000).toISOString() })
   })

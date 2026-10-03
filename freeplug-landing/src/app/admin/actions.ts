@@ -12,6 +12,8 @@ import { getStripe } from '@/lib/stripe/server'
 import { subscriptionPeriodStart } from '@/lib/stripe/subscription-dates'
 import { recordIncludedEdit } from '@/lib/plans/included-edits'
 import { nextBusinessDayDue } from '@/lib/plans/due-by'
+import { redirect } from 'next/navigation'
+import { expireUnsellableCheckoutSessions, type ExpireUnsellableReport } from '@/lib/stripe/expire-unsellable-checkouts'
 
 const STATUSES = ['submitted', 'in_review', 'closed'] as const
 
@@ -276,4 +278,47 @@ export async function adminMarkSmallEdit(
   revalidatePath('/admin', 'layout')
   revalidatePath('/dashboard')
   return { ok: true }
+}
+
+/**
+ * Hosting ladder (Aria, Oct 3 12:56): after a step's sellable flag is turned off in ladder.ts,
+ * expire every open Checkout Session for that step so it can't be paid. Idempotent: run it again
+ * and it finds nothing more to do (sessions that closed meanwhile are reported, not errors).
+ */
+export async function adminExpireUnsellableCheckouts(): Promise<
+  { ok: true; report: ExpireUnsellableReport } | { ok: false; error: string }
+> {
+  await assertAdminAccess()
+  try {
+    const report = await expireUnsellableCheckoutSessions(getStripe())
+    return { ok: true, report }
+  } catch (e) {
+    console.error('[admin] expire unsellable checkouts', e instanceof Error ? e.message : e)
+    return { ok: false, error: 'Could not reach Stripe. Try again.' }
+  }
+}
+
+/** Form version for Admin > Customers: runs the expiry and comes back with the counts. */
+export async function adminExpireUnsellableCheckoutsForm(): Promise<void> {
+  const r = await adminExpireUnsellableCheckouts()
+  redirect(
+    r.ok
+      ? `/admin/customers?checkouts_expired=${r.report.expired.length}&checkouts_closed=${r.report.alreadyClosed.length}&checkouts_checked=${r.report.checked}`
+      : '/admin/customers?checkouts_error=1'
+  )
+}
+
+/** Clears the "bought a step not sold" badge (plan_unsold_purchases.reviewed_at). The plan is untouched. */
+export async function adminMarkUnsoldPurchaseReviewed(formData: FormData): Promise<void> {
+  await assertAdminAccess()
+  const id = uuidSchema.safeParse(formData.get('id'))
+  if (!id.success) return
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('plan_unsold_purchases')
+    .update({ reviewed_at: new Date().toISOString() })
+    .eq('id', id.data)
+    .is('reviewed_at', null)
+  if (error) console.error('[admin] mark unsold purchase reviewed', error.message)
+  revalidatePath('/admin/customers')
 }

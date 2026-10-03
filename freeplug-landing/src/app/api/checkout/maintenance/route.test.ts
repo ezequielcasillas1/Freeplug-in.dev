@@ -55,5 +55,9 @@ describe('POST /api/checkout/maintenance', () => {
     const res = await POST(req({ maintenanceCents: 7500 }))
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ url: 'https://checkout.stripe.test/s' })
+    // Expires an hour after creation (Aria, Oct 3 12:56), rounded down to the minute.
+    const ttl = sessionsCreate.mock.calls[0][0].expires_at - Date.now() / 1000
+    expect(ttl).toBeGreaterThan(58 * 60)
+    expect(ttl).toBeLessThanOrEqual(3600)
   })
 })

@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import { isLiveSubscriptionStatus } from './active-subscription'
+import { isLiveSubscriptionStatus } from './subscription-status'
 import { billingPortalSessionParams } from './portal'
 
 /**

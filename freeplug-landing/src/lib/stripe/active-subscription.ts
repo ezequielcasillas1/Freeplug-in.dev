@@ -1,5 +1,6 @@
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
+import { isLiveSubscriptionStatus } from './subscription-status'
 import { legacyAddonProductId } from '@/lib/stripe/config'
 import {
   entitlementsFor,
@@ -92,21 +93,9 @@ export async function hasActiveOrTrialingSubscription(customerId: string): Promi
   return (await getActiveSubscriptionStatus(customerId)).active
 }
 
-/**
- * Subscription statuses that still count as "has a hosting plan" for checkout: the customer is
- * (or will be) billed, so a second plan must not be sold. 'incomplete' is excluded on purpose:
- * it is a first payment that never went through and expires on its own within 23 hours.
- */
-export const LIVE_SUBSCRIPTION_STATUSES: ReadonlyArray<Stripe.Subscription.Status> = [
-  'active',
-  'trialing',
-  'past_due',
-  'unpaid',
-]
-
-export function isLiveSubscriptionStatus(status: string): boolean {
-  return (LIVE_SUBSCRIPTION_STATUSES as ReadonlyArray<string>).includes(status)
-}
+// LIVE_SUBSCRIPTION_STATUSES / isLiveSubscriptionStatus live in ./subscription-status (no server
+// imports, so scripts can load them); re-exported here for existing callers.
+export { LIVE_SUBSCRIPTION_STATUSES, isLiveSubscriptionStatus } from './subscription-status'
 
 /** Shown (409) when a customer with a live plan tries to start another hosting checkout. */
 export const ALREADY_HAS_PLAN_MESSAGE =

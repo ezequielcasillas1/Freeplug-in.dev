@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
 import { NextResponse } from 'next/server'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
@@ -159,8 +160,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // Double-click guard: concurrent requests for the same user + plan (same 10-minute window, same
-    // set of just-expired sessions) get the same Checkout Session instead of two.
+    // Every session expires an hour after it is created (Aria, Oct 3 12:56).
+    const expiresAt = checkoutSessionExpiresAt()
+    // Double-click guard: concurrent requests for the same user + plan (same minute, so the same
+    // expires_at, and the same set of just-expired sessions) get the same Checkout Session.
     const idempotencyKey =
       'hosting-checkout:' +
       createHash('sha256')
@@ -169,7 +172,7 @@ export async function POST(request: Request) {
             user.id,
             customerId ?? 'new',
             step.id,
-            Math.floor(Date.now() / 600_000),
+            expiresAt,
             expiredSessionIds.join(','),
           ].join('|')
         )
@@ -179,6 +182,7 @@ export async function POST(request: Request) {
       applyUserToCheckoutSession(
         {
           mode: 'subscription',
+          expires_at: expiresAt,
           line_items: [{ price: priceId, quantity: 1 }],
           // The subscription carries the step too (webhook + entitlements read it as a fallback
           // to the price's lookup key).

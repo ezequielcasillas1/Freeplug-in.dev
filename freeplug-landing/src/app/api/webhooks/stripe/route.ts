@@ -6,6 +6,7 @@ import { sendCancelNoticeOnce } from '@/lib/email/cancel-notice'
 import { websiteAccessAfterSubscriptionEvent, type WebsiteAccessStatus } from '@/lib/website-access'
 import { handleOutreachInvoicePaid, handleOutreachSetupSession } from '@/lib/outreach/server'
 import { supabasePlanStepStore, syncPlanStepForCustomer } from '@/lib/plans/plan-step-sync'
+import { flagUnsoldPurchase, supabaseUnsoldPurchaseStore } from '@/lib/plans/unsold-purchase'
 
 export const runtime = 'nodejs'
 
@@ -78,6 +79,19 @@ export async function POST(request: Request) {
         if (error) {
           console.error('[webhook] profiles update (checkout)', error)
         }
+      }
+      // A step that stopped being sold (ladder.ts sellable=false) but whose open session still got
+      // paid: honor it (nothing is canceled) and flag it for admin review. On a write failure answer
+      // 500 so Stripe redelivers; the insert is one row per session, so retries are no-ops.
+      try {
+        const flagged = await flagUnsoldPurchase(
+          supabaseUnsoldPurchaseStore(admin as unknown as Parameters<typeof supabaseUnsoldPurchaseStore>[0]),
+          session
+        )
+        if (flagged) console.warn('[webhook] checkout for a step not sold, honored and flagged', session.id, flagged.plan_step)
+      } catch (e) {
+        console.error('[webhook] unsold-step flag failed', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Unsold-step flag not saved' }, { status: 500 })
       }
       break
     }

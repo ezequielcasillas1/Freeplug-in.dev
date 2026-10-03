@@ -16,11 +16,16 @@ import {
   type CustomerRowView,
 } from '../AdminCustomersTable'
 import { AdminMailBanner } from '../AdminMailBanner'
+import { adminExpireUnsellableCheckoutsForm } from '../actions'
+import { resolvePlanStep } from '@/lib/plans/ladder'
 
-type Props = { searchParams: Promise<{ access?: string }> }
+type Props = {
+  searchParams: Promise<{ access?: string; checkouts_expired?: string; checkouts_closed?: string; checkouts_checked?: string; checkouts_error?: string }>
+}
 
 export default async function AdminCustomersPage({ searchParams }: Props) {
-  const accessFilter = parseAccessFilter((await searchParams).access)
+  const sp = await searchParams
+  const accessFilter = parseAccessFilter(sp.access)
   const mailOn = isMailConfigured()
 
   let admin
@@ -50,6 +55,23 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
     admin,
     profiles.map((p) => p.id)
   )
+
+  // Checkouts completed for a step that was no longer sellable (honored; badge until reviewed).
+  const unsold = new Map<string, { id: string; stepName: string; createdAt: string }>()
+  {
+    const { data: flags, error: flagErr } = await admin
+      .from('plan_unsold_purchases')
+      .select('id, user_id, stripe_customer_id, plan_step, created_at')
+      .is('reviewed_at', null)
+      .order('created_at', { ascending: false })
+    if (flagErr) console.error('[admin/customers] unsold purchases', flagErr.message)
+    const byCustomer = new Map(profiles.filter((p) => p.stripe_customer_id).map((p) => [p.stripe_customer_id as string, p.id as string]))
+    for (const f of flags ?? []) {
+      const owner = (f.user_id as string | null) ?? byCustomer.get(f.stripe_customer_id as string) ?? null
+      if (!owner || unsold.has(owner)) continue
+      unsold.set(owner, { id: f.id as string, stepName: resolvePlanStep(f.plan_step)?.name ?? String(f.plan_step), createdAt: f.created_at as string })
+    }
+  }
 
   const allowAdjustCumulativePaid = process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID === 'true'
 
@@ -95,6 +117,7 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
       planMonthlyCents: planTotals.get(p.id) ?? null,
       planBadge: planBadges.get(p.id) ?? null,
       websiteAccess: access.get(p.id) ?? null,
+      unsoldPurchase: unsold.get(p.id) ?? null,
       updated_at: p.updated_at,
     }
   })
@@ -115,6 +138,18 @@ export default async function AdminCustomersPage({ searchParams }: Props) {
           </>
         ) : null}
       </p>
+      <form action={adminExpireUnsellableCheckoutsForm} className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+        <button type="submit" className="rounded border border-zinc-300 bg-white px-3 py-1.5 font-medium text-zinc-800 hover:bg-zinc-50">
+          Expire open checkouts for steps not for sale
+        </button>
+        <span className="text-zinc-600">Run after turning a step&apos;s sellable flag off in ladder.ts. Safe to run again.</span>
+        {sp.checkouts_expired !== undefined ? (
+          <span role="status" className="text-zinc-800">
+            Checked {sp.checkouts_checked ?? '0'} open checkouts: expired {sp.checkouts_expired}, already closed {sp.checkouts_closed ?? '0'}.
+          </span>
+        ) : null}
+        {sp.checkouts_error ? <span role="status" className="text-red-700">Could not reach Stripe. Try again.</span> : null}
+      </form>
       <AdminCustomersTable
         rows={filterCustomersByAccess(customerRows, accessFilter)}
         accessFilter={accessFilter}

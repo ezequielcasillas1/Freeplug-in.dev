@@ -1,4 +1,5 @@
 import 'server-only'
+import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
 import type Stripe from 'stripe'
 import { cookies, headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -659,10 +660,13 @@ export async function startSetupCheckout(user: { id: string; email?: string | nu
   if (live.length > 0) return { ok: false, error: 'already_has_plan', code: 'already_has_plan' }
   const customerId = ownCustomerId ?? (await createCheckoutCustomer(stripe, user))
   const base = appBaseUrl()
+  // Every Checkout Session expires an hour after it is created (Aria, Oct 3 12:56).
+  const expiresAt = checkoutSessionExpiresAt()
   const session = await stripe.checkout.sessions.create(
     {
       mode: 'setup',
       currency: 'usd',
+      expires_at: expiresAt,
       customer: customerId,
       success_url: `${base}/claim?setup=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/claim?setup=cancelled`,
@@ -671,7 +675,7 @@ export async function startSetupCheckout(user: { id: string; email?: string | nu
         metadata: { type: 'outreach_setup', outreach_site_id: site.id, supabase_user_id: user.id },
       },
     },
-    { idempotencyKey: `outreach-setup:${site.id}:${Math.floor(Date.now() / 600_000)}` }
+    { idempotencyKey: `outreach-setup:${site.id}:${expiresAt}` }
   )
   if (!session.url) return { ok: false, error: 'no_url', code: 'no_url' }
   const { error } = await client

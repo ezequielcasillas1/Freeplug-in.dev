@@ -687,6 +687,10 @@ describe('claim step 4 "Add my card" (Jace/Lina, Sep 27)', () => {
     expect(params).not.toHaveProperty('subscription_data')
     expect(params).not.toHaveProperty('payment_intent_data')
     expect(params.metadata).toMatchObject({ type: 'outreach_setup', outreach_site_id: site.id, supabase_user_id: userId })
+    // Expires an hour after creation (Aria, Oct 3 12:56), rounded down to the minute.
+    const ttl = (params.expires_at as number) - Date.now() / 1000
+    expect(ttl).toBeGreaterThan(58 * 60)
+    expect(ttl).toBeLessThanOrEqual(3600)
     expect(stripeCalls.other).toEqual([])
   })
 

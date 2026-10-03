@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import { clampMaintenanceCents } from '@/lib/stripe/config'
@@ -42,6 +43,8 @@ export async function POST(request: Request) {
       applyUserToCheckoutSession(
         {
           mode: 'payment',
+          // Every Checkout Session expires an hour after it is created (Aria, Oct 3 12:56).
+          expires_at: checkoutSessionExpiresAt(),
           line_items: [
             {
               price_data: {

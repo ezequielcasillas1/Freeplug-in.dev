@@ -180,8 +180,13 @@ describe('POST /api/checkout/hosting', () => {
     expect(await res.json()).toEqual({
       url: 'https://checkout.stripe.test/new',
     })
-    const [, opts] = sessionsCreate.mock.calls[0]
+    const [params, opts] = sessionsCreate.mock.calls[0]
     expect(opts.idempotencyKey).toMatch(/^hosting-checkout:[0-9a-f]{64}$/)
+    // Every session expires an hour after creation (Aria, Oct 3 12:56), rounded down to the minute.
+    const ttl = params.expires_at - Date.now() / 1000
+    expect(ttl).toBeGreaterThan(58 * 60)
+    expect(ttl).toBeLessThanOrEqual(3600)
+    expect(params.expires_at % 60).toBe(0)
   })
 
   it('200 when the only subscription left is canceled (re-signup after hosting ended)', async () => {
