@@ -12,7 +12,7 @@ import {
   type LegacyAddonTierId,
   type PlanStep,
 } from '@/lib/plans/ladder'
-import { planMonthlyTotalCents } from '@/lib/plans/priority'
+import { isTipPrice, tierItems, tipDollarsOfItems, tipCentsFor } from '@/lib/plans/tips'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { planStripLine, type PlanLineItem } from './plan-line'
 
@@ -119,14 +119,16 @@ export async function describeLiveSubscriptions(customerId: string): Promise<str
   const lines: string[] = []
   for (const sub of subs) {
     const items: PlanLineItem[] = []
+    const tipDollars = tipDollarsOfItems(sub.items.data)
     for (const item of sub.items.data) {
+      if (isTipPrice(item.price)) continue
       const product =
         typeof item.price.product === 'string'
           ? await stripe.products.retrieve(item.price.product)
           : (item.price.product as Stripe.Product)
       items.push({ lookupKey: item.price.lookup_key ?? null, productName: product.name, unitAmountCents: item.price.unit_amount ?? 0, quantity: item.quantity ?? 1 })
     }
-    lines.push(planStripLine(items, sub.items.data[0]?.price.recurring?.interval ?? 'month', sub.status))
+    lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars))
   }
   return lines
 }
@@ -148,7 +150,10 @@ export async function entitlementsForSubscription(
   sub: Stripe.Subscription,
   getProduct: (id: string) => Promise<ProductLike>
 ): Promise<Entitlements> {
-  const items = sub.items.data
+  // The tipping system: the tip item never decides the plan. Only tier items are read for the step
+  // (and for a legacy plan's hosting amount); the tip is carried separately as tipCents.
+  const items = tierItems(sub.items.data)
+  const tipCents = tipCentsFor(tipDollarsOfItems(sub.items.data))
   let step: PlanStep | null = null
   for (const item of items) {
     step = stepByLookupKey(item.price.lookup_key) ?? step
@@ -156,7 +161,7 @@ export async function entitlementsForSubscription(
     if (!step && isPlanStepId(md)) step = entitlementsFor({ stepId: md }).step
   }
   if (!step && isPlanStepId(sub.metadata?.plan_step)) step = entitlementsFor({ stepId: sub.metadata.plan_step }).step
-  if (step) return entitlementsFor({ stepId: step.id })
+  if (step) return { ...entitlementsFor({ stepId: step.id }), tipCents }
 
   // Grandfathered: hosting amount = items that aren't an add-on; tier from metadata/id/name.
   let addonTier: LegacyAddonTierId | null = null
@@ -178,7 +183,7 @@ export async function entitlementsForSubscription(
     if (tier) addonTier = addonTier ?? tier
     else hostingCents += monthly
   }
-  return entitlementsFor({ legacy: { hostingCents, addonTier } })
+  return { ...entitlementsFor({ legacy: { hostingCents, addonTier } }), tipCents }
 }
 
 /** Best entitlements across the customer's live subscriptions (one plan per customer is enforced). */
@@ -198,23 +203,4 @@ export async function getEntitlements(customerId: string, stripe: Stripe = getSt
   const live = res.data.filter((s) => s.status === 'active' || s.status === 'trialing')
   const getProduct = (id: string) => stripe.products.retrieve(id) as unknown as Promise<ProductLike>
   return mergeEntitlements(await Promise.all(live.map((s) => entitlementsForSubscription(s, getProduct))))
-}
-
-/**
- * Monthly total (hosting + any add-on) of the customer's active plans, computed like the dashboard
- * plan card: each subscription's item unit amounts x quantity. Throws if Stripe cannot be reached.
- */
-export async function getPlanMonthlyTotalCents(customerId: string): Promise<number> {
-  const stripe = getStripe()
-  const res = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 })
-  return planMonthlyTotalCents(
-    res.data.map((sub) => ({
-      status: sub.status,
-      amount: sub.items.data.reduce(
-        (sum, item) => sum + (item.price.unit_amount ?? 0) * (item.quantity ?? 1),
-        0
-      ),
-      interval: sub.items.data[0]?.price.recurring?.interval ?? 'month',
-    }))
-  )
 }

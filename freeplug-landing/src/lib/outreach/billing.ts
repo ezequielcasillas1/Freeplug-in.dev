@@ -1,7 +1,8 @@
 import type Stripe from 'stripe'
 import { isLiveSubscriptionStatus } from '@/lib/stripe/active-subscription'
 import type { PlanStepId } from '@/lib/plans/ladder'
-import { getStepPriceId } from '@/lib/stripe/prices'
+import { getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
+import { parseTipDollars, tipLineItems } from '@/lib/plans/tips'
 import { resolveLegacyOutreachPlan, resolveOutreachStep } from './plan'
 
 /**
@@ -23,6 +24,8 @@ export type OutreachBillingSite = {
   claimed_by: string | null
   /** Hosting-ladder step chosen at claim step 3 (required for new claims). */
   plan_step: string | null
+  /** The tipping system: monthly tip in whole dollars chosen with the plan (null/0 = none). */
+  plan_tip_dollars?: number | null
   /** Pre-ladder choice (read-only; never charged). */
   plan_hosting_cents: number | null
   plan_addon_tier: string | null
@@ -65,9 +68,14 @@ export type BillingDeps = {
   now?: () => Date
   /** Price id for a step; defaults to the lookup-key resolver in lib/stripe/prices.ts. */
   stepPriceId?: (stepId: PlanStepId) => Promise<string>
+  /** The tip price (lookup key freeplug_tip_monthly); test hook. */
+  tipPriceId?: () => Promise<string>
 }
 
 /** Admin-only message (not customer copy): publish refused for a step that is not sold yet. */
+/** Admin-only: the tip saved at claim time is outside the step's range now (ladder.ts TIP_TOTAL_RANGES changed). */
+export const TIP_OUT_OF_RANGE_PUBLISH_ERROR =
+  "The tip saved with this claim is outside the plan's current tip range. Nothing was charged. Check TIP_TOTAL_RANGES in ladder.ts, or contact the customer."
 export const STEP_NOT_SELLABLE_PUBLISH_ERROR = (name: string) =>
   `${name} is not sold yet (ladder.ts sellable=false). Ask the customer to pick another plan on the claim page.`
 
@@ -166,6 +174,13 @@ export async function publishOutreachSite(
     return { ok: false, status: 'refused', error: STEP_NOT_SELLABLE_PUBLISH_ERROR(step.name) }
   }
 
+  // The tipping system: the tip saved with the claim, re-checked against today's range. Never charge
+  // a different amount than the customer chose: out of range (ranges changed since) = refused.
+  const tip = parseTipDollars(step, site.plan_tip_dollars ?? 0)
+  if (!tip.ok) {
+    return { ok: false, status: 'refused', error: TIP_OUT_OF_RANGE_PUBLISH_ERROR }
+  }
+
   if (!(await store.beginPublish(site.id))) {
     return { ok: false, status: 'refused', error: 'Publish is already running for this site.' }
   }
@@ -226,7 +241,9 @@ export async function publishOutreachSite(
     }
 
     const priceId = await (deps.stepPriceId ?? ((id: PlanStepId) => getStepPriceId(id, stripe)))(step.id)
-    const items: Stripe.SubscriptionCreateParams.Item[] = [{ price: priceId, quantity: 1 }]
+    const tipPriceId = tip.tipDollars > 0 ? await (deps.tipPriceId ?? (() => getTipPriceId(stripe)))() : null
+    // The step price (quantity 1) + the tip price with quantity = tip dollars (none for $0).
+    const items: Stripe.SubscriptionCreateParams.Item[] = [{ price: priceId, quantity: 1 }, ...tipLineItems(tipPriceId, tip.tipDollars)]
 
     const sub = await stripe.subscriptions.create(
       {
@@ -243,6 +260,7 @@ export async function publishOutreachSite(
           outreach_site_id: site.id,
           supabase_user_id: site.claimed_by,
           plan_step: step.id,
+          tip_dollars: String(tip.tipDollars),
         },
       },
       { idempotencyKey: `outreach-publish:${site.id}:${attempt}` }

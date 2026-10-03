@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import { PLAN_STEPS, stepById, type PlanStepId } from '@/lib/plans/ladder'
+import { PLAN_STEPS, stepById, TIP_LOOKUP_KEY, TIP_PRODUCT_ID, TIP_UNIT_CENTS, type PlanStepId } from '@/lib/plans/ladder'
 import { getStripe } from '@/lib/stripe/server'
 
 /**
@@ -68,4 +68,45 @@ export async function getStepPriceId(stepId: PlanStepId, stripe: Stripe = getStr
     )
   }
   return id
+}
+
+// ------------------------------------------------------------------ the tipping system
+
+let tipCache: { id: string; at: number } | null = null
+
+/** Test hook. */
+export function resetTipPriceCache(): void {
+  tipCache = null
+}
+
+/** The tip price must be exactly $1/month, USD, on the fixed tip product (quantity = tip dollars). */
+export function validatesTipPrice(price: Stripe.Price): boolean {
+  const product = typeof price.product === 'string' ? price.product : price.product?.id
+  return (
+    price.active === true &&
+    price.lookup_key === TIP_LOOKUP_KEY &&
+    product === TIP_PRODUCT_ID &&
+    price.currency === 'usd' &&
+    price.unit_amount === TIP_UNIT_CENTS &&
+    price.type === 'recurring' &&
+    price.recurring?.interval === 'month' &&
+    (price.recurring?.interval_count ?? 1) === 1 &&
+    (price.recurring?.usage_type ?? 'licensed') === 'licensed'
+  )
+}
+
+/**
+ * Price id behind the tip lookup key (freeplug_tip_monthly), cached per isolate (10 min). Fails closed
+ * like getStepPriceId: callers that need it (a tip > 0) answer 503 and nobody is charged.
+ */
+export async function getTipPriceId(stripe: Stripe = getStripe(), now = Date.now()): Promise<string> {
+  if (tipCache && now - tipCache.at <= TTL_MS) return tipCache.id
+  const res = await stripe.prices.list({ lookup_keys: [TIP_LOOKUP_KEY], active: true, limit: 10 })
+  const price = res.data.find((p) => p.lookup_key === TIP_LOOKUP_KEY && validatesTipPrice(p))
+  if (!price) {
+    tipCache = null
+    throw new PriceNotConfiguredError(`No active $1 monthly USD price with lookup key ${TIP_LOOKUP_KEY}.`)
+  }
+  tipCache = { id: price.id, at: now }
+  return price.id
 }

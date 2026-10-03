@@ -5,7 +5,8 @@ import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import { resolvePlanStep } from '@/lib/plans/ladder'
-import { getStepPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
+import { getStepPriceId, getTipPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
+import { parseTipDollars, tipLineItems } from '@/lib/plans/tips'
 import {
   ALREADY_HAS_PLAN_MESSAGE,
   listLiveSubscriptions,
@@ -21,7 +22,7 @@ import {
 } from '@/lib/stripe/checkout-context'
 import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
 import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
-import { STEP_NOT_SELLABLE_MESSAGE } from '@/lib/plans/ladder-copy'
+import { STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
 
 export const runtime = 'nodejs'
 
@@ -69,14 +70,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: STEP_NOT_SELLABLE_MESSAGE(step.name), code: 'not_sellable' }, { status: 400 })
     }
 
+    // The tipping system: optional whole-dollar tip inside the step's range (ladder.ts). Refused here,
+    // whatever the slider sent; 0 / missing = no tip item.
+    const tip = parseTipDollars(step, body?.tipDollars)
+    if (!tip.ok) {
+      return NextResponse.json({ error: TIP_OUT_OF_RANGE, code: 'tip_out_of_range' }, { status: 400 })
+    }
+    const tipDollars = tip.tipDollars
+
     const ctx = await getCheckoutSessionContext()
     const stripe = getStripe()
 
     // One line item: the Stripe price behind the step's lookup key. Resolved before any open session is
     // expired, and fails closed (503) if the price is missing or doesn't match the ladder amount.
     let priceId: string
+    let tipPriceId: string | null = null
     try {
       priceId = await getStepPriceId(step.id, stripe)
+      if (tipDollars > 0) tipPriceId = await getTipPriceId(stripe)
     } catch (e) {
       console.error(
         '[checkout/hosting] step price unavailable',
@@ -147,7 +158,10 @@ export async function POST(request: Request) {
         const hostingOpen = open.data.filter(
           (s) => s.mode === 'subscription' && s.metadata?.type === 'hosting'
         )
-        const samePlan = hostingOpen.find((s) => s.url && s.metadata?.plan_step === step.id)
+        // Same plan AND same tip: a session for another tip amount is expired below, never reused.
+        const samePlan = hostingOpen.find(
+          (s) => s.url && s.metadata?.plan_step === step.id && (s.metadata?.tip_dollars ?? '0') === String(tipDollars)
+        )
         if (samePlan?.url) {
           return NextResponse.json({ url: samePlan.url })
         }
@@ -172,6 +186,7 @@ export async function POST(request: Request) {
             user.id,
             customerId ?? 'new',
             step.id,
+            String(tipDollars),
             expiresAt,
             expiredSessionIds.join(','),
           ].join('|')
@@ -183,13 +198,15 @@ export async function POST(request: Request) {
         {
           mode: 'subscription',
           expires_at: expiresAt,
-          line_items: [{ price: priceId, quantity: 1 }],
+          // The step price (quantity 1) + the tip price with quantity = tip dollars (none for $0).
+          line_items: [{ price: priceId, quantity: 1 }, ...tipLineItems(tipPriceId, tipDollars)],
           // The subscription carries the step too (webhook + entitlements read it as a fallback
           // to the price's lookup key).
           subscription_data: {
             metadata: {
               type: 'hosting',
               plan_step: step.id,
+              tip_dollars: String(tipDollars),
               supabase_user_id: checkoutUser.id,
             },
           },
@@ -198,6 +215,7 @@ export async function POST(request: Request) {
         {
           type: 'hosting',
           plan_step: step.id,
+          tip_dollars: String(tipDollars),
         }
       ),
       { idempotencyKey }

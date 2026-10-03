@@ -12,3 +12,14 @@ export function adminPlanBadge(ent: Pick<Entitlements, 'step' | 'legacy' | 'prio
     rank: ent.priorityRank,
   }
 }
+
+const adminDollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
+
+/**
+ * Admin customers row (tipping system): the plan price and the tip as separate parts, after the step
+ * badge, so the row reads "<Tier> $65/mo + $5 tip". The tip never changes the badge or the rank.
+ */
+export function adminPlanAmount(monthlyCents: number, tipCents: number = 0): string {
+  const base = `${adminDollars(monthlyCents)}/mo`
+  return tipCents > 0 ? `${base} + ${adminDollars(tipCents)} tip` : base
+}

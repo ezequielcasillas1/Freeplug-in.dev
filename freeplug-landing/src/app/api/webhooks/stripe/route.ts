@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { invoiceTipCents } from '@/lib/plans/tips'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -164,11 +165,21 @@ export async function POST(request: Request) {
         break
       }
 
-      const { error: insertErr } = await admin.from('billing_ledger').insert({
+      const ledgerRow = {
         profile_id: profile.id,
         stripe_invoice_id: inv.id,
         amount_cents: inv.amount_paid,
-      })
+      }
+      // The tipping system: the tip part of this payment, shown on its own (admin, ledger). The
+      // total stays amount_paid, so every existing total is unchanged.
+      const tipCents = Math.min(invoiceTipCents(inv), inv.amount_paid)
+      let { error: insertErr } = await admin.from('billing_ledger').insert({ ...ledgerRow, tip_cents: tipCents })
+      // Before migration 20261003200000 (tip_cents) is applied: never lose the ledger row over the
+      // new column. Undefined column (42703) or PostgREST's schema-cache miss (PGRST204) only.
+      if (insertErr && (insertErr.code === '42703' || insertErr.code === 'PGRST204')) {
+        console.warn('[webhook] billing_ledger.tip_cents missing; row saved without it', inv.id)
+        ;({ error: insertErr } = await admin.from('billing_ledger').insert(ledgerRow))
+      }
 
       if (insertErr) {
         if (insertErr.code === '23505') {

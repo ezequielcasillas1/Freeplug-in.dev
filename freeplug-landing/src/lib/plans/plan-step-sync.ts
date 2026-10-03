@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
 import type { PlanStepId } from './ladder'
 import { getEntitlements } from '@/lib/stripe/active-subscription'
-import { snapshotOf, type PlanSnapshot } from './plan-snapshot'
+import { isMissingColumnError, snapshotOf, type PlanSnapshot } from './plan-snapshot'
 
 /**
  * Webhook: write the customer's entitlement snapshot on profiles (plan_step, plan_legacy,
@@ -36,23 +36,29 @@ export async function syncPlanStepForCustomer(
 export function supabasePlanStepStore(admin: {
   from: (t: 'profiles') => {
     update: (v: Record<string, unknown>) => {
-      eq: (c: string, v: string) => { select: (c: string) => PromiseLike<{ data: unknown[] | null; error: { message: string } | null }> }
+      eq: (c: string, v: string) => { select: (c: string) => PromiseLike<{ data: unknown[] | null; error: { message: string; code?: string } | null }> }
     }
   }
 }): PlanStepStore {
   return {
     async writePlanStep(customerId, snapshot, syncedAt) {
-      const { data, error } = await admin
+      const base = {
+        plan_step: snapshot.stepId,
+        plan_legacy: snapshot.legacy,
+        plan_legacy_addon: snapshot.legacyAddon,
+        plan_monthly_cents: snapshot.monthlyCents,
+        plan_step_synced_at: syncedAt,
+      }
+      let { data, error } = await admin
         .from('profiles')
-        .update({
-          plan_step: snapshot.stepId,
-          plan_legacy: snapshot.legacy,
-          plan_legacy_addon: snapshot.legacyAddon,
-          plan_monthly_cents: snapshot.monthlyCents,
-          plan_step_synced_at: syncedAt,
-        })
+        .update({ ...base, plan_tip_cents: snapshot.tipCents })
         .eq('stripe_customer_id', customerId)
         .select('id')
+      // Before migration 20261003200000 (plan_tip_cents): still write the perks snapshot, so the
+      // webhook doesn't fail (and get redelivered) over a display-only column.
+      if (error && isMissingColumnError(error)) {
+        ;({ data, error } = await admin.from('profiles').update(base).eq('stripe_customer_id', customerId).select('id'))
+      }
       if (error) throw new Error(`profiles plan_step update: ${error.message}`)
       return data?.length ?? 0
     },

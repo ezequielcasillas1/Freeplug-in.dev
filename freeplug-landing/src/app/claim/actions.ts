@@ -11,7 +11,7 @@ import {
 import { customerMessage } from '@/lib/outreach/errors'
 import { GENERIC_TRY_AGAIN } from '@/lib/outreach/copy'
 import { resolvePlanStep } from '@/lib/plans/ladder'
-import { STEP_NOT_SELLABLE_MESSAGE } from '@/lib/plans/ladder-copy'
+import { STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
 
 type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; code?: string; error: string }
 
@@ -47,6 +47,7 @@ export async function saveClaimPlanAction(plan: unknown): Promise<string | null>
     const step = resolvePlanStep((plan as { planStep?: unknown } | null)?.planStep)
     return STEP_NOT_SELLABLE_MESSAGE(step?.name ?? 'This plan')
   }
+  if (!res.ok && res.code === 'tip_out_of_range') return TIP_OUT_OF_RANGE
   return res.ok ? null : GENERIC_TRY_AGAIN
 }
 

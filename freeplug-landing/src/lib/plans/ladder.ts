@@ -84,6 +84,45 @@ export const PLAN_STEPS: readonly PlanStep[] = [
   { id: 'growth', name: 'Growth partner', monthlyCents: 10000, lookupKey: lookupKeyFor('growth'), productId: productIdFor('growth'), aiEditsPerMonth: 40, rank: 5, adds: ['seasonalRefresh', 'quarterlyCall', 'doneForYouEdits'], sellable: false },
 ] as const
 
+// ------------------------------------------------------------------ the tipping system (Oct 3)
+
+/**
+ * The tipping system: an optional monthly extra a customer can add on top of a step's price to
+ * support Freeplug. It never buys anything: perks, queue order and entitlements come from the STEP
+ * only (src/lib/plans/tips.ts has the helpers; tests check a Starter + tip customer is not Priority).
+ *
+ * Stripe model: ONE subscription = the step's price (quantity 1) + one tip item. The tip item is a
+ * single recurring $1/month price (lookup key below, created in test mode by
+ * scripts/stripe-test-setup-ladder.mjs) with quantity = tip dollars. A $0 tip = no tip item.
+ * Nothing builds an inline price_data.
+ */
+export const TIP_LOOKUP_KEY = 'freeplug_tip_monthly'
+/** Stripe Product id of the tip price (fixed id, like the step products). */
+export const TIP_PRODUCT_ID = 'freeplug_tip'
+/** One tip unit = $1/month; the item quantity is the tip in whole dollars. */
+export const TIP_UNIT_CENTS = 100
+
+/**
+ * The monthly TOTAL a customer can choose per step with the slider, in whole dollars (min = the
+ * step price, i.e. no tip). EZEQUIEL: change a range here; nothing else hard-codes it. A step whose
+ * sellable flag is false gets no slider at all (tipRangeFor() returns null), and the server refuses
+ * any tip outside the range (checkout, claim, tip changes).
+ */
+export const TIP_TOTAL_RANGES: Record<PlanStepId, { minDollars: number; maxDollars: number }> = {
+  starter: { minDollars: 35, maxDollars: 54 },
+  priority: { minDollars: 55, maxDollars: 64 },
+  fast_lane: { minDollars: 65, maxDollars: 74 },
+  leads: { minDollars: 75, maxDollars: 84 },
+  get_found: { minDollars: 85, maxDollars: 99 },
+  growth: { minDollars: 100, maxDollars: 120 },
+}
+
+/**
+ * Nudge (Oct 3): when the chosen total is within this many dollars of the NEXT step's price and that
+ * step is sellable, the slider suggests switching instead. No nudge from the top step.
+ */
+export const TIP_NUDGE_WITHIN_DOLLARS = 10
+
 /**
  * "Done by end of next business day (Mon-Fri, excluding holidays)" (Fast lane and up): a TARGET,
  * not a guarantee (no refund or credit is tied to it). Due at this hour, Central time, on the next
@@ -280,6 +319,11 @@ export type Entitlements = {
   quarterlyCall: boolean
   doneForYouEdits: boolean
   aiEditsPerMonth: number
+  /**
+   * The tipping system: the customer's monthly tip in cents (0 = none). Billing display only (admin
+   * row, plan strip); it NEVER grants a perk or a queue rank, and monthlyCents never includes it.
+   */
+  tipCents: number
 }
 
 export const NO_PLAN_ENTITLEMENTS: Entitlements = {
@@ -298,6 +342,7 @@ export const NO_PLAN_ENTITLEMENTS: Entitlements = {
   quarterlyCall: false,
   doneForYouEdits: false,
   aiEditsPerMonth: 0,
+  tipCents: 0,
 }
 
 export type EntitlementInput =
@@ -324,10 +369,14 @@ export function entitlementsFor(input: EntitlementInput): Entitlements {
       quarterlyCall: perks.has('quarterlyCall'),
       doneForYouEdits: perks.has('doneForYouEdits'),
       aiEditsPerMonth: step.aiEditsPerMonth,
+      tipCents: 0,
     }
   }
-  // Legacy: keep exactly what was sold. Priority = total >= $55 (the Sep 25 rule); the included
-  // edit comes only from Plus/Pro, GBP only from Pro. No new-ladder perks are granted.
+  // Legacy: keep exactly what was sold. Priority = the bought plan's total (hosting price + add-on)
+  // >= $55 (the Sep 25 rule, kept for grandfathered plans only: it is what they paid for, and the old
+  // slider price WAS the plan). A tip is never part of hostingCents (callers pass tier items only,
+  // see tips.ts tierItems). The included edit comes only from Plus/Pro, GBP only from Pro. No
+  // new-ladder perks are granted.
   const addon = legacyAddonById(input.legacy.addonTier)
   const total = Math.max(0, input.legacy.hostingCents) + (addon?.monthlyCents ?? 0)
   const step = stepForMonthlyCents(total)

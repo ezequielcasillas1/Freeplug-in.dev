@@ -4,6 +4,7 @@ import type Stripe from 'stripe'
 import { isPlanStepId, stepById, stepByLookupKey, type PlanStep, type PlanStepId } from '../plans/ladder'
 import { PRORATION_DATE_MAX_AGE_SECONDS, planMove, type PlanMove } from '../plans/plan-direction'
 import { subscriptionPeriodEnd } from './subscription-dates'
+import { parseTipDollars, tierItems, tipItemOf, tipDollarsOfItems } from '../plans/tips'
 
 export { planMove, type PlanMove }
 
@@ -40,6 +41,13 @@ export { planMove, type PlanMove }
  * Grandfathered plans move only when the customer picks a step (never automatically). Their
  * "now" amount is the subscription's monthly total (hosting + add-on); an equal-priced step is
  * treated as an upgrade (applied now, zero proration).
+ *
+ * The tipping system (Oct 3): a tip item (src/lib/plans/tips.ts) never counts as the plan. The step
+ * and the "now" amount come from the tier item(s) only, and ANY step change resets the tip to $0:
+ * an upgrade deletes the tip item in the same update (the preview includes that), and a downgrade's
+ * next schedule phase holds only the new step price, so the tip item stops at the switch date. A tip
+ * change (changeTip) applies from the next billing date with proration_behavior=none and is refused
+ * while a switch is planned (the tip would end at the switch anyway).
  */
 
 export type PendingPlanChange = { step: PlanStepId; effectiveAt: string; scheduleId: string }
@@ -80,6 +88,8 @@ export type PlanChangePreview =
       /** The step's monthly price, billed from nextBillingAt (the billing date does not move). */
       nextAmountCents: number
       nextBillingAt: string | null
+      /** The tip that this upgrade ends (whole dollars; 0 = none). Its unused part is in amountDueCents. */
+      tipDollars: number
     }
   | { ok: false; code: 'not_live' | 'ending' | 'not_upgrade' | 'not_sellable' | 'price'; message: string }
 
@@ -87,8 +97,9 @@ type Sub = Pick<Stripe.Subscription, 'id' | 'status' | 'cancel_at_period_end' | 
   latest_invoice?: string | { id: string } | null
 }
 
+/** What the PLAN costs a month (tier items only; a tip never counts). */
 export function subscriptionMonthlyCents(sub: Pick<Stripe.Subscription, 'items'>): number {
-  return sub.items.data.reduce((sum, item) => {
+  return tierItems(sub.items.data).reduce((sum, item) => {
     const amount = (item.price.unit_amount ?? 0) * (item.quantity ?? 1)
     return sum + (item.price.recurring?.interval === 'year' ? Math.round(amount / 12) : amount)
   }, 0)
@@ -96,8 +107,14 @@ export function subscriptionMonthlyCents(sub: Pick<Stripe.Subscription, 'items'>
 
 /** The ladder step a subscription is on (by price lookup key), or null for a grandfathered plan. */
 export function currentLadderStep(sub: Pick<Stripe.Subscription, 'items'>): PlanStep | null {
-  if (sub.items.data.length !== 1) return null
-  return stepByLookupKey(sub.items.data[0].price.lookup_key)
+  const tier = tierItems(sub.items.data)
+  if (tier.length !== 1) return null
+  return stepByLookupKey(tier[0].price.lookup_key)
+}
+
+/** The customer's monthly tip in whole dollars (0 = no tip item). */
+export function subscriptionTipDollars(sub: Pick<Stripe.Subscription, 'items'>): number {
+  return tipDollarsOfItems(sub.items.data)
 }
 
 const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : (v?.id ?? null))
@@ -168,10 +185,16 @@ const PAYMENT_FAILED = 'The card was not charged, so the plan did not change.'
 /** Stripe's 409 for a second request with the same idempotency key while the first is in flight. */
 const isKeyInUse = (e: unknown) => !!e && typeof e === 'object' && (e as { code?: string }).code === 'idempotency_key_in_use'
 
-/** Items for an upgrade: the first item becomes the step price, any others (an old add-on) go. */
-function upgradeItems(sub: Pick<Stripe.Subscription, 'items'>, priceId: string): Stripe.SubscriptionUpdateParams.Item[] {
-  const [first, ...rest] = sub.items.data
-  return [{ id: first.id, price: priceId, quantity: 1 }, ...rest.map((i) => ({ id: i.id, deleted: true as const }))]
+/**
+ * Items for an upgrade: the TIER item (the ladder price, else a legacy plan's first non-tip item)
+ * becomes the step price; every other item goes, an old add-on AND the tip (a plan change resets
+ * the tip to $0). Exported for tests.
+ */
+export function upgradeItems(sub: Pick<Stripe.Subscription, 'items'>, priceId: string): Stripe.SubscriptionUpdateParams.Item[] {
+  const tier = tierItems(sub.items.data)
+  const keep = tier.find((i) => stepByLookupKey(i.price.lookup_key)) ?? tier[0] ?? sub.items.data[0]
+  const rest = sub.items.data.filter((i) => i.id !== keep.id)
+  return [{ id: keep.id, price: priceId, quantity: 1 }, ...rest.map((i) => ({ id: i.id, deleted: true as const }))]
 }
 
 export function upgradeIdempotencyKey(
@@ -221,6 +244,7 @@ export async function previewPlanStepChange(
     currency: preview.currency,
     nextAmountCents: target.monthlyCents,
     nextBillingAt: end ? end.toISOString() : null,
+    tipDollars: subscriptionTipDollars(sub),
   }
 }
 
@@ -344,4 +368,120 @@ export async function cancelPlanAtPeriodEnd(stripe: Stripe, sub: Sub, now: Date 
   }
   await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true }, { idempotencyKey: `plan-cancel:${sub.id}:${pending ?? 'none'}` })
   return { ok: true, kind: 'canceled', clearedPendingChange: cleared }
+}
+
+// ------------------------------------------------------------------ the tipping system: tip changes
+
+export type TipChangeRefusal = 'not_live' | 'ending' | 'pending_change' | 'no_tip_plan' | 'out_of_range' | 'price'
+
+export type TipChangePreview =
+  | {
+      ok: true
+      step: PlanStepId
+      tipDollars: number
+      /** The next regular invoice after the change (step price + new tip, after any customer credit). */
+      nextAmountCents: number
+      currency: string
+      nextBillingAt: string | null
+      unchanged: boolean
+    }
+  | { ok: false; code: TipChangeRefusal; message: string }
+
+export type TipChangeResult =
+  | { ok: true; kind: 'changed' | 'unchanged'; step: PlanStepId; tipDollars: number; nextAmountCents: number; nextBillingAt: string | null }
+  | { ok: false; code: TipChangeRefusal; message: string }
+
+type TipCheck =
+  | { ok: true; step: PlanStep; current: number; items: Stripe.SubscriptionUpdateParams.Item[] }
+  | { ok: false; code: TipChangeRefusal; message: string }
+
+/** Shared checks + the item change for a new tip (no Stripe call except the tip price lookup). */
+async function tipChangeItems(sub: Sub, tipDollars: unknown, tipPriceId: () => Promise<string>): Promise<TipCheck> {
+  if (sub.status !== 'active' && sub.status !== 'trialing') return { ok: false, code: 'not_live', message: 'No active hosting plan.' }
+  if (sub.cancel_at_period_end || sub.cancel_at) return { ok: false, code: 'ending', message: 'This plan is set to end.' }
+  // A planned switch drops the tip at the switch date; changing it now would be overwritten by the
+  // schedule's next phase, so it waits until the switch has happened (or "Keep <plan>" cancels it).
+  if (scheduleId(sub)) return { ok: false, code: 'pending_change', message: 'A plan switch is planned.' }
+  const step = currentLadderStep(sub)
+  if (!step) return { ok: false, code: 'no_tip_plan', message: 'Tips are for hosting ladder plans.' }
+  const parsed = parseTipDollars(step, tipDollars)
+  if (!parsed.ok) return { ok: false, code: parsed.code === 'not_sellable' ? 'no_tip_plan' : 'out_of_range', message: 'That tip is outside the range for this plan.' }
+  const next = parsed.tipDollars
+  const item = tipItemOf(sub.items.data)
+  const current = item ? (item.quantity ?? 0) : 0
+  let items: Stripe.SubscriptionUpdateParams.Item[] = []
+  if (next !== current) {
+    if (item && next > 0) items = [{ id: item.id, quantity: next }]
+    else if (item) items = [{ id: item.id, deleted: true }]
+    else {
+      try {
+        items = [{ price: await tipPriceId(), quantity: next }]
+      } catch {
+        return { ok: false, code: 'price', message: 'Tips are not available right now.' }
+      }
+    }
+  }
+  return { ok: true, step, current, items }
+}
+
+/**
+ * Read-only: what the next regular bill will be with a new tip (step price + tip). Uses Stripe's
+ * upcoming-invoice preview with proration_behavior=none, so nothing changes today. A Stripe error is
+ * thrown; the caller falls back to the computed amount.
+ */
+export async function previewTipChange(
+  deps: { stripe: Stripe; tipPriceId: () => Promise<string> },
+  sub: Sub,
+  tipDollars: unknown
+): Promise<TipChangePreview> {
+  const check = await tipChangeItems(sub, tipDollars, deps.tipPriceId)
+  if (!check.ok) return check
+  const next = typeof tipDollars === 'number' ? tipDollars : 0
+  const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
+  const computed = check.step.monthlyCents + next * 100
+  if (check.items.length === 0) {
+    return { ok: true, step: check.step.id, tipDollars: next, nextAmountCents: computed, currency: 'usd', nextBillingAt: end ? end.toISOString() : null, unchanged: true }
+  }
+  const preview = await deps.stripe.invoices.createPreview({
+    subscription: sub.id,
+    subscription_details: { items: check.items, proration_behavior: 'none' },
+  })
+  return {
+    ok: true,
+    step: check.step.id,
+    tipDollars: next,
+    nextAmountCents: preview.amount_due,
+    currency: preview.currency,
+    nextBillingAt: end ? end.toISOString() : null,
+    unchanged: false,
+  }
+}
+
+/**
+ * Change the monthly tip: from the next billing date, up or down, with proration_behavior=none
+ * (nothing is charged or credited today). $0 deletes the tip item. Refused while a switch is planned,
+ * for a plan that is ending, for a grandfathered plan and for a tip outside the step's range.
+ */
+export async function changeTip(
+  deps: { stripe: Stripe; tipPriceId: () => Promise<string> },
+  sub: Sub,
+  tipDollars: unknown,
+  opts: { userId?: string; now?: Date } = {}
+): Promise<TipChangeResult> {
+  const check = await tipChangeItems(sub, tipDollars, deps.tipPriceId)
+  if (!check.ok) return check
+  const next = typeof tipDollars === 'number' ? tipDollars : 0
+  const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
+  const nextBillingAt = end ? end.toISOString() : null
+  const nextAmountCents = check.step.monthlyCents + next * 100
+  if (check.items.length === 0) return { ok: true, kind: 'unchanged', step: check.step.id, tipDollars: next, nextAmountCents, nextBillingAt }
+  await deps.stripe.subscriptions.update(
+    sub.id,
+    { items: check.items, proration_behavior: 'none' },
+    // Same user + subscription + from/to amounts within the same minute = one update (a double Save).
+    // The minute keeps a later change back to the same amount a NEW request (a reused key would
+    // replay the old response for 24 hours without applying anything).
+    { idempotencyKey: `tip-change:${opts.userId ?? 'na'}:${sub.id}:${check.current}:${next}:${Math.floor((opts.now ?? new Date()).getTime() / 60000)}` }
+  )
+  return { ok: true, kind: 'changed', step: check.step.id, tipDollars: next, nextAmountCents, nextBillingAt }
 }

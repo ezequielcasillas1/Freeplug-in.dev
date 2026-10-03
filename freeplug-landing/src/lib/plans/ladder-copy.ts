@@ -218,3 +218,73 @@ export const CHANGE_PLAN_LINK = 'Change plan'
  */
 export const HELP_PAYMENT_METHOD =
   'Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there. If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices.'
+
+/**
+ * FINAL (Sable, /workspace/copy/freeplug-ladder-round4-copy-2026-10-03.md "Added 2:20 PM CT"; Aria said
+ * yes). Upgrade confirm extras and the tip-ends lines.
+ */
+/** [Final, Sable 2:20 PM] Upgrade confirm when the preview total is exactly $0.00 (a partial credit keeps UPGRADE_CONFIRM_LINE). */
+export const UPGRADE_CONFIRM_ZERO = (name: string, monthly: string, date: string) =>
+  `Switch to ${name} now? Nothing is charged today. Then ${monthly}/month starting ${date}.`
+/** [Final, Sable 2:20 PM] Under the upgrade confirm, only when a downgrade is planned. */
+export const UPGRADE_REPLACES_PENDING = (pendingName: string) => `This replaces your planned switch to ${pendingName}.`
+/** [Final, Aria's wording via Sable 2:20 PM] Upgrade (immediate), only when the customer has a tip. */
+export const PLAN_CHANGE_TIP_ENDS = (tip: string) => `Your ${tip} monthly tip ends with this switch.`
+/** [Final, Sable 2:20 PM] Downgrade (scheduled), only with a tip: under the downgrade button and in the pending box. */
+export const PLAN_CHANGE_TIP_ENDS_ON = (tip: string, date: string) => `Your ${tip} monthly tip ends on ${date}, when this switch starts.`
+
+/**
+ * [Sable] PLACEHOLDERS: the tipping system (Oct 3). An optional monthly extra to support Freeplug; it
+ * never changes what a plan includes. Wording rules: "tip" / "optional extra to support Freeplug",
+ * never "donation" (ladder-copy.test.ts checks). Swap strings here only.
+ */
+export const TIP_COPY_STATUS = 'PLACEHOLDER: pending Sable (tipping system, Oct 3)' as const
+/** [Sable] Slider label (the range input's visible label). */
+export const TIP_SLIDER_LABEL = 'Optional tip to support Freeplug'
+/** [Sable] Grey line under the slider. */
+export const TIP_SLIDER_HELP = "An optional extra to support Freeplug. It doesn't change what your plan includes."
+/** [Sable] Screen readers: the slider value in dollars (aria-valuetext). */
+export const TIP_VALUETEXT = (total: string, tip: string | null) =>
+  tip ? `${total} a month, including a ${tip} tip` : `${total} a month, no tip`
+/** [Sable] Readable live total next to the slider ("$65 + $5 tip = $70/month"). */
+export const TIP_TOTAL_LINE = (price: string, tip: string | null, total: string) =>
+  tip ? `${price} + ${tip} tip = ${total}/month` : `${total}/month, no tip`
+/** [Sable] Nudge when the total is within $10 of the next sellable plan. */
+export const TIP_NUDGE = (next: string, price: string, perk: string) => `${next} is ${price} and adds ${perk}. Switch instead?`
+/** [Sable] Nudge button: picks the next plan (no charge; the normal flow continues). */
+export const TIP_NUDGE_BUTTON = (next: string) => `Choose ${next}`
+/** [Sable] Short "main perk" phrases for the nudge (the first perk a step adds). */
+export const TIP_NUDGE_PERK: Record<PlanPerk, string> = {
+  priorityQueue: 'a place ahead of lower plans when you ask for changes',
+  includedSmallEdit: 'one small edit by us each billing period',
+  nextBusinessDayEdits: `small edits ${NEXT_BUSINESS_DAY_TARGET}`,
+  leadsReport: 'a monthly visits and leads report',
+  quoteAlerts: 'quote alerts',
+  gbpManaged: 'Google Business Profile upkeep',
+  reviewKit: 'a review request kit',
+  seasonalRefresh: 'a seasonal refresh',
+  quarterlyCall: 'a quarterly planning call',
+  doneForYouEdits: 'done-for-you edits',
+}
+/** [Sable] Plan strip and claim summary: the tip as its own part ("Fast lane · $65/month + $5 tip"). */
+export const PLAN_STRIP_TIP = (tip: string) => ` + ${tip} tip`
+/** [Sable] Plans page: heading of the tip box for a live plan. */
+export const TIP_CHANGE_HEADING = 'Your monthly tip'
+/** [Sable] Plans page: grey line in the tip box. */
+export const TIP_CHANGE_NOTE = 'Changes start with your next bill. Nothing is charged today.'
+/** [Sable] Plans page: button that shows the next bill before saving. */
+export const TIP_CHANGE_BUTTON = 'Update tip'
+/** [Sable] Plans page: the tip-change confirmation ("Your next bill: $X on <date>"). */
+export const TIP_NEXT_BILL = (amount: string, date: string) => `Your next bill: ${amount} on ${date}.`
+/** [Sable] Same, when the date is unknown. */
+export const TIP_NEXT_BILL_NO_DATE = (amount: string) => `Your next bill: ${amount}.`
+/** [Sable] Plans page: after saving; `nextBill` is the TIP_NEXT_BILL line the customer confirmed. */
+export const TIP_CHANGED = (nextBill: string) => `Saved. ${nextBill}`
+/** [Sable] Plans page: a switch is planned, so the tip can't change now. */
+export const TIP_CHANGE_PENDING = 'You can change your tip after your planned switch starts.'
+/** [Sable] Plans page: grandfathered plan (no slider). */
+export const TIP_NOT_FOR_PLAN = 'Tips are available on the current plans.'
+/** [Sable] Server refused the amount (outside the plan's range). */
+export const TIP_OUT_OF_RANGE = 'Choose a tip inside the range shown.'
+/** [Sable] */
+export const TIP_CHANGE_UNAVAILABLE = "We couldn't change your tip right now. Try again, or email support@freeplug-in.dev."

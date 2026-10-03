@@ -53,6 +53,8 @@ export const changeRequestSchema = z.object({
 export const planChoiceSchema = z
   .object({
     planStep: z.enum(PLAN_STEP_IDS),
+    // The tipping system: whole dollars; the per-step range is checked in saveChosenPlan (tips.ts).
+    tipDollars: z.number().int().min(0).max(500).optional(),
   })
   .strict()
 

@@ -1,4 +1,5 @@
 import 'server-only'
+import { parseTipDollars } from '@/lib/plans/tips'
 import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
 import type Stripe from 'stripe'
 import { cookies, headers } from 'next/headers'
@@ -89,7 +90,7 @@ export { hashRateKey, rateCheck }
 // ----------------------------------------------------------------------------- site lookups
 
 const SITE_COLUMNS =
-  'id, business_name, contact_email, expires_at, revoked_at, declined_at, claimed_by, claimed_at, screenshot_desktop_path, screenshot_mobile_path, prefill, services, service_sources, plan_step, plan_hosting_cents, plan_addon_tier, setup_session_id, setup_completed_at, stripe_customer_id, stripe_payment_method_id, stripe_subscription_id, publish_status, publish_error, publish_attempts, published_at, live_url, claimer_verified_at, created_at'
+  'id, business_name, contact_email, expires_at, revoked_at, declined_at, claimed_by, claimed_at, screenshot_desktop_path, screenshot_mobile_path, prefill, services, service_sources, plan_step, plan_tip_dollars, plan_hosting_cents, plan_addon_tier, setup_session_id, setup_completed_at, stripe_customer_id, stripe_payment_method_id, stripe_subscription_id, publish_status, publish_error, publish_attempts, published_at, live_url, claimer_verified_at, created_at'
 
 export type OutreachSiteRow = OutreachBillingSite & {
   contact_email: string | null
@@ -619,9 +620,12 @@ export async function saveChosenPlan(userId: string, input: unknown): Promise<Re
   if (!parsed.success || !step) return { ok: false, error: 'Invalid plan.', code: 'invalid' }
   // Coming soon (sellable=false): refused on the server, whatever the claim page sent.
   if (!step.sellable) return { ok: false, error: 'not_sellable', code: 'not_sellable' }
+  // The tipping system: stored with the claim and charged from publish (subscription creation).
+  const tip = parseTipDollars(step, parsed.data.tipDollars)
+  if (!tip.ok) return { ok: false, error: 'tip_out_of_range', code: 'tip_out_of_range' }
   const { error } = await db()
     .from('outreach_sites')
-    .update({ plan_step: step.id, updated_at: new Date().toISOString() })
+    .update({ plan_step: step.id, plan_tip_dollars: tip.tipDollars, updated_at: new Date().toISOString() })
     .eq('id', site.id)
     .eq('claimed_by', userId)
   if (error) return { ok: false, error: 'save', code: 'save' }
@@ -639,7 +643,7 @@ export async function clearChosenPlan(userId: string): Promise<Result> {
   if (site.publish_status === 'live' || site.setup_completed_at) return { ok: false, error: 'locked', code: 'locked' }
   const { data, error } = await db()
     .from('outreach_sites')
-    .update({ plan_step: null, updated_at: new Date().toISOString() })
+    .update({ plan_step: null, plan_tip_dollars: null, updated_at: new Date().toISOString() })
     .eq('id', site.id)
     .eq('claimed_by', userId)
     .is('setup_completed_at', null)
@@ -990,6 +994,7 @@ export async function adminUnclaimAndReissue(siteId: string): Promise<Result<{ l
       declined_at: null,
       expires_at: linkExpiryFrom().toISOString(),
       plan_step: null,
+      plan_tip_dollars: null,
       plan_hosting_cents: null,
       plan_addon_tier: null,
       setup_session_id: null,
