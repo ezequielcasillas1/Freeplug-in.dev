@@ -18,7 +18,11 @@ import {
   changeTip,
   tipChangeIdempotencyKey,
   previewTipChange,
+  hasPendingSwitch,
+  releaseScheduleIfSwitched,
+  scheduleHasFutureSwitch,
 } from './change-plan'
+import { findScheduledSubscription } from './billing-routing'
 
 const step = (id: PlanStepId) => PLAN_STEPS.find((s) => s.id === id)!
 const ladderSub = (id: PlanStepId, over: Record<string, unknown> = {}) =>
@@ -159,7 +163,7 @@ describe('changePlanStep (upgrades now + prorated, downgrades at period end)', (
     const f = fakeStripe()
     const r = await changePlanStep({ stripe: f.stripe, priceIdFor }, ladderSub('leads', { schedule: 'sub_sched_0' }), 'leads')
     expect(r).toEqual({ ok: true, kind: 'unchanged', step: 'leads' })
-    expect(f.calls).toEqual(['schedules.release'])
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release'])
   })
 
   it('an upgrade while a downgrade is pending releases the schedule first', async () => {
@@ -242,7 +246,8 @@ describe('cancel at period end vs a pending downgrade (both orders)', () => {
     expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update(cancel)'])
     const [, params, o] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Record<string, unknown>, { idempotencyKey: string }]
     expect(params).toEqual({ cancel_at_period_end: true })
-    expect(o.idempotencyKey).toBe('plan-cancel:sub_1:sub_sched_1')
+    // One key per cancel (a fixed key would replay the first cancel after a resume).
+    expect(o.idempotencyKey).toMatch(/^plan-cancel:sub_1:sub_sched_1:[0-9a-f-]{36}$/)
   })
 
   it('cancel then downgrade: refused cleanly (resume first), nothing written', async () => {
@@ -580,5 +585,178 @@ describe('the tipping system: tip item vs plan changes', () => {
     expect(p).toEqual({ ok: true, step: 'fast_lane', tipDollars: 9, nextAmountCents: 7400, currency: 'usd', nextBillingAt: new Date(PERIOD_END * 1000).toISOString(), unchanged: false })
     expect(createPreview).toHaveBeenCalledWith({ subscription: 'sub_1', subscription_details: { items: [{ id: 'si_tip', quantity: 9 }], proration_behavior: 'none' } })
     expect(f.calls).toEqual([])
+  })
+})
+
+// ------------------------------------------------------------------ schedule lifecycle (Aria, Oct 3 3:43 PM)
+
+describe('schedule lifecycle: a switch is pending only while a phase starts in the future (Vera round 5 bugs 2 and 3)', () => {
+  const TIP_PRICE = { id: 'price_tip', lookup_key: 'freeplug_tip_monthly', unit_amount: 100, recurring: { interval: 'month' }, product: 'freeplug_tip' }
+  const DAY = 86_400
+  const SWITCH = NOW_S - DAY // Fast lane -> Priority happened yesterday
+  const NEXT_END = SWITCH + 30 * DAY
+  const live = (id: PlanStepId, tip = 0, over: Record<string, unknown> = {}) => {
+    const sub = ladderSub(id, over) as unknown as { items: { data: Record<string, unknown>[] } }
+    sub.items.data[0].current_period_end = NEXT_END
+    if (tip) sub.items.data.push({ id: 'si_tip', quantity: tip, price: TIP_PRICE, current_period_end: NEXT_END })
+    return sub as unknown as Stripe.Subscription
+  }
+  /** The schedule Vera hit: phase 1 (Fast lane + $6, ended) and the switch phase (Priority, current), nothing ahead. */
+  const switchedSchedule = (status = 'active') => ({
+    id: 'sub_sched_old',
+    status,
+    current_phase: { start_date: SWITCH, end_date: NEXT_END },
+    phases: [
+      { start_date: SWITCH - 31 * DAY, end_date: SWITCH, items: [{ price: 'price_fast_lane', quantity: 1 }, { price: 'price_tip', quantity: 6 }], metadata: {} },
+      { start_date: SWITCH, end_date: NEXT_END, items: [{ price: 'price_priority', quantity: 1 }], metadata: { plan_step: 'priority' } },
+    ],
+  })
+  /** A schedule with a switch ahead, plus an ended phase that must be dropped on edit. */
+  const pendingSchedule = () => ({
+    id: 'sub_sched_p',
+    status: 'active',
+    current_phase: { start_date: SWITCH, end_date: NEXT_END },
+    phases: [
+      { start_date: SWITCH - 31 * DAY, end_date: SWITCH, items: [{ price: 'price_growth', quantity: 1 }], metadata: {} },
+      { start_date: SWITCH, end_date: NEXT_END, items: [{ price: 'price_leads', quantity: 1 }], metadata: {} },
+      { start_date: NEXT_END, end_date: NEXT_END + 30 * DAY, items: [{ price: 'price_priority', quantity: 1 }], metadata: { plan_step: 'priority' } },
+    ],
+  })
+  function sched(schedule: Record<string, unknown>, extra: { releaseError?: Error; afterRelease?: string } = {}) {
+    const f = fakeStripe()
+    let released = false
+    f.raw.subscriptionSchedules.retrieve.mockImplementation(async () => {
+      f.calls.push('schedules.retrieve')
+      return (released && extra.afterRelease ? { ...schedule, status: extra.afterRelease } : schedule) as never
+    })
+    f.raw.subscriptionSchedules.release.mockImplementation(async () => {
+      f.calls.push('schedules.release')
+      released = true
+      if (extra.releaseError) throw extra.releaseError
+      return {} as never
+    })
+    f.raw.subscriptionSchedules.create.mockImplementation(async () => {
+      f.calls.push('schedules.create')
+      return { id: 'sub_sched_new', current_phase: { start_date: SWITCH, end_date: NEXT_END }, phases: [{ start_date: SWITCH, end_date: NEXT_END, items: [{ price: 'price_priority', quantity: 1 }] }] } as never
+    })
+    return f
+  }
+
+  it('scheduleHasFutureSwitch: only a phase starting after now counts; released/canceled/completed never do', () => {
+    expect(scheduleHasFutureSwitch(switchedSchedule() as never, NOW)).toBe(false)
+    expect(scheduleHasFutureSwitch(pendingSchedule() as never, NOW)).toBe(true)
+    expect(scheduleHasFutureSwitch({ ...pendingSchedule(), status: 'released' } as never, NOW)).toBe(false)
+    expect(scheduleHasFutureSwitch(pendingSchedule() as never, new Date((NEXT_END + 1) * 1000))).toBe(false)
+  })
+
+  it('Vera B4c: Priority (switched yesterday) -> Starter: no snap-back to Fast lane, no charge, built from the LIVE items', async () => {
+    const f = sched(switchedSchedule())
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, live('priority', 0, { schedule: 'sub_sched_old' }), 'starter')
+    expect(r).toEqual({ ok: true, kind: 'scheduled', step: 'starter', effectiveAt: new Date(NEXT_END * 1000).toISOString() })
+    // the finished schedule is released first, then a fresh one starts from the subscription as it is now
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'schedules.create', 'schedules.update'])
+    const [id, params] = f.raw.subscriptionSchedules.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionScheduleUpdateParams]
+    expect(id).toBe('sub_sched_new')
+    expect(params.proration_behavior).toBe('none')
+    expect(params.phases).toHaveLength(2)
+    expect(params.phases?.[0]).toEqual({ items: [{ price: 'price_priority', quantity: 1 }], start_date: SWITCH, end_date: NEXT_END, proration_behavior: 'none' })
+    expect(params.phases?.[1]).toMatchObject({ items: [{ price: 'price_starter', quantity: 1 }], proration_behavior: 'none', metadata: { plan_step: 'starter' } })
+    // never the old Fast lane phase, never a subscription update (nothing charged)
+    expect(JSON.stringify(params)).not.toContain('price_fast_lane')
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+
+  it('with a switch ahead, a new downgrade edits ONLY the future phase: current phase = live items, ended phases dropped', async () => {
+    const f = sched(pendingSchedule())
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, live('fast_lane', 6, { schedule: 'sub_sched_p' }), 'starter')
+    expect(r).toMatchObject({ ok: true, kind: 'scheduled', step: 'starter' })
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.update']) // no release, no new schedule
+    const [id, params] = f.raw.subscriptionSchedules.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionScheduleUpdateParams]
+    expect(id).toBe('sub_sched_p')
+    expect(params.phases?.map((p) => p.items)).toEqual([
+      [{ price: 'price_fast_lane', quantity: 1 }, { price: 'price_tip', quantity: 6 }], // live items, not the phase's price_leads
+      [{ price: 'price_starter', quantity: 1 }],
+    ])
+    expect(params.phases?.[0]).toMatchObject({ start_date: SWITCH, end_date: NEXT_END, proration_behavior: 'none' })
+    expect(JSON.stringify(params)).not.toContain('price_growth') // the ended phase is gone
+  })
+
+  it('an upgrade right after the switch: the finished schedule is released, nothing is "put back" on a failed card', async () => {
+    const f = sched(switchedSchedule())
+    const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW }, live('priority', 0, { schedule: 'sub_sched_old' }), 'fast_lane')
+    expect(r).toMatchObject({ ok: true, kind: 'upgraded', step: 'fast_lane' })
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update'])
+    const g = sched(switchedSchedule())
+    g.raw.subscriptions.update.mockImplementation(async (id: string) => {
+      g.calls.push('subscriptions.update')
+      return { id, pending_update: { expires_at: 1 }, latest_invoice: { id: 'in_new', status: 'open' } } as never
+    })
+    expect(await changePlanStep({ stripe: g.stripe, priceIdFor, now: () => NOW }, live('priority', 0, { schedule: 'sub_sched_old' }), 'fast_lane')).toMatchObject({ ok: false, code: 'payment_failed', pendingRestored: null })
+    expect(g.calls).not.toContain('schedules.create')
+  })
+
+  it('Vera bug 3: a tip change right after the switch is allowed (the finished schedule is released lazily)', async () => {
+    const f = sched(switchedSchedule())
+    const sub = live('priority', 0, { schedule: 'sub_sched_old' })
+    f.raw.subscriptions.update.mockImplementation(async () => (f.calls.push('subscriptions.update'), { id: 'sub_1', items: { data: [...sub.items.data, { id: 'si_tip', quantity: 4, price: TIP_PRICE }] } }) as never)
+    ;(f.raw.subscriptions as unknown as Record<string, unknown>).retrieve = vi.fn(async () => ({ id: 'sub_1', items: { data: [...sub.items.data, { id: 'si_tip', quantity: 4, price: TIP_PRICE }] } }))
+    const r = await changeTip({ stripe: f.stripe, tipPriceId: async () => 'price_tip' }, sub, 4, { userId: 'u1', now: NOW, confirmId: 'confirm-after1' })
+    expect(r).toMatchObject({ ok: true, kind: 'changed', tipDollars: 4, nextAmountCents: 5900 })
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update'])
+    // the preview unblocks too
+    const g = sched(switchedSchedule())
+    ;(g.raw.invoices as unknown as Record<string, unknown>).createPreview = vi.fn(async () => ({ amount_due: 5900, currency: 'usd' }))
+    expect(await previewTipChange({ stripe: g.stripe, tipPriceId: async () => 'price_tip' }, sub, 4, NOW)).toMatchObject({ ok: true, nextAmountCents: 5900 })
+  })
+
+  it('a tip change while the switch is still ahead stays refused (the schedule is left alone)', async () => {
+    const f = sched(pendingSchedule())
+    const sub = live('fast_lane', 6, { schedule: 'sub_sched_p' })
+    expect(await changeTip({ stripe: f.stripe, tipPriceId: async () => 'price_tip' }, sub, 3, { now: NOW })).toMatchObject({ ok: false, code: 'pending_change' })
+    expect(f.calls).toEqual(['schedules.retrieve'])
+    // and it unblocks the moment the switch phase starts
+    expect(await hasPendingSwitch(f.stripe, sub, new Date((NEXT_END + 1) * 1000))).toBe(false)
+    expect(f.calls).toContain('schedules.release')
+  })
+
+  it('Manage billing (?billing=pending) only while a switch is ahead; a finished schedule goes back to the portal', async () => {
+    const list = (schedule: string) => vi.fn(async () => ({ data: [{ id: 'sub_1', status: 'active', schedule }] }))
+    const after = sched(switchedSchedule())
+    ;(after.raw.subscriptions as unknown as Record<string, unknown>).list = list('sub_sched_old')
+    expect(await findScheduledSubscription(after.stripe, 'cus_1', NOW)).toBeNull()
+    expect(after.calls).toEqual(['schedules.retrieve', 'schedules.release'])
+    const ahead = sched(pendingSchedule())
+    ;(ahead.raw.subscriptions as unknown as Record<string, unknown>).list = list('sub_sched_p')
+    expect(await findScheduledSubscription(ahead.stripe, 'cus_1', NOW)).toEqual({ subscriptionId: 'sub_1', scheduleId: 'sub_sched_p' })
+  })
+
+  it('the Plans page read (pendingPlanChange) releases a finished schedule and shows no pending change', async () => {
+    const f = sched(switchedSchedule())
+    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_old' }, NOW)).toBeNull()
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release'])
+  })
+
+  it('cancel with a schedule attached: a switch ahead is released (and reported) BEFORE cancel_at_period_end', async () => {
+    const f = sched(pendingSchedule())
+    const r = await cancelPlanAtPeriodEnd(f.stripe, live('fast_lane', 6, { schedule: 'sub_sched_p' }), NOW)
+    expect(r).toMatchObject({ ok: true, kind: 'canceled', clearedPendingChange: { step: 'priority', scheduleId: 'sub_sched_p' } })
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update(cancel)'])
+    const g = sched(switchedSchedule())
+    expect(await cancelPlanAtPeriodEnd(g.stripe, live('priority', 0, { schedule: 'sub_sched_old' }), NOW)).toMatchObject({ ok: true, kind: 'canceled', clearedPendingChange: null })
+    expect(g.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update(cancel)'])
+  })
+
+  it('releaseScheduleIfSwitched (webhook): pending left alone, finished released, closed ignored, a lost race is fine', async () => {
+    expect(await releaseScheduleIfSwitched(sched(pendingSchedule()).stripe, pendingSchedule() as never, NOW)).toBe('pending')
+    const f = sched(switchedSchedule())
+    expect(await releaseScheduleIfSwitched(f.stripe, 'sub_sched_old', NOW)).toBe('released')
+    expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release'])
+    expect(await releaseScheduleIfSwitched(f.stripe, switchedSchedule('released') as never, NOW)).toBe('closed')
+    // the webhook and a page read release at the same time: Stripe refuses the second, the schedule is released
+    const race = sched(switchedSchedule(), { releaseError: new Error('already released'), afterRelease: 'released' })
+    expect(await releaseScheduleIfSwitched(race.stripe, switchedSchedule() as never, NOW)).toBe('released')
+    // a real failure (still active afterwards) is thrown
+    const broken = sched(switchedSchedule(), { releaseError: new Error('boom') })
+    await expect(releaseScheduleIfSwitched(broken.stripe, switchedSchedule() as never, NOW)).rejects.toThrow('boom')
   })
 })

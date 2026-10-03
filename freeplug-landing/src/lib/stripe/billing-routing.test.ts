@@ -2,7 +2,16 @@
 import { describe, expect, it } from 'vitest'
 import { findScheduledSubscription, listInvoicesForCustomer, paymentMethodUpdateSessionParams } from './billing-routing'
 
-const subs = (data: unknown[]) => ({ subscriptions: { list: async () => ({ data }) } }) as never
+const FUTURE = Math.floor(Date.now() / 1000) + 30 * 86_400
+// A schedule with its switch phase still ahead (pending); see change-plan.test.ts for a finished one.
+const subs = (data: unknown[]) =>
+  ({
+    subscriptions: { list: async () => ({ data }) },
+    subscriptionSchedules: {
+      retrieve: async (id: string) => ({ id, status: 'active', phases: [{ start_date: 1, end_date: FUTURE }, { start_date: FUTURE, end_date: FUTURE + 1 }] }),
+      release: async () => ({}),
+    },
+  }) as never
 
 describe('findScheduledSubscription', () => {
   it('null without a schedule', async () => {

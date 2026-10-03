@@ -2,6 +2,7 @@ import type Stripe from 'stripe'
 import { isLiveSubscriptionStatus } from './subscription-status'
 import { billingPortalSessionParams } from './portal'
 import { invoiceTipCents } from '../plans/tips'
+import { hasPendingSwitch } from './change-plan'
 
 /**
  * Billing while a plan switch is planned (Aria, Oct 3 12:56).
@@ -20,14 +21,20 @@ export const PLANS_PENDING_BILLING_PATH = '/dashboard/plans?billing=pending'
 /** Where the card-update flow returns (also its after-completion redirect). */
 export const PLANS_CARD_RETURN_PATH = '/dashboard/plans?card=updated'
 
-/** The customer's live subscription that a schedule manages (a planned switch), if any. */
+/**
+ * The customer's live subscription with a plan switch AHEAD, if any. "Pending" means only that a
+ * schedule phase starts in the future (Aria, Oct 3 3:43 PM): a schedule whose switch phase is already
+ * current is released here (lazily), so Manage billing goes back to the portal right at the switch.
+ */
 export async function findScheduledSubscription(
-  stripe: Pick<Stripe, 'subscriptions'>,
-  customerId: string
+  stripe: Stripe,
+  customerId: string,
+  now: Date = new Date()
 ): Promise<{ subscriptionId: string; scheduleId: string } | null> {
   const res = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 })
   for (const s of res.data) {
     if (!isLiveSubscriptionStatus(s.status) || !s.schedule) continue
+    if (!(await hasPendingSwitch(stripe, s, now))) continue
     return { subscriptionId: s.id, scheduleId: typeof s.schedule === 'string' ? s.schedule : s.schedule.id }
   }
   return null

@@ -22,8 +22,9 @@ export { planMove, type PlanMove }
  *             we then void that invoice so nothing can apply it later, and the old plan stays.
  *             A pending downgrade is released FIRST (and put back if the card fails).
  *   downgrade (step price < now): at period end, through a subscription schedule (phase 1 = the
- *             current items until current_period_end, phase 2 = the step price, then released).
- *             Nobody gets a mid-month credit; perks stay until the period ends.
+ *             LIVE subscription items until current_period_end, phase 2 = the step price). Nobody
+ *             gets a mid-month credit; perks stay until the period ends. The schedule is released as
+ *             soon as phase 2 is current (webhook + lazily on the next read; see "Schedule lifecycle").
  *   same step: nothing changes (a pending downgrade is cancelled).
  *
  * Nothing here writes entitlements. profiles.plan_step and the perks change only when the Stripe
@@ -120,19 +121,71 @@ export function subscriptionTipDollars(sub: Pick<Stripe.Subscription, 'items'>):
 const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : (v?.id ?? null))
 const scheduleId = (sub: Pick<Stripe.Subscription, 'schedule'>) => idOf(sub.schedule as string | { id: string } | null)
 
+type ScheduleLike = Pick<Stripe.SubscriptionSchedule, 'id' | 'status' | 'phases'> & {
+  current_phase?: { start_date: number; end_date: number } | null
+}
+
+const isOpenSchedule = (s: Pick<Stripe.SubscriptionSchedule, 'status'>) => !s.status || s.status === 'active' || s.status === 'not_started'
+
 /**
- * The downgrade waiting in the subscription's schedule (the next phase, if it is one ladder price),
- * or null. Read-only: used by the Plans page ("Changing to X on <date>") and before releasing.
+ * Schedule lifecycle (Aria, Oct 3 3:43 PM; Vera round 5 bugs 2 and 3). A plan switch is "pending"
+ * ONLY while one of the schedule's phases starts in the future. Once the switch phase is current the
+ * schedule has done its job: it is released (from the webhook, subscription_schedule.updated or
+ * invoice.paid, and lazily on the next read), so tip changes, Manage billing and the next switch
+ * work right after the switch date instead of a month later.
  */
-export async function pendingPlanChange(
+export function scheduleHasFutureSwitch(schedule: Pick<Stripe.SubscriptionSchedule, 'status' | 'phases'>, now: Date): boolean {
+  if (!isOpenSchedule(schedule)) return false
+  const nowSec = Math.floor(now.getTime() / 1000)
+  return (schedule.phases ?? []).some((p) => p.start_date > nowSec)
+}
+
+/** Release a schedule; one that is already released, canceled or completed counts as done. */
+async function releaseSchedule(stripe: Stripe, id: string): Promise<void> {
+  try {
+    await stripe.subscriptionSchedules.release(id)
+  } catch (e) {
+    const again = await stripe.subscriptionSchedules.retrieve(id).catch(() => null)
+    if (again && !isOpenSchedule(again)) return
+    throw e
+  }
+}
+
+export type ScheduleSettleOutcome = 'pending' | 'released' | 'closed'
+
+/**
+ * For the webhook (and the lazy read path): release the schedule when no phase starts in the future.
+ * 'pending' = a switch is still ahead (left alone); 'closed' = already released/canceled/completed.
+ */
+export async function releaseScheduleIfSwitched(
   stripe: Stripe,
-  sub: Pick<Stripe.Subscription, 'schedule'>,
+  schedule: string | ScheduleLike,
   now: Date = new Date()
-): Promise<PendingPlanChange | null> {
+): Promise<ScheduleSettleOutcome> {
+  const s = typeof schedule === 'string' ? await stripe.subscriptionSchedules.retrieve(schedule) : schedule
+  if (!isOpenSchedule(s)) return 'closed'
+  if (scheduleHasFutureSwitch(s, now)) return 'pending'
+  await releaseSchedule(stripe, s.id)
+  return 'released'
+}
+
+/**
+ * The subscription's schedule if a switch is still ahead, else null. A schedule whose switch phase is
+ * already current is released here (lazily, Aria 3:43 PM); a released one is ignored.
+ */
+async function liveSchedule(stripe: Stripe, sub: Pick<Stripe.Subscription, 'schedule'>, now: Date): Promise<ScheduleLike | null> {
   const id = scheduleId(sub)
   if (!id) return null
-  const schedule = await stripe.subscriptionSchedules.retrieve(id)
-  if (schedule.status && schedule.status !== 'active' && schedule.status !== 'not_started') return null
+  const schedule = (await stripe.subscriptionSchedules.retrieve(id)) as ScheduleLike
+  return (await releaseScheduleIfSwitched(stripe, schedule, now)) === 'pending' ? schedule : null
+}
+
+/** True while the subscription has a switch ahead (releases a finished schedule on the way). */
+export async function hasPendingSwitch(stripe: Stripe, sub: Pick<Stripe.Subscription, 'schedule'>, now: Date = new Date()): Promise<boolean> {
+  return (await liveSchedule(stripe, sub, now)) !== null
+}
+
+async function pendingFromSchedule(stripe: Stripe, schedule: ScheduleLike, now: Date): Promise<PendingPlanChange | null> {
   const nowSec = Math.floor(now.getTime() / 1000)
   const next = schedule.phases.find((p) => p.start_date > nowSec)
   if (!next || next.items.length !== 1) return null
@@ -145,27 +198,51 @@ export async function pendingPlanChange(
   return stepId ? { step: stepId, effectiveAt: new Date(next.start_date * 1000).toISOString(), scheduleId: schedule.id } : null
 }
 
+/**
+ * The downgrade waiting in the subscription's schedule (its future phase, if it is one ladder price),
+ * or null. Used by the Plans page ("Changing to X on <date>"), the dashboard and the cancel page; a
+ * schedule whose switch already happened is released here (the lazy half of the release).
+ */
+export async function pendingPlanChange(
+  stripe: Stripe,
+  sub: Pick<Stripe.Subscription, 'schedule'>,
+  now: Date = new Date()
+): Promise<PendingPlanChange | null> {
+  const schedule = await liveSchedule(stripe, sub, now)
+  return schedule ? pendingFromSchedule(stripe, schedule, now) : null
+}
+
+/** The live subscription's items as schedule phase items (Aria: never copied from a schedule phase). */
+export function liveScheduleItems(sub: Pick<Stripe.Subscription, 'items'>): Stripe.SubscriptionScheduleUpdateParams.Phase.Item[] {
+  return sub.items.data.map((i) => ({ price: i.price.id, quantity: i.quantity ?? 1 }))
+}
+
+/**
+ * Downgrade at period end. Phase 1 = the LIVE subscription items until the current period ends,
+ * phase 2 = the step price (released at the switch). With a schedule already attached (a switch
+ * ahead) only its future phase changes: the current phase keeps its start date and gets the live
+ * items, and ended phases are dropped. proration_behavior none everywhere: a schedule edit never
+ * charges or credits.
+ */
 async function scheduleDowngrade(
   stripe: Stripe,
-  subId: string,
-  existingScheduleId: string | null,
+  sub: Pick<Stripe.Subscription, 'id' | 'items'>,
+  existing: ScheduleLike | null,
   priceId: string,
-  target: PlanStepId
+  target: PlanStepId,
+  now: Date
 ): Promise<string> {
-  const schedule = existingScheduleId
-    ? await stripe.subscriptionSchedules.retrieve(existingScheduleId)
-    : await stripe.subscriptionSchedules.create({ from_subscription: subId })
-  const phase = schedule.current_phase ?? schedule.phases[0]
-  const start = 'start_date' in phase ? phase.start_date : schedule.phases[0].start_date
-  const end = 'end_date' in phase ? phase.end_date : schedule.phases[0].end_date
-  const currentItems = schedule.phases[0].items.map((i) => ({
-    price: typeof i.price === 'string' ? i.price : i.price.id,
-    quantity: i.quantity ?? 1,
-  }))
+  const schedule = (existing ?? (await stripe.subscriptionSchedules.create({ from_subscription: sub.id }))) as ScheduleLike
+  const nowSec = Math.floor(now.getTime() / 1000)
+  const current =
+    schedule.current_phase ?? schedule.phases.find((p) => p.start_date <= nowSec && p.end_date > nowSec) ?? schedule.phases[0]
+  const periodEnd = subscriptionPeriodEnd(sub as Stripe.Subscription)
+  const end = periodEnd ? Math.floor(periodEnd.getTime() / 1000) : current.end_date
   await stripe.subscriptionSchedules.update(schedule.id, {
     end_behavior: 'release',
+    proration_behavior: 'none',
     phases: [
-      { items: currentItems, start_date: start, end_date: end, proration_behavior: 'none' },
+      { items: liveScheduleItems(sub), start_date: current.start_date, end_date: end, proration_behavior: 'none' },
       {
         items: [{ price: priceId, quantity: 1 }],
         proration_behavior: 'none',
@@ -266,10 +343,13 @@ export async function changePlanStep(
   }
   const current = currentLadderStep(sub)
   const move = planMove(current, subscriptionMonthlyCents(sub), target)
-  const pending = scheduleId(sub)
+  const now = deps.now?.() ?? new Date()
+  // Only a schedule with a switch ahead counts; one whose switch already happened is released here.
+  const settle = async () => (scheduleId(sub) ? liveSchedule(stripe, sub, now) : null)
 
   if (move === 'same') {
-    if (pending) await stripe.subscriptionSchedules.release(pending)
+    const schedule = await settle()
+    if (schedule) await releaseSchedule(stripe, schedule.id)
     return { ok: true, kind: 'unchanged', step: target.id }
   }
   if (!target.sellable) {
@@ -289,16 +369,17 @@ export async function changePlanStep(
       const check = checkProrationDate(opts.prorationDate, deps.now?.() ?? new Date())
       if (check !== 'ok') return { ok: false, code: 'stale_preview', message: `The previewed amount can't be used (${check}). Check it again.` }
     }
+    const schedule = await settle()
     // Release a pending downgrade first (Aria, Oct 3 12:25). Remember it so a failed card puts it back.
     let restore: PendingPlanChange | null = null
-    if (pending) {
-      restore = await pendingPlanChange(stripe, sub, deps.now?.()).catch(() => null)
-      await stripe.subscriptionSchedules.release(pending)
+    if (schedule) {
+      restore = await pendingFromSchedule(stripe, schedule, now).catch(() => null)
+      await releaseSchedule(stripe, schedule.id)
     }
     const putBack = async (): Promise<boolean | null> => {
       if (!restore) return null
       try {
-        await scheduleDowngrade(stripe, sub.id, null, await deps.priceIdFor(restore.step), restore.step)
+        await scheduleDowngrade(stripe, sub, null, await deps.priceIdFor(restore.step), restore.step, now)
         return true
       } catch (e) {
         log(`[change-plan] could not restore the pending downgrade on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`)
@@ -343,7 +424,8 @@ export async function changePlanStep(
   }
 
   // downgrade at period end
-  const effectiveAt = await scheduleDowngrade(stripe, sub.id, pending, priceId, target.id)
+  const schedule = await settle()
+  const effectiveAt = await scheduleDowngrade(stripe, sub, schedule, priceId, target.id, now)
   return { ok: true, kind: 'scheduled', step: target.id, effectiveAt }
 }
 
@@ -360,13 +442,25 @@ export async function cancelPlanAtPeriodEnd(stripe: Stripe, sub: Sub, now: Date 
     return { ok: false, code: 'not_live', message: 'No active hosting plan to cancel.' }
   }
   if (sub.cancel_at_period_end || sub.cancel_at) return { ok: true, kind: 'already_ending', clearedPendingChange: null }
-  const pending = scheduleId(sub)
+  // Stripe refuses cancel_at_period_end while ANY schedule is attached: a switch ahead is cleared
+  // (and reported), a finished one is released by liveSchedule().
   let cleared: PendingPlanChange | null = null
-  if (pending) {
-    cleared = await pendingPlanChange(stripe, sub, now).catch(() => null)
-    await stripe.subscriptionSchedules.release(pending)
+  let released: string | null = null
+  if (scheduleId(sub)) {
+    const schedule = await liveSchedule(stripe, sub, now)
+    if (schedule) {
+      cleared = await pendingFromSchedule(stripe, schedule, now).catch(() => null)
+      await releaseSchedule(stripe, schedule.id)
+    }
+    released = scheduleId(sub)
   }
-  await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true }, { idempotencyKey: `plan-cancel:${sub.id}:${pending ?? 'none'}` })
+  // One key per cancel (the caller holds the change-plan lock): a fixed key would replay the first
+  // cancel's response for 24 h after a resume, so a second cancel would silently do nothing.
+  await stripe.subscriptions.update(
+    sub.id,
+    { cancel_at_period_end: true },
+    { idempotencyKey: `plan-cancel:${sub.id}:${released ?? 'none'}:${crypto.randomUUID()}` }
+  )
   return { ok: true, kind: 'canceled', clearedPendingChange: cleared }
 }
 
@@ -415,14 +509,24 @@ type TipCheck =
   | { ok: false; code: TipChangeRefusal; message: string }
 
 /** Shared checks + the item change for a new tip (no Stripe call except the tip price lookup). */
-async function tipChangeItems(sub: Sub, tipDollars: unknown, tipPriceId: () => Promise<string>): Promise<TipCheck> {
+async function tipChangeItems(
+  stripe: Stripe,
+  sub: Sub,
+  tipDollars: unknown,
+  tipPriceId: () => Promise<string>,
+  now: Date
+): Promise<TipCheck> {
   if (sub.status !== 'active' && sub.status !== 'trialing') return { ok: false, code: 'not_live', message: 'No active hosting plan.' }
   if (sub.cancel_at_period_end || sub.cancel_at) return { ok: false, code: 'ending', message: 'This plan is set to end.' }
-  // A planned switch drops the tip at the switch date; changing it now would be overwritten by the
-  // schedule's next phase, so it waits until the switch has happened (or "Keep <plan>" cancels it).
-  if (scheduleId(sub)) return { ok: false, code: 'pending_change', message: 'A plan switch is planned.' }
   const step = currentLadderStep(sub)
   if (!step) return { ok: false, code: 'no_tip_plan', message: 'Tips are for hosting ladder plans.' }
+  // A planned switch drops the tip at the switch date; changing it now would be overwritten by the
+  // schedule's next phase, so it waits until the switch has happened (or "Keep <plan>" cancels it).
+  // Only a phase starting in the FUTURE counts (Vera bug 3): once the switch phase is current the
+  // schedule is released here and the tip can change right away.
+  if (scheduleId(sub) && (await hasPendingSwitch(stripe, sub, now))) {
+    return { ok: false, code: 'pending_change', message: 'A plan switch is planned.' }
+  }
   const parsed = parseTipDollars(step, tipDollars)
   if (!parsed.ok) return { ok: false, code: parsed.code === 'not_sellable' ? 'no_tip_plan' : 'out_of_range', message: 'That tip is outside the range for this plan.' }
   const next = parsed.tipDollars
@@ -451,9 +555,10 @@ async function tipChangeItems(sub: Sub, tipDollars: unknown, tipPriceId: () => P
 export async function previewTipChange(
   deps: { stripe: Stripe; tipPriceId: () => Promise<string> },
   sub: Sub,
-  tipDollars: unknown
+  tipDollars: unknown,
+  now: Date = new Date()
 ): Promise<TipChangePreview> {
-  const check = await tipChangeItems(sub, tipDollars, deps.tipPriceId)
+  const check = await tipChangeItems(deps.stripe, sub, tipDollars, deps.tipPriceId, now)
   if (!check.ok) return check
   const next = typeof tipDollars === 'number' ? tipDollars : 0
   const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
@@ -487,7 +592,7 @@ export async function changeTip(
   tipDollars: unknown,
   opts: { userId?: string; now?: Date; confirmId?: unknown } = {}
 ): Promise<TipChangeResult> {
-  const check = await tipChangeItems(sub, tipDollars, deps.tipPriceId)
+  const check = await tipChangeItems(deps.stripe, sub, tipDollars, deps.tipPriceId, opts.now ?? new Date())
   if (!check.ok) return check
   const next = typeof tipDollars === 'number' ? tipDollars : 0
   const end = subscriptionPeriodEnd(sub as Stripe.Subscription)

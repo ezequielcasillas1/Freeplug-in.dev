@@ -198,7 +198,7 @@ describe('changeHostingPlan (server action)', () => {
   it('a customer already on a non-sellable step keeps it ("keep" releases a pending downgrade)', async () => {
     liveSubs = [ladderSub('growth', { schedule: 'sub_sched_1' })]
     expect(await changeHostingPlan('growth')).toMatchObject({ ok: true })
-    expect(calls).toEqual(['stripe.schedules.release'])
+    expect(calls).toEqual(['stripe.schedules.retrieve', 'stripe.schedules.release'])
   })
 
   it('upgrading while a downgrade is pending releases the schedule first', async () => {
@@ -250,7 +250,8 @@ describe('Manage billing while a plan switch is planned (Aria, Oct 3 12:56)', ()
   it('with a schedule: Manage billing goes to the Plans page notice; no portal session at all', async () => {
     liveSubs = [ladderSub('fast_lane', { schedule: 'sub_sched_1' })]
     await expect(openBillingPortal()).rejects.toMatchObject({ url: '/dashboard/plans?billing=pending' })
-    expect(calls).toEqual(['stripe.subscriptions.list'])
+    // pending = a schedule phase starts in the future (read, never released)
+    expect(calls).toEqual(['stripe.subscriptions.list', 'stripe.schedules.retrieve'])
   })
 
   it('an ended subscription with a leftover schedule does not count', async () => {

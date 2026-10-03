@@ -8,8 +8,31 @@ import { websiteAccessAfterSubscriptionEvent, type WebsiteAccessStatus } from '@
 import { handleOutreachInvoicePaid, handleOutreachSetupSession } from '@/lib/outreach/server'
 import { supabasePlanStepStore, syncPlanStepForCustomer } from '@/lib/plans/plan-step-sync'
 import { flagUnsoldPurchase, supabaseUnsoldPurchaseStore } from '@/lib/plans/unsold-purchase'
+import { releaseScheduleIfSwitched } from '@/lib/stripe/change-plan'
 
 export const runtime = 'nodejs'
+
+const idOf = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : (v?.id ?? null))
+
+/** The subscription an invoice bills (current API: parent.subscription_details; older: invoice.subscription). */
+function invoiceSubscriptionId(inv: Stripe.Invoice): string | null {
+  const legacy = (inv as unknown as { subscription?: string | { id: string } | null }).subscription
+  return idOf(inv.parent?.subscription_details?.subscription as string | { id: string } | null | undefined) ?? idOf(legacy)
+}
+
+/**
+ * Schedule lifecycle (Aria, Oct 3 3:43 PM): release a plan-switch schedule as soon as its switch
+ * phase is current. Never fails the webhook: the next read (Plans page, Manage billing, a tip or
+ * plan change) releases it lazily anyway.
+ */
+async function releaseFinishedSchedule(schedule: string | Stripe.SubscriptionSchedule, source: string) {
+  try {
+    const outcome = await releaseScheduleIfSwitched(getStripe(), schedule)
+    if (outcome === 'released') console.info('[webhook] schedule released after the switch', typeof schedule === 'string' ? schedule : schedule.id, source)
+  } catch (e) {
+    console.error('[webhook] schedule release failed', source, e instanceof Error ? e.message : e)
+  }
+}
 
 function getCustomerId(
   customer: string | Stripe.Customer | Stripe.DeletedCustomer | null
@@ -105,6 +128,12 @@ export async function POST(request: Request) {
       const access = await websiteAccessAfterSubscriptionEvent(sub)
       websiteAccess = access.status
       console.info('[webhook]', event.type, sub.id, sub.status, 'website access:', access.status)
+      // The switch date: Stripe moves the subscription to the schedule's next phase (this event), but
+      // sends no subscription_schedule.updated for the phase change (test clocks, Oct 3), so the
+      // finished schedule is released from here and from invoice.paid.
+      if (event.type === 'customer.subscription.updated' && sub.schedule) {
+        await releaseFinishedSchedule(idOf(sub.schedule as string | { id: string }) as string, event.type)
+      }
       if (event.type === 'customer.subscription.updated') {
         // Cancellation email, sent once per cancellation (lib/email/cancel-notice.ts) and once per event
         // (the email_sends ledger, lib/email/webhook-email-ledger.ts), inside try/catch: an email or
@@ -135,8 +164,28 @@ export async function POST(request: Request) {
       }
       break
     }
+    case 'subscription_schedule.updated': {
+      // Sent on every schedule edit (a schedule with a phase still ahead is left alone). Stripe did NOT
+      // send it at the phase change on test clocks (Oct 3); customer.subscription.updated and
+      // invoice.paid cover the switch date.
+      await releaseFinishedSchedule(event.data.object as Stripe.SubscriptionSchedule, event.type)
+      break
+    }
     case 'invoice.paid': {
       const inv = event.data.object as Stripe.Invoice
+      // The renewal invoice at the switch date: the schedule's switch phase is now current.
+      if (inv.billing_reason === 'subscription_cycle') {
+        const subId = invoiceSubscriptionId(inv)
+        if (subId) {
+          try {
+            const sub = await getStripe().subscriptions.retrieve(subId)
+            const sched = idOf(sub.schedule as string | { id: string } | null)
+            if (sched) await releaseFinishedSchedule(sched, event.type)
+          } catch (e) {
+            console.error('[webhook] invoice.paid schedule check failed', e instanceof Error ? e.message : e)
+          }
+        }
+      }
       // Outreach publish: the site goes live once the first invoice is paid (e.g. after 3D Secure).
       try {
         if (await handleOutreachInvoicePaid(inv)) console.info('[webhook] outreach site live', inv.id)
