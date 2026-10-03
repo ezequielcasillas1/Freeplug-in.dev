@@ -7,7 +7,7 @@ import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subsc
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
 import { stepById } from '@/lib/plans/ladder'
-import { planNameOf } from '@/lib/stripe/plan-line'
+import { planDisplayName } from '@/lib/stripe/plan-line'
 import { tierItems, tipDollarsOfItems } from '@/lib/plans/tips'
 
 export type SubscriptionInfo = {
@@ -130,17 +130,20 @@ async function loadSubscriptions(
     if (!item) continue
 
     const price = item.price
-    const product =
-      typeof price.product === 'string'
-        ? await stripe.products.retrieve(price.product)
-        : (price.product as Stripe.Product)
+    const productOf = async (p: Stripe.Price) =>
+      typeof p.product === 'string' ? await stripe.products.retrieve(p.product) : (p.product as Stripe.Product)
+    const product = await productOf(price)
+    // Every plan item (a grandfathered plan's hosting AND add-on), never the tip: the name and the
+    // total match the dashboard (Vera, copy-c4f9940: the card showed $40.00 for a $50 plan). Display only.
+    const planItems = tiers.length > 0 ? tiers : [item]
+    const planProducts = await Promise.all(planItems.map((i) => (i === item ? product : productOf(i.price))))
 
     const info: SubscriptionInfo = {
       id: sub.id,
       status: sub.status,
       productName: product.name,
-      planName: tiers.length === 1 ? planNameOf([{ lookupKey: price.lookup_key ?? null, productName: product.name }]) : product.name,
-      amount: (price.unit_amount ?? 0) * (item.quantity ?? 1),
+      planName: tiers.length > 0 ? planDisplayName(planItems.map((i, n) => ({ lookupKey: i.price.lookup_key ?? null, productName: planProducts[n].name, productId: planProducts[n].id ?? null }))) : product.name,
+      amount: planItems.reduce((sum, i) => sum + (i.price.unit_amount ?? 0) * (i.quantity ?? 1), 0),
       tipCents: tipDollarsOfItems(sub.items.data) * 100,
       interval: price.recurring?.interval ?? 'month',
       // Period dates live on the subscription items in current Stripe API versions.

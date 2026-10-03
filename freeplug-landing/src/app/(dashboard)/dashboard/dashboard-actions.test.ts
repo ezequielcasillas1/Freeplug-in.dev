@@ -34,7 +34,7 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' | 'ladder' | 'grandfathered-ending' | 'cancel-at-only' | 'trial-ending' }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'ladder' | 'grandfathered-ending' | 'cancel-at-only' | 'trial-ending', tip: null as number | null }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('Stripe is down') } } }
@@ -82,7 +82,7 @@ vi.mock('@/lib/stripe/server', () => ({
       return {
         subscriptions: {
           list: async () => ({
-            data: [{ id: 'sub_g', status: 'active', created: 1790000000, cancel_at_period_end: true, cancel_at: end, items: { data: [item('Hosting plan (monthly)', 4000), item('Pro add-on (monthly)', 1500)] } }],
+            data: [{ id: 'sub_g', status: 'active', created: 1790000000, cancel_at_period_end: true, cancel_at: end, items: { data: [item('Hosting plan (monthly)', 4000), item('Pro add-on (monthly)', 1000), ...(stripe.tip == null ? [] : [{ ...item('Optional monthly tip', 100), quantity: stripe.tip, price: { ...item('Optional monthly tip', 100).price, lookup_key: 'freeplug_tip_monthly' } }])] } }],
           }),
         },
         invoices: { list: async () => ({ data: [] }) },
@@ -112,6 +112,7 @@ import { getEnhancedDashboardData } from './dashboard-actions'
 describe('getEnhancedDashboardData and Stripe errors (round 9)', () => {
   beforeEach(() => {
     stripe.mode = 'ok'
+    stripe.tip = null
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -119,10 +120,10 @@ describe('getEnhancedDashboardData and Stripe errors (round 9)', () => {
     const d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
     expect(d?.subscriptionsLoaded).toBe(true)
     expect(d?.subscriptions.map((s) => s.productName)).toEqual(['Hosting plan (monthly)'])
-    // grandfathered: the list and Recent activity keep the product name (no tip item here)
-    expect(d?.subscriptions.map((s) => s.listName)).toEqual(['Hosting plan (monthly)'])
+    // grandfathered, no add-on (Sable 6:19 PM): the list and Recent activity read "Hosting plan"
+    expect(d?.subscriptions.map((s) => s.listName)).toEqual(['Hosting plan'])
     expect(d?.subscriptions[0].ladderStep).toBe(false)
-    expect(d?.recentActivity.find((a) => a.type === 'subscription_created')?.description).toBe('Hosting plan (monthly)')
+    expect(d?.recentActivity.find((a) => a.type === 'subscription_created')?.description).toBe('Hosting plan')
   })
 
   it('Sable 5:11 + 5:23 PM / Vera B3: "Your Fast lane plan will end…" linking to the Resume box; list and Recent activity read "Fast lane + $4 tip"', async () => {
@@ -150,6 +151,20 @@ describe('getEnhancedDashboardData and Stripe errors (round 9)', () => {
     const alert = d!.alerts.find((a) => a.id === 'subscription-ending')!
     expect(alert.message).toBe('Your hosting plan and Pro add-on will end in 12 days. Resume to keep your website live.')
     expect(alert.actionHref).toBe('/dashboard/cancel#resume-plan')
+  })
+
+  it.each([
+    [null, 'Hosting + Pro add-on', 5000],
+    [4, 'Hosting + Pro add-on + $4 tip', 5400],
+    [0, 'Hosting + Pro add-on', 5000],
+  ])('Sable 6:19 PM: grandfathered with add-on, tip %s: list and Recent activity "%s"; total and ending alert unchanged', async (tip, name, amount) => {
+    stripe.mode = 'grandfathered-ending'
+    stripe.tip = tip
+    const d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
+    expect(d!.subscriptions[0].listName).toBe(name)
+    expect(d!.subscriptions[0].amount).toBe(amount)
+    expect(d!.recentActivity.find((a) => a.type === 'subscription_created')?.description).toBe(name)
+    expect(d!.alerts.find((a) => a.id === 'subscription-ending')?.message).toBe('Your hosting plan and Pro add-on will end in 12 days. Resume to keep your website live.')
   })
 
   it('next round: the kept Subscription ending alert covers a cancel_at on its own (days to cancel_at, no billing reminder) and a trial', async () => {

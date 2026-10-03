@@ -242,6 +242,18 @@ export const CHANGE_PLAN_LINK = 'Change plan'
 export const CANCEL_OPTIONS_LINK = 'Cancel options'
 
 /**
+ * [Sable, Oct 3 6:19 PM CT] Grandfathered plan display name (cancel page cards, dashboard list and Recent
+ * activity; built by planDisplayName in src/lib/stripe/plan-line.ts): "Hosting + Pro add-on", with a tip
+ * "Hosting + Pro add-on + $4 tip" (PLAN_STRIP_TIP), and "Hosting plan" with no add-on. The ending alert
+ * keeps its own wording ("Your hosting plan and Pro add-on will end…", grandfatheredAlertName).
+ */
+export const GRANDFATHERED_HOSTING_ONLY_NAME = 'Hosting plan'
+/** [Sable 6:19 PM] The hosting part when an add-on follows: "Hosting + Pro add-on". */
+export const GRANDFATHERED_HOSTING_SHORT = 'Hosting'
+/** [Sable 6:19 PM] A retired add-on by its tier name: "Pro add-on". */
+export const LEGACY_ADDON_NAME = (tierName: string) => `${tierName} add-on`
+
+/**
  * Help "How do I update my payment method?" (help page b-2 and the help chat 'payment-method'): the
  * locked answer plus Sable's sentence for Manage billing while a switch is planned (Oct 3 ~2:30 PM,
  * item 40). One constant so the page and the chat can't drift. Waits for Sable's re-lock of

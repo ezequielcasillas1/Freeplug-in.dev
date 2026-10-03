@@ -1,5 +1,6 @@
-import { stepByLookupKey } from '../plans/ladder'
-import { PLAN_STRIP_TIP } from '../plans/ladder-copy'
+import { LEGACY_ADDON_TIERS, stepByLookupKey } from '../plans/ladder'
+import { GRANDFATHERED_HOSTING_ONLY_NAME, GRANDFATHERED_HOSTING_SHORT, LEGACY_ADDON_NAME, PLAN_STRIP_TIP } from '../plans/ladder-copy'
+import { legacyAddonProductId } from './config'
 
 /** Whole dollars like the step rows ("$65"); cents only when they are not zero ("$65.50"). */
 export function formatPlanDollars(cents: number): string {
@@ -31,6 +32,29 @@ export function planStripLine(items: ReadonlyArray<PlanLineItem>, interval: stri
 export function planNameOf(items: ReadonlyArray<Pick<PlanLineItem, 'lookupKey' | 'productName'>>): string {
   const step = items.length === 1 ? stepByLookupKey(items[0].lookupKey) : null
   return step ? step.name : items.map((i) => i.productName).join(' + ')
+}
+
+export type PlanDisplayItem = Pick<PlanLineItem, 'lookupKey' | 'productName'> & { productId?: string | null }
+
+/** The retired add-on an item is (product id, else a "<Tier> add-on…" product name, as entitlements read it). */
+function legacyAddonOfItem(item: PlanDisplayItem) {
+  return (
+    LEGACY_ADDON_TIERS.find((t) => item.productId != null && item.productId === legacyAddonProductId(t.id)) ??
+    LEGACY_ADDON_TIERS.find((t) => item.productName.startsWith(LEGACY_ADDON_NAME(t.name))) ??
+    null
+  )
+}
+
+/**
+ * Sable, Oct 3 6:19 PM: the short display name for cards and Recent activity. A ladder plan is its step
+ * name ("Fast lane"); a grandfathered plan is "Hosting + Pro add-on" (add-ons in item order), or
+ * "Hosting plan" with no add-on. Plan items only (never the tip item); add a tip with subscriptionListName.
+ */
+export function planDisplayName(items: ReadonlyArray<PlanDisplayItem>): string {
+  const step = items.length === 1 ? stepByLookupKey(items[0].lookupKey) : null
+  if (step) return step.name
+  const addons = [...new Set(items.map(legacyAddonOfItem).filter((t) => t != null).map((t) => LEGACY_ADDON_NAME(t.name)))]
+  return addons.length > 0 ? `${GRANDFATHERED_HOSTING_SHORT} + ${addons.join(' + ')}` : GRANDFATHERED_HOSTING_ONLY_NAME
 }
 
 /**

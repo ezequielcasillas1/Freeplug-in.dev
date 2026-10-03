@@ -10,7 +10,7 @@ import {
   subscriptionPeriodStart,
 } from '@/lib/stripe/subscription-dates'
 import { RESUME_PLAN_ANCHOR_HREF, subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
-import { planNameOf, subscriptionListName } from '@/lib/stripe/plan-line'
+import { planDisplayName, planNameOf, subscriptionListName, type PlanDisplayItem } from '@/lib/stripe/plan-line'
 import { isTipPrice } from '@/lib/plans/tips'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
@@ -174,7 +174,7 @@ export async function getEnhancedDashboardData(
 
         // Include every line item (e.g. hosting + add-on), not just the first one.
         const productNames: string[] = []
-        const planItems: { lookupKey: string | null; productName: string }[] = []
+        const planItems: PlanDisplayItem[] = []
         let tipDollars = 0
         let amount = 0
         for (const item of items) {
@@ -185,7 +185,7 @@ export async function getEnhancedDashboardData(
               : (itemPrice.product as Stripe.Product)
           productNames.push(itemProduct.name)
           if (isTipPrice(itemPrice)) tipDollars += Math.max(0, item.quantity ?? 0)
-          else planItems.push({ lookupKey: itemPrice.lookup_key ?? null, productName: itemProduct.name })
+          else planItems.push({ lookupKey: itemPrice.lookup_key ?? null, productName: itemProduct.name, productId: itemProduct.id ?? null })
           amount += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
         }
         const planName = planItems.length > 0 ? planNameOf(planItems) : productNames.join(' + ')
@@ -207,7 +207,9 @@ export async function getEnhancedDashboardData(
           id: sub.id,
           productName: productNames.join(' + '),
           planName,
-          listName: subscriptionListName(planName, tipDollars),
+          // Sable 6:19 PM: grandfathered list / Recent activity name "Hosting + Pro add-on" (+ tip); the
+          // ending alert keeps planName (the product names, read by grandfatheredAlertName).
+          listName: subscriptionListName(planItems.length > 0 ? planDisplayName(planItems) : planName, tipDollars),
           ladderStep,
           status: sub.status,
           amount,

@@ -18,10 +18,16 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' | 'starter11' | 'cancel-at-only' }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' | 'starter11' | 'cancel-at-only' | 'grandfathered', tip: null as number | null }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('local mock: simulated Stripe outage') } } }
+    if (stripe.mode === 'grandfathered') {
+      // Vera's k: "Hosting plan (monthly)" $40 + "Pro add-on (monthly)" $10 (+ an optional tip item)
+      const it = (name: string, unit_amount: number, quantity = 1, lookup_key: string | null = null) => ({ quantity, price: { id: `price_${unit_amount}`, lookup_key, product: { id: `prod_${unit_amount}`, name }, unit_amount, recurring: { interval: 'month' } }, current_period_end: 1793726938 })
+      const items = [it('Hosting plan (monthly)', 4000), it('Pro add-on (monthly)', 1000), ...(stripe.tip == null ? [] : [it('Optional monthly tip', 100, stripe.tip, 'freeplug_tip_monthly')])]
+      return { subscriptions: { list: async () => ({ data: [{ id: 'sub_k', status: 'active', cancel_at_period_end: false, canceled_at: null, schedule: null, items: { data: items } }] }) } }
+    }
     if (stripe.mode === 'cancel-at-only') {
       // a cancel_at on its own (no period-end flag), before the period end
       const plan = { quantity: 1, price: { id: 'price_st', lookup_key: 'freeplug_step_starter_monthly', product: { name: 'Freeplug Hosting: Starter' }, unit_amount: 3500, recurring: { interval: 'month' } }, current_period_end: 1793726938 }
@@ -62,6 +68,7 @@ import { getCancelPageData } from './actions'
 describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => {
   beforeEach(() => {
     stripe.mode = 'ok'
+    stripe.tip = null
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -69,7 +76,7 @@ describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => 
     const d = await getCancelPageData({ tolerateStripeErrors: true })
     expect(d?.subscriptionsLoaded).toBe(true)
     expect(d?.subscriptions.map((s) => s.productName)).toEqual(['Hosting plan (monthly)'])
-    expect(d?.subscriptions.map((s) => s.planName)).toEqual(['Hosting plan (monthly)']) // grandfathered keeps its name
+    expect(d?.subscriptions.map((s) => s.planName)).toEqual(['Hosting plan']) // grandfathered, no add-on (Sable 6:19 PM)
   })
 
   it('next round: a cancel_at on its own is "set to end" (Resume box, access until cancel_at), not a live plan to cancel', async () => {
@@ -78,6 +85,18 @@ describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => 
     expect(d?.subscriptions).toEqual([])
     expect(d?.canceledSubscriptions).toHaveLength(1)
     expect(d?.canceledSubscriptions[0]).toMatchObject({ id: 'sub_c', cancelAtPeriodEnd: true, currentPeriodEnd: new Date(1792500000 * 1000) })
+  })
+
+  it.each([
+    [null, 0],
+    [4, 400],
+    [0, 0],
+  ])('Vera copy-c4f9940 / Sable 6:19 PM: grandfathered card is "Hosting + Pro add-on" at the full $50 (tip %s kept separate)', async (tip, tipCents) => {
+    stripe.mode = 'grandfathered'
+    stripe.tip = tip
+    const d = await getCancelPageData()
+    expect(d?.subscriptions).toHaveLength(1)
+    expect(d?.subscriptions[0]).toMatchObject({ planName: 'Hosting + Pro add-on', amount: 5000, tipCents, interval: 'month' })
   })
 
   it('outreach (tolerate): a Stripe outage returns empty lists and subscriptionsLoaded false, no throw', async () => {

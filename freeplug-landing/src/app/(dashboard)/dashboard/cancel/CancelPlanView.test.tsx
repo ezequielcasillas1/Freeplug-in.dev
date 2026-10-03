@@ -237,6 +237,18 @@ describe('Cancel page outreach card (round 12, 4:03 AM)', () => {
     expect(screen.queryByTestId('outreach-plan-card')).toBeNull()
   })
 
+  it('Sable 6:19 PM / Vera copy-c4f9940: grandfathered cards read "Hosting + Pro add-on" at $50.00/month (tip on the price line)', () => {
+    const k = { productName: 'Hosting plan (monthly)', planName: 'Hosting + Pro add-on', amount: 5000 }
+    const { unmount } = render(<CancelPlanView data={data({ subscriptions: [sub(k)] })} />)
+    expect(screen.getByRole('heading', { name: 'Hosting + Pro add-on' })).toBeInTheDocument()
+    expect(screen.getByText('$50.00/month')).toBeInTheDocument()
+    expect(screen.queryByText(/\$40\.00/)).toBeNull()
+    unmount()
+    render(<CancelPlanView data={data({ canceledSubscriptions: [sub({ ...k, id: 'sub_2', tipCents: 400, cancelAtPeriodEnd: true })] })} />)
+    expect(screen.getByRole('heading', { name: 'Hosting + Pro add-on' })).toBeInTheDocument()
+    expect(screen.getByText('$50.00 + $4.00 tip = $54.00/month')).toBeInTheDocument()
+  })
+
   it('Vera N1 / Sable final: the cancel box says to use the button at the bottom of it, once, never the billing portal', () => {
     const { container } = render(<CancelPlanView data={data({ subscriptions: [sub()] })} />)
     const line = screen.getByTestId('cancel-in-app-line')
