@@ -63,6 +63,38 @@ All customer wording: `freeplug-landing/src/lib/plans/ladder-copy.ts` (PLACEHOLD
   until marked reviewed.
 - **Probe objects:** kept, no action.
 
+## Round 4 (Oct 3, 1:39 PM): Lina's layout and the upgrade confirm
+- **Layout** per `/workspace/freeplug-qa/design/hosting-ladder-ux-LINA-2026-10-03.md` (read-only; the
+  do-not-restyle list is kept). `HostingCheckoutCard` has new props: `layout="columns"` (lg grid), `bare`/`hideHeading`
+  (claim step 3 renders inside the page card), `stickyOnPhone`, `chooseLabelFor`, `currentMonthlyCents`,
+  `renewalDate`. `MOST_POPULAR_STEP = null`. Coming soon sits under a divider (no radio, grey text, no opacity) and
+  collapses on phones. The phone sticky bar is CSS `sticky bottom-0` inside the card, so it stays within the card.
+- **Claim step 4 "Change"** (`clearClaimPlanAction` → `clearChosenPlan(userId)`): one conditional update that sets
+  `plan_step` to null only while `setup_completed_at` is null and the site is not live; otherwise `locked`.
+- **Upgrade confirm (Aria 1:34 PM):**
+  - `previewPlanChange(step)` (billing-actions.ts): signed in, own Stripe customer only, exactly one live
+    subscription, rate limit `plan_preview_user` (20 per 10 min). It calls `invoices.createPreview` with
+    `proration_behavior: 'always_invoice'` and a server `proration_date` (now). It returns the amount due today,
+    the next monthly amount and date, and the proration_date. The proration_date is also returned when the
+    preview fails, so Confirm still pins it.
+  - `changeHostingPlan(step, prorationDate)`: rejects a value that is not a safe integer. `changePlanStep` refuses a
+    proration_date more than 600 s old or in the future before any Stripe write (`stale_preview` → grey line, back to
+    Switch). The update gets `proration_date`, and its idempotency key is
+    `plan-move:<user>:<step>:<proration_date>:<sub>:<prices>:<latest invoice>`; the last parts keep a retry after a
+    failed card a new request. A concurrent second Confirm gets Stripe 409 `idempotency_key_in_use`, which maps to
+    `in_progress` ("already going through") and does not put a pending downgrade back.
+  - The UI closes the confirm 30 s before the 10-minute server limit (`CONFIRM_OPEN_MS`).
+- **Probe** `--probe-upgrade-confirm` (log `/workspace/owen/ladder-conditions/probe-upgrade-confirm.log`), run on the
+  probe customer at 1:57 PM CT. All 4 subscriptions were canceled and checked afterwards.
+  - U1: the preview of $30.00 equals the invoice amount.
+  - U2: with a pending downgrade, the preview of $10.00 equals the invoice amount, and the schedule is released.
+  - U3: a stale or future proration_date is refused, and no invoice is created.
+  - U4: double submit. Concurrent submits produce 1 upgrade and 1 `in_progress`; a later tap is `unchanged`; a
+    replay is idempotent. Exactly 1 proration invoice.
+- **Local dev stack:** the box shell exports a `STRIPE_WEBHOOK_SECRET` that overrode `.env.local` (process env wins
+  in Next), so every local webhook got 400. Next dev now starts via `/workspace/owen/devstack/start-next.sh`, which
+  unsets it.
+
 ## Database
 `supabase/migrations/20261003180000_plan_steps.sql` (idempotent; 20261003170000 is reserved for account erase; explicit function revokes for the no-default-EXECUTE rule): `outreach_sites.plan_step`,
 `profiles.plan_step` + `plan_step_synced_at` + the snapshot columns `plan_legacy`, `plan_legacy_addon`,
