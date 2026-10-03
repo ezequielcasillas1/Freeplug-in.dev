@@ -18,13 +18,14 @@ vi.mock('@/lib/dashboard/plans-eligibility', () => ({ isPlansCheckoutAllowed: as
 vi.mock('@/lib/stripe/active-subscription', async (orig) => ({
   ...(await orig<typeof import('@/lib/stripe/active-subscription')>()),
   describeLiveSubscriptions: async () => ['Freeplug Hosting: Fast lane · $65.00/month'],
-  listLiveSubscriptions: async () => [{ id: 'sub_1', status: 'active', schedule }],
+  listLiveSubscriptions: async () => [{ id: 'sub_1', status: 'active', schedule, items: { data: [{ id: 'si_1', current_period_end: 1_793_726_896, price: { id: 'price_fast_lane', unit_amount: 6500, recurring: { interval: 'month' } } }] } }],
 }))
 vi.mock('@/lib/plans/user-entitlements', async () => {
   const { entitlementsFor } = await import('@/lib/plans/ladder')
   return { getUserEntitlements: async () => ({ entitlements: entitlementsFor({ stepId: 'fast_lane' }), source: 'snapshot' }) }
 })
 vi.mock('@/lib/stripe/change-plan', () => ({
+  subscriptionMonthlyCents: () => 6500,
   pendingPlanChange: async (_s: unknown, sub: { schedule: string | null }) =>
     sub.schedule ? { step: 'starter', effectiveAt: '2026-11-03T17:48:16.000Z', scheduleId: sub.schedule } : null,
 }))
@@ -40,11 +41,13 @@ vi.mock('@/lib/stripe/server', () => ({
 }))
 vi.mock('../billing-actions', () => ({
   changeHostingPlan: vi.fn(),
+  previewPlanChange: vi.fn(),
   updatePaymentMethod: vi.fn(),
   openBillingPortal: vi.fn(),
 }))
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({
   changeHostingPlan: vi.fn(),
+  previewPlanChange: vi.fn(),
   updatePaymentMethod: vi.fn(),
   openBillingPortal: vi.fn(),
 }))
@@ -86,5 +89,30 @@ describe('Plans page billing', () => {
     expect(screen.getByTestId('card-updated')).toBeTruthy()
     expect(screen.queryByTestId('invoice-list')).toBeNull()
     expect(screen.getByRole('button', { name: 'Update card' })).toBeTruthy()
+  })
+
+  it('Lina §1/§3a layout: plan strip and pending box above the list, Keep in the box, no Manage billing while pending, Maintenance below', async () => {
+    schedule = 'sub_sched_1'
+    const { container } = await renderPage()
+    const strip = screen.getByTestId('plan-strip')
+    expect(strip.textContent).toContain('Current plan: Freeplug Hosting: Fast lane · $65.00/month')
+    const box = within(strip).getByTestId('pending-change')
+    expect(within(box).getByRole('button', { name: 'Keep Fast lane' })).toBeTruthy()
+    const list = container.querySelector('[data-plan-step="starter"]') as HTMLElement
+    expect(strip.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(within(list).getByTestId('starts-badge').textContent).toBe('Starts November 3, 2026')
+    expect(screen.queryByRole('button', { name: 'Manage billing' })).toBeNull()
+    // selected = current: the main button only ever means "switch"
+    expect(screen.getByRole('button', { name: 'Pick a plan to switch' })).toBeDisabled()
+    const maintenance = screen.getByText(/One-time maintenance/)
+    expect(list.compareDocumentPosition(maintenance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('no pending change: Manage billing (secondary) is back, and a lower step says "on <next billing date>"', async () => {
+    const { container } = await renderPage()
+    expect(screen.getByRole('button', { name: 'Manage billing' })).toBeTruthy()
+    const starter = container.querySelector('[data-plan-step="starter"] input') as HTMLInputElement
+    starter.click()
+    expect(await screen.findByRole('button', { name: 'Switch to Starter on November 3, 2026' })).toBeEnabled()
   })
 })

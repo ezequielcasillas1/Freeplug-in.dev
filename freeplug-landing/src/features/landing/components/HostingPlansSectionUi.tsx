@@ -45,9 +45,11 @@ export function HostingPlansSectionUi({
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        {/* Lina §1: the ladder full width with the sellable steps in columns from lg; Maintenance below. */}
+        <div className="space-y-8">
           <motion.div variants={fadeInUp}>
             <HostingCheckoutCard
+              layout="columns"
               signedIn={signedIn}
               allowCheckout={hostingCheckoutAllowed}
             />

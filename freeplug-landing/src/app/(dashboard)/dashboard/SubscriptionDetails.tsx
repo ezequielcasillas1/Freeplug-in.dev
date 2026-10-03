@@ -9,9 +9,12 @@ import {
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
 import {
+  CHANGE_PLAN_LINK,
   INCLUDED_EDIT_LINE,
+  KEEP_PLAN_BUTTON,
   LEGACY_PLAN_LABEL,
   LEGACY_PLAN_NOTE,
+  PENDING_CHANGE_LINE,
   PERK_LINES,
 } from '@/lib/plans/ladder-copy'
 import type { WebsiteAccess } from '@/lib/website-access'
@@ -158,6 +161,22 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                       {INCLUDED_EDIT_LINE(sub.includedEdit.used, sub.includedEdit.available)}
                     </p>
                   ) : null}
+                  {/* Lina §3c: the pending change + a Keep link (the action lives on Plans), then "Change plan". */}
+                  {sub.pendingChange ? (
+                    <p className="text-sm text-amber-800 mt-2" data-testid="home-pending-change">
+                      {PENDING_CHANGE_LINE(sub.pendingChange.stepName, sub.pendingChange.date)}{' '}
+                      {sub.entitlements?.step && !sub.entitlements.legacy ? (
+                        <Link href="/dashboard/plans" className="font-semibold text-[#ba3d3d] hover:underline whitespace-nowrap">
+                          {KEEP_PLAN_BUTTON(sub.entitlements.step.name)}
+                        </Link>
+                      ) : null}
+                    </p>
+                  ) : null}
+                  <p className="mt-2 text-sm">
+                    <Link href="/dashboard/plans" className="font-semibold text-[#ba3d3d] hover:underline" data-testid="home-change-plan">
+                      {CHANGE_PLAN_LINK}
+                    </Link>
+                  </p>
                 </div>
               </div>
               <div className="pl-12 sm:pl-0 sm:shrink-0 sm:text-right text-sm">

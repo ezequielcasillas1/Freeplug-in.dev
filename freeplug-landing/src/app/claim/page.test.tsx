@@ -14,6 +14,7 @@ const h = vi.hoisted(() => ({
   secFetchSite: 'cross-site' as string | null,
   previewLookups: 0,
   claimed: null as null | Record<string, unknown>,
+  details: null as null | Record<string, unknown>,
 }))
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -38,14 +39,15 @@ vi.mock('@/lib/outreach/server', () => ({
   },
   getClaimedSiteForUser: async () => h.claimed,
   customerPreviewPhotos: async () => [],
-  getSiteDetails: async () => null,
+  getSiteDetails: async () => h.details,
   latestPreviewSubmission: async () => null,
   syncSetupSessionForUser: async () => {},
 }))
 vi.mock('./ClaimSteps', () => ({
   ClaimAddCardButton: () => null,
   ClaimDetailsStep: () => <div data-testid="step2-form" />,
-  ClaimPlanStep: () => null,
+  ClaimPlanStep: () => <div data-testid="step3-list" />,
+  ClaimChangePlanLink: () => <button data-testid="claim-change-plan">Change</button>,
   ClaimWaiting: () => null,
 }))
 
@@ -279,5 +281,48 @@ describe('confirm-email box on /claim (round 7)', () => {
   it('signed out: the 404, never a box or an email', async () => {
     h.user = null
     await expect(page(undefined, { email: OWN })).rejects.toThrow('NEXT_NOT_FOUND')
+  })
+})
+
+describe('/claim steps 3 and 4 layout (Lina §2, round 4)', () => {
+  const site = (over: Record<string, unknown> = {}) => ({
+    id: SITE.id,
+    business_name: 'Gracia Lawn Care',
+    prefill: {},
+    services: [],
+    service_sources: {},
+    publish_status: 'none',
+    plan_step: null,
+    setup_completed_at: null,
+    ...over,
+  })
+  beforeEach(() => {
+    h.user = { id: 'e2e00000-0000-4000-8000-000000000011' }
+    h.details = { customer_confirmed_at: '2026-10-03T12:00:00Z' }
+  })
+
+  it('step 3: ONE card holds the heading, the body, the ladder line and the list', async () => {
+    h.claimed = site()
+    render(await page())
+    const list = screen.getByTestId('step3-list')
+    const card = list.closest('section') as HTMLElement
+    expect(card.className).toMatch(/rounded-xl border/)
+    expect(card.querySelector('h1')).toHaveTextContent('Choose your hosting plan')
+    expect(card).toHaveTextContent('Plans start at $35 a month.')
+    expect(card).toHaveTextContent('Each plan includes everything in the plans before it.')
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+  })
+
+  it('step 4 before the card is saved: the summary line keeps "Fast lane · $65/month" and gets the Change link', async () => {
+    h.claimed = site({ plan_step: 'fast_lane' })
+    render(await page())
+    expect(screen.getByText('Fast lane · $65/month')).toBeInTheDocument()
+    expect(screen.getByTestId('claim-change-plan')).toBeInTheDocument()
+  })
+
+  it('card saved: the waiting screen, no Change link', async () => {
+    h.claimed = site({ plan_step: 'fast_lane', setup_completed_at: '2026-10-03T13:00:00Z' })
+    render(await page())
+    expect(screen.queryByTestId('claim-change-plan')).toBeNull()
   })
 })

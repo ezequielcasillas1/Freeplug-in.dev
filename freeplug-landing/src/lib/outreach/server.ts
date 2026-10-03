@@ -628,6 +628,28 @@ export async function saveChosenPlan(userId: string, input: unknown): Promise<Re
   return { ok: true }
 }
 
+/**
+ * Claim step 4 "Change" (Lina §2): clear the chosen step so the customer picks again on step 3.
+ * Only before the card is saved and before Live (the update itself re-checks both, so a card saved
+ * in another tab in the meantime wins). The setup Checkout doesn't carry the step.
+ */
+export async function clearChosenPlan(userId: string): Promise<Result> {
+  const site = await getClaimedSiteForUser(userId)
+  if (!site) return { ok: false, error: 'no_site', code: 'no_site' }
+  if (site.publish_status === 'live' || site.setup_completed_at) return { ok: false, error: 'locked', code: 'locked' }
+  const { data, error } = await db()
+    .from('outreach_sites')
+    .update({ plan_step: null, updated_at: new Date().toISOString() })
+    .eq('id', site.id)
+    .eq('claimed_by', userId)
+    .is('setup_completed_at', null)
+    .neq('publish_status', 'live')
+    .select('id')
+  if (error) return { ok: false, error: 'save', code: 'save' }
+  if ((data ?? []).length !== 1) return { ok: false, error: 'locked', code: 'locked' }
+  return { ok: true }
+}
+
 /** "Card saved, waiting for publish" counts as a plan for the one-plan guard (Aria, section 9). */
 export async function hasOutreachPlanWaitingForPublish(userId: string): Promise<boolean> {
   const { data, error } = await db()

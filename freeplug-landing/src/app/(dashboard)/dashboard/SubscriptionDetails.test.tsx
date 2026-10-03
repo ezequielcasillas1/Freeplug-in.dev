@@ -180,3 +180,31 @@ describe('SubscriptionDetails hosting ladder (Oct 3)', () => {
     expect(document.body).not.toHaveTextContent(/backup|downtime alert|uptime/i)
   })
 })
+
+describe('SubscriptionDetails plan card links (Lina §3c, round 4)', () => {
+  const ladder = (pendingChange: SubscriptionDetail['pendingChange'] = null): SubscriptionDetail => ({
+    ...plan(6500),
+    productName: 'Freeplug Hosting: Fast lane',
+    entitlements: entitlementsFor({ stepId: 'fast_lane' }),
+    pendingChange,
+  })
+
+  it('a pending downgrade: one amber line and a "Keep <current>" text link to Plans (no button here)', () => {
+    render(<SubscriptionDetails subscriptions={[ladder({ stepName: 'Starter', date: 'November 3, 2026' })]} />)
+    const line = screen.getByTestId('home-pending-change')
+    expect(line).toHaveTextContent('Changing to Starter on November 3, 2026. You keep your current plan until then.')
+    expect(line.className).toMatch(/text-amber-800/)
+    const keep = screen.getByRole('link', { name: 'Keep Fast lane' })
+    expect(keep).toHaveAttribute('href', '/dashboard/plans')
+    expect(screen.queryByRole('button')).toBeNull()
+  })
+
+  it('a plain "Change plan" link to Plans under the perks; no pending line without a pending change', () => {
+    render(<SubscriptionDetails subscriptions={[ladder()]} />)
+    expect(screen.queryByTestId('home-pending-change')).toBeNull()
+    expect(screen.getByTestId('home-change-plan')).toHaveTextContent('Change plan')
+    expect(screen.getByTestId('home-change-plan')).toHaveAttribute('href', '/dashboard/plans')
+    const perks = screen.getByTestId('plan-step')
+    expect(perks.compareDocumentPosition(screen.getByTestId('home-change-plan')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+})

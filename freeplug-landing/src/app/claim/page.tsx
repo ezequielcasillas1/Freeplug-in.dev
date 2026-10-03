@@ -22,8 +22,8 @@ import {
   STEP4_HEADING,
   fill,
 } from '@/lib/outreach/copy'
-import { CLAIM_STEP3_BODY } from '@/lib/plans/ladder-copy'
-import { ClaimAddCardButton, ClaimDetailsStep, ClaimPlanStep, ClaimWaiting } from './ClaimSteps'
+import { CLAIM_STEP3_BODY, LADDER_SUBHEADING } from '@/lib/plans/ladder-copy'
+import { ClaimAddCardButton, ClaimChangePlanLink, ClaimDetailsStep, ClaimPlanStep, ClaimWaiting } from './ClaimSteps'
 import { ClaimStartForm } from './ClaimStartForm'
 import { claimStartToken, liveClaimRedirect, shouldAutoClaim } from './start/claim-redirect'
 
@@ -149,11 +149,11 @@ export default async function ClaimPage({ searchParams }: Props) {
   if (step === 3) {
     return (
       <Shell step={3} businessName={site.business_name}>
-        <section className="space-y-4">
-          <div className={CARD}>
-            <h1 className="text-xl font-semibold text-gray-900">{STEP3_HEADING}</h1>
-            <p className="mt-1 text-sm text-gray-600">{CLAIM_STEP3_BODY}</p>
-          </div>
+        {/* Lina §2: one card (heading, body, ladder line, the stacked list, note + button). */}
+        <section className={CARD}>
+          <h1 className="text-xl font-semibold text-gray-900">{STEP3_HEADING}</h1>
+          <p className="mt-1 text-sm text-gray-600">{CLAIM_STEP3_BODY}</p>
+          <p className="mt-1 mb-5 text-sm text-gray-500">{LADDER_SUBHEADING}</p>
           <ClaimPlanStep />
         </section>
       </Shell>
@@ -173,7 +173,11 @@ export default async function ClaimPage({ searchParams }: Props) {
             <dl className="my-5 space-y-1 text-sm text-gray-700">
               <div className="flex justify-between gap-4">
                 <dt className="text-gray-500">{site.business_name}</dt>
-                <dd>{step4Plan ? `${step4Plan.name} · ${formatMonthly(step4Plan.monthlyCents)}` : ''}</dd>
+                <dd className="flex items-baseline gap-3">
+                  <span>{step4Plan ? `${step4Plan.name} · ${formatMonthly(step4Plan.monthlyCents)}` : ''}</span>
+                  {/* Optional "Change" (Lina §2): back to step 3; only before the card is saved. */}
+                  {step4Plan ? <ClaimChangePlanLink /> : null}
+                </dd>
               </div>
             </dl>
             <ClaimAddCardButton />

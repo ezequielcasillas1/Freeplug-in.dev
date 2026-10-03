@@ -703,6 +703,33 @@ describe('claim step 4 "Add my card" (Jace/Lina, Sep 27)', () => {
   })
 })
 
+describe('claim step 4 "Change": back to step 3 (Lina §2, round 4)', () => {
+  it('before the card is saved: clears plan_step (step 3 again)', async () => {
+    const userId = randomUUID()
+    const { site } = addSite({ claimed_by: userId, plan_step: 'fast_lane', setup_completed_at: null, publish_status: 'none' })
+    expect(await server.clearChosenPlan(userId)).toEqual({ ok: true })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBeNull()
+  })
+
+  it('refused once the card is saved or the site is live; nothing changes', async () => {
+    const saved = randomUUID()
+    const a = addSite({ claimed_by: saved, plan_step: 'fast_lane', setup_completed_at: '2026-10-03T13:00:00Z', publish_status: 'none' })
+    expect(await server.clearChosenPlan(saved)).toMatchObject({ ok: false, code: 'locked' })
+    expect(state.sites.find((x) => x.id === a.site.id)?.plan_step).toBe('fast_lane')
+    const live = randomUUID()
+    const b = addSite({ claimed_by: live, plan_step: 'priority', setup_completed_at: null, publish_status: 'live' })
+    expect(await server.clearChosenPlan(live)).toMatchObject({ ok: false, code: 'locked' })
+    expect(state.sites.find((x) => x.id === b.site.id)?.plan_step).toBe('priority')
+  })
+
+  it('only the claimer\'s own site, and nothing without a claim', async () => {
+    const owner = randomUUID()
+    const { site } = addSite({ claimed_by: owner, plan_step: 'starter', setup_completed_at: null, publish_status: 'none' })
+    expect(await server.clearChosenPlan(randomUUID())).toMatchObject({ ok: false, code: 'no_site' })
+    expect(state.sites.find((x) => x.id === site.id)?.plan_step).toBe('starter')
+  })
+})
+
 describe('claim step 3: choose a hosting ladder step (Oct 3)', () => {
   it('saves a valid step id and nothing else', async () => {
     const userId = randomUUID()

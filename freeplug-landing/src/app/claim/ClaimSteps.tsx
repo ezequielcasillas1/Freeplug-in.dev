@@ -13,14 +13,14 @@ import {
   GO_TO_DASHBOARD_LABEL,
   NO_CHARGE_UNTIL_LIVE,
   STEP2_BUTTON,
-  STEP3_BUTTON,
   STEP4_BUTTON,
   STEP4_NOTE,
   VIEW_PREVIEW_LABEL,
   WAITING_LINE,
 } from '@/lib/outreach/copy'
 import type { DetailKey, PrefillMap, ServiceItem } from '@/lib/outreach/schemas'
-import { confirmClaimDetailsAction, saveClaimPlanAction, startClaimSetupAction, uploadCustomerPhotoAction } from './actions'
+import { CHOOSE_STEP_BUTTON, CLAIM_CHANGE_PLAN_LINK } from '@/lib/plans/ladder-copy'
+import { clearClaimPlanAction, confirmClaimDetailsAction, saveClaimPlanAction, startClaimSetupAction, uploadCustomerPhotoAction } from './actions'
 
 export function ClaimDetailsStep(props: {
   prefill: PrefillMap
@@ -69,7 +69,9 @@ export function ClaimPlanStep() {
   return (
     <HostingCheckoutCard
       embedded
-      chooseLabel={STEP3_BUTTON}
+      bare
+      stickyOnPhone
+      chooseLabelFor={CHOOSE_STEP_BUTTON}
       noteAboveButton={NO_CHARGE_UNTIL_LIVE}
       onChoosePlan={async (plan) => {
         const err = await saveClaimPlanAction(plan)
@@ -77,6 +79,43 @@ export function ClaimPlanStep() {
         return err
       }}
     />
+  )
+}
+
+/**
+ * Claim step 4 summary "Change" (Lina §2, optional): clears the chosen step and goes back to step 3.
+ * The server refuses once the card is saved or the site is live (saveChosenPlan's lock); an open
+ * setup Checkout stays valid because it doesn't carry the step (publish reads plan_step).
+ */
+export function ClaimChangePlanLink() {
+  const router = useRouter()
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <span className="inline-flex flex-col items-end">
+      <button
+        type="button"
+        className="text-sm font-medium text-[#ba3d3d] underline underline-offset-2 disabled:opacity-50"
+        disabled={pending}
+        data-testid="claim-change-plan"
+        onClick={async () => {
+          setPending(true)
+          setError(null)
+          const err = await clearClaimPlanAction()
+          if (err) {
+            setError(err)
+            setPending(false)
+          } else router.refresh()
+        }}
+      >
+        {CLAIM_CHANGE_PLAN_LINK}
+      </button>
+      {error ? (
+        <span className="mt-1 text-xs text-red-700" role="alert">
+          {error}
+        </span>
+      ) : null}
+    </span>
   )
 }
 

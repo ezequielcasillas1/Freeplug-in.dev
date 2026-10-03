@@ -13,6 +13,9 @@ import { subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
+import { pendingPlanChange } from '@/lib/stripe/change-plan'
+import { formatPlanEndDate } from '@/lib/stripe/active-subscription'
+import { stepById } from '@/lib/plans/ladder'
 
 export type DashboardStats = {
   totalPaidCents: number
@@ -37,6 +40,8 @@ export type SubscriptionDetail = {
   entitlements?: Entitlements | null
   /** Included small edit this billing period (Fast lane+ or legacy Plus/Pro); null = not included / unknown. */
   includedEdit?: { used: number; available: number } | null
+  /** A downgrade waiting for the next billing date (Lina §3c); null = none or unknown. */
+  pendingChange?: { stepName: string; date: string } | null
 }
 
 export type ActivityItem = {
@@ -152,6 +157,15 @@ export async function getEnhancedDashboardData(
         const price = items[0].price
         const entitlements: Entitlements | null =
           sub.status === 'active' || sub.status === 'trialing' ? planEntitlements : null
+        let pendingChange: SubscriptionDetail['pendingChange'] = null
+        if ((sub.status === 'active' || sub.status === 'trialing') && sub.schedule) {
+          try {
+            const p = await pendingPlanChange(stripe, sub)
+            if (p) pendingChange = { stepName: stepById(p.step).name, date: formatPlanEndDate(new Date(p.effectiveAt)) }
+          } catch (e) {
+            console.error('[dashboard] pending change lookup failed', e instanceof Error ? e.message : e)
+          }
+        }
 
         subscriptions.push({
           id: sub.id,
@@ -166,6 +180,7 @@ export async function getEnhancedDashboardData(
           created: stripeTimestampToDate(sub.created) ?? new Date(0),
           entitlements,
           includedEdit: null,
+          pendingChange,
         })
 
         if (sub.status === 'active' || sub.status === 'trialing') {

@@ -6,9 +6,10 @@ import { createClient } from '@/lib/supabase/server'
 import { describeLiveSubscriptions, formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import type { PlanStepId } from '@/lib/plans/ladder'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
-import { pendingPlanChange } from '@/lib/stripe/change-plan'
+import { pendingPlanChange, subscriptionMonthlyCents } from '@/lib/stripe/change-plan'
+import { subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { getStripe } from '@/lib/stripe/server'
-import { changeHostingPlan, updatePaymentMethod } from '../billing-actions'
+import { changeHostingPlan, previewPlanChange, updatePaymentMethod } from '../billing-actions'
 import { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE, DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 import { stepById } from '@/lib/plans/ladder'
 import { BillingTools } from '@/components/plans/BillingTools'
@@ -92,6 +93,8 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
   let currentPlanLines: string[] = []
   let currentStepId: PlanStepId | null = null
   let pendingChange: { stepId: PlanStepId; date: string } | null = null
+  let currentMonthlyCents: number | null = null
+  let renewalDate: string | null = null
   const { data: prof } = await supabase
     .from('profiles')
     .select('stripe_customer_id')
@@ -108,9 +111,15 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
         const live = (await listLiveSubscriptions(prof.stripe_customer_id)).filter(
           (s) => s.status === 'active' || s.status === 'trialing'
         )
-        if (live.length === 1 && live[0].schedule) {
-          const p = await pendingPlanChange(getStripe(), live[0])
-          if (p) pendingChange = { stepId: p.step, date: formatPlanEndDate(new Date(p.effectiveAt)) }
+        if (live.length === 1) {
+          // Button direction and "Switch to X on <date>" (Lina §3a) use what the plan costs now.
+          currentMonthlyCents = subscriptionMonthlyCents(live[0])
+          const end = subscriptionPeriodEnd(live[0])
+          renewalDate = end ? formatPlanEndDate(end) : null
+          if (live[0].schedule) {
+            const p = await pendingPlanChange(getStripe(), live[0])
+            if (p) pendingChange = { stepId: p.step, date: formatPlanEndDate(new Date(p.effectiveAt)) }
+          }
         }
       }
     } catch (e) {
@@ -128,12 +137,18 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
         {DASHBOARD_PLANS_INTRO}
       </p>
       <BillingNotices billing={billing} card={card} pendingChange={pendingChange} />
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl">
+      {/* Lina §1: the ladder full width (columns from lg), Maintenance below it, then Billing. */}
+      <div className="space-y-8 max-w-4xl">
         <HostingCheckoutCard
           embedded
+          layout="columns"
+          stickyOnPhone
           currentPlanLines={currentPlanLines}
           currentStepId={currentStepId}
+          currentMonthlyCents={currentMonthlyCents}
+          renewalDate={renewalDate}
           onChangePlan={changeHostingPlan}
+          onPreviewChange={previewPlanChange}
           pendingChange={pendingChange}
         />
         <MaintenancePlanCard

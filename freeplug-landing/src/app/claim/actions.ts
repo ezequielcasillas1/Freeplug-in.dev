@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import {
+  clearChosenPlan,
   confirmCustomerDetails,
   saveChosenPlan,
   startSetupCheckout,
@@ -46,6 +47,14 @@ export async function saveClaimPlanAction(plan: unknown): Promise<string | null>
     const step = resolvePlanStep((plan as { planStep?: unknown } | null)?.planStep)
     return STEP_NOT_SELLABLE_MESSAGE(step?.name ?? 'This plan')
   }
+  return res.ok ? null : GENERIC_TRY_AGAIN
+}
+
+/** Claim step 4 "Change": back to step 3 (refused once the card is saved or the site is live). */
+export async function clearClaimPlanAction(): Promise<string | null> {
+  const user = await signedInUser()
+  if (!user) return GENERIC_TRY_AGAIN
+  const res = await clearChosenPlan(user.id)
   return res.ok ? null : GENERIC_TRY_AGAIN
 }
 

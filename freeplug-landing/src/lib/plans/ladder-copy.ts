@@ -86,7 +86,7 @@ export const aiEditsLine = (step: Pick<PlanStep, 'aiEditsPerMonth'>, show: boole
  * Step marked "Most popular" on the cards; null for none. Off (Lina, Oct 3 round 4): no sales data
  * behind it, and with three sellable steps it reads as a push. Revisit with real numbers.
  */
-export const MOST_POPULAR_STEP: PlanStepId | null = 'fast_lane'
+export const MOST_POPULAR_STEP: PlanStepId | null = null
 
 /** PLACEHOLDER (Sable): landing "Hosting & maintenance" intro (replaces the slider + add-on line). */
 export const LANDING_PLANS_INTRO =
