@@ -98,6 +98,27 @@ describe('HostingCheckoutCard rows (Lina §0)', () => {
   })
 })
 
+describe('round 5 (Lina): radio accent and Coming soon contrast', () => {
+  it('every ladder radio uses the brand accent color', () => {
+    const { container } = render(<HostingCheckoutCard />)
+    const radios = container.querySelectorAll('input[type=radio]')
+    expect(radios.length).toBeGreaterThan(0)
+    for (const r of radios) expect(r.className).toMatch(/(^|\s)accent-\[#ba3d3d\](\s|$)/)
+  })
+
+  it('Coming soon rows: all text gray-600 or darker (no gray-300/400/500, no opacity)', () => {
+    const { container } = render(<HostingCheckoutCard />)
+    const soon = container.querySelectorAll('[data-sellable=false]')
+    expect(soon.length).toBe(3)
+    for (const row of soon) {
+      for (const el of [row, ...row.querySelectorAll('*')]) {
+        const cls = el.getAttribute('class') ?? ''
+        expect(cls).not.toMatch(/text-(gray|zinc)-(300|400|500)\b|opacity-/)
+      }
+    }
+  })
+})
+
 describe('checkout and claim modes', () => {
   it('checkout posts only the chosen step id', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ error: 'stop' }), { status: 400 }))

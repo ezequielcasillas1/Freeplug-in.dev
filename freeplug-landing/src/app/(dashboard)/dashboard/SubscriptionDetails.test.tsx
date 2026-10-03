@@ -21,15 +21,11 @@ function plan(amount: number): SubscriptionDetail {
   }
 }
 
-describe('SubscriptionDetails Priority line', () => {
-  it('shows Priority at $55/month', () => {
-    render(<SubscriptionDetails subscriptions={[plan(5500)]} />)
-    expect(screen.getByText(LINE)).toBeInTheDocument()
-  })
-
-  it('does not show Priority at $50/month', () => {
-    render(<SubscriptionDetails subscriptions={[plan(5000)]} />)
+describe('SubscriptionDetails: no "Priority included" line (Sable, round 5)', () => {
+  it.each([3500, 5000, 5500, 7500])('never shown, at $%i cents/month either', (cents) => {
+    render(<SubscriptionDetails subscriptions={[plan(cents)]} />)
     expect(screen.queryByText(LINE)).toBeNull()
+    expect(document.body).not.toHaveTextContent(/front of our queue/i)
   })
 })
 
@@ -149,18 +145,19 @@ describe('SubscriptionDetails for a claimed outreach customer (Lina / Sable, Sep
 })
 
 describe('SubscriptionDetails hosting ladder (Oct 3)', () => {
-  it('a ladder plan shows its step name and every perk up to it (cumulative)', () => {
+  it('a ladder plan shows every perk up to it (cumulative), Priority perk included; no separate step-name line', () => {
     render(
       <SubscriptionDetails
         subscriptions={[{ ...plan(7500), entitlements: entitlementsFor({ stepId: 'leads' }), includedEdit: { used: 0, available: 1 } }]}
       />
     )
     const box = screen.getByTestId('plan-step')
-    expect(box).toHaveTextContent('Leads')
-    // priorityQueue is covered by the [STRICT] Priority line above the list, so it is not repeated.
-    for (const perk of cumulativePerks('leads').filter((p) => p !== 'priorityQueue')) expect(box).toHaveTextContent(PERK_LINES[perk])
+    expect(box.querySelector('p')).toBeNull()
+    expect(box).not.toHaveTextContent(/^Leads/)
+    for (const perk of cumulativePerks('leads')) expect(box).toHaveTextContent(PERK_LINES[perk])
+    expect(box).toHaveTextContent(PERK_LINES.priorityQueue)
     expect(box).not.toHaveTextContent(PERK_LINES.gbpManaged)
-    expect(screen.getByText(LINE)).toBeInTheDocument()
+    expect(screen.queryByText(LINE)).toBeNull()
     expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(0, 1))
   })
 
@@ -170,12 +167,12 @@ describe('SubscriptionDetails hosting ladder (Oct 3)', () => {
     expect(screen.queryByTestId('included-edit')).toBeNull()
   })
 
-  it('a grandfathered add-on plan is labelled legacy, keeps its Priority by total, and shows no new perks', () => {
+  it('a grandfathered add-on plan is labelled legacy and shows no new perks (no Priority line either)', () => {
     const ent = entitlementsFor({ legacy: { hostingCents: 4000, addonTier: 'pro' } })
     render(<SubscriptionDetails subscriptions={[{ ...plan(5500), entitlements: ent, includedEdit: { used: 1, available: 1 } }]} />)
     expect(screen.getByTestId('legacy-plan')).toHaveTextContent(LEGACY_PLAN_LABEL)
     expect(screen.queryByTestId('plan-step')).toBeNull()
-    expect(screen.getByText(LINE)).toBeInTheDocument()
+    expect(screen.queryByText(LINE)).toBeNull()
     expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(1, 1))
     expect(document.body).not.toHaveTextContent(/backup|downtime alert|uptime/i)
   })
@@ -199,12 +196,11 @@ describe('SubscriptionDetails plan card links (Lina §3c, round 4)', () => {
     expect(screen.queryByRole('button')).toBeNull()
   })
 
-  it('a plain "Change plan" link to Plans under the perks; no pending line without a pending change', () => {
+  it('no extra "Change plan" link (round 5: "Manage plans →" already goes to Plans); no pending line without a pending change', () => {
     render(<SubscriptionDetails subscriptions={[ladder()]} />)
     expect(screen.queryByTestId('home-pending-change')).toBeNull()
-    expect(screen.getByTestId('home-change-plan')).toHaveTextContent('Change plan')
-    expect(screen.getByTestId('home-change-plan')).toHaveAttribute('href', '/dashboard/plans')
-    const perks = screen.getByTestId('plan-step')
-    expect(perks.compareDocumentPosition(screen.getByTestId('home-change-plan')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.queryByTestId('home-change-plan')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Change plan' })).toBeNull()
+    expect(screen.getByRole('link', { name: /Manage plans/ })).toHaveAttribute('href', '/dashboard/plans')
   })
 })

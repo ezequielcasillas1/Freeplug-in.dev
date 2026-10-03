@@ -318,7 +318,7 @@ export function HostingCheckoutCard({
     return (
       <span className="shrink-0 whitespace-nowrap">
         <span className={cn('font-bold', muted ? 'text-gray-600' : 'text-gray-900')}>{formatDollars(step.monthlyCents)}</span>
-        <span className="text-xs text-gray-500">{PER_MONTH}</span>
+        <span className={cn('text-xs', muted ? 'text-gray-600' : 'text-gray-500')}>{PER_MONTH}</span>
       </span>
     )
   }
@@ -356,11 +356,11 @@ export function HostingCheckoutCard({
     return badges.length ? <span className="mt-1 flex flex-wrap gap-1.5">{badges}</span> : null
   }
 
-  function body(step: PlanStep) {
+  function body(step: PlanStep, muted?: boolean) {
     const i = indexOf(step.id)
     return (
       <>
-        {i > 0 ? <span className="mt-2 block text-sm text-gray-500">{EVERYTHING_IN(PLAN_STEPS[i - 1].name)}</span> : null}
+        {i > 0 ? <span className={cn('mt-2 block text-sm', muted ? 'text-gray-600' : 'text-gray-500')}>{EVERYTHING_IN(PLAN_STEPS[i - 1].name)}</span> : null}
         <ul className={cn('list-disc pl-4 text-sm text-gray-600', i > 0 ? 'mt-1' : 'mt-2')}>
           {linesFor(step).map((line) => (
             <li key={line}>{line}</li>
@@ -394,7 +394,7 @@ export function HostingCheckoutCard({
           checked={isSelected}
           disabled={!pickable(step.id)}
           onChange={() => pick(step.id)}
-          className="mt-1 shrink-0 text-[#ba3d3d] focus:ring-[#ba3d3d]"
+          className="mt-1 shrink-0 accent-[#ba3d3d] text-[#ba3d3d] focus:ring-[#ba3d3d]"
         />
         <span className="block min-w-0 flex-1 text-sm text-gray-700">
           <span className="flex items-baseline justify-between gap-3">
@@ -422,7 +422,7 @@ export function HostingCheckoutCard({
           {price(step, true)}
         </span>
         {badgesFor(step)}
-        {body(step)}
+        {body(step, true)}
       </div>
     )
   }

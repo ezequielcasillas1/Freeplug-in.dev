@@ -1,15 +1,9 @@
 import Link from 'next/link'
 import { CreditCard, Calendar, ArrowRight } from 'lucide-react'
 import type { SubscriptionDetail } from './dashboard-actions'
-import {
-  PRIORITY_DASHBOARD_LINE,
-  monthlyCents,
-  qualifiesForPriority,
-} from '@/lib/plans/priority'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
 import {
-  CHANGE_PLAN_LINK,
   INCLUDED_EDIT_LINE,
   KEEP_PLAN_BUTTON,
   LEGACY_PLAN_LABEL,
@@ -135,18 +129,15 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                   <p className="text-sm text-gray-600 mt-0.5">
                     {formatCents(sub.amount)}/{sub.interval}
                   </p>
-                  {(sub.entitlements ? sub.entitlements.priorityRank >= 1 : qualifiesForPriority(monthlyCents(sub.amount, sub.interval))) ? (
-                    <p className="text-sm text-gray-700 mt-1">{PRIORITY_DASHBOARD_LINE}</p>
-                  ) : null}
                   {sub.entitlements?.step && !sub.entitlements.legacy ? (
+                    // Round 5: no separate step-name line (the title already says "Freeplug Hosting: <Name>")
+                    // and no "Priority included" line (Sable: the perks list stays), so the Priority perk is
+                    // in the list itself.
                     <div className="mt-1 text-sm text-gray-700" data-testid="plan-step">
-                      <p className="font-medium">{sub.entitlements.step.name}</p>
                       <ul className="list-disc pl-4 text-gray-600">
-                        {cumulativePerks(sub.entitlements.step.id)
-                          .filter((perk) => perk !== 'priorityQueue')
-                          .map((perk) => (
-                            <li key={perk}>{PERK_LINES[perk]}</li>
-                          ))}
+                        {cumulativePerks(sub.entitlements.step.id).map((perk) => (
+                          <li key={perk}>{PERK_LINES[perk]}</li>
+                        ))}
                       </ul>
                     </div>
                   ) : null}
@@ -161,7 +152,7 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                       {INCLUDED_EDIT_LINE(sub.includedEdit.used, sub.includedEdit.available)}
                     </p>
                   ) : null}
-                  {/* Lina §3c: the pending change + a Keep link (the action lives on Plans), then "Change plan". */}
+                  {/* Lina §3c: the pending change + a Keep link (the action lives on Plans). "Manage plans →" below goes to Plans. */}
                   {sub.pendingChange ? (
                     <p className="text-sm text-amber-800 mt-2" data-testid="home-pending-change">
                       {PENDING_CHANGE_LINE(sub.pendingChange.stepName, sub.pendingChange.date)}{' '}
@@ -172,11 +163,6 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                       ) : null}
                     </p>
                   ) : null}
-                  <p className="mt-2 text-sm">
-                    <Link href="/dashboard/plans" className="font-semibold text-[#ba3d3d] hover:underline" data-testid="home-change-plan">
-                      {CHANGE_PLAN_LINK}
-                    </Link>
-                  </p>
                 </div>
               </div>
               <div className="pl-12 sm:pl-0 sm:shrink-0 sm:text-right text-sm">
