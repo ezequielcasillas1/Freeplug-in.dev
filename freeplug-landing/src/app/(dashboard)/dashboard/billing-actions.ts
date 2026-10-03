@@ -4,9 +4,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
-import { resumeEndingSubscriptions } from '@/lib/stripe/resume-hosting'
+import { resumeEndingSubscriptions, resumeOutcomeFromLive, type ResumeOutcome } from '@/lib/stripe/resume-hosting'
 import { PortalNotConfiguredError } from '@/lib/stripe/portal'
-import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_FAILED_PATH } from '@/lib/stripe/billing-routing'
+import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changePlanStep, changeTip, previewPlanStepChange, previewTipChange, type TipChangeRefusal } from '@/lib/stripe/change-plan'
@@ -135,20 +135,33 @@ export async function resumePlan() {
     .single()
 
   const customerId = prof?.stripe_customer_id
-  let resumed = 0
+  let outcome: ResumeOutcome = 'failed'
   if (customerId) {
+    let lockHeld = false
     try {
       const lock = await withPlanChangeLock(lockStore(), user.id, () => resumeEndingSubscriptions(getStripe(), customerId))
-      if (lock.ok) resumed = lock.value
-      else console.error('[resumePlan] lock', lock.code)
+      if (lock.ok && lock.value > 0) outcome = 'resumed'
+      else if (!lock.ok) {
+        lockHeld = lock.code === 'in_progress'
+        console.error('[resumePlan] lock', lock.code)
+      }
     } catch (e) {
       console.error('[resumePlan] resume failed', e instanceof Error ? e.message : e)
+    }
+    // Vera B1/B2: nothing resumed here (double click, second tab, lock busy, or an error). Ask Stripe
+    // what is true now before showing a failure: already resumed -> the success state.
+    if (outcome !== 'resumed') {
+      try {
+        outcome = resumeOutcomeFromLive(await listLiveSubscriptions(customerId), lockHeld)
+      } catch (e) {
+        console.error('[resumePlan] re-read failed', e instanceof Error ? e.message : e)
+      }
     }
   }
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/cancel')
   revalidatePath('/dashboard/plans')
-  redirect(resumed > 0 ? '/dashboard?hosting=resumed' : RESUME_FAILED_PATH)
+  redirect(outcome === 'resumed' ? RESUMED_PATH : outcome === 'busy' ? RESUME_BUSY_PATH : RESUME_FAILED_PATH)
 }
 
 /**

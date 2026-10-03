@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import type { WebsiteAccessAlert as Alert } from '@/lib/website-access'
 import { resumePlan } from './billing-actions'
+import { ResumePlanSubmit } from './ResumePlanSubmit'
 
 /**
  * Website access message (ending / offline). Same look as the dashboard warning alert; one button
@@ -29,9 +30,7 @@ export function WebsiteAccessAlert({ alert }: { alert: Alert }) {
           </p>
           {alert.button.kind === 'resume' ? (
             <form action={resumePlan}>
-              <Button type="submit" className={primary}>
-                {alert.button.label}
-              </Button>
+              <ResumePlanSubmit className={cn(primary, 'disabled:opacity-60 disabled:cursor-wait')}>{alert.button.label}</ResumePlanSubmit>
             </form>
           ) : (
             <Link href={alert.button.href} className={primary}>

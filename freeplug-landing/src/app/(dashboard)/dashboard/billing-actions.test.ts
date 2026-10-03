@@ -153,7 +153,7 @@ vi.mock('@/lib/stripe/server', () => ({
 
 import { cancelHostingAtPeriodEnd, changeHostingPlan, changeTipAction, openBillingPortal, previewPlanChange, previewTipChangeAction, resumePlan, updatePaymentMethod } from './billing-actions'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { CHANGE_PLAN_ENDING, RESUME_FAILED_MESSAGE, STEP_NOT_SELLABLE_MESSAGE, TIP_CHANGE_ENDING, TIP_IN_PROGRESS, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
+import { CHANGE_PLAN_ENDING, RESUME_BUSY_MESSAGE, RESUME_FAILED_MESSAGE, STEP_NOT_SELLABLE_MESSAGE, TIP_CHANGE_ENDING, TIP_IN_PROGRESS, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
 
 const ladderSub = (id: string, over: Record<string, unknown> = {}) => {
   const s = PLAN_STEPS.find((p) => p.id === id)!
@@ -362,15 +362,56 @@ describe('Resume plan (Aria 4:05 PM): clears only cancel_at_period_end, under th
     err.mockRestore()
   })
 
-  it('nothing to resume, or the lock held: the support error, no Stripe write, no portal', async () => {
-    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+  it('Vera B1: a stale second tab (nothing left to resume, Stripe says active and not ending) lands on the resumed state', async () => {
     liveSubs = [ladderSub('starter')]
-    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resumed' })
+    expect(calls).toEqual([]) // no Stripe write
+    expect(lockEvents).toEqual(['claim:ok:60', 'release:ok'])
+  })
+
+  it('Vera B1: a double click (lock held by the first click, which already resumed) re-reads Stripe and lands on resumed', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    liveSubs = [ladderSub('starter')] // what Stripe says after the first click went through
+    locks.set('u1', { claimId: 'first-click', expiresAt: Date.now() + 30_000 })
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resumed' })
+    expect(calls).toEqual([])
+    expect(listedCustomers).toContain('cus_1')
+    locks.clear()
+    err.mockRestore()
+  })
+
+  it('Vera B2: lock held AND Stripe still says ending: RESUME_BUSY_MESSAGE (Sable 5:11 PM), no Stripe write, no portal', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
     liveSubs = [ending()]
     locks.set('u1', { claimId: 'other', expiresAt: Date.now() + 30_000 })
-    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_busy' })
     expect(calls).toEqual([])
+    expect(RESUME_BUSY_MESSAGE).toBe('Your plan is already being updated. Please try again in a moment.')
     locks.clear()
+    err.mockRestore()
+  })
+
+  it('failures stay failures: no live plan, a broken lock (not busy) while ending, or a failed re-read', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    liveSubs = []
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    liveSubs = [ending()]
+    lockRpcFails = true
+    try {
+      await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    } finally {
+      lockRpcFails = false
+    }
+    locks.set('u1', { claimId: 'other', expiresAt: Date.now() + 30_000 })
+    liveListFails = true
+    try {
+      await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_failed' })
+    } finally {
+      liveListFails = false
+      locks.clear()
+    }
+    expect(calls).not.toContain('stripe.billingPortal.sessions.create')
+    expect(updateParams).toEqual([])
     err.mockRestore()
   })
 })

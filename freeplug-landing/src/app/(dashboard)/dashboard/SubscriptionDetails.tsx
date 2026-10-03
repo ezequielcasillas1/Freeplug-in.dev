@@ -113,7 +113,7 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
-                    <h3 className="font-semibold text-gray-900">{sub.productName}</h3>
+                    <h3 className="font-semibold text-gray-900">{sub.listName ?? sub.productName}</h3>
                     <div className="flex items-center gap-2">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}

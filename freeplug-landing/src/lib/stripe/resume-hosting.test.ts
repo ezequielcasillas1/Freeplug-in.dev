@@ -5,7 +5,7 @@ const list = vi.fn()
 const update = vi.fn()
 vi.mock('@/lib/stripe/server', () => ({ getStripe: () => ({ subscriptions: { list, update } }) }))
 
-import { resumeEndingSubscriptions } from './resume-hosting'
+import { resumeEndingSubscriptions, resumeOutcomeFromLive } from './resume-hosting'
 
 describe('resumeEndingSubscriptions', () => {
   beforeEach(() => {
@@ -38,5 +38,26 @@ describe('resumeEndingSubscriptions', () => {
     update.mockRejectedValue(new Error('Received both cancel_at_period_end and cancel_at parameters.'))
     const stripe = { subscriptions: { list, update } } as unknown as Stripe
     await expect(resumeEndingSubscriptions(stripe, 'cus_1')).rejects.toThrow('Received both')
+  })
+})
+
+describe('resumeOutcomeFromLive (Vera B1/B2: re-read Stripe before showing a failure)', () => {
+  const sub = (status: string, over: Record<string, unknown> = {}) =>
+    ({ status, cancel_at_period_end: false, cancel_at: null, ...over }) as unknown as Stripe.Subscription
+  const ending = sub('active', { cancel_at_period_end: true, cancel_at: 1793742023 })
+  it('active (or trialing) and not ending: resumed, whether or not the lock was held', () => {
+    expect(resumeOutcomeFromLive([sub('active')], false)).toBe('resumed')
+    expect(resumeOutcomeFromLive([sub('active')], true)).toBe('resumed')
+    expect(resumeOutcomeFromLive([sub('trialing')], true)).toBe('resumed')
+  })
+  it('still ending: busy only when the lock was held, otherwise failed', () => {
+    expect(resumeOutcomeFromLive([ending], true)).toBe('busy')
+    expect(resumeOutcomeFromLive([ending], false)).toBe('failed')
+    expect(resumeOutcomeFromLive([sub('active', { cancel_at: 1793742023 })], true)).toBe('busy') // cancel_at alone
+    expect(resumeOutcomeFromLive([sub('active'), ending], false)).toBe('failed') // one of two still ending
+  })
+  it('no running plan (none, or only past_due): failed', () => {
+    expect(resumeOutcomeFromLive([], true)).toBe('failed')
+    expect(resumeOutcomeFromLive([sub('past_due')], false)).toBe('failed')
   })
 })

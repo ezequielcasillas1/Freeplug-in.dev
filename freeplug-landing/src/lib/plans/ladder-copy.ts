@@ -150,6 +150,11 @@ export const CANCEL_PLAN_BUTTON = 'Cancel my plan at the end of this billing per
  * billing portal; they get the support contact (src/lib/site.ts) instead.
  */
 export const RESUME_FAILED_MESSAGE = `We couldn't resume your plan, so it's still set to end. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY} and we'll help.`
+/**
+ * [Sable] FINAL (5:11 PM CT; Vera B2): "Resume plan" while another plan change holds the lock AND a
+ * fresh read from Stripe shows the plan is still set to end. (Already resumed = the success state.)
+ */
+export const RESUME_BUSY_MESSAGE = 'Your plan is already being updated. Please try again in a moment.'
 /** [Sable] FINAL (4:32 PM CT): the in-app cancel (the only cancel) failed. */
 export const CANCEL_FAILED_MESSAGE = `We couldn't cancel your plan just now, so nothing has changed. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY}.`
 /** PLACEHOLDER (Sable/Wren): Plans page billing (Aria, Oct 3 12:56). */

@@ -4,7 +4,7 @@ import { ensureProfile } from '@/lib/supabase/ensure-profile'
 import type { EvaluationStatus, ProfileRow } from '@/types/supabase'
 import { Button } from '@/components/ui/button'
 import { openBillingPortal } from './billing-actions'
-import { RESUME_FAILED_MESSAGE } from '@/lib/plans/ladder-copy'
+import { RESUME_BUSY_MESSAGE, RESUME_FAILED_MESSAGE } from '@/lib/plans/ladder-copy'
 import { getEnhancedDashboardData } from './dashboard-actions'
 import { QuickStats } from './QuickStats'
 import { AccountCard } from './AccountCard'
@@ -149,6 +149,15 @@ export default async function DashboardPage({ searchParams }: Props) {
           data-testid="resume-failed"
         >
           {RESUME_FAILED_MESSAGE}
+        </p>
+      ) : null}
+      {q.hosting === 'resume_busy' ? (
+        <p
+          className="mb-6 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 text-sm"
+          role="status"
+          data-testid="resume-busy"
+        >
+          {RESUME_BUSY_MESSAGE}
         </p>
       ) : null}
 

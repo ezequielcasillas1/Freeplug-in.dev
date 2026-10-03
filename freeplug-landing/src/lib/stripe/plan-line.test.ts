@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPlanDollars, planStripLine } from './plan-line'
+import { formatPlanDollars, planNameOf, planStripLine, subscriptionListName } from './plan-line'
 
 const ladder = (step: string, cents: number) => ({ lookupKey: `freeplug_step_${step}_monthly`, productName: `Freeplug Hosting: ${step}`, unitAmountCents: cents, quantity: 1 })
 
@@ -20,5 +20,16 @@ describe('Plans page strip line (round 5)', () => {
       { lookupKey: null, productName: 'Pro add-on (monthly)', unitAmountCents: 1500, quantity: 1 },
     ]
     expect(planStripLine(items, 'month', 'past_due')).toBe('Hosting plan (monthly) + Pro add-on (monthly) · $55/month (past due)')
+  })
+})
+
+describe('plan names on the dashboard (Sable 5:11 PM)', () => {
+  it('planNameOf: the step name for a ladder plan, product names for a grandfathered one (never the tip)', () => {
+    expect(planNameOf([ladder('fast_lane', 6500)])).toBe('Fast lane')
+    expect(planNameOf([{ lookupKey: null, productName: 'Hosting plan (monthly)' }, { lookupKey: null, productName: 'Pro add-on (monthly)' }])).toBe('Hosting plan (monthly) + Pro add-on (monthly)')
+  })
+  it('Active Subscriptions list: "Fast lane + $4 tip" (PLAN_STRIP_TIP pattern); plan name only without a tip', () => {
+    expect(subscriptionListName('Fast lane', 4)).toBe('Fast lane + $4 tip')
+    expect(subscriptionListName('Fast lane', 0)).toBe('Fast lane')
   })
 })

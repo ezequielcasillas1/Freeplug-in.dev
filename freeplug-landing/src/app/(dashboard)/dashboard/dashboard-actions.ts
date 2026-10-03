@@ -9,7 +9,9 @@ import {
   subscriptionPeriodEnd,
   subscriptionPeriodStart,
 } from '@/lib/stripe/subscription-dates'
-import { subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
+import { RESUME_PLAN_ANCHOR_HREF, subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
+import { planNameOf, subscriptionListName } from '@/lib/stripe/plan-line'
+import { isTipPrice } from '@/lib/plans/tips'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
@@ -28,7 +30,12 @@ export type DashboardStats = {
 
 export type SubscriptionDetail = {
   id: string
+  /** Every item's product name joined with " + " (Recent activity). */
   productName: string
+  /** Plan name only, never the tip: "Fast lane" (Subscription ending alert, Sable 5:11 PM). */
+  planName?: string
+  /** Active Subscriptions list: "Fast lane + $4 tip" (Sable 5:11 PM); plan name only without a tip. */
+  listName?: string
   status: Stripe.Subscription.Status
   amount: number
   interval: string
@@ -162,6 +169,8 @@ export async function getEnhancedDashboardData(
 
         // Include every line item (e.g. hosting + add-on), not just the first one.
         const productNames: string[] = []
+        const planItems: { lookupKey: string | null; productName: string }[] = []
+        let tipDollars = 0
         let amount = 0
         for (const item of items) {
           const itemPrice = item.price
@@ -170,8 +179,11 @@ export async function getEnhancedDashboardData(
               ? await stripe.products.retrieve(itemPrice.product)
               : (itemPrice.product as Stripe.Product)
           productNames.push(itemProduct.name)
+          if (isTipPrice(itemPrice)) tipDollars += Math.max(0, item.quantity ?? 0)
+          else planItems.push({ lookupKey: itemPrice.lookup_key ?? null, productName: itemProduct.name })
           amount += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
         }
+        const planName = planItems.length > 0 ? planNameOf(planItems) : productNames.join(' + ')
         const price = items[0].price
         const entitlements: Entitlements | null =
           sub.status === 'active' || sub.status === 'trialing' ? planEntitlements : null
@@ -188,6 +200,8 @@ export async function getEnhancedDashboardData(
         subscriptions.push({
           id: sub.id,
           productName: productNames.join(' + '),
+          planName,
+          listName: subscriptionListName(planName, tipDollars),
           status: sub.status,
           amount,
           interval: price.recurring?.interval ?? 'month',
@@ -322,9 +336,9 @@ export async function getEnhancedDashboardData(
       id: 'subscription-ending',
       type: 'warning',
       title: 'Subscription ending',
-      message: subscriptionEndingMessage(cancelingSubscription.productName, daysUntilEnd),
+      message: subscriptionEndingMessage(cancelingSubscription.planName ?? cancelingSubscription.productName, daysUntilEnd),
       actionLabel: 'Resume plan',
-      actionHref: '/dashboard/plans',
+      actionHref: RESUME_PLAN_ANCHOR_HREF,
     })
   }
 

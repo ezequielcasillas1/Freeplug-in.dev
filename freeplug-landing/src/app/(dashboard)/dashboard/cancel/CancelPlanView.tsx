@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cancelHostingAtPeriodEnd, resumePlan } from '../billing-actions'
+import { ResumePlanSubmit } from '../ResumePlanSubmit'
 import { CANCEL_FAILED_MESSAGE, CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE, TIP_TOTAL_LINE } from '@/lib/plans/ladder-copy'
 import type { CancelPageData } from './actions'
 import type { OutreachPlanBox } from '../outreach-dashboard'
@@ -197,7 +198,7 @@ export function CancelPlanView({
 
             {/* Resume CTA (hidden when a live plan is running and nothing is set to end) */}
             {(hasEndingSubscription || !hasActiveSubscriptions) && (
-              <div className="rounded-xl border border-green-200 bg-green-50 p-5">
+              <div id="resume-plan" className="rounded-xl border border-green-200 bg-green-50 p-5 scroll-mt-24">
                 <div className="flex items-start gap-3">
                   <RefreshCw className="text-green-600 mt-0.5 flex-shrink-0" size={20} />
                   <div>
@@ -211,12 +212,9 @@ export function CancelPlanView({
                     </p>
                     {hasEndingSubscription ? (
                       <form action={resumePlan}>
-                        <button
-                          type="submit"
-                          className="mt-3 inline-flex font-semibold text-green-700 hover:text-green-800 hover:underline"
-                        >
+                        <ResumePlanSubmit className="mt-3 inline-flex font-semibold text-green-700 hover:text-green-800 hover:underline disabled:opacity-60 disabled:cursor-wait">
                           {RESUME_PLAN_LABEL} →
-                        </button>
+                        </ResumePlanSubmit>
                       </form>
                     ) : (
                       <Link

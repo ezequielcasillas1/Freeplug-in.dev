@@ -34,10 +34,28 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'ladder' }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('Stripe is down') } } }
+    if (stripe.mode === 'ladder') {
+      // Fast lane + $4 tip, set to end in 31 days (Stripe's shape: both cancel fields set)
+      const end = Math.floor(Date.now() / 1000) + 31 * 86400 - 600
+      const item = (lookup_key: string, name: string, unit_amount: number, quantity: number) => ({
+        price: { lookup_key, product: { id: `prod_${lookup_key}`, name }, unit_amount, recurring: { interval: 'month' } },
+        quantity,
+        current_period_end: end,
+        current_period_start: end - 30 * 86400,
+      })
+      return {
+        subscriptions: {
+          list: async () => ({
+            data: [{ id: 'sub_l', status: 'active', created: 1790000000, cancel_at_period_end: true, cancel_at: end, items: { data: [item('freeplug_step_fast_lane_monthly', 'Freeplug Hosting: Fast lane', 6500, 1), item('freeplug_tip_monthly', 'Optional monthly tip', 100, 4)] } }],
+          }),
+        },
+        invoices: { list: async () => ({ data: [] }) },
+      }
+    }
     return {
       subscriptions: {
         list: async () => ({
@@ -69,6 +87,20 @@ describe('getEnhancedDashboardData and Stripe errors (round 9)', () => {
     const d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
     expect(d?.subscriptionsLoaded).toBe(true)
     expect(d?.subscriptions.map((s) => s.productName)).toEqual(['Hosting plan (monthly)'])
+  })
+
+  it('Sable 5:11 PM / Vera B3: the ending alert names the plan only and links to the Resume box; the list reads "Fast lane + $4 tip"', async () => {
+    stripe.mode = 'ladder'
+    const d = await getEnhancedDashboardData({ tolerateStripeErrors: true })
+    const sub = d!.subscriptions[0]
+    expect(sub.planName).toBe('Fast lane')
+    expect(sub.listName).toBe('Fast lane + $4 tip')
+    expect(sub.productName).toBe('Freeplug Hosting: Fast lane + Optional monthly tip') // Recent activity keeps the product names
+    const alert = d!.alerts.find((a) => a.id === 'subscription-ending')!
+    expect(alert.message).toMatch(/^Fast lane will end in 3[01] days\. Resume to keep your website live\.$/)
+    expect(alert.message).not.toMatch(/tip|Freeplug Hosting/)
+    expect(alert.actionLabel).toBe('Resume plan')
+    expect(alert.actionHref).toBe('/dashboard/cancel#resume-plan')
   })
 
   it('outreach (tolerate): a Stripe error leaves no plans and subscriptionsLoaded = false instead of failing', async () => {

@@ -22,3 +22,23 @@ export async function resumeEndingSubscriptions(stripe: Stripe, customerId: stri
   }
   return resumed
 }
+
+export type ResumeOutcome = 'resumed' | 'busy' | 'failed'
+
+type ResumeReadSub = Pick<Stripe.Subscription, 'status' | 'cancel_at_period_end' | 'cancel_at'>
+const isEnding = (s: ResumeReadSub) => s.cancel_at_period_end === true || s.cancel_at != null
+
+/**
+ * Vera B1/B2: when "Resume plan" didn't resume anything itself (the lock was held by a double click or
+ * a second tab, nothing was left to resume, or the update threw), the caller re-reads the customer's
+ * live subscriptions from Stripe and decides from what Stripe says NOW:
+ * - an active/trialing plan and none of them set to end -> 'resumed' (the other click already did it);
+ * - still set to end while the lock was held -> 'busy' (RESUME_BUSY_MESSAGE);
+ * - anything else (no live plan, still ending after a failure) -> 'failed' (RESUME_FAILED_MESSAGE).
+ */
+export function resumeOutcomeFromLive(live: readonly ResumeReadSub[], lockHeld: boolean): ResumeOutcome {
+  const running = live.filter((s) => s.status === 'active' || s.status === 'trialing')
+  if (running.length > 0 && !running.some(isEnding)) return 'resumed'
+  if (lockHeld && running.some(isEnding)) return 'busy'
+  return 'failed'
+}

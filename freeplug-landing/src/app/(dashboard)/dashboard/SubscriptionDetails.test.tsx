@@ -212,3 +212,11 @@ describe('SubscriptionDetails plan card links (Lina §3c, round 4)', () => {
     expect(screen.getByRole('link', { name: 'Cancel options' })).toHaveAttribute('href', '/dashboard/cancel')
   })
 })
+
+describe('Active Subscriptions list name (Sable 5:11 PM)', () => {
+  it('reads "Fast lane + $4 tip", not the Stripe product names', () => {
+    render(<SubscriptionDetails subscriptions={[{ ...plan(6900), productName: 'Freeplug Hosting: Fast lane + Optional monthly tip', planName: 'Fast lane', listName: 'Fast lane + $4 tip', entitlements: entitlementsFor({ stepId: 'fast_lane' }) }]} />)
+    expect(screen.getByRole('heading', { name: 'Fast lane + $4 tip' })).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent(/Optional monthly tip|Freeplug Hosting:/)
+  })
+})

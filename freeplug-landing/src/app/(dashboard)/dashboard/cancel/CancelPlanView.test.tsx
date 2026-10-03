@@ -62,6 +62,10 @@ describe('CancelPlanView', () => {
     expect(screen.getByRole('heading', { name: 'Ready to resume?' })).toBeInTheDocument()
     expect(screen.queryByText('Ready to Resume?')).toBeNull()
     expect(screen.getByRole('button', { name: 'Resume plan →' })).toBeInTheDocument()
+    // Vera B3: the dashboard "Subscription ending" alert links here (/dashboard/cancel#resume-plan)
+    expect(document.getElementById('resume-plan')).toContainElement(screen.getByRole('button', { name: 'Resume plan →' }))
+    // Vera B1: the pending-aware submit (disabled while the form submits)
+    expect(screen.getByRole('button', { name: 'Resume plan →' })).toHaveAttribute('data-testid', 'resume-plan-submit')
     expect(screen.getByTestId('buyout-card-cancel')).toBeInTheDocument()
     // "Ready to resume?" covers it: no come-back box, no account summary.
     expect(screen.queryByText('Changed your mind later?')).toBeNull()

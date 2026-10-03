@@ -284,5 +284,20 @@ pinned word for word in ladder-copy.test.ts:
   end, so your tip can't be changed. Choose Resume plan first."
 - The dashboard tab stays "Cancel"; the locked file now says "Cancel" too (DashboardChrome.test.tsx checks both).
 
+## Vera B1-B3 on 68d7e2b + Sable 5:11 PM (Oct 3)
+- **B1 (MEDIUM) double Resume:** the Resume plan buttons (dashboard alert, cancel page) use
+  `ResumePlanSubmit` (useFormStatus: disabled + aria-busy while the form submits). On the server,
+  when `resumePlan` didn't resume anything itself (lock held, nothing left to resume, or the update
+  threw) it re-reads the live subscriptions from Stripe (`resumeOutcomeFromLive`): running and none set
+  to end -> `/dashboard?hosting=resumed`; still ending while the lock was held -> `?hosting=resume_busy`;
+  otherwise `?hosting=resume_failed`. Never the portal.
+- **B2:** `RESUME_BUSY_MESSAGE` "Your plan is already being updated. Please try again in a moment."
+  (Sable FINAL 5:11 PM), shown only for lock held + still ending.
+- **B3:** the "Subscription ending" alert names the plan only ("Fast lane will end in 31 days. Resume
+  to keep your website live.") and its "Resume plan" goes to `/dashboard/cancel#resume-plan` (the cancel
+  page's Resume box; the Plans page has no Resume). The Active Subscriptions list reads "Fast lane + $4
+  tip" (`subscriptionListName`, PLAN_STRIP_TIP pattern); grandfathered plans keep their product names.
+  Recent activity ("Subscription started") still shows the product names.
+
 ## Not built (Part B)
 L2 AI editor + quota enforcement, leads report job, form-fill storage, GBP API, SMS, L3.

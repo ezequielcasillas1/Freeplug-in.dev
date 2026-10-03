@@ -24,6 +24,10 @@ export const PLANS_PENDING_BILLING_PATH = '/dashboard/plans?billing=pending'
 export const PLANS_CARD_RETURN_PATH = '/dashboard/plans?card=updated'
 /** Where a failed "Resume plan" lands: the dashboard shows RESUME_FAILED_MESSAGE (support contact). Never the portal. */
 export const RESUME_FAILED_PATH = '/dashboard?hosting=resume_failed'
+/** "Resume plan" worked (or a fresh read shows the plan is no longer set to end: a double click / second tab, Vera B1). */
+export const RESUMED_PATH = '/dashboard?hosting=resumed'
+/** "Resume plan" while the change-plan lock is held and the plan is still set to end: RESUME_BUSY_MESSAGE (Vera B2). */
+export const RESUME_BUSY_PATH = '/dashboard?hosting=resume_busy'
 
 /**
  * The customer's live subscription with a plan switch AHEAD, if any. "Pending" means only that a
