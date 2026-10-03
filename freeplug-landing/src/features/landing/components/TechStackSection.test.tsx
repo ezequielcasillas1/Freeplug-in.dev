@@ -1,8 +1,23 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { render, screen, within } from '@testing-library/react'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import {
+  techTileAtRest,
+  techTileNoStagger,
+  techTileStagger,
+  techTileVariants,
+} from '../animations/landing.variants'
 import { TechStackSection, techStack } from './TechStackSection'
+
+const reducedMotion = vi.hoisted(() => ({ value: false as boolean | null }))
+vi.mock('framer-motion', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('framer-motion')>()
+  return { ...actual, useReducedMotion: () => reducedMotion.value }
+})
+afterEach(() => {
+  reducedMotion.value = false
+})
 
 // framer-motion's whileInView needs IntersectionObserver, which jsdom lacks.
 beforeAll(() => {
@@ -54,6 +69,59 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
   it('lays out 3 tiles per row on phones', () => {
     render(<TechStackSection />)
     expect(screen.getByTestId('tech-stack-tiles').className).toMatch(/(^|\s)grid-cols-3(\s|$)/)
+  })
+
+  it('adds a 24px row gap on phones and keeps the column gap and desktop gap', () => {
+    render(<TechStackSection />)
+    const cls = screen.getByTestId('tech-stack-tiles').className.split(/\s+/)
+    expect(cls).toEqual(expect.arrayContaining(['gap-x-4', 'gap-y-6', 'sm:gap-6', 'md:grid-cols-6']))
+    expect(cls).not.toContain('gap-4')
+  })
+
+  it('enters with a fade-up only: no rotate or scale in the tile entry variants', () => {
+    const entry = { techTileVariants, techTileStagger, techTileAtRest, techTileNoStagger }
+    for (const [name, variants] of Object.entries(entry)) {
+      for (const state of ['hidden', 'visible'] as const) {
+        const v = variants[state] as Record<string, unknown>
+        for (const key of ['rotate', 'rotateX', 'rotateY', 'rotateZ', 'scale', 'scaleX', 'scaleY']) {
+          expect(v, `${name}.${state}.${key}`).not.toHaveProperty(key)
+        }
+      }
+    }
+    expect(techTileVariants.hidden).toMatchObject({ opacity: 0, y: 30 })
+    expect(techTileVariants.visible).toMatchObject({ opacity: 1, y: 0 })
+    const stagger = (techTileStagger.visible as { transition: { staggerChildren: number } }).transition
+    expect(stagger.staggerChildren).toBeGreaterThan(0)
+    expect(stagger.staggerChildren).toBeLessThanOrEqual(0.1)
+    const src = readFileSync(join(__dirname, 'TechStackSection.tsx'), 'utf8')
+    expect(src).not.toMatch(/techLogoVariants/)
+    expect(src).toMatch(/variants=\{reduceMotion \? techTileAtRest : techTileVariants\}/)
+  })
+
+  it('starts the tiles hidden (fade-up pending) when motion is allowed', () => {
+    reducedMotion.value = false
+    render(<TechStackSection />)
+    expect(screen.getByTestId('tech-stack-tiles')).not.toHaveAttribute('data-reduced-motion')
+    for (const tile of screen.getAllByTestId('tech-tile')) {
+      expect(tile.getAttribute('style') ?? '').toMatch(/opacity:\s*0/)
+      expect(tile.getAttribute('style') ?? '').not.toMatch(/rotate|scale/)
+    }
+  })
+
+  it('shows the tiles at rest with prefers-reduced-motion (no entrance, no hover scale)', () => {
+    reducedMotion.value = true
+    render(<TechStackSection />)
+    expect(screen.getByTestId('tech-stack-tiles')).toHaveAttribute('data-reduced-motion', 'true')
+    for (const tile of screen.getAllByTestId('tech-tile')) {
+      const style = tile.getAttribute('style') ?? ''
+      expect(style).not.toMatch(/opacity:\s*0(?![.\d])/)
+      expect(style).not.toMatch(/translateY\((?!0)|rotate|scale/)
+    }
+    const src = readFileSync(join(__dirname, 'TechStackSection.tsx'), 'utf8')
+    expect(src).toMatch(/whileHover=\{reduceMotion \? undefined/)
+    // At rest means the same values in both states, applied instantly.
+    expect(techTileAtRest.hidden).toMatchObject({ opacity: 1, y: 0, transition: { duration: 0 } })
+    expect(techTileAtRest.visible).toMatchObject({ opacity: 1, y: 0, transition: { duration: 0 } })
   })
 
   it('has no rotate class and no hover rotate on the tiles', () => {

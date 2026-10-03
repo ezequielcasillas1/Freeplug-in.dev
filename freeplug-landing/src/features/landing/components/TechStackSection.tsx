@@ -1,6 +1,7 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useSyncExternalStore } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import {
   Cloud,
   Code,
@@ -16,7 +17,15 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { fadeInUp, staggerContainer, cardVariants, techLogoVariants } from '../animations/landing.variants'
+import {
+  fadeInUp,
+  staggerContainer,
+  cardVariants,
+  techTileAtRest,
+  techTileNoStagger,
+  techTileStagger,
+  techTileVariants,
+} from '../animations/landing.variants'
 
 /**
  * The stack 72 After builds local business sites on (Lina's layout + Sable's copy, Oct 3 2026).
@@ -66,7 +75,23 @@ const techFeatures = [
   },
 ]
 
+const noopSubscribe = () => () => {}
+
+/** false on the server and while hydrating, true after: keeps the first client render equal to the SSR HTML. */
+function useHydrated() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  )
+}
+
 export function TechStackSection() {
+  // prefers-reduced-motion: the tiles sit at rest, with no entrance or hover motion. Applied after
+  // hydration (useReducedMotion reads the media query on the client only) so the markup never mismatches.
+  const prefersReducedMotion = useReducedMotion() === true
+  const reduceMotion = useHydrated() && prefersReducedMotion
+
   return (
     <section id="services" className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-to-br from-[#ba3d3d]/5 to-transparent rounded-full blur-3xl" />
@@ -104,22 +129,24 @@ export function TechStackSection() {
         </motion.div>
 
         <motion.div
-          variants={staggerContainer}
+          variants={reduceMotion ? techTileNoStagger : techTileStagger}
           initial="hidden"
           whileInView="visible"
+          animate={reduceMotion ? 'visible' : undefined}
           viewport={{ once: true }}
-          className="grid grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6 max-w-5xl mx-auto mb-16"
+          className="grid grid-cols-3 md:grid-cols-6 gap-x-4 gap-y-6 sm:gap-6 max-w-5xl mx-auto mb-16"
           data-testid="tech-stack-tiles"
+          data-reduced-motion={reduceMotion ? 'true' : undefined}
         >
           {techStack.map((tech) => (
             <motion.div
               key={tech.name}
-              variants={techLogoVariants}
-              whileHover={{ scale: 1.1 }}
+              variants={reduceMotion ? techTileAtRest : techTileVariants}
+              whileHover={reduceMotion ? undefined : { scale: 1.1 }}
               className="group flex flex-col items-center text-center"
               data-testid="tech-tile"
             >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-lg shadow-gray-200/50 flex items-center justify-center border border-gray-100 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-gray-300/50 group-hover:-translate-y-1">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-lg shadow-gray-200/50 flex items-center justify-center border border-gray-100 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-gray-300/50 group-hover:-translate-y-1 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0">
                 <tech.icon className="w-7 h-7 sm:w-8 sm:h-8 text-gray-700" aria-hidden="true" strokeWidth={1.75} />
               </div>
               <span className="mt-3 text-xs sm:text-sm font-medium text-gray-600 leading-snug line-clamp-2 break-words">
