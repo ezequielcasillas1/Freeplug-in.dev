@@ -8,7 +8,7 @@ import { getStripe } from '@/lib/stripe/server'
  * inline price any more. Prices are created by scripts/stripe-test-setup-ladder.mjs (test mode);
  * live prices wait for Ezequiel.
  *
- * Fail closed: a missing, inactive or mismatched price (wrong amount, currency or interval compared
+ * Fail closed: a missing, inactive or mismatched price (wrong product, amount, currency or interval compared
  * with ladder.ts) throws PriceNotConfiguredError, which callers turn into a 503. Nobody is charged
  * an amount that differs from the config.
  */
@@ -30,8 +30,10 @@ export function resetStepPriceCache(): void {
 
 function validates(price: Stripe.Price, stepId: PlanStepId): boolean {
   const step = stepById(stepId)
+  const product = typeof price.product === 'string' ? price.product : price.product?.id
   return (
     price.active === true &&
+    product === step.productId &&
     price.currency === 'usd' &&
     price.unit_amount === step.monthlyCents &&
     price.type === 'recurring' &&

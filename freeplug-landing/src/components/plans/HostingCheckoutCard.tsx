@@ -8,6 +8,9 @@ import { cn } from '@/lib/utils/cn'
 import { openBillingPortal } from '@/app/(dashboard)/dashboard/billing-actions'
 import { PLAN_STEPS, type PlanStepId } from '@/lib/plans/ladder'
 import {
+  CHANGE_PLAN_BUTTON,
+  CHANGE_PLAN_CURRENT,
+  CHANGE_PLAN_HELP,
   CONTINUE_TO_PAYMENT,
   EVERYTHING_IN,
   LADDER_HEADING,
@@ -47,6 +50,13 @@ type Props = {
   chooseLabel?: string
   /** One grey line above the button in choose-plan mode. */
   noteAboveButton?: string
+  /** With a live plan: the ladder step it is on (null for a grandfathered plan). */
+  currentStepId?: PlanStepId | null
+  /**
+   * With a live plan: switch it to the selected step (server action changeHostingPlan). Upgrades
+   * now and prorated, downgrades at the next billing date.
+   */
+  onChangePlan?: (planStep: PlanStepId) => Promise<{ ok: boolean; message: string }>
 }
 
 export function HostingCheckoutCard({
@@ -57,10 +67,29 @@ export function HostingCheckoutCard({
   onChoosePlan,
   chooseLabel,
   noteAboveButton,
+  currentStepId = null,
+  onChangePlan,
 }: Props) {
-  const [planStep, setPlanStep] = useState<PlanStepId>(PLAN_STEPS[0].id)
+  const [planStep, setPlanStep] = useState<PlanStepId>(currentStepId ?? PLAN_STEPS[0].id)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+
+  async function switchPlan() {
+    if (!onChangePlan) return
+    setError(null)
+    setNotice(null)
+    setLoading(true)
+    try {
+      const r = await onChangePlan(planStep)
+      if (r.ok) setNotice(r.message)
+      else setError(r.message)
+    } catch {
+      setError('Network error. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function startHostingCheckout() {
     setError(null)
@@ -99,6 +128,9 @@ export function HostingCheckoutCard({
 
   const hasLivePlan = (currentPlanLines?.length ?? 0) > 0
   const canPay = signedIn && allowCheckout && !hasLivePlan
+  const canSwitch = hasLivePlan && Boolean(onChangePlan)
+  const selectable = canPay || canSwitch
+  const selectedName = PLAN_STEPS.find((s) => s.id === planStep)?.name ?? ''
 
   const shell =
     embedded
@@ -109,7 +141,7 @@ export function HostingCheckoutCard({
     <div className={shell}>
       <h3 className="text-xl font-semibold text-gray-900 mb-1">{LADDER_HEADING}</h3>
       <p className="text-sm text-gray-500 mb-6">{LADDER_SUBHEADING}</p>
-      <fieldset className="mb-6" disabled={!canPay}>
+      <fieldset className="mb-6" disabled={!selectable}>
         <legend className="sr-only">{LADDER_HEADING}</legend>
         <div className="space-y-2">
           {PLAN_STEPS.map((step, i) => {
@@ -121,7 +153,7 @@ export function HostingCheckoutCard({
                 data-plan-step={step.id}
                 className={`flex items-start gap-3 rounded-lg border p-3 ${
                   selected ? 'border-[#ba3d3d]' : 'border-gray-200'
-                } ${canPay ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                } ${selectable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
               >
                 <input
                   type="radio"
@@ -135,6 +167,11 @@ export function HostingCheckoutCard({
                   <span className="flex flex-wrap items-center gap-2 font-medium text-gray-900">
                     {step.name} · {formatDollars(step.monthlyCents)}
                     {PER_MONTH}
+                    {canSwitch && currentStepId === step.id ? (
+                      <span className="rounded bg-zinc-100 px-1.5 text-[11px] font-semibold text-zinc-700" data-testid="current-step">
+                        {CHANGE_PLAN_CURRENT}
+                      </span>
+                    ) : null}
                     {MOST_POPULAR_STEP === step.id ? (
                       <span className="rounded bg-[#ba3d3d]/10 px-1.5 text-[11px] font-semibold text-[#ba3d3d]">
                         {MOST_POPULAR_LABEL}
@@ -163,8 +200,21 @@ export function HostingCheckoutCard({
               <p key={line}>Current plan: {line}</p>
             ))}
           </div>
+          {canSwitch ? (
+            <div className="mb-3">
+              <p className="mb-3 text-sm text-gray-500">{CHANGE_PLAN_HELP}</p>
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={switchPlan}
+                disabled={loading || planStep === currentStepId}
+              >
+                {loading ? <Loader2 className="animate-spin" size={22} /> : CHANGE_PLAN_BUTTON(selectedName)}
+              </Button>
+            </div>
+          ) : null}
           <form action={openBillingPortal}>
-            <Button type="submit" className="w-full" size="lg">
+            <Button type="submit" className="w-full" size="lg" variant={canSwitch ? 'secondary' : undefined}>
               Manage billing
             </Button>
           </form>
@@ -207,6 +257,11 @@ export function HostingCheckoutCard({
       {!canPay && !hasLivePlan ? (
         <p className="mt-3 text-sm text-gray-600">
           Hosting checkout opens after you submit a website request from your dashboard.
+        </p>
+      ) : null}
+      {notice ? (
+        <p className="mt-4 text-sm text-green-700" role="status">
+          {notice}
         </p>
       ) : null}
       {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}

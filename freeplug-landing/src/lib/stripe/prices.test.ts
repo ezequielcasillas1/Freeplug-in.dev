@@ -9,6 +9,7 @@ function price(over: Record<string, unknown> = {}, stepIdx = 0) {
   return {
     id: `price_${s.id}`,
     lookup_key: s.lookupKey,
+    product: s.productId,
     active: true,
     currency: 'usd',
     unit_amount: s.monthlyCents,
@@ -44,6 +45,7 @@ describe('getStepPriceId (lookup keys, fail closed)', () => {
   it.each([
     ['missing', []],
     ['wrong amount', [price({ unit_amount: 3400 })]],
+    ['wrong product (e.g. the retired single product)', [price({ product: 'freeplug_hosting_ladder' })]],
     ['wrong currency', [price({ currency: 'eur' })]],
     ['inactive', [price({ active: false })]],
     ['yearly', [price({ recurring: { interval: 'year', interval_count: 1 } })]],

@@ -76,6 +76,7 @@ function fakeStripe(subStatus: Stripe.Subscription.Status = 'active') {
         data: PLAN_STEPS.map((st) => ({
           id: `price_${st.id}`,
           lookup_key: st.lookupKey,
+          product: st.productId,
           active: true,
           currency: 'usd',
           unit_amount: st.monthlyCents,

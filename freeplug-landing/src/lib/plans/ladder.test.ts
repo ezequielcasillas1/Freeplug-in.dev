@@ -26,6 +26,8 @@ describe('hosting ladder config (Aria card, Oct 3)', () => {
       ['growth', 'Growth partner', 10000, 40, 5],
     ])
     for (const s of PLAN_STEPS) expect(s.lookupKey).toBe(`freeplug_step_${s.id}_monthly`)
+    // One Stripe product per step (Aria 6.1; the portal can't hold two monthly prices of one product).
+    for (const s of PLAN_STEPS) expect(s.productId).toBe(`freeplug_step_${s.id}`)
     expect(new Set(PLAN_STEPS.map((s) => s.lookupKey)).size).toBe(6)
     expect(PLAN_STEP_IDS).toEqual(PLAN_STEPS.map((s) => s.id))
   })

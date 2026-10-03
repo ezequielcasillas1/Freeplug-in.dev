@@ -56,3 +56,25 @@ describe('HostingCheckoutCard (hosting ladder, Oct 3)', () => {
     expect(screen.getByText('Current plan: Starter · $35.00/month')).toBeInTheDocument()
   })
 })
+
+describe('HostingCheckoutCard switch mode (live plan)', () => {
+  it('marks the current step, disables switching to it, and calls the server action for another step', async () => {
+    const onChangePlan = vi.fn(async () => ({ ok: true, message: 'done' }))
+    const { container } = render(
+      <HostingCheckoutCard currentPlanLines={['Freeplug Hosting: Leads · $75.00/month']} currentStepId="leads" onChangePlan={onChangePlan} />
+    )
+    expect(within(container.querySelector('[data-plan-step="leads"]') as HTMLElement).getByTestId('current-step')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Switch to Leads' })).toBeDisabled()
+    fireEvent.click(within(container.querySelector('[data-plan-step="priority"]') as HTMLElement).getByRole('radio'))
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to Priority' }))
+    await waitFor(() => expect(onChangePlan).toHaveBeenCalledWith('priority'))
+    expect(await screen.findByRole('status')).toHaveTextContent('done')
+    expect(screen.getByRole('button', { name: 'Manage billing' })).toBeInTheDocument()
+  })
+
+  it('a grandfathered plan has no current step marked and starts on Starter', () => {
+    render(<HostingCheckoutCard currentPlanLines={['Hosting + Pro add-on · $55.00/month']} currentStepId={null} onChangePlan={vi.fn()} />)
+    expect(screen.queryByTestId('current-step')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Switch to Starter' })).toBeEnabled()
+  })
+})

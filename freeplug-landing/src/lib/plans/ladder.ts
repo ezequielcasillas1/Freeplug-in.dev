@@ -33,6 +33,8 @@ export type PlanStep = {
   monthlyCents: number
   /** Stripe Price lookup key (test mode first; live only on Ezequiel's yes). */
   lookupKey: string
+  /** Stripe Product id: one product per step, each with one monthly price (Aria section 6.1). */
+  productId: string
   /** L2 AI-editor quota per month. Stored only: the L2 editor and enforcement are Part B. */
   aiEditsPerMonth: number
   /** 0 (Starter) .. 5 (Growth partner). Requests queue sorts by this, highest first. */
@@ -42,14 +44,15 @@ export type PlanStep = {
 }
 
 const lookupKeyFor = (id: PlanStepId) => `freeplug_step_${id}_monthly`
+const productIdFor = (id: PlanStepId) => `freeplug_step_${id}`
 
 export const PLAN_STEPS: readonly PlanStep[] = [
-  { id: 'starter', name: 'Starter', monthlyCents: 3500, lookupKey: lookupKeyFor('starter'), aiEditsPerMonth: 5, rank: 0, adds: [] },
-  { id: 'priority', name: 'Priority', monthlyCents: 5500, lookupKey: lookupKeyFor('priority'), aiEditsPerMonth: 15, rank: 1, adds: ['priorityQueue'] },
-  { id: 'fast_lane', name: 'Fast lane', monthlyCents: 6500, lookupKey: lookupKeyFor('fast_lane'), aiEditsPerMonth: 15, rank: 2, adds: ['includedSmallEdit', 'nextBusinessDayEdits'] },
-  { id: 'leads', name: 'Leads', monthlyCents: 7500, lookupKey: lookupKeyFor('leads'), aiEditsPerMonth: 40, rank: 3, adds: ['leadsReport', 'quoteAlerts'] },
-  { id: 'get_found', name: 'Get found', monthlyCents: 8500, lookupKey: lookupKeyFor('get_found'), aiEditsPerMonth: 40, rank: 4, adds: ['gbpManaged', 'reviewKit'] },
-  { id: 'growth', name: 'Growth partner', monthlyCents: 10000, lookupKey: lookupKeyFor('growth'), aiEditsPerMonth: 40, rank: 5, adds: ['seasonalRefresh', 'quarterlyCall', 'doneForYouEdits'] },
+  { id: 'starter', name: 'Starter', monthlyCents: 3500, lookupKey: lookupKeyFor('starter'), productId: productIdFor('starter'), aiEditsPerMonth: 5, rank: 0, adds: [] },
+  { id: 'priority', name: 'Priority', monthlyCents: 5500, lookupKey: lookupKeyFor('priority'), productId: productIdFor('priority'), aiEditsPerMonth: 15, rank: 1, adds: ['priorityQueue'] },
+  { id: 'fast_lane', name: 'Fast lane', monthlyCents: 6500, lookupKey: lookupKeyFor('fast_lane'), productId: productIdFor('fast_lane'), aiEditsPerMonth: 15, rank: 2, adds: ['includedSmallEdit', 'nextBusinessDayEdits'] },
+  { id: 'leads', name: 'Leads', monthlyCents: 7500, lookupKey: lookupKeyFor('leads'), productId: productIdFor('leads'), aiEditsPerMonth: 40, rank: 3, adds: ['leadsReport', 'quoteAlerts'] },
+  { id: 'get_found', name: 'Get found', monthlyCents: 8500, lookupKey: lookupKeyFor('get_found'), productId: productIdFor('get_found'), aiEditsPerMonth: 40, rank: 4, adds: ['gbpManaged', 'reviewKit'] },
+  { id: 'growth', name: 'Growth partner', monthlyCents: 10000, lookupKey: lookupKeyFor('growth'), productId: productIdFor('growth'), aiEditsPerMonth: 40, rank: 5, adds: ['seasonalRefresh', 'quarterlyCall', 'doneForYouEdits'] },
 ] as const
 
 /**
@@ -62,9 +65,8 @@ export const BUSINESS_TIME_ZONE = 'America/Chicago'
 /** Included small edits per billing period at Fast lane and up (no rollover). */
 export const INCLUDED_EDITS_PER_PERIOD = 1
 
-/** Stripe product that holds all six step prices (one product so the Billing Portal can schedule
- * downgrades at period end; Stripe only does that between prices of the same product). */
-export const LADDER_PRODUCT_ID = 'freeplug_hosting_ladder'
+/** Stripe Product display name for a step ("Freeplug Hosting: Starter"). */
+export const productNameFor = (step: Pick<PlanStep, 'name'>) => `Freeplug Hosting: ${step.name}`
 
 export function isPlanStepId(value: unknown): value is PlanStepId {
   return typeof value === 'string' && (PLAN_STEP_IDS as readonly string[]).includes(value)

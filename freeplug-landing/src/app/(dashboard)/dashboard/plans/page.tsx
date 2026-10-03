@@ -3,7 +3,9 @@ import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
-import { describeLiveSubscriptions } from '@/lib/stripe/active-subscription'
+import { describeLiveSubscriptions, getEntitlements } from '@/lib/stripe/active-subscription'
+import type { PlanStepId } from '@/lib/plans/ladder'
+import { changeHostingPlan } from '../billing-actions'
 import { DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 
 export default async function DashboardPlansPage() {
@@ -38,6 +40,7 @@ export default async function DashboardPlansPage() {
 
   // A customer with a live plan gets Manage billing instead of a second checkout.
   let currentPlanLines: string[] = []
+  let currentStepId: PlanStepId | null = null
   const { data: prof } = await supabase
     .from('profiles')
     .select('stripe_customer_id')
@@ -46,6 +49,10 @@ export default async function DashboardPlansPage() {
   if (prof?.stripe_customer_id) {
     try {
       currentPlanLines = await describeLiveSubscriptions(prof.stripe_customer_id)
+      if (currentPlanLines.length > 0) {
+        const ent = await getEntitlements(prof.stripe_customer_id)
+        currentStepId = ent.step && !ent.legacy ? ent.step.id : null
+      }
     } catch (e) {
       // Stripe unreachable: show the normal card; the checkout API still refuses a second plan.
       console.error('[plans] live plan lookup failed', e)
@@ -59,7 +66,12 @@ export default async function DashboardPlansPage() {
         {DASHBOARD_PLANS_INTRO}
       </p>
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl">
-        <HostingCheckoutCard embedded currentPlanLines={currentPlanLines} />
+        <HostingCheckoutCard
+          embedded
+          currentPlanLines={currentPlanLines}
+          currentStepId={currentStepId}
+          onChangePlan={changeHostingPlan}
+        />
         <MaintenancePlanCard
           embedded
           ctaHref="/dashboard/request-website?focus=maintenance"

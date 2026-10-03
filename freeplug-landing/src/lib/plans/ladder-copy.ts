@@ -59,7 +59,7 @@ export const EVERYTHING_IN = (name: string) => `Everything in ${name}, plus:`
 export const PER_MONTH = '/month'
 export const CONTINUE_TO_PAYMENT = 'Continue to payment'
 export const LEGACY_PLAN_NOTE =
-  'Already have an add-on? You keep it at the same price. To switch to one of these plans, email us.'
+  'Already have an add-on? You keep it at the same price. You can switch to one of these plans on the Plans page at any time.'
 export const LEGACY_PLAN_LABEL = 'Your current plan (no longer sold)'
 export const INCLUDED_EDIT_LINE = (used: number, available: number) =>
   used >= available
@@ -95,3 +95,25 @@ export const HELP_PLANS_GUIDE_TITLE_LINE = 'Plans: Choose a hosting plan, or req
 export const HELP_PLANS_GUIDE_DESCRIPTION = 'Compare hosting plans for your business'
 /** Monthly edit note in the help chat (Fast lane+ and legacy Plus/Pro). */
 export const HELP_CHAT_INCLUDED_EDIT_NOTE = 'Your plan includes one small edit each billing period.'
+
+/** PLACEHOLDER (Sable/Wren): switching plans in the app (src/lib/stripe/change-plan.ts). */
+export const CHANGE_PLAN_BUTTON = (name: string) => `Switch to ${name}`
+export const CHANGE_PLAN_CURRENT = 'Your current plan'
+export const CHANGE_PLAN_HELP =
+  "Moving up starts right away, and you pay only the difference for the rest of this billing period. Moving down starts at your next billing date, so you keep what you paid for until then."
+export const CHANGE_PLAN_UPGRADED = (name: string) =>
+  `You're now on ${name}. We charged the difference for the rest of this billing period.`
+export const CHANGE_PLAN_SCHEDULED = (name: string, date: string) =>
+  `You'll move to ${name} on ${date}. You keep your current plan until then.`
+export const CHANGE_PLAN_UNCHANGED = "You're on this plan. Any planned change has been cancelled."
+export const CHANGE_PLAN_ENDING = 'Your plan is set to end. Resume it first, then switch.'
+export const CHANGE_PLAN_PAYMENT_FAILED =
+  "We couldn't charge your card, so your plan didn't change. Update your payment method in Manage billing and try again."
+export const CHANGE_PLAN_UNAVAILABLE = "We couldn't change your plan right now. Try again, or email support@freeplug-in.dev."
+/**
+ * PROPOSED for Sable, NOT wired: the [STRICT] double-charge message (active-subscription.ts
+ * ALREADY_HAS_PLAN_MESSAGE, "Use Manage billing to change it.") stays until Sable re-locks it;
+ * Manage billing no longer switches plans (portal switching is off, moves happen on Plans).
+ */
+export const ALREADY_HAS_PLAN_SWITCH =
+  'You already have an active hosting plan. To change it, pick a plan on the Plans page and choose Switch.'
