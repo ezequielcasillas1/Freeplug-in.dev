@@ -131,7 +131,7 @@ describe('nudge: within $5 of the next sellable step (Aria, round 5b)', () => {
   })
   it('the nudge sentence names the next step, its price and perk', () => {
     expect(copy.TIP_NUDGE('Priority', '$55', copy.TIP_NUDGE_PERK.priorityQueue)).toBe(
-      'Priority is $55 and adds a place ahead of lower plans when you ask for changes. Switch instead?'
+      'Priority is $55 a month and adds a place ahead of lower plans when you ask for changes. Want that instead? Keeping your tip is fine too.'
     )
   })
 })

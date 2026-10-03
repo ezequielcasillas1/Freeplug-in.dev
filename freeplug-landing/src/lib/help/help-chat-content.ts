@@ -75,11 +75,9 @@ export const HELP_QUICK_QUESTIONS: readonly HelpQuickQuestion[] = [
   {
     id: 'payment-method',
     question: 'How do I update my payment method?',
-    // help:79 + Sable's sentence for Manage billing while a switch is planned (Oct 3 ~2:30 PM). Same
-    // constant as the help page; pending Sable's re-lock of help/page.tsx:79 in the locked file.
+    // help:79 with Sable's Manage-billing sentence, re-locked Oct 3, 3:15 PM CT. Same constant as the help page.
     answer: HELP_PAYMENT_METHOD,
-    lockedRef: PENDING_LADDER_COPY_REF,
-    pendingCopy: true,
+    lockedRef: 'src/app/(dashboard)/dashboard/help/page.tsx:79',
   },
   {
     id: 'cancel-plan',
@@ -115,7 +113,7 @@ export const HELP_QUICK_QUESTIONS: readonly HelpQuickQuestion[] = [
   {
     id: 'priority',
     question: PRIORITY_HELP_QUESTION,
-    // Approved by Ezequiel Sep 25 (Priority at $55/month or more); added to the locked file.
+    // Re-locked by Sable Oct 3, 3:15 PM CT: Priority comes from the plan step; a tip never counts.
     answer: PRIORITY_HELP_ANSWER,
     lockedRef: 'help page (plans answer)',
   },

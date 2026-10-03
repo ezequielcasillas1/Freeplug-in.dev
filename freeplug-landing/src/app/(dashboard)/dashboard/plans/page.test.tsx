@@ -58,6 +58,7 @@ vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({
 }))
 
 import DashboardPlansPage from './page'
+import { formatShortPlanDate } from '@/lib/stripe/active-subscription'
 
 const renderPage = async (params: Record<string, string> = {}) =>
   render(await DashboardPlansPage({ searchParams: Promise.resolve(params) }))
@@ -114,11 +115,14 @@ describe('Plans page billing', () => {
     expect(list.compareDocumentPosition(maintenance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
-  it('no pending change: Manage billing (secondary) is back, and a lower step says "on <next billing date>"', async () => {
+  it('no pending change: Manage billing (secondary) is back, and a lower step says "on <short next billing date>"', async () => {
     const { container } = await renderPage()
     expect(screen.getByRole('button', { name: 'Manage billing' })).toBeTruthy()
     const starter = container.querySelector('[data-plan-step="starter"] input') as HTMLInputElement
     starter.click()
-    expect(await screen.findByRole('button', { name: 'Switch to Starter on November 3, 2026' })).toBeEnabled()
+    // Lina, round 5b: short date on the button only ("Nov 3"; the year only when it isn't this year).
+    const short = formatShortPlanDate(new Date('2026-11-03T00:00:00Z'))
+    expect(short).toBe(new Date().getUTCFullYear() === 2026 ? 'Nov 3' : 'Nov 3, 2026')
+    expect(await screen.findByRole('button', { name: `Switch to Starter on ${short}` })).toBeEnabled()
   })
 })

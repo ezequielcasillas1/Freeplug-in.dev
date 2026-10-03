@@ -23,6 +23,9 @@ import {
   PLAN_CHANGE_TIP_ENDS,
   PLAN_CHANGE_TIP_ENDS_ON,
   TIP_CHANGE_PENDING,
+  TIP_CHANGE_NOTE,
+  TIP_LOCKED_NOTE,
+  TIP_SLIDER_HINT,
 } from '@/lib/plans/ladder-copy'
 import type { PlanPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 
@@ -206,6 +209,18 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     pickStep(container, 'starter')
     expect(screen.getByRole('button', { name: 'Switch to Starter on November 3, 2026' })).toBeEnabled()
     expect(screen.getByTestId('switch-help')).toHaveTextContent(CHANGE_PLAN_HELP_DOWN)
+  })
+
+  it('Lina round 5b: the downgrade button uses the short date ("Nov 3"); the hint line under it keeps the full date', () => {
+    const { container } = switching({ currentStepId: 'fast_lane', currentPlanLines: ['Fast lane · $65/month + $6 tip'], currentTipDollars: 6, renewalDateShort: 'Nov 3' })
+    pickStep(container, 'starter')
+    const btn = screen.getByRole('button', { name: 'Switch to Starter on Nov 3' })
+    expect(btn).toBeEnabled()
+    expect(btn).not.toHaveTextContent('2026')
+    expect(screen.getByTestId('switch-help-tip')).toHaveTextContent(PLAN_CHANGE_TIP_ENDS_ON('$6', 'November 3, 2026'))
+    // Priority is also below Fast lane: same short form
+    pickStep(container, 'priority')
+    expect(screen.getByRole('button', { name: 'Switch to Priority on Nov 3' })).toBeEnabled()
   })
 
   it('a downgrade has no confirm: one tap calls the server action, no preview', async () => {
@@ -425,7 +440,7 @@ describe('the tipping system: slider before checkout and in the claim flow', () 
     fireEvent.change(slider(), { target: { value: '49' } })
     expect(screen.queryByTestId('tip-nudge')).toBeNull()
     fireEvent.change(slider(), { target: { value: '50' } })
-    expect(screen.getByTestId('tip-nudge')).toHaveTextContent('Priority is $55 and adds a place ahead of lower plans when you ask for changes. Switch instead?')
+    expect(screen.getByTestId('tip-nudge')).toHaveTextContent('Priority is $55 a month and adds a place ahead of lower plans when you ask for changes. Want that instead? Keeping your tip is fine too.')
     fireEvent.click(screen.getByRole('button', { name: 'Choose Priority' }))
     expect(row(container, 'priority')).toHaveAttribute('data-selected', 'true')
     expect(slider().value).toBe('55')
@@ -433,6 +448,67 @@ describe('the tipping system: slider before checkout and in the claim flow', () 
     pickStep(container, 'fast_lane')
     fireEvent.change(slider(), { target: { value: '74' } })
     expect(screen.queryByTestId('tip-nudge')).toBeNull()
+  })
+
+  it('Lina round 5b: hint between the total and the bar; end labels are tip amounts ("No tip" / "$<max> tip") in every state', () => {
+    const { container } = render(<HostingCheckoutCard />)
+    pickStep(container, 'starter')
+    const area = screen.getByTestId('tip-slider')
+    const hint = within(area).getByTestId('tip-hint')
+    expect(hint).toHaveTextContent(TIP_SLIDER_HINT)
+    expect(hint).toHaveTextContent("Pick a tip if you'd like, or leave it at No tip.")
+    // DOM order: total line, hint, bar
+    const total = within(area).getByTestId('tip-total')
+    expect(total.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(hint.compareDocumentPosition(slider()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(slider().getAttribute('aria-describedby')).toContain(hint.id)
+    const ends = () => within(screen.getByTestId('tip-slider')).getByTestId('tip-ends')
+    expect(ends().textContent).toBe('No tip$19 tip') // Starter $35: tips 0..19, never "$35"/"$54"
+    // nudge state (Starter $50 total): still tip amounts
+    fireEvent.change(slider(), { target: { value: '50' } })
+    expect(screen.getByTestId('tip-nudge')).toBeInTheDocument()
+    expect(ends().textContent).toBe('No tip$19 tip')
+    expect(ends()).not.toHaveTextContent(/\$(35|50|54)\b/)
+    pickStep(container, 'priority')
+    expect(ends().textContent).toBe('No tip$9 tip')
+    pickStep(container, 'fast_lane')
+    expect(ends().textContent).toBe('No tip$9 tip')
+  })
+
+  it('Lina round 5b: − / + buttons beside the bar change the tip by $1, clamp, disable at their end, 44×44, aria-labels', () => {
+    const { container } = render(<HostingCheckoutCard />)
+    pickStep(container, 'priority')
+    const minus = screen.getByRole('button', { name: 'Lower tip by $1' })
+    const plus = screen.getByRole('button', { name: 'Raise tip by $1' })
+    for (const b of [minus, plus]) expect(b.className).toMatch(/\bh-11\b.*\bw-11\b|\bw-11\b.*\bh-11\b/)
+    expect(minus).toBeDisabled() // no tip yet
+    fireEvent.click(plus)
+    expect(slider().value).toBe('56')
+    expect(slider()).toHaveAttribute('aria-valuetext', '$56 a month, including a $1 tip')
+    expect(minus).toBeEnabled()
+    fireEvent.click(minus)
+    expect(slider().value).toBe('55')
+    expect(slider()).toHaveAttribute('aria-valuetext', '$55 a month, no tip')
+    fireEvent.change(slider(), { target: { value: '63' } })
+    fireEvent.click(plus)
+    expect(slider().value).toBe('64') // the $9 max
+    expect(plus).toBeDisabled()
+    fireEvent.click(plus)
+    expect(slider().value).toBe('64')
+    // bar layout: − range + in one row
+    const rowEl = slider().parentElement!
+    expect(rowEl.firstElementChild).toBe(minus)
+    expect(rowEl.lastElementChild).toBe(plus)
+    expect(slider().className).toContain('accent-[#ba3d3d]')
+  })
+
+  it('claim step 3 (bare): the same slider with hint, tip end labels and ± buttons', () => {
+    const { container } = render(<HostingCheckoutCard bare stickyOnPhone onChoosePlan={vi.fn(async () => null)} chooseLabelFor={(n) => `Choose ${n}`} />)
+    pickStep(container, 'starter')
+    expect(screen.getByTestId('tip-hint')).toHaveTextContent(TIP_SLIDER_HINT)
+    expect(screen.getByTestId('tip-ends').textContent).toBe('No tip$19 tip')
+    fireEvent.click(screen.getByRole('button', { name: 'Raise tip by $1' }))
+    expect(screen.getByTestId('sticky-summary')).toHaveTextContent('Starter · $35 + $1 tip = $36/month')
   })
 
   it('with a live plan there is no checkout slider (the tip box handles tips)', () => {
@@ -499,30 +575,48 @@ describe('the tipping system: tip box on the Plans page (next bill, no modal)', 
     onChangeTip: vi.fn(async () => ({ ok: true, message: 'server' })),
   })
 
-  it('Update tip -> "Your next bill: $X on <date>." -> Confirm -> "Saved." (nothing charged today)', async () => {
+  it('Update tip -> "Your next bill will be $X on <date>." -> Confirm -> "Your tip is updated. …" (nothing charged today)', async () => {
     const a = tipActions()
     switching({ currentStepId: 'fast_lane', currentPlanLines: ['Fast lane · $65/month + $2 tip'], currentTipDollars: 2, ...a })
     const box = screen.getByTestId('tip-change-box')
     const r = within(box).getByRole('slider') as HTMLInputElement
     expect(r.value).toBe('67')
     expect(within(box).getByTestId('tip-change-button')).toBeDisabled() // unchanged
+    expect(box).toHaveTextContent(TIP_CHANGE_NOTE)
+    expect(box).toHaveTextContent('To stop your tip, set it to No tip.')
+    expect(within(box).getByTestId('tip-hint')).toHaveTextContent(TIP_SLIDER_HINT)
+    expect(within(box).getByTestId('tip-ends').textContent).toBe('No tip$9 tip')
     fireEvent.change(r, { target: { value: '71' } })
     fireEvent.click(within(box).getByTestId('tip-change-button'))
-    expect(await within(box).findByTestId('tip-change-confirm')).toHaveTextContent('Your next bill: $71 on November 3, 2026.')
+    expect(await within(box).findByTestId('tip-change-confirm')).toHaveTextContent('Your next bill will be $71 on November 3, 2026.')
     expect(a.onPreviewTip).toHaveBeenCalledWith(6)
     fireEvent.click(within(box).getByRole('button', { name: 'Confirm' }))
     await waitFor(() => expect(a.onChangeTip).toHaveBeenCalledWith(6))
-    expect(await within(box).findByTestId('tip-change-notice')).toHaveTextContent('Saved. Your next bill: $71 on November 3, 2026.')
+    expect(await within(box).findByTestId('tip-change-notice')).toHaveTextContent('Your tip is updated. Your next bill will be $71 on November 3, 2026.')
   })
 
-  it('a planned switch locks the tip (it ends at the switch); a grandfathered plan gets no tip box', () => {
+  it('a planned switch locks the tip (Lina round 5b: no bar, one read-only row + the ends-on note); a grandfathered plan gets no tip box', () => {
     const a = tipActions()
     const { unmount } = switching({ currentStepId: 'fast_lane', currentPlanLines: ['x'], currentTipDollars: 2, pendingChange: { stepId: 'priority', date: 'November 3, 2026' }, ...a })
     const box = screen.getByTestId('tip-change-box')
-    expect(within(box).getByRole('slider')).toBeDisabled()
-    expect(box).toHaveTextContent(TIP_CHANGE_PENDING)
+    expect(within(box).queryByRole('slider')).toBeNull()
+    expect(within(box).queryByTestId('tip-ends')).toBeNull()
+    expect(within(box).queryByRole('button', { name: /tip by \$1/ })).toBeNull()
+    expect(within(box).getByTestId('tip-locked-amount')).toHaveTextContent('$2 tip a month')
+    expect(within(box).getByTestId('tip-locked').querySelector('svg')).not.toBeNull() // the Lock icon
+    expect(within(box).getByTestId('tip-locked-note')).toHaveTextContent(TIP_LOCKED_NOTE('November 3, 2026'))
+    expect(within(box).getByTestId('tip-locked-note')).toHaveTextContent(
+      'Your tip ends on November 3, 2026, when your planned switch starts. You can choose a new tip after that.'
+    )
     expect(within(box).queryByTestId('tip-change-button')).toBeNull()
+    // the amber box above keeps its tip-ends line
+    expect(screen.getByTestId('pending-tip-ends')).toHaveTextContent(PLAN_CHANGE_TIP_ENDS_ON('$2', 'November 3, 2026'))
     unmount()
+    // no tip while locked: "No tip" and Sable's pending line (nothing ends)
+    const u2 = switching({ currentStepId: 'fast_lane', currentPlanLines: ['x'], currentTipDollars: 0, pendingChange: { stepId: 'priority', date: 'November 3, 2026' }, ...a })
+    expect(screen.getByTestId('tip-locked-amount')).toHaveTextContent('No tip')
+    expect(screen.getByTestId('tip-locked-note')).toHaveTextContent(TIP_CHANGE_PENDING)
+    u2.unmount()
     switching({ currentStepId: null, currentMonthlyCents: 5500, currentPlanLines: ['Website hosting + Pro add-on · $55.00/month'], ...a })
     expect(screen.queryByTestId('tip-change-box')).toBeNull()
   })

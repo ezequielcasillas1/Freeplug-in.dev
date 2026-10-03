@@ -30,6 +30,20 @@ export function formatPlanEndDate(date: Date): string {
   })
 }
 
+/**
+ * Short date for buttons: "Nov 3", or "Nov 3, 2027" when the year isn't the current one (UTC, like
+ * formatPlanEndDate). Lina, round 5b: "Switch to Starter on Nov 3" fits on one line at 375.
+ */
+export function formatShortPlanDate(date: Date, now: Date = new Date()): string {
+  const sameYear = date.getUTCFullYear() === now.getUTCFullYear()
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' as const }),
+    timeZone: 'UTC',
+  })
+}
+
 /** Shown when the plan is still active but already set to end (canceled at period end / cancel_at). */
 export function closeBlockedPlanEndingMessage(endsAt: Date | null): string {
   if (!endsAt) {

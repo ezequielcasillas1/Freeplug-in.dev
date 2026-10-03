@@ -3,7 +3,7 @@ import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
-import { describeLiveSubscriptions, formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
+import { describeLiveSubscriptions, formatPlanEndDate, formatShortPlanDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import type { PlanStepId } from '@/lib/plans/ladder'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { pendingPlanChange, subscriptionMonthlyCents, subscriptionTipDollars } from '@/lib/stripe/change-plan'
@@ -95,6 +95,7 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
   let pendingChange: { stepId: PlanStepId; date: string } | null = null
   let currentMonthlyCents: number | null = null
   let renewalDate: string | null = null
+  let renewalDateShort: string | null = null
   let currentTipDollars = 0
   const { data: prof } = await supabase
     .from('profiles')
@@ -119,6 +120,7 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
           currentTipDollars = subscriptionTipDollars(live[0])
           const end = subscriptionPeriodEnd(live[0])
           renewalDate = end ? formatPlanEndDate(end) : null
+          renewalDateShort = end ? formatShortPlanDate(end) : null
           if (live[0].schedule) {
             const p = await pendingPlanChange(getStripe(), live[0])
             if (p) pendingChange = { stepId: p.step, date: formatPlanEndDate(new Date(p.effectiveAt)) }
@@ -150,6 +152,7 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
           currentStepId={currentStepId}
           currentMonthlyCents={currentMonthlyCents}
           renewalDate={renewalDate}
+          renewalDateShort={renewalDateShort}
           onChangePlan={changeHostingPlan}
           onPreviewChange={previewPlanChange}
           pendingChange={pendingChange}

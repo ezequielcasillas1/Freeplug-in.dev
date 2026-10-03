@@ -95,6 +95,8 @@ type Props = {
   currentMonthlyCents?: number | null
   /** With a live plan: the next billing date, formatted ("Switch to X on <date>"). */
   renewalDate?: string | null
+  /** Short form of renewalDate for the downgrade button only ("Nov 3"; Lina, round 5b). Falls back to renewalDate. */
+  renewalDateShort?: string | null
   /**
    * With a live plan: switch it to the selected step (server action changeHostingPlan). Upgrades
    * now and prorated (after the confirm, with its proration date), downgrades at the next billing date.
@@ -137,6 +139,7 @@ export function HostingCheckoutCard({
   currentStepId = null,
   currentMonthlyCents = null,
   renewalDate = null,
+  renewalDateShort = null,
   onChangePlan,
   onPreviewChange,
   pendingChange = null,
@@ -472,7 +475,7 @@ export function HostingCheckoutCard({
       : direction === 'upgrade'
         ? CHANGE_PLAN_BUTTON_NOW(selected.name)
         : renewalDate
-          ? CHANGE_PLAN_BUTTON_ON(selected.name, renewalDate)
+          ? CHANGE_PLAN_BUTTON_ON(selected.name, renewalDateShort ?? renewalDate)
           : CHANGE_PLAN_BUTTON(selected.name)
   const switchHelp = direction === 'upgrade' ? CHANGE_PLAN_HELP_UP : direction === 'downgrade' ? CHANGE_PLAN_HELP_DOWN : null
   // Downgrades have no confirm, so the tip line sits under the downgrade button, with the "what
@@ -611,6 +614,7 @@ export function HostingCheckoutCard({
               step={currentStep}
               currentTipDollars={currentTipDollars}
               locked={Boolean(pendingChange)}
+              lockedDate={pendingChange?.date ?? null}
               onPreviewTip={onPreviewTip}
               onChangeTip={onChangeTip}
             />

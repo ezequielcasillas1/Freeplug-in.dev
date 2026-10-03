@@ -147,9 +147,9 @@ vi.mock('@/lib/stripe/server', () => ({
   }),
 }))
 
-import { cancelHostingAtPeriodEnd, changeHostingPlan, openBillingPortal, previewPlanChange, updatePaymentMethod } from './billing-actions'
+import { cancelHostingAtPeriodEnd, changeHostingPlan, changeTipAction, openBillingPortal, previewPlanChange, updatePaymentMethod } from './billing-actions'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { STEP_NOT_SELLABLE_MESSAGE, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
+import { STEP_NOT_SELLABLE_MESSAGE, TIP_IN_PROGRESS, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } from '@/lib/plans/ladder-copy'
 
 const ladderSub = (id: string, over: Record<string, unknown> = {}) => {
   const s = PLAN_STEPS.find((p) => p.id === id)!
@@ -414,6 +414,18 @@ describe('change-plan lock (Aria, Oct 3: per-user claimed row, 60 s, claim befor
     expect(listedCustomers).toEqual([])
     locks.set('u1', { claimId: 'other', expiresAt: Date.now() - 1 })
     expect(await changeHostingPlan('fast_lane')).toMatchObject({ ok: true })
+  })
+
+  it('a tip change while the lock is held gets TIP_IN_PROGRESS (Sable, round 5b), not the plan-change message, and never calls Stripe', async () => {
+    liveSubs = [ladderSub('starter')]
+    locks.set('u1', { claimId: 'other', expiresAt: Date.now() + 30_000 })
+    const r = await changeTipAction(5)
+    expect(r).toEqual({ ok: false, message: TIP_IN_PROGRESS })
+    expect(r.message).toBe('Your tip change is already going through. Refresh in a moment to see it.')
+    expect(r.message).not.toBe(UPGRADE_IN_PROGRESS)
+    expect(calls).toEqual([])
+    expect(listedCustomers).toEqual([])
+    expect(lockEvents).toEqual(['claim:held'])
   })
 
   it('fails closed: if the lock cannot be claimed (DB down, migration missing) nothing reaches Stripe', async () => {

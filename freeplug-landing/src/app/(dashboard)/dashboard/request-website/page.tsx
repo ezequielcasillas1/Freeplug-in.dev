@@ -1,14 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Button } from '@/components/ui/button'
 import {
   CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE,
   closeBlockedPlanEndingMessage,
   getActiveSubscriptionStatus,
   type ActiveSubscriptionStatus,
 } from '@/lib/stripe/active-subscription'
-import { openBillingPortal } from '../billing-actions'
+import { CANCEL_OPTIONS_LINK } from '@/lib/plans/ladder-copy'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
 
@@ -115,11 +114,14 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
                   ? closeBlockedPlanEndingMessage(plan.endsAt)
                   : CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE}
               </p>
-              <form action={openBillingPortal}>
-                <Button type="submit" variant="secondary" size="sm">
-                  Manage billing
-                </Button>
-              </form>
+              {/* Lina, round 5b: the message says "choose Cancel options in your dashboard", so link there. */}
+              <Link
+                href="/dashboard/cancel"
+                className="inline-flex min-h-[44px] items-center text-sm font-medium text-[#ba3d3d] underline underline-offset-2 hover:text-[#9a3232]"
+                data-testid="close-blocked-cancel-link"
+              >
+                {CANCEL_OPTIONS_LINK}
+              </Link>
             </>
           ) : (
             <CloseOpenRequestButton status={openRequestStatus} />

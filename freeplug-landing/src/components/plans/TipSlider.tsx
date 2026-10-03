@@ -1,13 +1,19 @@
 'use client'
 
 import { useId } from 'react'
+import { Minus, Plus } from 'lucide-react'
 import type { PlanStep, PlanStepId } from '@/lib/plans/ladder'
 import { tipNudge, tipRangeFor } from '@/lib/plans/tips'
 import {
+  TIP_END_MAX,
+  TIP_END_NONE,
+  TIP_LOWER_LABEL,
   TIP_NUDGE,
   TIP_NUDGE_BUTTON,
   TIP_NUDGE_PERK,
+  TIP_RAISE_LABEL,
   TIP_SLIDER_HELP,
+  TIP_SLIDER_HINT,
   TIP_SLIDER_LABEL,
   TIP_TOTAL_LINE,
   TIP_VALUETEXT,
@@ -38,15 +44,23 @@ type Props = {
  * native range input (keyboard: arrows move $1, Home/End jump to the ends), with aria-valuetext in
  * dollars and a readable total next to the label. It starts at the step price (no tip). Steps that
  * aren't sold get no slider (tipRangeFor = null). The server re-checks every amount.
+ * Lina, round 5b: a hint between the total and the bar; − / + buttons (44×44, $1 each, clamped and
+ * disabled at their end) beside the bar; end labels in tip amounts ("No tip" / "$19 tip") in every
+ * state, never plan totals (the total stays in the top-right line). Brand-red fill, round handle.
  */
+const stepBtn =
+  'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d] disabled:cursor-not-allowed disabled:opacity-40'
+
 export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, help = TIP_SLIDER_HELP, testId = 'tip-slider' }: Props) {
   const id = useId()
   const helpId = `${id}-help`
+  const hintId = `${id}-hint`
   const range = tipRangeFor(step)
   if (!range || range.maxTip <= 0) return null
   const tip = Math.min(Math.max(0, tipDollars), range.maxTip)
   const total = range.minTotal + tip
   const nudge = onPickStep ? tipNudge(step, tip) : null
+  const set = (t: number) => onChange(Math.min(Math.max(0, t), range.maxTip))
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4" data-testid={testId} data-step={step.id}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -58,23 +72,49 @@ export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, he
           {tipTotalText(step, tip)}
         </output>
       </div>
-      <input
-        id={id}
-        type="range"
-        min={range.minTotal}
-        max={range.maxTotal}
-        step={1}
-        value={total}
-        disabled={disabled}
-        aria-valuetext={TIP_VALUETEXT(usd(total), tip > 0 ? usd(tip) : null)}
-        aria-describedby={helpId}
-        onChange={(e) => onChange(Number(e.currentTarget.value) - range.minTotal)}
-        className="mt-2 h-11 w-full cursor-pointer accent-[#ba3d3d] disabled:cursor-not-allowed"
-        data-testid="tip-range"
-      />
-      <div className="flex justify-between text-xs text-gray-500" aria-hidden="true">
-        <span>{usd(range.minTotal)}</span>
-        <span>{usd(range.maxTotal)}</span>
+      <p id={hintId} className="mt-1 text-xs text-gray-600" data-testid="tip-hint">
+        {TIP_SLIDER_HINT}
+      </p>
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          type="button"
+          className={stepBtn}
+          aria-label={TIP_LOWER_LABEL}
+          disabled={disabled || tip <= 0}
+          onClick={() => set(tip - 1)}
+          data-testid="tip-minus"
+        >
+          <Minus className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <input
+          id={id}
+          type="range"
+          min={range.minTotal}
+          max={range.maxTotal}
+          step={1}
+          value={total}
+          disabled={disabled}
+          aria-valuetext={TIP_VALUETEXT(usd(total), tip > 0 ? usd(tip) : null)}
+          aria-describedby={`${hintId} ${helpId}`}
+          onChange={(e) => set(Number(e.currentTarget.value) - range.minTotal)}
+          className="h-11 min-w-0 flex-1 cursor-pointer accent-[#ba3d3d] disabled:cursor-not-allowed"
+          data-testid="tip-range"
+        />
+        <button
+          type="button"
+          className={stepBtn}
+          aria-label={TIP_RAISE_LABEL}
+          disabled={disabled || tip >= range.maxTip}
+          onClick={() => set(tip + 1)}
+          data-testid="tip-plus"
+        >
+          <Plus className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
+      {/* Tip amounts at the ends, lined up with the bar (inset by a button + gap). */}
+      <div className="flex justify-between px-[3.25rem] text-xs text-gray-500" aria-hidden="true" data-testid="tip-ends">
+        <span>{TIP_END_NONE}</span>
+        <span>{TIP_END_MAX(usd(range.maxTip))}</span>
       </div>
       <p id={helpId} className="mt-2 text-xs text-gray-500">
         {help}

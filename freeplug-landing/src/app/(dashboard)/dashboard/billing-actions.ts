@@ -31,6 +31,7 @@ import {
   TIP_CHANGE_PENDING,
   TIP_CHANGE_UNAVAILABLE,
   TIP_CHANGED,
+  TIP_IN_PROGRESS,
   TIP_NEXT_BILL,
   TIP_NEXT_BILL_NO_DATE,
   TIP_NOT_FOR_PLAN,
@@ -331,7 +332,7 @@ async function ownLiveSubscription(): Promise<{ userId: string; sub: Awaited<Ret
 }
 
 /**
- * Plans page tip box: "Your next bill: $X on <date>" for a new tip (read-only Stripe preview with
+ * Plans page tip box: "Your next bill will be $X on <date>." for a new tip (read-only Stripe preview with
  * proration none). Signed in, rate limited, the caller's own subscription only; the amount is
  * re-checked against the step's range on the server.
  */
@@ -363,7 +364,9 @@ export async function changeTipAction(tipDollars: number): Promise<ChangeTipResp
   if (!user) redirect('/login?next=/dashboard/plans')
   try {
     const lock = await withPlanChangeLock(lockStore(), user.id, () => runTipChange(tipDollars))
-    if (!lock.ok) return { ok: false, message: lock.code === 'in_progress' ? UPGRADE_IN_PROGRESS : TIP_CHANGE_UNAVAILABLE }
+    // A second tip change while this one holds the lock (double-click, second tab): Sable's tip line, not
+    // the plan-change one (round 5b).
+    if (!lock.ok) return { ok: false, message: lock.code === 'in_progress' ? TIP_IN_PROGRESS : TIP_CHANGE_UNAVAILABLE }
     return lock.value
   } catch (e) {
     console.error('[changeTip] failed', e instanceof Error ? e.message : e)

@@ -5,8 +5,6 @@ import type { SubscriptionDetail } from './dashboard-actions'
 import { cumulativePerks, entitlementsFor } from '@/lib/plans/ladder'
 import { CHANGE_PLAN_LINK, INCLUDED_EDIT_LINE, LEGACY_PLAN_LABEL, PERK_LINES } from '@/lib/plans/ladder-copy'
 
-const LINE = 'Priority included: your change requests go to the front of our queue.'
-
 function plan(amount: number): SubscriptionDetail {
   return {
     id: 'sub_1',
@@ -24,8 +22,10 @@ function plan(amount: number): SubscriptionDetail {
 describe('SubscriptionDetails: no "Priority included" line (Sable, round 5)', () => {
   it.each([3500, 5000, 5500, 7500])('never shown, at $%i cents/month either', (cents) => {
     render(<SubscriptionDetails subscriptions={[plan(cents)]} />)
-    expect(screen.queryByText(LINE)).toBeNull()
-    expect(document.body).not.toHaveTextContent(/front of our queue/i)
+    // The old dashboard line was removed with PRIORITY_DASHBOARD_LINE (round 5b); the plan card shows
+    // Priority only through the perk list.
+    expect(document.body).not.toHaveTextContent(/Priority included/i)
+    expect(document.body).not.toHaveTextContent(/front of our queue|ahead of lower plans/i)
   })
 })
 
@@ -157,13 +157,13 @@ describe('SubscriptionDetails hosting ladder (Oct 3)', () => {
     for (const perk of cumulativePerks('leads')) expect(box).toHaveTextContent(PERK_LINES[perk])
     expect(box).toHaveTextContent(PERK_LINES.priorityQueue)
     expect(box).not.toHaveTextContent(PERK_LINES.gbpManaged)
-    expect(screen.queryByText(LINE)).toBeNull()
+    expect(screen.queryByText(/Priority included/i)).toBeNull()
     expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(0, 1))
   })
 
   it('Starter: no Priority line, no included edit line', () => {
     render(<SubscriptionDetails subscriptions={[{ ...plan(3500), entitlements: entitlementsFor({ stepId: 'starter' }) }]} />)
-    expect(screen.queryByText(LINE)).toBeNull()
+    expect(screen.queryByText(/Priority included/i)).toBeNull()
     expect(screen.queryByTestId('included-edit')).toBeNull()
   })
 
@@ -172,7 +172,7 @@ describe('SubscriptionDetails hosting ladder (Oct 3)', () => {
     render(<SubscriptionDetails subscriptions={[{ ...plan(5500), entitlements: ent, includedEdit: { used: 1, available: 1 } }]} />)
     expect(screen.getByTestId('legacy-plan')).toHaveTextContent(LEGACY_PLAN_LABEL)
     expect(screen.queryByTestId('plan-step')).toBeNull()
-    expect(screen.queryByText(LINE)).toBeNull()
+    expect(screen.queryByText(/Priority included/i)).toBeNull()
     expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(1, 1))
     expect(document.body).not.toHaveTextContent(/backup|downtime alert|uptime/i)
   })

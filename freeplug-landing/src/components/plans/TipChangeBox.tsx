@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PlanStep } from '@/lib/plans/ladder'
 import type { ChangeTipResponse, TipPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
@@ -11,6 +11,9 @@ import {
   TIP_CHANGE_NOTE,
   TIP_CHANGE_PENDING,
   TIP_CHANGED,
+  TIP_END_NONE,
+  TIP_LOCKED_AMOUNT,
+  TIP_LOCKED_NOTE,
   TIP_NEXT_BILL,
   TIP_NEXT_BILL_NO_DATE,
   UPGRADE_CALCULATING,
@@ -31,17 +34,19 @@ type Props = {
   currentTipDollars: number
   /** A switch is planned: the tip can't change now (it ends at the switch). */
   locked: boolean
+  /** The planned switch's date ("November 3, 2026") for the locked note. */
+  lockedDate?: string | null
   onPreviewTip: (tipDollars: number) => Promise<TipPreviewResponse>
   onChangeTip: (tipDollars: number) => Promise<ChangeTipResponse>
 }
 
 /**
  * Plans page, live ladder plan: change the monthly tip (the tipping system). Same pattern as the
- * upgrade confirm (Lina §3a, no modal): Update tip -> "Checking the amount…" -> "Your next bill: $X on
- * <date>." with Confirm / Not now. The change starts with the next bill (proration none); nothing is
+ * upgrade confirm (Lina §3a, no modal): Update tip -> "Checking the amount…" -> "Your next bill will be $X
+ * on <date>." with Confirm / Not now. The change starts with the next bill (proration none); nothing is
  * charged today. Esc closes the confirm and focus returns to the button.
  */
-export function TipChangeBox({ step, currentTipDollars, locked, onPreviewTip, onChangeTip }: Props) {
+export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = null, onPreviewTip, onChangeTip }: Props) {
   const [tip, setTip] = useState(currentTipDollars)
   const [state, setState] = useState<Phase>({ phase: 'idle' })
   const [notice, setNotice] = useState<string | null>(null)
@@ -109,19 +114,33 @@ export function TipChangeBox({ step, currentTipDollars, locked, onPreviewTip, on
       <h4 id="tip-box-heading" className="text-sm font-semibold text-gray-900">
         {TIP_CHANGE_HEADING}
       </h4>
-      <div className="mt-2">
-        <TipSlider
-          step={step}
-          tipDollars={tip}
-          onChange={(t) => {
-            setTip(t)
-            setNotice(null)
-          }}
-          disabled={locked || busy}
-          help={locked ? TIP_CHANGE_PENDING : TIP_CHANGE_NOTE}
-          testId="tip-change-slider"
-        />
-      </div>
+      {locked ? (
+        // Lina, round 5b: a switch is planned, so no bar or end labels, just the saved tip, read-only.
+        // The amber pending box above keeps its tip-ends line.
+        <div className="mt-2" data-testid="tip-locked">
+          <p className="flex items-center gap-2 text-sm text-gray-900">
+            <Lock className="h-4 w-4 shrink-0 text-gray-500" aria-hidden="true" />
+            <span data-testid="tip-locked-amount">{currentTipDollars > 0 ? TIP_LOCKED_AMOUNT(`$${currentTipDollars}`) : TIP_END_NONE}</span>
+          </p>
+          <p className="mt-1 text-xs text-gray-500" data-testid="tip-locked-note">
+            {currentTipDollars > 0 && lockedDate ? TIP_LOCKED_NOTE(lockedDate) : TIP_CHANGE_PENDING}
+          </p>
+        </div>
+      ) : (
+        <div className="mt-2">
+          <TipSlider
+            step={step}
+            tipDollars={tip}
+            onChange={(t) => {
+              setTip(t)
+              setNotice(null)
+            }}
+            disabled={busy}
+            help={TIP_CHANGE_NOTE}
+            testId="tip-change-slider"
+          />
+        </div>
+      )}
       <p role="status" aria-live="polite" className="sr-only" data-testid="tip-change-live">
         {state.phase === 'loading' ? UPGRADE_CALCULATING : state.phase === 'confirm' || state.phase === 'submitting' ? state.text : (notice ?? '')}
       </p>

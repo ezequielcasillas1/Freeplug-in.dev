@@ -3,6 +3,8 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { HELP_QUICK_QUESTIONS, PENDING_LADDER_COPY_REF } from './help-chat-content'
 import { HELP_HIDDEN_FEES, HELP_PAYMENT_METHOD, HELP_REQUEST_CHANGES, HELP_WHAT_DO_I_PAY } from '@/lib/plans/ladder-copy'
+import { CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE } from '@/lib/stripe/active-subscription'
+import { PRIORITY_HELP_ANSWER } from '@/lib/plans/priority'
 
 const LOCKED_FILE =
   process.env.FREEPLUG_LOCKED_COPY ??
@@ -54,7 +56,7 @@ describe('help chat quick questions', () => {
 
   it('ladder placeholders are marked pending, come from ladder-copy.ts, and never advertise backups, alerts or uptime', () => {
     const pending = HELP_QUICK_QUESTIONS.filter((q) => q.pendingCopy)
-    expect(pending.map((q) => q.id)).toEqual(['what-do-i-pay', 'hidden-fees', 'payment-method', 'request-changes'])
+    expect(pending.map((q) => q.id)).toEqual(['what-do-i-pay', 'hidden-fees', 'request-changes'])
     for (const q of pending) expect(q.lockedRef).toBe(PENDING_LADDER_COPY_REF)
     const byId = Object.fromEntries(HELP_QUICK_QUESTIONS.map((q) => [q.id, q.answer]))
     expect(byId['what-do-i-pay']).toBe(HELP_WHAT_DO_I_PAY)
@@ -96,13 +98,14 @@ describe.skipIf(!existsSync(LOCKED_FILE))('help / FAQ page copy matches the lock
   }
   // Hosting ladder (Oct 3): help/page.tsx:91 is a PLACEHOLDER until Sable re-locks it; the page and
   // the chat share one constant, so they cannot drift from each other.
-  // Round 5: Sable's Manage-billing sentence (Oct 3 ~2:30 PM) waits for her re-lock of help/page.tsx:79;
-  // until then the page and the chat share HELP_PAYMENT_METHOD, which starts with the locked answer.
-  it('help chat "How do I update my payment method?" and help/page.tsx share HELP_PAYMENT_METHOD (locked answer + Sable\'s sentence)', () => {
+  // Round 5b: Sable re-locked help/page.tsx:79 with the Manage-billing sentence (Oct 3, 3:15 PM CT).
+  it('help chat "How do I update my payment method?" and help/page.tsx share HELP_PAYMENT_METHOD = the locked answer', () => {
     const q = HELP_QUICK_QUESTIONS.find((x) => x.id === 'payment-method')
     expect(q?.answer).toBe(HELP_PAYMENT_METHOD)
+    expect(q?.lockedRef).toBe('src/app/(dashboard)/dashboard/help/page.tsx:79')
+    expect(q?.pendingCopy).toBeUndefined()
     expect(page('(dashboard)/dashboard/help/page.tsx')).toContain('answer: HELP_PAYMENT_METHOD')
-    expect(HELP_PAYMENT_METHOD.startsWith(locked('src/app/(dashboard)/dashboard/help/page.tsx:79') + ' ')).toBe(true)
+    expect(HELP_PAYMENT_METHOD).toBe(locked('src/app/(dashboard)/dashboard/help/page.tsx:79'))
     expect(HELP_PAYMENT_METHOD).toMatch(/If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices\.$/)
   })
 
@@ -116,6 +119,19 @@ describe.skipIf(!existsSync(LOCKED_FILE))('help / FAQ page copy matches the lock
     const active = readFileSync(join(__dirname, '..', 'stripe', 'active-subscription.ts'), 'utf8')
     expect(active).toContain(line)
     expect(active).not.toMatch(/To cancel your plan, go to Manage billing/)
+  })
+
+  // Round 5b: Sable's re-locks (Oct 3, 3:15 PM CT), pinned word for word.
+  it('CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE is the locked active-subscription.ts:6 line', () => {
+    expect(CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE).toBe(locked('src/lib/stripe/active-subscription.ts:6'))
+  })
+  it('help b-5 (close a request) is the locked help/page.tsx:97 answer', () => {
+    const help = page('(dashboard)/dashboard/help/page.tsx').replace(/\\'/g, "'")
+    expect(help).toContain(locked('src/app/(dashboard)/dashboard/help/page.tsx:97'))
+  })
+  it('the Priority help answer is the locked "help page (plans answer)" line, and no "front of our queue" anywhere', () => {
+    expect(PRIORITY_HELP_ANSWER).toBe(locked('help page (plans answer)'))
+    expect(PRIORITY_HELP_ANSWER).not.toMatch(/front of our queue/i)
   })
 
   it('help chat "Are there any hidden fees?" and help/page.tsx share HELP_HIDDEN_FEES', () => {
