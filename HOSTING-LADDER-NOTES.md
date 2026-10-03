@@ -107,5 +107,51 @@ Session completed for a step not for sale; service role only, RLS forced; idempo
 `ac103c883fa51614b1537c60a8b79f9d2bd0cb4842d3b85ab9a442fe6803f1f7`, checked with
 `/workspace/owen/ladder-sqlcheck/run-unsold.sh`.
 
+## Round 5 part 2 (Oct 3, about 3:10 PM CT): the tipping system and the change-plan lock
+**Tips.** One $1/month Stripe price (`freeplug_tip_monthly`, product `freeplug_tip`) with quantity = tip
+dollars, on the same subscription as the step price. Ranges are monthly totals per step in ladder.ts
+(`TIP_TOTAL_RANGES`: Starter 35–54, Priority 55–64, Fast lane 65–74, Leads 75–84, Get found 85–99, Growth
+100–120; only sellable steps take a tip). `src/lib/plans/tips.ts` validates (whole dollars, inside the
+range, 0 = no tip item) and is used by checkout, claim save, publish and the tip change.
+- Perks and priority come from the step's tier price only (`tierItems`); the tip is never part of the
+  plan amount. The old "$55 total = Priority" helpers were removed; Starter + $19 stays Starter.
+- Tip change on a live plan: `changeTip` (proration none, next bill), refused while a schedule exists,
+  for legacy plans, and outside the range. Upgrade (`upgradeItems`) keeps only the new tier item, so
+  the tip ends with the switch. A downgrade schedule's next phase has only the step price, so the tip
+  ends at the phase change.
+- Display: plan strip and claim summary "Fast lane · $65/month + $5 tip"; admin "$65/mo + $5 tip".
+- Webhook: `billing_ledger.tip_cents` = the tip lines of the paid invoice (capped at amount_paid), with a
+  fallback insert without the column before the migration. `cumulative_website_value_paid_cents` still
+  counts the full amount (open question for Aria: should tips count toward buyout value?).
+- Sable's confirm lines: zero-total line only at exactly $0.00; "This replaces your planned switch to X"
+  only with a pending downgrade; the tip-ends lines only with a tip. Downgrades have no confirm, so the
+  downgrade tip line sits under the downgrade button (Lina 3a: the "what happens" line under the
+  button) and in the pending notice (it also explains why the tip box is locked).
+
+**Change-plan lock (Aria).** `plan_change_locks` (one row per user, `claim_id`, 60 s expiry) with
+`plan_change_lock_claim` (one INSERT … ON CONFLICT DO UPDATE WHERE expired) and
+`plan_change_lock_release` (deletes only its own claim). Same claim-before-act pattern as email_sends, no
+retry. `changeHostingPlan` claims before any Stripe call; a second call while it is held returns
+`UPGRADE_IN_PROGRESS` and never calls Stripe; release in finally. A failed claim fails closed. Tip
+preview/change use the same lock. The cancel action does not.
+
+**Migrations for the r13 hosted set** (local DB only so far; both must be applied BEFORE this code deploys:
+claim reads `outreach_sites.plan_tip_dollars`, and the lock fails closed without its table):
+- `supabase/migrations/20261003200000_tipping.sql` sha256 `78b7786c09e2ae95c15c6a105d37fdddd8c0f38a8ee52a9910eedcb3f8d2b133`
+- `supabase/migrations/20261003210000_plan_change_locks.sql` sha256 `5fff122bb1ab438a3285622dcc7f8a2fe4cc8fbdcbe535bd20a9de052a13779a`
+
+**Probes (test mode):** `--probe-tips --lock-db <local pg url>`: T1 checkout with a tip, T2 plan step
+ignores the tip, T3 tip change next cycle, T4 upgrade drops the tip (preview == invoice), T5 downgrade
+drops it in the next phase, T6 the lock (two concurrent confirms over a pending downgrade: one upgrade,
+one charge, schedule released). Logs `/workspace/owen/probe-tips-*.log`.
+
+**Bot secrets (audit, steering C).** Local scripts never read SUPABASE_DB_PASSWORD,
+SUPABASE_SERVICE_ROLE_KEY, CLOUDFLARE_API_TOKEN or STRIPE_WEBHOOK_SECRET from the environment: run
+everything through `/workspace/owen/safe`; the setup script deletes them at start. The app itself reads
+SUPABASE_SERVICE_ROLE_KEY / STRIPE_WEBHOOK_SECRET from process.env (they win over .env.local), so
+`npm run dev|build|test` must also run through `safe`. `npm run upload:preview` and
+`cf:upload:production` pass the whole environment to wrangler, which picks up CLOUDFLARE_API_TOKEN
+implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
+
 ## Not built (Part B)
 L2 AI editor + quota enforcement, leads report job, form-fill storage, GBP API, SMS, L3.
