@@ -56,11 +56,72 @@ export const PLAN_STEPS: readonly PlanStep[] = [
 ] as const
 
 /**
- * "Done by the end of the next business day" (Fast lane and up): next Mon-Fri, by this hour,
- * Central time. No holidays yet. The promise itself still needs Ezequiel's yes (Aria Q2).
+ * "Done by end of next business day (Mon-Fri, excluding holidays)" (Fast lane and up): a TARGET,
+ * not a guarantee (no refund or credit is tied to it). Due at this hour, Central time, on the next
+ * business day after the day of the request. The promise itself still needs Ezequiel's yes.
  */
 export const SMALL_EDIT_DUE_HOUR_CT = 17
 export const BUSINESS_TIME_ZONE = 'America/Chicago'
+
+// ------------------------------------------------------------------ business holidays (editable)
+
+/**
+ * Days the "next business day" target skips, computed for every year. EZEQUIEL: add, remove or
+ * change a line here; nothing else needs to change.
+ *   { month, day }            the same date every year (month 1-12)
+ *   { month, weekday, nth }   the nth weekday of the month (weekday 0 = Sunday .. 6 = Saturday;
+ *                             nth 1-4, or -1 for the last one in the month)
+ * A holiday that falls on a weekend is not moved to the Friday or Monday (weekends are skipped
+ * anyway). Add the observed day to EXTRA_CLOSED_DATES if you close then too.
+ */
+export type HolidayRule =
+  | { name: string; month: number; day: number }
+  | { name: string; month: number; weekday: number; nth: 1 | 2 | 3 | 4 | -1 }
+
+export const BUSINESS_HOLIDAYS: readonly HolidayRule[] = [
+  { name: "New Year's Day", month: 1, day: 1 },
+  { name: 'Memorial Day', month: 5, weekday: 1, nth: -1 },
+  { name: 'Independence Day', month: 7, day: 4 },
+  { name: 'Labor Day', month: 9, weekday: 1, nth: 1 },
+  { name: 'Thanksgiving', month: 11, weekday: 4, nth: 4 },
+  { name: 'Christmas Day', month: 12, day: 25 },
+]
+
+/** One-off closed days ('YYYY-MM-DD', Central calendar date), e.g. '2026-11-27'. Empty for now. */
+export const EXTRA_CLOSED_DATES: readonly string[] = []
+
+const ymd = (y: number, m: number, d: number) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+
+/** The holidays of one calendar year as 'YYYY-MM-DD' (Central calendar dates), with names. */
+export function holidaysForYear(
+  year: number,
+  rules: readonly HolidayRule[] = BUSINESS_HOLIDAYS
+): { date: string; name: string }[] {
+  return rules.map((r) => {
+    if ('day' in r) return { date: ymd(year, r.month, r.day), name: r.name }
+    if (r.nth === -1) {
+      const last = new Date(Date.UTC(year, r.month, 0)).getUTCDate()
+      const lastWd = new Date(Date.UTC(year, r.month - 1, last)).getUTCDay()
+      return { date: ymd(year, r.month, last - ((lastWd - r.weekday + 7) % 7)), name: r.name }
+    }
+    const firstWd = new Date(Date.UTC(year, r.month - 1, 1)).getUTCDay()
+    return { date: ymd(year, r.month, 1 + ((r.weekday - firstWd + 7) % 7) + (r.nth - 1) * 7), name: r.name }
+  })
+}
+
+/** Mon-Fri and not a holiday or extra closed day (a Central calendar date). */
+export function isBusinessDate(
+  year: number,
+  month: number,
+  day: number,
+  rules: readonly HolidayRule[] = BUSINESS_HOLIDAYS,
+  extra: readonly string[] = EXTRA_CLOSED_DATES
+): boolean {
+  const wd = new Date(Date.UTC(year, month - 1, day)).getUTCDay()
+  if (wd === 0 || wd === 6) return false
+  const date = ymd(year, month, day)
+  return !extra.includes(date) && !holidaysForYear(year, rules).some((h) => h.date === date)
+}
 
 /** Included small edits per billing period at Fast lane and up (no rollover). */
 export const INCLUDED_EDITS_PER_PERIOD = 1

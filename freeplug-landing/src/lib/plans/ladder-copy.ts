@@ -13,11 +13,18 @@ const INCLUDED_EDIT_FROM = PLAN_STEPS.find((s) => s.adds.includes('includedSmall
 /**
  * Hosting-ladder customer copy. ALL strings here are PLACEHOLDERS drafted from Aria's card
  * (section 7) until Sable Quinn / Wren deliver final [STRICT] wording. Swap strings here only; no
- * other file hard-codes ladder copy. Rules for the final copy: no reply-time promise beyond "end of
- * the next business day" (pending Ezequiel), no ranking or lead guarantees, "call button taps" not
+ * other file hard-codes ladder copy. Rules for the final copy: no reply-time promise beyond "by end
+ * of next business day (Mon–Fri, excluding holidays)" as a target (pending Ezequiel), no refund or
+ * guarantee wording, no ranking or lead guarantees, "call button taps" not
  * "calls", and nothing about backups or downtime alerts until they are built.
  */
 export const LADDER_COPY_STATUS = 'PLACEHOLDER: pending Sable/Wren final copy' as const
+
+/**
+ * PLACEHOLDER (Sable/Wren; Aria 12:25 wording). The small-edit turnaround is a TARGET: no refund,
+ * credit or guarantee wording anywhere (ladder-copy.test.ts checks). Holidays: ladder.ts.
+ */
+export const NEXT_BUSINESS_DAY_TARGET = 'by end of next business day (Mon–Fri, excluding holidays)'
 
 /** PLACEHOLDER (Sable/Wren): one-line blurb per step. */
 export const STEP_BLURBS: Record<PlanStepId, string> = {
@@ -34,7 +41,7 @@ export const PERK_LINES: Record<PlanPerk, string> = {
   priorityQueue: "When you ask us for a change, you're ahead of lower plans in line.",
   includedSmallEdit:
     "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over.",
-  nextBusinessDayEdits: 'Small edits are done by the end of the next business day.',
+  nextBusinessDayEdits: `Small edits: ${NEXT_BUSINESS_DAY_TARGET}.`,
   leadsReport:
     'A monthly email showing how many people visited your site, filled out your form, and tapped your call button.',
   quoteAlerts: 'An email the moment someone asks for a quote.',
@@ -65,7 +72,7 @@ export const INCLUDED_EDIT_LINE = (used: number, available: number) =>
   used >= available
     ? 'Your included edit: used this billing period.'
     : `Your included edit: ${available - used} available this billing period.`
-export const NEXT_BUSINESS_DAY_LINE = 'Small edits: done by the end of the next business day.'
+export const NEXT_BUSINESS_DAY_LINE = `Small edits: ${NEXT_BUSINESS_DAY_TARGET}.`
 export const AI_EDITS_LINE = (n: number) => `AI edits: ${n} a month (coming soon)`
 
 /** Step marked "Most popular" on the cards; null for none. PLACEHOLDER (Lina/Sable decide). */

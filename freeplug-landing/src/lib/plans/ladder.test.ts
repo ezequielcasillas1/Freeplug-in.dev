@@ -151,7 +151,7 @@ describe('requests queue order and admin badge', () => {
   })
 })
 
-describe('next business day due time (5 PM Central, Mon-Fri, no holidays)', () => {
+describe('next business day due time (5 PM Central, Mon-Fri; holidays: due-by.test.ts)', () => {
   const ct = (d: Date) =>
     new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', weekday: 'short', month: 'numeric', day: 'numeric', hour: 'numeric', hourCycle: 'h23' }).format(d)
   it.each([

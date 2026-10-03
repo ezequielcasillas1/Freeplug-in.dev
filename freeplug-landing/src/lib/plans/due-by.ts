@@ -1,4 +1,4 @@
-import { BUSINESS_TIME_ZONE, SMALL_EDIT_DUE_HOUR_CT } from './ladder'
+import { BUSINESS_TIME_ZONE, isBusinessDate, SMALL_EDIT_DUE_HOUR_CT } from './ladder'
 
 type Parts = { y: number; m: number; d: number; h: number; min: number; wd: number }
 
@@ -32,19 +32,27 @@ function wallToUtc(y: number, m: number, d: number, h: number, tz: string): Date
 }
 
 /**
- * Due time for a small edit asked for at `now`: the end (SMALL_EDIT_DUE_HOUR_CT, Central) of the
- * next business day (Mon-Fri) after the day of the request. Friday and weekend requests are due
- * Monday. Holidays are not handled yet.
+ * Due time (a target, not a guarantee) for a small edit asked for at `now`: SMALL_EDIT_DUE_HOUR_CT
+ * Central time on the next business day after the Central calendar day of the request. Business
+ * day = Mon-Fri and not in BUSINESS_HOLIDAYS / EXTRA_CLOSED_DATES (src/lib/plans/ladder.ts).
+ * Friday, weekend and holiday-eve requests roll forward; the hour is wall-clock, so DST is handled
+ * (17:00 CDT = 22:00 UTC, 17:00 CST = 23:00 UTC).
  */
-export function nextBusinessDayDue(now: Date, tz = BUSINESS_TIME_ZONE, hour = SMALL_EDIT_DUE_HOUR_CT): Date {
+export function nextBusinessDayDue(
+  now: Date,
+  tz = BUSINESS_TIME_ZONE,
+  hour = SMALL_EDIT_DUE_HOUR_CT,
+  isBusiness: (y: number, m: number, d: number) => boolean = (y, m, d) => isBusinessDate(y, m, d)
+): Date {
   const today = zoned(now, tz)
-  // Walk calendar days in UTC-noon steps (avoids DST edge cases), starting tomorrow.
+  // Walk calendar days in UTC-noon steps (avoids DST edge cases), starting tomorrow. 14 days covers
+  // any weekend + holiday run in the config with room to spare.
   let cursor = Date.UTC(today.y, today.m - 1, today.d, 12)
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 14; i++) {
     cursor += 24 * 3600 * 1000
     const c = new Date(cursor)
-    const wd = c.getUTCDay()
-    if (wd >= 1 && wd <= 5) return wallToUtc(c.getUTCFullYear(), c.getUTCMonth() + 1, c.getUTCDate(), hour, tz)
+    const [y, m, d] = [c.getUTCFullYear(), c.getUTCMonth() + 1, c.getUTCDate()]
+    if (isBusiness(y, m, d)) return wallToUtc(y, m, d, hour, tz)
   }
-  throw new Error('unreachable')
+  throw new Error('No business day in the next 14 days: check BUSINESS_HOLIDAYS / EXTRA_CLOSED_DATES.')
 }
