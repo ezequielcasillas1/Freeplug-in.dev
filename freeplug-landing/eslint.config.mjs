@@ -20,6 +20,7 @@ const eslintConfig = defineConfig([
       "src/app/(dashboard)/dashboard/buyout-actions.ts",
       "src/app/(dashboard)/dashboard/request-website/actions.ts",
       "src/app/api/webhooks/stripe/route.ts",
+      "src/lib/email/webhook-email-ledger.ts",
       "src/lib/stripe/checkout-customer.ts",
       "src/lib/stripe/sync-checkout-customer.ts",
       "src/**/*.test.{ts,tsx}",

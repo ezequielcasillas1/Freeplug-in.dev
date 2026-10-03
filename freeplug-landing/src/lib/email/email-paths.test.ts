@@ -64,12 +64,18 @@ const sb = vi.hoisted(() => ({
   dbDown: false,
   rpcDown: false,
   rpc: vi.fn(),
+  // public.email_sends ledger (round 6): same fake as the webhook ledger tests.
+  ledger: null as null | { rpc: (fn: string, a: Record<string, unknown>) => Promise<unknown> },
 }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     auth: { admin: { generateLink: sb.generateLink } },
     // public.rate_check stand-in on the same table: true (and a hit) when under the limit.
     rpc: async (fn: string, a: { p_bucket: string; p_key: string; p_limit: number; p_window_seconds: number }) => {
+      if (fn.startsWith('email_send_')) {
+        sb.ledger ??= (await import('../../../test/fake-email-sends')).createFakeEmailSends()
+        return sb.ledger.rpc(fn, a as unknown as Record<string, unknown>)
+      }
       sb.rpc(fn, a)
       if (sb.rpcDown) return { data: null, error: { message: 'rate_check unavailable' } }
       const since = new Date(Date.now() - a.p_window_seconds * 1000).toISOString()
@@ -755,6 +761,7 @@ describe('/api/test-email (admin-only)', () => {
 describe('Stripe webhook cancellation notice (real cancel-notice + send, fake Resend)', () => {
   const PERIOD_END = 1792886400
   function setToCancel() {
+    sb.ledger = null
     st.update.mockReset()
     st.sub = {
       id: 'sub_1',

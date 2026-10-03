@@ -82,7 +82,16 @@ export async function signUp(formData: FormData) {
       emailRedirectTo: next
         ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
         : `${origin}/auth/callback`,
-      ...(businessName ? { data: { business_name: businessName } } : {}),
+      // freeplug_claim: the "Confirm signup" email template sends claim sign-ups back to /claim
+      // ({{ if .Data.freeplug_claim }}, SUPABASE-AUTH-CHECKLIST.md); everyone else lands on /dashboard.
+      ...(businessName || next === '/claim'
+        ? {
+            data: {
+              ...(businessName ? { business_name: businessName } : {}),
+              ...(next === '/claim' ? { freeplug_claim: true } : {}),
+            },
+          }
+        : {}),
     },
   })
 
