@@ -6,6 +6,7 @@ import {
   HELP_HIDDEN_FEES,
   HELP_REQUEST_CHANGES,
   HELP_WHAT_DO_I_PAY,
+  HELP_PAYMENT_METHOD,
 } from '@/lib/plans/ladder-copy'
 
 /**
@@ -74,10 +75,11 @@ export const HELP_QUICK_QUESTIONS: readonly HelpQuickQuestion[] = [
   {
     id: 'payment-method',
     question: 'How do I update my payment method?',
-    // help:79
-    answer:
-      'Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there.',
-    lockedRef: 'src/app/(dashboard)/dashboard/help/page.tsx:79',
+    // help:79 + Sable's sentence for Manage billing while a switch is planned (Oct 3 ~2:30 PM). Same
+    // constant as the help page; pending Sable's re-lock of help/page.tsx:79 in the locked file.
+    answer: HELP_PAYMENT_METHOD,
+    lockedRef: PENDING_LADDER_COPY_REF,
+    pendingCopy: true,
   },
   {
     id: 'cancel-plan',

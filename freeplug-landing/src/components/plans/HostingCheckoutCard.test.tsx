@@ -79,7 +79,7 @@ describe('HostingCheckoutCard rows (Lina §0)', () => {
   it('phone: the Coming soon group is behind one disclosure', () => {
     render(<HostingCheckoutCard />)
     const toggle = screen.getByTestId('coming-soon-toggle')
-    expect(toggle).toHaveTextContent(`See plans coming soon (${soon.length})`)
+    expect(toggle).toHaveTextContent(`Plans coming soon (${soon.length})`)
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     const panel = document.getElementById(toggle.getAttribute('aria-controls')!)!
     expect(panel.className).toMatch(/(^| )hidden( |$)/)
@@ -182,9 +182,9 @@ function switching(over: Partial<React.ComponentProps<typeof HostingCheckoutCard
 }
 
 describe('switching card: direction-aware button (Lina §3a)', () => {
-  it('selected = current: disabled "Pick a plan to switch", no help line', () => {
+  it('selected = current: disabled "Choose a different plan to switch", no help line', () => {
     switching()
-    expect(screen.getByRole('button', { name: 'Pick a plan to switch' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Choose a different plan to switch' })).toBeDisabled()
     expect(screen.queryByTestId('switch-help')).toBeNull()
   })
 
@@ -240,14 +240,14 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     expect(box.compareDocumentPosition(row(container, 'starter')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(within(row(container, 'starter')).getByTestId('starts-badge')).toHaveTextContent('Starts November 3, 2026')
     expect(screen.queryByRole('button', { name: 'Manage billing' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Pick a plan to switch' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Choose a different plan to switch' })).toBeDisabled()
     fireEvent.click(within(box).getByRole('button', { name: 'Keep Fast lane' }))
     await waitFor(() => expect(onChangePlan).toHaveBeenCalledWith('fast_lane'))
   })
 })
 
 describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
-  it('loading shows "Calculating…" with a spinner and never an amount; then the confirm line, focus on Confirm', async () => {
+  it('loading shows "Checking the amount…" with a spinner and never an amount; then the confirm line, focus on Confirm', async () => {
     let resolve!: (v: PlanPreviewResponse) => void
     const { container, onChangePlan } = switching({ onPreviewChange: vi.fn(() => new Promise<PlanPreviewResponse>((r) => (resolve = r))) })
     pickStep(container, 'fast_lane')
@@ -272,7 +272,7 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     expect(confirmBtn.className).toMatch(/w-full/)
     expect(document.activeElement).toBe(confirmBtn)
     // Confirm sits first, Cancel under it; the whole thing is in the sticky bar on phones
-    const cancelBtn = within(confirm).getByRole('button', { name: 'Cancel' })
+    const cancelBtn = within(confirm).getByRole('button', { name: 'Not now' })
     expect(confirmBtn.compareDocumentPosition(cancelBtn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByTestId('switch-area').className).toMatch(/sticky bottom-0/)
     expect(onChangePlan).not.toHaveBeenCalled()
@@ -289,12 +289,12 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     expect(onChangePlan).toHaveBeenCalledTimes(1)
   })
 
-  it("preview failed: the same layout with \"We'll charge the difference today\", Confirm still sends the server's date", async () => {
+  it("preview failed: the same layout with \"We'll charge the difference for the rest of this billing period today\", Confirm still sends the server's date", async () => {
     const { container, onChangePlan } = switching({ onPreviewChange: vi.fn(async (): Promise<PlanPreviewResponse> => ({ ok: false, reason: 'preview_failed', prorationDate: 1_790_000_123 })) })
     pickStep(container, 'priority')
     fireEvent.click(screen.getByRole('button', { name: 'Switch to Priority now' }))
     const confirm = await screen.findByTestId('upgrade-confirm')
-    expect(confirm).toHaveTextContent("Switch to Priority now? We'll charge the difference today.")
+    expect(confirm).toHaveTextContent("Switch to Priority now? We'll charge the difference for the rest of this billing period today.")
     expect(confirm).not.toHaveTextContent('$')
     fireEvent.click(within(confirm).getByRole('button', { name: 'Confirm' }))
     await waitFor(() => expect(onChangePlan).toHaveBeenCalledWith('priority', 1_790_000_123))
@@ -312,7 +312,7 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     const { container, onChangePlan } = switching()
     pickStep(container, 'fast_lane')
     fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Not now' }))
     const again = await screen.findByRole('button', { name: 'Switch to Fast lane now' })
     await waitFor(() => expect(document.activeElement).toBe(again))
     fireEvent.click(again)

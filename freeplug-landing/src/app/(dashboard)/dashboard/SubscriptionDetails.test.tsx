@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { SubscriptionDetails } from './SubscriptionDetails'
 import type { SubscriptionDetail } from './dashboard-actions'
 import { cumulativePerks, entitlementsFor } from '@/lib/plans/ladder'
-import { INCLUDED_EDIT_LINE, LEGACY_PLAN_LABEL, PERK_LINES } from '@/lib/plans/ladder-copy'
+import { CHANGE_PLAN_LINK, INCLUDED_EDIT_LINE, LEGACY_PLAN_LABEL, PERK_LINES } from '@/lib/plans/ladder-copy'
 
 const LINE = 'Priority included: your change requests go to the front of our queue.'
 
@@ -196,11 +196,19 @@ describe('SubscriptionDetails plan card links (Lina §3c, round 4)', () => {
     expect(screen.queryByRole('button')).toBeNull()
   })
 
-  it('no extra "Change plan" link (round 5: "Manage plans →" already goes to Plans); no pending line without a pending change', () => {
+  it('one "Change plan →" link (CHANGE_PLAN_LINK) to Plans in the footer, next to Cancel options; no pending line without a pending change', () => {
     render(<SubscriptionDetails subscriptions={[ladder()]} />)
     expect(screen.queryByTestId('home-pending-change')).toBeNull()
     expect(screen.queryByTestId('home-change-plan')).toBeNull()
-    expect(screen.queryByRole('link', { name: 'Change plan' })).toBeNull()
-    expect(screen.getByRole('link', { name: /Manage plans/ })).toHaveAttribute('href', '/dashboard/plans')
+    const links = screen.getAllByRole('link', { name: CHANGE_PLAN_LINK })
+    expect(links).toHaveLength(1)
+    expect(links[0]).toHaveAttribute('href', '/dashboard/plans')
+    expect(screen.queryByText(/Manage plans/)).toBeNull()
+    expect(screen.getByRole('link', { name: 'Cancel options' })).toHaveAttribute('href', '/dashboard/cancel')
+  })
+
+  it('Cancel options is still there while a downgrade is pending (cancel messages point to it)', () => {
+    render(<SubscriptionDetails subscriptions={[ladder({ stepName: 'Starter', date: 'November 3, 2026' })]} />)
+    expect(screen.getByRole('link', { name: 'Cancel options' })).toHaveAttribute('href', '/dashboard/cancel')
   })
 })

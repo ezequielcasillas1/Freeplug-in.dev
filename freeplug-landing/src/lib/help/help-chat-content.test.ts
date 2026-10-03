@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { HELP_QUICK_QUESTIONS, PENDING_LADDER_COPY_REF } from './help-chat-content'
-import { HELP_HIDDEN_FEES, HELP_REQUEST_CHANGES, HELP_WHAT_DO_I_PAY } from '@/lib/plans/ladder-copy'
+import { HELP_HIDDEN_FEES, HELP_PAYMENT_METHOD, HELP_REQUEST_CHANGES, HELP_WHAT_DO_I_PAY } from '@/lib/plans/ladder-copy'
 
 const LOCKED_FILE =
   process.env.FREEPLUG_LOCKED_COPY ??
@@ -54,7 +54,7 @@ describe('help chat quick questions', () => {
 
   it('ladder placeholders are marked pending, come from ladder-copy.ts, and never advertise backups, alerts or uptime', () => {
     const pending = HELP_QUICK_QUESTIONS.filter((q) => q.pendingCopy)
-    expect(pending.map((q) => q.id)).toEqual(['what-do-i-pay', 'hidden-fees', 'request-changes'])
+    expect(pending.map((q) => q.id)).toEqual(['what-do-i-pay', 'hidden-fees', 'payment-method', 'request-changes'])
     for (const q of pending) expect(q.lockedRef).toBe(PENDING_LADDER_COPY_REF)
     const byId = Object.fromEntries(HELP_QUICK_QUESTIONS.map((q) => [q.id, q.answer]))
     expect(byId['what-do-i-pay']).toBe(HELP_WHAT_DO_I_PAY)
@@ -96,6 +96,28 @@ describe.skipIf(!existsSync(LOCKED_FILE))('help / FAQ page copy matches the lock
   }
   // Hosting ladder (Oct 3): help/page.tsx:91 is a PLACEHOLDER until Sable re-locks it; the page and
   // the chat share one constant, so they cannot drift from each other.
+  // Round 5: Sable's Manage-billing sentence (Oct 3 ~2:30 PM) waits for her re-lock of help/page.tsx:79;
+  // until then the page and the chat share HELP_PAYMENT_METHOD, which starts with the locked answer.
+  it('help chat "How do I update my payment method?" and help/page.tsx share HELP_PAYMENT_METHOD (locked answer + Sable\'s sentence)', () => {
+    const q = HELP_QUICK_QUESTIONS.find((x) => x.id === 'payment-method')
+    expect(q?.answer).toBe(HELP_PAYMENT_METHOD)
+    expect(page('(dashboard)/dashboard/help/page.tsx')).toContain('answer: HELP_PAYMENT_METHOD')
+    expect(HELP_PAYMENT_METHOD.startsWith(locked('src/app/(dashboard)/dashboard/help/page.tsx:79') + ' ')).toBe(true)
+    expect(HELP_PAYMENT_METHOD).toMatch(/If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices\.$/)
+  })
+
+  // Round 5 (Sable flag 4): while a switch is planned, Manage billing has no cancel option, so both
+  // close-request cancel instructions point to the dashboard's Cancel options link instead.
+  it('cancel instructions say "choose Cancel options in your dashboard", not Manage billing', () => {
+    const line = 'To cancel your plan, choose Cancel options in your dashboard.'
+    const help = page('(dashboard)/dashboard/help/page.tsx')
+    expect(help).toContain(line)
+    expect(help).not.toMatch(/To cancel, open Manage billing/)
+    const active = readFileSync(join(__dirname, '..', 'stripe', 'active-subscription.ts'), 'utf8')
+    expect(active).toContain(line)
+    expect(active).not.toMatch(/To cancel your plan, go to Manage billing/)
+  })
+
   it('help chat "Are there any hidden fees?" and help/page.tsx share HELP_HIDDEN_FEES', () => {
     const q = HELP_QUICK_QUESTIONS.find((x) => x.question === 'Are there any hidden fees?')
     expect(q?.answer).toBe(HELP_HIDDEN_FEES)

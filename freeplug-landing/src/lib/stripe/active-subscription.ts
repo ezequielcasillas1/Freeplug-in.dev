@@ -14,10 +14,11 @@ import {
 } from '@/lib/plans/ladder'
 import { planMonthlyTotalCents } from '@/lib/plans/priority'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
+import { planStripLine, type PlanLineItem } from './plan-line'
 
 /** Shown when a customer tries to close their website request while a plan is still active. */
 export const CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE =
-  "You can't close this request while your plan is active, because your site is still hosted under it. To cancel your plan, go to Manage billing. Once the plan has ended, you can close the request here."
+  "You can't close this request while your plan is active, because your site is still hosted under it. To cancel your plan, choose Cancel options in your dashboard. Once the plan has ended, you can close the request here."
 
 /** Formats a plan end date as "Month D, YYYY" (UTC, so server and client agree). */
 export function formatPlanEndDate(date: Date): string {
@@ -109,27 +110,23 @@ export async function listLiveSubscriptions(customerId: string): Promise<Stripe.
 }
 
 /**
- * One line per live subscription in the same format as the dashboard's Active Subscriptions card:
- * "<product names joined with +> · $X.XX/<interval>" (plus the status when it is not "active").
+ * One line per live subscription for the Plans page strip: "<step name> · $65/month" (see plan-line.ts;
+ * grandfathered plans keep their product names), plus the status when it is not "active".
  */
 export async function describeLiveSubscriptions(customerId: string): Promise<string[]> {
   const stripe = getStripe()
   const subs = await listLiveSubscriptions(customerId)
   const lines: string[] = []
   for (const sub of subs) {
-    const names: string[] = []
-    let amount = 0
+    const items: PlanLineItem[] = []
     for (const item of sub.items.data) {
       const product =
         typeof item.price.product === 'string'
           ? await stripe.products.retrieve(item.price.product)
           : (item.price.product as Stripe.Product)
-      names.push(product.name)
-      amount += (item.price.unit_amount ?? 0) * (item.quantity ?? 1)
+      items.push({ lookupKey: item.price.lookup_key ?? null, productName: product.name, unitAmountCents: item.price.unit_amount ?? 0, quantity: item.quantity ?? 1 })
     }
-    const interval = sub.items.data[0]?.price.recurring?.interval ?? 'month'
-    const status = sub.status === 'active' ? '' : ` (${sub.status.replace(/_/g, ' ')})`
-    lines.push(`${names.join(' + ')} · $${(amount / 100).toFixed(2)}/${interval}${status}`)
+    lines.push(planStripLine(items, sub.items.data[0]?.price.recurring?.interval ?? 'month', sub.status))
   }
   return lines
 }

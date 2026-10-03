@@ -4,6 +4,7 @@ import type { SubscriptionDetail } from './dashboard-actions'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
 import {
+  CHANGE_PLAN_LINK,
   INCLUDED_EDIT_LINE,
   KEEP_PLAN_BUTTON,
   LEGACY_PLAN_LABEL,
@@ -152,7 +153,7 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                       {INCLUDED_EDIT_LINE(sub.includedEdit.used, sub.includedEdit.available)}
                     </p>
                   ) : null}
-                  {/* Lina §3c: the pending change + a Keep link (the action lives on Plans). "Manage plans →" below goes to Plans. */}
+                  {/* Lina §3c: the pending change + a Keep link (the action lives on Plans). "Change plan →" below goes to Plans. */}
                   {sub.pendingChange ? (
                     <p className="text-sm text-amber-800 mt-2" data-testid="home-pending-change">
                       {PENDING_CHANGE_LINE(sub.pendingChange.stepName, sub.pendingChange.date)}{' '}
@@ -182,8 +183,8 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
           href="/dashboard/plans"
           className="inline-flex items-center gap-1 text-sm font-semibold text-[#ba3d3d] hover:underline"
         >
-          Manage plans
-          <ArrowRight className="h-4 w-4" />
+          {CHANGE_PLAN_LINK}
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         <Link
           href="/dashboard/cancel"

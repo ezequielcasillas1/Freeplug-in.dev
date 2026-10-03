@@ -21,6 +21,7 @@ import {
 import { PLAN_STEPS } from '@/lib/plans/ladder'
 import {
   HELP_HIDDEN_FEES,
+  HELP_PAYMENT_METHOD,
   HELP_HOSTING_PLANS,
   HELP_PLANS_GUIDE_DESCRIPTION,
   HELP_PLANS_GUIDE_TITLE_LINE,
@@ -91,8 +92,8 @@ const faqCategories = [
       {
         id: 'b-2',
         question: 'How do I update my payment method?',
-        answer:
-          'Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there.',
+        // Locked help/page.tsx:79 + Sable's Manage-billing-while-a-switch-is-planned sentence (Oct 3); shared with the help chat.
+        answer: HELP_PAYMENT_METHOD,
       },
       {
         id: 'b-3',
@@ -110,7 +111,7 @@ const faqCategories = [
         id: 'b-5',
         question: 'How do I close my request or cancel my plan?',
         answer:
-          'You can close a request from the request page (Dashboard, then View or update). If you have an active hosting plan, you\'ll need to cancel the plan first, because your site is still hosted under it and we don\'t want you charged for a request that\'s closed. To cancel, open Manage billing from your dashboard. Your plan stays active until the end of the current billing period. Once it has ended, you can close the request. Closing a request never cancels a plan on its own.',
+          'You can close a request from the request page (Dashboard, then View or update). If you have an active hosting plan, you\'ll need to cancel the plan first, because your site is still hosted under it and we don\'t want you charged for a request that\'s closed. To cancel your plan, choose Cancel options in your dashboard. Your plan stays active until the end of the current billing period. Once it has ended, you can close the request. Closing a request never cancels a plan on its own.',
       },
     ],
   },

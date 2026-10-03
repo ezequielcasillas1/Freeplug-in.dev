@@ -164,45 +164,57 @@ export const ALREADY_HAS_PLAN_SWITCH =
   'You already have an active hosting plan. To change it, pick a plan on the Plans page and choose Switch.'
 
 /**
- * PLACEHOLDERS for Sable (Lina's layout direction, Oct 3 round 4, hosting-ladder-ux-LINA-2026-10-03.md).
- * Every string in this block is marked [Sable] in Lina's spec: drafted by Owen so the layout can ship,
- * waiting for Sable's final wording. The upgrade confirm line is Aria's wording (1:34 PM).
+ * FINAL (Sable, /workspace/copy/freeplug-ladder-round4-copy-2026-10-03.md, Oct 3 ~2:30 PM CT) for Lina's
+ * round-4 layout (hosting-ladder-ux-LINA-2026-10-03.md). The upgrade confirm line is Aria's wording (1:34 PM),
+ * kept word for word.
  */
-export const LAYOUT_COPY_STATUS = 'PLACEHOLDER [Sable]: Lina round-4 layout strings' as const
-/** [Sable] Plans page "Your plan" strip (was the hard-coded "Current plan: …" under the list). */
+export const LAYOUT_COPY_STATUS = 'FINAL (Sable, Oct 3 2:30 PM): Lina round-4 layout strings' as const
+/** [Final, Sable] Plans page "Your plan" strip (was the hard-coded "Current plan: …" under the list). */
 export const CURRENT_PLAN_LINE = (line: string) => `Current plan: ${line}`
-/** [Sable] Badge on the step a pending downgrade moves to, so the list matches the pending box. */
+/** [Final, Sable] Badge on the step a pending downgrade moves to, so the list matches the pending box. */
 export const STARTS_ON_BADGE = (date: string) => `Starts ${date}`
-/** [Sable] Phone only: the collapsed Coming soon group. */
-export const SEE_COMING_SOON = (count: number) => `See plans coming soon (${count})`
-/** [Sable] Claim step 3 button, names the pick (replaces "Choose this plan"). */
+/** [Final, Sable] Phone only: the collapsed Coming soon group. */
+export const SEE_COMING_SOON = (count: number) => `Plans coming soon (${count})`
+/** [Final, Sable] Claim step 3 button, names the pick (replaces "Choose this plan"). */
 export const CHOOSE_STEP_BUTTON = (name: string) => `Choose ${name}`
-/** [Sable] Claim step 4 summary: text link back to step 3 (only before the card is saved). */
-export const CLAIM_CHANGE_PLAN_LINK = 'Change'
-/** [Sable] Switching card: selected = current plan (button disabled). */
-export const CHANGE_PLAN_PICK_TO_SWITCH = 'Pick a plan to switch'
-/** [Sable] Switching card: selected step is higher (starts now). */
+/** [Final, Sable] Claim step 4 summary: text link back to step 3 (only before the card is saved). */
+export const CLAIM_CHANGE_PLAN_LINK = 'Change plan'
+/** [Final, Sable] Switching card: selected = current plan (button disabled). */
+export const CHANGE_PLAN_PICK_TO_SWITCH = 'Choose a different plan to switch'
+/** [Final, Sable] Switching card: selected step is higher (starts now). */
 export const CHANGE_PLAN_BUTTON_NOW = (name: string) => `Switch to ${name} now`
-/** [Sable] Switching card: selected step is lower (starts at the next billing date). */
+/** [Final, Sable] Switching card: selected step is lower (starts at the next billing date). */
 export const CHANGE_PLAN_BUTTON_ON = (name: string, date: string) => `Switch to ${name} on ${date}`
-/** [Sable] CHANGE_PLAN_HELP split in two: the line under an upgrade button… */
-export const CHANGE_PLAN_HELP_UP = 'Starts today. You pay only the difference for the rest of this billing period.'
-/** [Sable] …and the line under a downgrade button. */
-export const CHANGE_PLAN_HELP_DOWN = 'Starts at your next billing date. You keep what you paid for until then.'
-/** [Sable] Upgrade confirm, while the server preview runs (never a fake amount). */
-export const UPGRADE_CALCULATING = 'Calculating…'
-/** [Sable, Aria's wording 1:34 PM] Upgrade confirm with the previewed amounts. */
+/** [Final, Sable] CHANGE_PLAN_HELP split in two: the line under an upgrade button… */
+export const CHANGE_PLAN_HELP_UP =
+  'Starts right away. Today you pay only the difference for the rest of this billing period, and your billing date stays the same.'
+/** [Final, Sable] …and the line under a downgrade button. */
+export const CHANGE_PLAN_HELP_DOWN =
+  'Starts on your next billing date, when the lower price begins. Nothing is charged today, and you keep your current plan until then.'
+/** [Final, Sable] Upgrade confirm, while the server preview runs (never a fake amount). */
+export const UPGRADE_CALCULATING = 'Checking the amount…'
+/** [Final: Aria's wording 1:34 PM, kept by Sable] Upgrade confirm with the previewed amounts. */
 export const UPGRADE_CONFIRM_LINE = (name: string, today: string, monthly: string, date: string) =>
   `Switch to ${name} now? We'll charge ${today} today, then ${monthly}/month starting ${date}.`
-/** [Sable] Upgrade confirm when the preview failed. */
-export const UPGRADE_CONFIRM_FALLBACK = (name: string) => `Switch to ${name} now? We'll charge the difference today.`
-/** [Sable] */
+/** [Final, Sable] Upgrade confirm when the preview failed. */
+export const UPGRADE_CONFIRM_FALLBACK = (name: string) =>
+  `Switch to ${name} now? We'll charge the difference for the rest of this billing period today.`
+/** [Final, Sable] */
 export const UPGRADE_CONFIRM_BUTTON = 'Confirm'
-/** [Sable] */
-export const UPGRADE_CANCEL_BUTTON = 'Cancel'
-/** [Sable] Grey line after the confirm expired (10 minutes) or the server refused a stale amount. */
-export const UPGRADE_PREVIEW_EXPIRED = 'That amount is out of date. Tap the button to see it again.'
-/** [Sable] A second Confirm arrived while the first was still going through (charged once). */
+/** [Final, Sable] */
+export const UPGRADE_CANCEL_BUTTON = 'Not now'
+/** [Final, Sable] Grey line after the confirm expired (10 minutes) or the server refused a stale amount. */
+export const UPGRADE_PREVIEW_EXPIRED = 'That amount is out of date. Use the Switch button again to see the current amount.'
+/** [Final, Sable] A second Confirm arrived while the first was still going through (charged once). */
 export const UPGRADE_IN_PROGRESS = 'Your plan change is already going through. Refresh in a moment to see it.'
-/** [Sable] Dashboard home plan card: plain link to the Plans page. */
+/** [Final, Sable] Dashboard home plan card: plain link to the Plans page. */
 export const CHANGE_PLAN_LINK = 'Change plan'
+
+/**
+ * Help "How do I update my payment method?" (help page b-2 and the help chat 'payment-method'): the
+ * locked answer plus Sable's sentence for Manage billing while a switch is planned (Oct 3 ~2:30 PM,
+ * item 40). One constant so the page and the chat can't drift. Waits for Sable's re-lock of
+ * help/page.tsx:79 in the locked English file (the chat entry is marked pendingCopy until then).
+ */
+export const HELP_PAYMENT_METHOD =
+  'Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there. If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices.'

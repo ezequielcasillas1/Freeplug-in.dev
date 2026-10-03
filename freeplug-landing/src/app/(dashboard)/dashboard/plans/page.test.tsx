@@ -17,7 +17,7 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/dashboard/plans-eligibility', () => ({ isPlansCheckoutAllowed: async () => true }))
 vi.mock('@/lib/stripe/active-subscription', async (orig) => ({
   ...(await orig<typeof import('@/lib/stripe/active-subscription')>()),
-  describeLiveSubscriptions: async () => ['Freeplug Hosting: Fast lane · $65.00/month'],
+  describeLiveSubscriptions: async () => ['Fast lane · $65/month'],
   listLiveSubscriptions: async () => [{ id: 'sub_1', status: 'active', schedule, items: { data: [{ id: 'si_1', current_period_end: 1_793_726_896, price: { id: 'price_fast_lane', unit_amount: 6500, recurring: { interval: 'month' } } }] } }],
 }))
 vi.mock('@/lib/plans/user-entitlements', async () => {
@@ -95,7 +95,8 @@ describe('Plans page billing', () => {
     schedule = 'sub_sched_1'
     const { container } = await renderPage()
     const strip = screen.getByTestId('plan-strip')
-    expect(strip.textContent).toContain('Current plan: Freeplug Hosting: Fast lane · $65.00/month')
+    expect(strip.textContent).toContain('Current plan: Fast lane · $65/month')
+    expect(strip.textContent).not.toMatch(/Current plan: [^·]*:/)
     const box = within(strip).getByTestId('pending-change')
     expect(within(box).getByRole('button', { name: 'Keep Fast lane' })).toBeTruthy()
     const list = container.querySelector('[data-plan-step="starter"]') as HTMLElement
@@ -103,7 +104,7 @@ describe('Plans page billing', () => {
     expect(within(list).getByTestId('starts-badge').textContent).toBe('Starts November 3, 2026')
     expect(screen.queryByRole('button', { name: 'Manage billing' })).toBeNull()
     // selected = current: the main button only ever means "switch"
-    expect(screen.getByRole('button', { name: 'Pick a plan to switch' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Choose a different plan to switch' })).toBeDisabled()
     const maintenance = screen.getByText(/One-time maintenance/)
     expect(list.compareDocumentPosition(maintenance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
