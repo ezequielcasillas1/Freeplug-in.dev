@@ -8,7 +8,7 @@ import { recordRemovalOwed, removalOwedAlert, type RemovalOwed, type RemovalOwed
 
 const TABLE = 'addon_removals_owed'
 type DbError = { code?: string; message: string } | null
-type Row = { id: string; stripe_subscription_id: string; stripe_customer_id: string | null; user_id: string | null; addons: string[]; effective_at: string }
+type Row = { id: string; stripe_subscription_id: string; stripe_customer_id: string | null; user_id: string | null; addons: string[]; effective_at: string; source?: string | null }
 /** The slice of the Supabase client this store uses (service role). */
 type Query = PromiseLike<{ data: Row[] | null; error: DbError }> & {
   eq(col: string, v: string): Query
@@ -29,13 +29,14 @@ const toOwed = (r: Row): RemovalOwed => ({
   userId: r.user_id,
   addons: parseAddonIds(r.addons) ?? [],
   effectiveAt: new Date(r.effective_at).toISOString(),
+  ...(r.source === 'upgrade' || r.source === 'resume' ? { source: r.source } : {}),
 })
 const fail = (what: string, e: NonNullable<DbError>) => new Error(`${TABLE} ${what}: ${e.code ?? ''} ${e.message}`)
 
 /** addon_removals_owed (migration 20261004092000, add-ons set, LOCAL ONLY until hosted applies it). */
 export function supabaseRemovalOwedStore(db: RemovalOwedDb, source: 'upgrade' | 'resume' = 'upgrade'): RemovalOwedStore {
   const open = async (subscriptionId: string) => {
-    const { data, error } = await db.from(TABLE).select('id, stripe_subscription_id, stripe_customer_id, user_id, addons, effective_at').eq('stripe_subscription_id', subscriptionId).is('cleared_at', null)
+    const { data, error } = await db.from(TABLE).select('id, stripe_subscription_id, stripe_customer_id, user_id, addons, effective_at, source').eq('stripe_subscription_id', subscriptionId).is('cleared_at', null)
     if (error) throw fail('read', error)
     return (data ?? []).map(toOwed)
   }
@@ -77,6 +78,20 @@ export function supabaseRemovalOwedStore(db: RemovalOwedDb, source: 'upgrade' | 
     },
   }
   return store
+}
+
+/** Add-ons a failed resume left owed on these subscriptions (Plans box, Aria 10:09); [] when none or unreadable. */
+export async function resumeRemovalOwed(subscriptionIds: readonly string[], store: RemovalOwedStore = removalOwedStore()): Promise<{ addons: AddonId[]; effectiveAt: string | null }> {
+  const addons = new Set<AddonId>()
+  let effectiveAt: string | null = null
+  for (const id of subscriptionIds) {
+    for (const row of await store.open(id)) {
+      if (row.source !== 'resume') continue
+      for (const a of row.addons) addons.add(a)
+      effectiveAt = row.effectiveAt
+    }
+  }
+  return { addons: [...addons], effectiveAt }
 }
 
 export const removalOwedStore = (source: 'upgrade' | 'resume' = 'upgrade') =>

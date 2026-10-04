@@ -759,15 +759,32 @@ export const RESUME_REMOVE_ADDONS_META = 'freeplug_resume_remove_addons'
 /** The period end (unix seconds) the removal was planned for; a different period = stale, ignored. */
 export const RESUME_REMOVE_AT_META = 'freeplug_resume_remove_at'
 
-export type ResumeResult = { resumed: boolean; restoredRemoval: AddonId[] }
+export type ResumeResult = {
+  resumed: boolean
+  restoredRemoval: AddonId[]
+  /** Aria 10:09 (option A): the removal couldn't be put back; the plan stays on and the removal is owed. */
+  removalOwed?: AddonId[]
+}
+
+export type ResumeOptions = {
+  userId?: string | null
+  /** Save the owed flag + alert us (recordRemovalOwedNow('resume')). Without it, a failed put-back undoes the resume. */
+  onRemovalOwed?: (o: RemovalOwedInput) => Promise<{ saved: boolean } | unknown>
+  sleep?: (ms: number) => Promise<void>
+  log?: (msg: string) => void
+}
 
 /**
  * Resume a plan that is set to end (Restart hosting / Resume plan), and put back an add-on removal the
  * cancel dropped (Vera M-1, Aria Oct 4 9:28): the same next phase as turning it off (live step + the
- * add-ons left + the live tip, at period end). If the removal can't be put back, the resume is undone
- * (set to end again) and this throws: a turned-off add-on must never renew. The caller holds the lock.
+ * add-ons left + the live tip, at period end). Putting it back is retried (3 tries, 0.5 s / 1.5 s).
+ * Still failing (Aria 10:09, option A): the plan STAYS resumed and the removal is OWED (flag + internal
+ * alert, source 'resume'); the renewal's invoice.paid removes the add-on and refunds its line (L-1). No
+ * draft-invoice stripping. Only when the flag can't be saved at all is the resume undone (set to end
+ * again) and this throws: a turned-off add-on must never renew unrecorded. The caller holds the lock.
  */
-export async function resumeSubscription(stripe: Stripe, subIn: Sub, now: Date = new Date()): Promise<ResumeResult> {
+export async function resumeSubscription(stripe: Stripe, subIn: Sub, now: Date = new Date(), opts: ResumeOptions = {}): Promise<ResumeResult> {
+  const log = opts.log ?? ((m: string) => console.error(m))
   if (subIn.cancel_at_period_end !== true && subIn.cancel_at == null) return { resumed: false, restoredRemoval: [] }
   // Stripe returns BOTH cancel_at_period_end=true and cancel_at after a cancel at period end, and refuses
   // an update that sends both (Vera 5b R1): clear only cancel_at_period_end; a cancel_at on its own is ''.
@@ -777,24 +794,62 @@ export async function resumeSubscription(stripe: Stripe, subIn: Sub, now: Date =
   const removed = parseAddonIds((meta[RESUME_REMOVE_ADDONS_META] ?? '').split(',').filter(Boolean)) ?? []
   if (!meta[RESUME_REMOVE_ADDONS_META]) return { resumed: true, restoredRemoval: [] }
   const clear = { metadata: { [RESUME_REMOVE_ADDONS_META]: '', [RESUME_REMOVE_AT_META]: '' } }
+  const clearMarker = () =>
+    stripe.subscriptions.update(subIn.id, clear).then(
+      () => undefined,
+      // A marker left behind is harmless: it names this period only, and a later resume ignores a stale one.
+      (e: unknown) => log(`[resume] could not clear the removal marker on ${subIn.id}: ${e instanceof Error ? e.message : String(e)}`)
+    )
+  let toRemove: AddonId[] = removed
   try {
-    const sub = (await stripe.subscriptions.retrieve(subIn.id)) as unknown as Sub
-    const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
-    const forThisPeriod = end && String(Math.floor(end.getTime() / 1000)) === meta[RESUME_REMOVE_AT_META]
-    const live = addonIdsOfItems(sub.items.data)
-    const keep = live.filter((a) => !removed.includes(a))
-    const step = currentLadderStep(sub)
-    const stepPriceId = liveStepPriceId(sub)
-    if (forThisPeriod && keep.length < live.length && step && stepPriceId) {
-      await scheduleNextPhase(stripe, sub, null, nextPhaseItems(sub, stepPriceId, keep, subscriptionTipDollars(sub)), phaseMetadata(step.id, keep, subscriptionTipDollars(sub), 'addons'), now)
-      await stripe.subscriptions.update(sub.id, clear)
-      return { resumed: true, restoredRemoval: live.filter((a) => removed.includes(a)) }
-    }
-    await stripe.subscriptions.update(sub.id, clear)
-    return { resumed: true, restoredRemoval: [] }
+    const restored = await withRetries(
+      async (attempt) => {
+        const sub = (await stripe.subscriptions.retrieve(subIn.id)) as unknown as Sub
+        const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
+        const forThisPeriod = end && String(Math.floor(end.getTime() / 1000)) === meta[RESUME_REMOVE_AT_META]
+        const live = addonIdsOfItems(sub.items.data)
+        const keep = live.filter((a) => !removed.includes(a))
+        toRemove = live.filter((a) => removed.includes(a))
+        const step = currentLadderStep(sub)
+        const stepPriceId = liveStepPriceId(sub)
+        if (!(forThisPeriod && keep.length < live.length && step && stepPriceId)) return [] as AddonId[]
+        // A later try re-reads the schedule an earlier try may have attached before failing.
+        const schedId = attempt > 1 ? idOf(sub.schedule as string | { id: string } | null) : null
+        const existing = schedId ? ((await stripe.subscriptionSchedules.retrieve(schedId)) as unknown as ScheduleLike) : null
+        await scheduleNextPhase(stripe, sub, existing, nextPhaseItems(sub, stepPriceId, keep, subscriptionTipDollars(sub)), phaseMetadata(step.id, keep, subscriptionTipDollars(sub), 'addons'), now)
+        return toRemove
+      },
+      {
+        sleep: opts.sleep,
+        onFail: (attempt, e) => log(`[resume] put-back of the add-on removal on ${subIn.id} failed (try ${attempt}/${REMOVAL_RESCHEDULE_TRIES}): ${e instanceof Error ? e.message : String(e)}`),
+      }
+    )
+    await clearMarker()
+    return { resumed: true, restoredRemoval: restored }
   } catch (e) {
-    console.error(`[resume] could not put back the add-on removal on ${subIn.id}; setting it to end again`, e instanceof Error ? e.message : e)
-    await stripe.subscriptions.update(subIn.id, undo).catch((u: unknown) => console.error(`[resume] UNDO FAILED on ${subIn.id}`, u instanceof Error ? u.message : u))
+    const at = Number(meta[RESUME_REMOVE_AT_META])
+    const owed: RemovalOwedInput = {
+      subscriptionId: subIn.id,
+      customerId: idOf(subIn.customer ?? null),
+      userId: opts.userId ?? null,
+      addons: toRemove.length > 0 ? toRemove : removed,
+      effectiveAt: Number.isFinite(at) && at > 0 ? new Date(at * 1000).toISOString() : (subscriptionPeriodEnd(subIn as Stripe.Subscription) ?? now).toISOString(),
+    }
+    log(`[resume] REMOVAL OWED on ${subIn.id}: ${owed.addons.join(',')} from ${owed.effectiveAt}`)
+    let saved = false
+    if (opts.onRemovalOwed) {
+      const r = await opts.onRemovalOwed(owed).catch((err: unknown) => {
+        log(`[resume] REMOVAL OWED NOT SAVED on ${subIn.id}: ${err instanceof Error ? err.message : String(err)}`)
+        return { saved: false }
+      })
+      saved = !(r && typeof r === 'object' && 'saved' in r && r.saved === false)
+    }
+    if (saved) {
+      await clearMarker()
+      return { resumed: true, restoredRemoval: [], removalOwed: owed.addons }
+    }
+    log(`[resume] could not put back the add-on removal on ${subIn.id} and no owed flag was saved; setting it to end again`)
+    await stripe.subscriptions.update(subIn.id, undo).catch((u: unknown) => log(`[resume] UNDO FAILED on ${subIn.id}: ${u instanceof Error ? u.message : String(u)}`))
     throw e
   }
 }

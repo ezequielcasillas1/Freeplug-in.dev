@@ -17,6 +17,12 @@ vi.mock('@/lib/supabase/server', () => ({
     from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: { stripe_customer_id: 'cus_1' }, error: null }) }) }) }),
   }),
 }))
+/** Aria 10:09: open owed removals from a failed resume (addon_removals_owed); [] once the removal finishes. */
+let owedAddons: string[] = []
+const owedReads: string[][] = []
+vi.mock('@/lib/stripe/addon-removal-owed-server', () => ({
+  resumeRemovalOwed: async (ids: string[]) => (owedReads.push([...ids]), { addons: owedAddons, effectiveAt: owedAddons.length ? '2026-11-03T17:48:16.000Z' : null }),
+}))
 vi.mock('@/lib/dashboard/plans-eligibility', () => ({ isPlansCheckoutAllowed: async () => true }))
 vi.mock('@/lib/stripe/active-subscription', async (orig) => ({
   ...(await orig<typeof import('@/lib/stripe/active-subscription')>()),
@@ -81,6 +87,8 @@ describe('Plans page billing', () => {
     pendingKind = 'switch'
     liveAddonIds = []
     invoicesFail = false
+    owedAddons = []
+    owedReads.length = 0
   })
 
   it('with a schedule, from Manage billing: the pending-change notice with step and date, plus Billing', async () => {
@@ -150,5 +158,75 @@ describe('Plans page billing', () => {
     expect(screen.getByTestId('addon-switch-small_edit')).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByTestId('addon-ending')).toHaveTextContent('Ends November 3, 2026')
     expect(screen.getByTestId('addon-keep-big_change')).toBeInTheDocument()
+  })
+})
+
+describe('Aria 10:09 (option A), Lina: Resume worked but an add-on removal is still owed', () => {
+  const STATUS = "Your plan is back on. We're still turning off Big change. If it's charged before that's done, we'll refund it."
+  let scrolled: Element[] = []
+  beforeEach(() => {
+    schedule = null
+    pendingKind = 'switch'
+    liveAddonIds = ['small_edit', 'big_change']
+    invoicesFail = false
+    owedAddons = []
+    owedReads.length = 0
+    scrolled = []
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this)
+    } as Element['scrollIntoView']
+  })
+
+  it('the exact status in the amber pending-switch box at the TOP of the Plans card (not a red error, not a toast)', async () => {
+    owedAddons = ['big_change']
+    const { container } = await renderPage({ hosting: 'resumed' })
+    const box = screen.getByTestId('removal-owed')
+    expect(box.textContent).toBe(STATUS)
+    expect(owedReads).toEqual([['sub_1']])
+    // the pending-switch box style (amber), a status, never an alert / red error
+    expect(box).toHaveAttribute('role', 'status')
+    expect(box.className).toContain('border-amber-200')
+    expect(box.className).toContain('bg-amber-50')
+    expect(box.className).toContain('text-amber-950')
+    expect(box.className).not.toMatch(/red|destructive/)
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(box.closest('[role="alertdialog"], [data-sonner-toast], [data-toast]')).toBeNull()
+    // top of the Plans card: its first child, above the plan strip
+    const strip = screen.getByTestId('plan-strip')
+    expect(box.parentElement).toBe(strip.parentElement)
+    expect(box.parentElement!.firstElementChild).toBe(box)
+    expect(container.querySelector('[data-testid="removal-owed"] ~ [data-testid="plan-strip"]')).toBe(strip)
+    // shown on arrival, not focused or scrolled (that is the second click)
+    expect(document.activeElement).not.toBe(box)
+    expect(scrolled).toEqual([])
+  })
+
+  it('it stays until the removal finishes: any later visit (no params) still shows it; once the owed row is cleared it is gone', async () => {
+    owedAddons = ['big_change']
+    const first = await renderPage()
+    expect(screen.getByTestId('removal-owed').textContent).toBe(STATUS)
+    first.unmount()
+    const again = await renderPage({ billing: 'pending' })
+    expect(screen.getByTestId('removal-owed').textContent).toBe(STATUS)
+    again.unmount()
+    owedAddons = [] // the renewal removed it (refunded or not billed) and cleared the flag
+    await renderPage({ hosting: 'resumed' })
+    expect(screen.queryByTestId('removal-owed')).toBeNull()
+  })
+
+  it('a second Resume click (focus=removal-owed): the box is scrolled into view and gets focus', async () => {
+    owedAddons = ['big_change']
+    await renderPage({ hosting: 'resumed', focus: 'removal-owed' })
+    const box = screen.getByTestId('removal-owed')
+    expect(box).toHaveAttribute('id', 'removal-owed')
+    expect(box).toHaveAttribute('tabindex', '-1')
+    expect(scrolled).toEqual([box])
+    expect(document.activeElement).toBe(box)
+  })
+
+  it('both add-ons owed: one sentence with both names', async () => {
+    owedAddons = ['small_edit', 'big_change']
+    await renderPage()
+    expect(screen.getByTestId('removal-owed').textContent).toBe("Your plan is back on. We're still turning off +1 small edit and Big change. If it's charged before that's done, we'll refund it.")
   })
 })

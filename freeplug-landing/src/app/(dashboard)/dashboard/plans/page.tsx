@@ -14,9 +14,10 @@ import { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE, DASHB
 import { stepById } from '@/lib/plans/ladder'
 import { BillingTools } from '@/components/plans/BillingTools'
 import { AddonRefundNotes } from '@/components/plans/AddonRefundNotes'
-import { listInvoicesForCustomer, type InvoiceRow } from '@/lib/stripe/billing-routing'
+import { listInvoicesForCustomer, REMOVAL_OWED_BOX_ID, type InvoiceRow } from '@/lib/stripe/billing-routing'
+import { resumeRemovalOwed } from '@/lib/stripe/addon-removal-owed-server'
 
-type Props = { searchParams: Promise<{ billing?: string; card?: string }> }
+type Props = { searchParams: Promise<{ billing?: string; card?: string; focus?: string }> }
 
 /** Invoice list for the Billing section; null when Stripe can't be reached. */
 async function loadInvoices(customerId: string): Promise<InvoiceRow[] | null> {
@@ -49,7 +50,7 @@ function BillingNotices({ billing, card, pendingChange }: { billing?: string; ca
 }
 
 export default async function DashboardPlansPage({ searchParams }: Props) {
-  const { billing, card } = (await searchParams) ?? {}
+  const { billing, card, focus } = (await searchParams) ?? {}
   const supabase = await createClient()
   const {
     data: { user },
@@ -102,6 +103,8 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
   let currentAddons: AddonId[] = []
   let endingAddons: AddonId[] = []
   let endingAddonsDate: string | null = null
+  // Aria 10:09: add-ons a resume left owed (amber box until the removal finishes).
+  let removalOwedAddons: AddonId[] = []
   const { data: prof } = await supabase
     .from('profiles')
     .select('stripe_customer_id')
@@ -124,6 +127,11 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
           // The tipping system: the tip item on the live subscription (never part of the plan price).
           currentTipDollars = subscriptionTipDollars(live[0])
           currentAddons = subscriptionAddons(live[0]).ids
+          try {
+            removalOwedAddons = (await resumeRemovalOwed([live[0].id])).addons
+          } catch (e) {
+            console.error('[plans] owed removal read failed', e instanceof Error ? e.message : e)
+          }
           const end = subscriptionPeriodEnd(live[0])
           renewalDate = end ? formatPlanEndDate(end) : null
           renewalDateShort = end ? formatShortPlanDate(end) : null
@@ -180,6 +188,8 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
           endingAddonsDate={endingAddonsDate}
           onPreviewAddon={previewAddonChangeAction}
           onChangeAddon={changeAddonAction}
+          removalOwedAddons={removalOwedAddons}
+          focusRemovalOwed={focus === REMOVAL_OWED_BOX_ID}
         />
         <MaintenancePlanCard
           embedded

@@ -5,10 +5,10 @@ import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
 import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
-import { recordRemovalOwedNow, removalOwedStore } from '@/lib/stripe/addon-removal-owed-server'
+import { recordRemovalOwedNow, removalOwedStore, resumeRemovalOwed } from '@/lib/stripe/addon-removal-owed-server'
 import { resumeEndingSubscriptions, resumeOutcomeFromLive, type ResumeOutcome } from '@/lib/stripe/resume-hosting'
 import { PortalNotConfiguredError } from '@/lib/stripe/portal'
-import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH } from '@/lib/stripe/billing-routing'
+import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH, RESUMED_REMOVAL_OWED_FOCUS_PATH, RESUMED_REMOVAL_OWED_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewAddonChange, previewPlanStepChange, previewTipChange, type AddonAction, type AddonChangeRefusal, type TipChangeRefusal } from '@/lib/stripe/change-plan'
@@ -140,12 +140,18 @@ export async function resumePlan() {
 
   const customerId = prof?.stripe_customer_id
   let outcome: ResumeOutcome = 'failed'
+  let resumedNow = false
+  let removalOwed = false
   if (customerId) {
     let lockHeld = false
     try {
-      const lock = await withPlanChangeLock(lockStore(), user.id, () => resumeEndingSubscriptions(getStripe(), customerId))
-      if (lock.ok && lock.value > 0) outcome = 'resumed'
-      else if (!lock.ok) {
+      const lock = await withPlanChangeLock(lockStore(), user.id, () =>
+        resumeEndingSubscriptions(getStripe(), customerId, new Date(), { userId: user.id, onRemovalOwed: recordRemovalOwedNow('resume') })
+      )
+      if (lock.ok && lock.value > 0) {
+        outcome = 'resumed'
+        resumedNow = true
+      } else if (!lock.ok) {
         lockHeld = lock.code === 'in_progress'
         console.error('[resumePlan] lock', lock.code)
       }
@@ -161,10 +167,21 @@ export async function resumePlan() {
         console.error('[resumePlan] re-read failed', e instanceof Error ? e.message : e)
       }
     }
+    // Aria 10:09 (option A): resumed, but an add-on removal is still owed -> the Plans box. This click
+    // resumed it: land on the box; a later click (already resumed): scroll to the box and focus it.
+    if (outcome === 'resumed') {
+      try {
+        const live = await listLiveSubscriptions(customerId)
+        removalOwed = (await resumeRemovalOwed(live.map((s) => s.id))).addons.length > 0
+      } catch (e) {
+        console.error('[resumePlan] owed removal read failed', e instanceof Error ? e.message : e)
+      }
+    }
   }
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/cancel')
   revalidatePath('/dashboard/plans')
+  if (outcome === 'resumed' && removalOwed) redirect(resumedNow ? RESUMED_REMOVAL_OWED_PATH : RESUMED_REMOVAL_OWED_FOCUS_PATH)
   redirect(outcome === 'resumed' ? RESUMED_PATH : outcome === 'busy' ? RESUME_BUSY_PATH : RESUME_FAILED_PATH)
 }
 

@@ -52,8 +52,10 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
       fn(copy.addonRefundFailed),
       // L-1 (Sable 10:01): the self-heal refund email subject says "refunded" (the 9th; forced by this line)
       fn(copy.addonTurnedOffRefundEmailSubject),
+      // Aria 10:09 (option A): the resume status promises a refund if the owed add-on is charged (the 10th)
+      fn(copy.RESUME_REMOVAL_OWED_STATUS),
     ])
-    expect(exempt.size).toBe(9)
+    expect(exempt.size).toBe(10)
     const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i
     expect(new Set(all.filter((s) => banned.test(s)))).toEqual(exempt)
     for (const s of all) if (!exempt.has(s)) expect(s).not.toMatch(/refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i)
@@ -193,6 +195,8 @@ describe('Aria 9:27 / 9:28: new strings (listed for Sable), word for word', () =
     expect(copy.addonRefundEmailSubject('Big change')).toBe("We couldn't turn on Big change")
     // L-1 self-heal refund email ONLY (Sable 10:01)
     expect(copy.addonTurnedOffRefundEmailSubject('Big change')).toBe('We refunded your Big change charge.')
+    // Aria 10:09 (option A): the resume status, word for word
+    expect(copy.RESUME_REMOVAL_OWED_STATUS('Big change')).toBe("Your plan is back on. We're still turning off Big change. If it's charged before that's done, we'll refund it.")
     expect(copy.addonTurnedOffRefundEmailSubject('+1 small edit')).toBe('We refunded your +1 small edit charge.')
     expect(copy.addonNameList(['small_edit', 'big_change'])).toBe('+1 small edit and Big change')
     expect(copy.ADDON_REFUND_EMAIL_HELP).toBe('Questions? Email support@freeplug-in.dev.')

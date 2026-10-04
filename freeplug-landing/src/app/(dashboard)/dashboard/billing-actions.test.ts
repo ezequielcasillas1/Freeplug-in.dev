@@ -62,6 +62,15 @@ const lockRpc = async (fn: string, args: Record<string, unknown>) => {
   return { data: null, error: { message: `unknown rpc ${fn}` } }
 }
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ from: () => ({}), rpc: lockRpc }) }))
+// Aria 10:09 (option A): add-ons a resume left owed (the Plans box), and the recorder resume gets.
+let owedAddons: string[] = []
+const owedReads: string[][] = []
+const recorderSources: string[] = []
+vi.mock('@/lib/stripe/addon-removal-owed-server', () => ({
+  recordRemovalOwedNow: (source: string) => (recorderSources.push(source), async () => ({ saved: true, alerted: true })),
+  removalOwedStore: () => ({ keep: async () => undefined }),
+  resumeRemovalOwed: async (ids: string[]) => (owedReads.push([...ids]), { addons: owedAddons, effectiveAt: owedAddons.length ? '2026-10-31T00:00:00.000Z' : null }),
+}))
 vi.mock('@/lib/plans/plan-step-sync', () => ({
   syncPlanStepForCustomer: (...a: unknown[]) => syncMock(...(a as [])),
   supabasePlanStepStore: () => ({}),
@@ -325,10 +334,46 @@ describe('Resume plan (Aria 4:05 PM): clears only cancel_at_period_end, under th
     lockEvents.length = 0
     locks.clear()
     updateFails = null
+    owedAddons = []
+    owedReads.length = 0
+    recorderSources.length = 0
     process.env.STRIPE_PORTAL_CONFIGURATION_ID = 'bpc_cardonly1'
   })
   // Stripe's real shape after a cancel at period end: BOTH fields set (Vera 5b R1)
   const ending = () => ladderSub('starter', { cancel_at_period_end: true, cancel_at: PERIOD_END })
+
+  it('Aria 10:09 (option A): resumed with an add-on removal still owed -> the Plans box (this click); the resume gets the resume-source recorder', async () => {
+    liveSubs = [ending()]
+    owedAddons = ['big_change']
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard/plans?hosting=resumed' })
+    expect(recorderSources).toEqual(['resume'])
+    expect(owedReads).toEqual([['sub_1']])
+  })
+
+  it('Aria 10:09 (option A): a SECOND Resume click (already resumed, removal still owed) lands on the box with focus (scroll + focus)', async () => {
+    owedAddons = ['big_change']
+    liveSubs = [ladderSub('starter')]
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard/plans?hosting=resumed&focus=removal-owed#removal-owed' })
+    expect(calls).toEqual([]) // no Stripe write
+    // double click while the first still holds the lock: same
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    locks.set('u1', { claimId: 'first-click', expiresAt: Date.now() + 30_000 })
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard/plans?hosting=resumed&focus=removal-owed#removal-owed' })
+    locks.clear()
+    err.mockRestore()
+  })
+
+  it('Aria 10:09: nothing owed (or the owed read fails) -> the usual resumed state; still ending -> never the box', async () => {
+    liveSubs = [ending()]
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resumed' })
+    owedAddons = ['big_change']
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    liveSubs = [ending()]
+    locks.set('u1', { claimId: 'other', expiresAt: Date.now() + 30_000 })
+    await expect(resumePlan()).rejects.toMatchObject({ url: '/dashboard?hosting=resume_busy' })
+    locks.clear()
+    err.mockRestore()
+  })
 
   it('success: one update with ONLY cancel_at_period_end:false, inside the lock, back to the dashboard', async () => {
     liveSubs = [ending()]

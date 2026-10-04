@@ -4,6 +4,9 @@ import { billingPortalSessionParams } from './portal'
 import { invoiceTipCents } from '../plans/tips'
 import { hasPendingSwitch } from './change-plan'
 import { addonRefundOf } from './addon-refund-info'
+import { REMOVAL_OWED_BOX_ID } from '../plans/removal-owed-box'
+
+export { REMOVAL_OWED_BOX_ID }
 
 type AddonRefundInfo = NonNullable<ReturnType<typeof addonRefundOf>>
 
@@ -29,6 +32,13 @@ export const PLANS_CARD_RETURN_PATH = '/dashboard/plans?card=updated'
 export const RESUME_FAILED_PATH = '/dashboard?hosting=resume_failed'
 /** "Resume plan" worked (or a fresh read shows the plan is no longer set to end: a double click / second tab, Vera B1). */
 export const RESUMED_PATH = '/dashboard?hosting=resumed'
+/**
+ * Aria 10:09 (option A): Resume worked, but an add-on removal is still owed: the Plans page shows the
+ * amber status box at the top of the Plans card. A second Resume click lands on the same box, scrolled
+ * into view and focused (Lina).
+ */
+export const RESUMED_REMOVAL_OWED_PATH = '/dashboard/plans?hosting=resumed'
+export const RESUMED_REMOVAL_OWED_FOCUS_PATH = `/dashboard/plans?hosting=resumed&focus=${REMOVAL_OWED_BOX_ID}#${REMOVAL_OWED_BOX_ID}`
 /** "Resume plan" while the change-plan lock is held and the plan is still set to end: RESUME_BUSY_MESSAGE (Vera B2). */
 export const RESUME_BUSY_PATH = '/dashboard?hosting=resume_busy'
 

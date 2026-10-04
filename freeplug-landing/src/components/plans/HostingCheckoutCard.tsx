@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { RemovalOwedBox } from './RemovalOwedBox'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { openBillingPortal } from '@/app/(dashboard)/dashboard/billing-actions'
@@ -144,6 +145,10 @@ type Props = {
   /** With a live plan: add-ons set to end at `endingAddonsDate` (a planned removal). */
   endingAddons?: AddonId[]
   endingAddonsDate?: string | null
+  /** Aria 10:09: add-ons a resume left owed (amber box at the top of the card until the removal finishes). */
+  removalOwedAddons?: AddonId[]
+  /** A second Resume click: scroll to that box and focus it. */
+  focusRemovalOwed?: boolean
   onPreviewAddon?: (addonId: AddonId, action: 'on' | 'off') => Promise<AddonPreviewResponse>
   onChangeAddon?: (addonId: AddonId, action: 'on' | 'off' | 'keep', opts?: { prorationDate?: number; tipDropTo?: number }) => Promise<ChangeAddonResponse>
 }
@@ -181,6 +186,8 @@ export function HostingCheckoutCard({
   currentAddons = [],
   endingAddons = [],
   endingAddonsDate = null,
+  removalOwedAddons = [],
+  focusRemovalOwed = false,
   onPreviewAddon,
   onChangeAddon,
 }: Props) {
@@ -674,6 +681,7 @@ export function HostingCheckoutCard({
 
   return (
     <div className={shell}>
+      <RemovalOwedBox addons={removalOwedAddons} focus={focusRemovalOwed} />
       {hasLivePlan ? (
         <div className="mb-6 space-y-3" data-testid="plan-strip">
           <div className="text-sm text-gray-700">

@@ -166,6 +166,12 @@ export const RESUME_FAILED_MESSAGE = `We couldn't resume your plan, so it's stil
  * fresh read from Stripe shows the plan is still set to end. (Already resumed = the success state.)
  */
 export const RESUME_BUSY_MESSAGE = 'Your plan is already being updated. Please try again in a moment.'
+/**
+ * Aria 10:09 (option A): Resume worked but the add-on removal the cancel dropped couldn't be put back.
+ * The plan stays on; the removal is owed (the renewal removes it and refunds its line if it was billed).
+ * Lina: the amber pending-switch box at the top of the Plans card, until the removal finishes.
+ */
+export const RESUME_REMOVAL_OWED_STATUS = (name: string) => `Your plan is back on. We're still turning off ${name}. If it's charged before that's done, we'll refund it.`
 /** [Sable] FINAL (4:32 PM CT): the in-app cancel (the only cancel) failed. */
 export const CANCEL_FAILED_MESSAGE = `We couldn't cancel your plan just now, so nothing has changed. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY}.`
 /** PLACEHOLDER (Sable/Wren): Plans page billing (Aria, Oct 3 12:56). */

@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
 import { listLiveSubscriptions } from '@/lib/stripe/active-subscription'
-import { resumeSubscription } from '@/lib/stripe/change-plan'
+import { resumeSubscription, type ResumeOptions } from '@/lib/stripe/change-plan'
 
 /**
  * "Restart hosting" while the plan is canceled but still running ('ending'): undo the scheduled
@@ -9,14 +9,14 @@ import { resumeSubscription } from '@/lib/stripe/change-plan'
  * Returns how many subscriptions were resumed. Throws if Stripe can't be reached. The caller holds the
  * change-plan lock (billing-actions.ts resumePlan, Aria Oct 3 4:05 PM).
  */
-export async function resumeEndingSubscriptions(stripe: Stripe, customerId: string, now: Date = new Date()): Promise<number> {
+export async function resumeEndingSubscriptions(stripe: Stripe, customerId: string, now: Date = new Date(), opts: ResumeOptions = {}): Promise<number> {
   const live = await listLiveSubscriptions(customerId)
   let resumed = 0
   for (const sub of live) {
     // Clears the scheduled cancellation (only cancel_at_period_end, or cancel_at '' on its own: Vera 5b
-    // R1) and puts back an add-on removal the cancel dropped (Vera M-1, Aria Oct 4 9:28); throws, set
-    // to end again, if that removal can't be put back.
-    if ((await resumeSubscription(stripe, sub as Parameters<typeof resumeSubscription>[1], now)).resumed) resumed++
+    // R1) and puts back an add-on removal the cancel dropped (Vera M-1, Aria Oct 4 9:28). If it can't be
+    // put back, the plan stays on and the removal is owed (Aria 10:09, option A; opts.onRemovalOwed).
+    if ((await resumeSubscription(stripe, sub as Parameters<typeof resumeSubscription>[1], now, opts)).resumed) resumed++
   }
   return resumed
 }

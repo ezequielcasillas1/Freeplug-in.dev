@@ -22,7 +22,7 @@ export type RemovalOwedInput = {
   /** When it should have ended (the period end the removal was scheduled for), ISO. */
   effectiveAt: string
 }
-export type RemovalOwed = RemovalOwedInput & { id: string }
+export type RemovalOwed = RemovalOwedInput & { id: string; source?: 'upgrade' | 'resume' }
 export type RemovalOwedClear = 'refunded' | 'not_billed' | 'kept'
 export type RemovalOwedStore = {
   /** One open row per subscription: a second save merges the add-ons. */
