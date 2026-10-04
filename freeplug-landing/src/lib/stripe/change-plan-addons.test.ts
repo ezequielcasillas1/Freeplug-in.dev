@@ -357,7 +357,7 @@ describe('Aria, Oct 4 8:28 AM: turning on charges the FULL price now, never a pa
     expect(await changeAddon({ ...deps(f), log: (m) => logs.push(m) }, sub('priority'), 'big_change', 'on')).toEqual({
       ok: false,
       code: 'price_mismatch',
-      message: "We couldn't confirm this price. Please contact us.",
+      message: "We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help.",
     })
     expect(f.raw.invoices.pay).not.toHaveBeenCalled()
     expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
@@ -372,7 +372,7 @@ describe('Aria, Oct 4 8:28 AM: turning on charges the FULL price now, never a pa
     expect(await changeAddon({ ...deps(f), log: (m) => logs.push(m) }, sub('priority'), 'big_change', 'on', { prorationDate: NOW_S })).toEqual({
       ok: false,
       code: 'price_mismatch',
-      message: "We couldn't confirm this price. Please contact us.",
+      message: "We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help.",
     })
     expect(f.calls).toEqual(['invoices.createPreview'])
     expect(logs.join('\n')).toMatch(new RegExp(`PRICE NOT CONFIRMED .*total ${total} != 575`))

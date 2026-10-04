@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { CancelPageData, SubscriptionInfo } from './actions'
+import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { CANCEL_FAILED_MESSAGE, CANCEL_IN_APP_LINE, CANCEL_PLAN_BUTTON } from '@/lib/plans/ladder-copy'
 
 vi.mock('next/link', () => ({
@@ -112,6 +113,9 @@ describe('CancelPlanView', () => {
     )
     const line = screen.getByTestId('cancel-ending-addons')
     expect(line).toHaveTextContent('Big change ends Nov 3, 2026.')
+    // the same date format as the page's other lines (Next billing date / Access until / switch note)
+    expect(line).toHaveTextContent(formatBillingDate(new Date('2026-11-03T15:00:00Z')))
+    expect(screen.getByText(/Next billing date:/)).toHaveTextContent(`Next billing date: ${formatBillingDate(END)}`)
     expect(line.compareDocumentPosition(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     unmount()
     render(<CancelPlanView data={data({ subscriptions: [sub({ endingAddons: { names: ['+1 small edit', 'Big change'], effectiveAt: new Date('2026-11-03T15:00:00Z') } })] })} />)

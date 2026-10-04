@@ -117,7 +117,7 @@ describe("Sable's final add-on strings, Oct 4 9:05 AM CT, word for word", () => 
     expect(copy.addonFinishing(n)).toBe(
       "Your payment went through. We're finishing turning on +1 small edit. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically."
     )
-    expect(copy.addonRefunded(n, 500, 0)).toBe("We couldn't turn on +1 small edit. We refunded $5 to your card. It can take 5–10 business days to show.")
+    expect(copy.addonRefunded(n, 500, 0)).toBe("We couldn't turn on +1 small edit. We refunded $5 to your card. The card refund can take 5–10 business days to show up.")
     expect(copy.addonRefundFailed(n)).toBe(
       "We couldn't turn on +1 small edit, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge."
     )
@@ -157,7 +157,7 @@ describe("Sable, Oct 4 9:29 AM CT: the five lines, word for word", () => {
     // composed on Confirm (new composition, for Sable): the 5–10 days only when a card got money back
     expect(copy.addonRefunded('Big change', 0, 575)).toBe("We couldn't turn on Big change. We added $5.75 back to your account credit.")
     expect(copy.addonRefunded('Big change', 35, 540)).toBe(
-      "We couldn't turn on Big change. We refunded $0.35 to your card and added $5.40 back to your account credit. It can take 5–10 business days to show."
+      "We couldn't turn on Big change. We refunded $0.35 to your card and added $5.40 back to your account credit. The card refund can take 5–10 business days to show up."
     )
   })
 })
@@ -168,15 +168,15 @@ describe('Aria 9:27 / 9:28: new strings (listed for Sable), word for word', () =
     expect(copy.addonAddedToNextBill(5)).toBe('$0.05 will be added to your next bill.')
   })
   it('discount or tax: the refusal', () => {
-    expect(copy.ADDON_PRICE_UNCONFIRMED).toBe("We couldn't confirm this price. Please contact us.")
+    expect(copy.ADDON_PRICE_UNCONFIRMED).toBe("We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help.")
   })
   it('refund reasons (dashboard note + email), each followed by the split line', () => {
     const r = (reason: copy.AddonRefundReason) => copy.addonRefundNote('Big change', reason, 575, 0)
-    const tail = ' We refunded $5.75 to your card. It can take 5–10 business days to show.'
+    const tail = ' We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.'
     expect(r('switch_pending')).toBe("We couldn't turn on Big change because a plan switch was already scheduled. Add-ons can't change until the switch happens." + tail)
     expect(r('removal_pending')).toBe("We couldn't turn on Big change because another add-on was already set to end. Add-ons can't change until it ends." + tail)
     expect(r('period_ended')).toBe("We couldn't turn on Big change because the billing period you paid for ended before we could add it." + tail)
-    expect(r('tip_unconfirmed')).toBe("We couldn't turn on Big change because it would have lowered your tip, and you hadn't agreed to that." + tail)
+    expect(r('tip_unconfirmed')).toBe("We couldn't turn on Big change because it would have lowered your tip, which you hadn't confirmed." + tail)
     expect(r('plan_ended')).toBe("We couldn't turn on Big change because your hosting plan has ended or is set to end." + tail)
     expect(r('not_added')).toBe("We couldn't turn on Big change because of a problem adding it to your plan." + tail)
     expect(copy.addonRefundNote('Big change', 'period_ended', 0, 575)).toBe(

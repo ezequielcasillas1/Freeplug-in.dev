@@ -279,7 +279,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     {
       name: 'a tip drop the customer never confirmed would now be needed',
       reason: 'tip_unconfirmed',
-      sentence: "We couldn't turn on +1 small edit because it would have lowered your tip, and you hadn't agreed to that.",
+      sentence: "We couldn't turn on +1 small edit because it would have lowered your tip, which you hadn't confirmed.",
       step: 'starter',
       addon: 'small_edit',
       tip: 9,
@@ -309,7 +309,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     // the reason, in plain words, then where the money went
     const name = ADDON_NAMES[c.addon]
     expect(ADDON_REFUND_REASONS[c.reason](name)).toBe(c.sentence)
-    const note = `${c.sentence} We refunded ${cents === 575 ? '$5.75' : '$5'} to your card. It can take 5–10 business days to show.`
+    const note = `${c.sentence} We refunded ${cents === 575 ? '$5.75' : '$5'} to your card. The card refund can take 5–10 business days to show up.`
     expect(addonRefundNote(name, c.reason, cents, 0)).toBe(note)
     expect(h.emails).toEqual([expect.objectContaining({ addonName: name, note })])
     const rows = await listInvoicesForCustomer(sim.client() as unknown as Stripe, 'cus_1')
@@ -327,7 +327,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     expect(await deliver(paid)).toBe(200)
     expect(sim.creditNotes).toEqual([expect.objectContaining({ amount: 575, refund_amount: 375, credit_amount: 200 })])
     expect(sim.customer('cus_1').balance).toBe(-200) // the $2 of credit is back
-    const note = "We couldn't turn on Big change because your hosting plan has ended or is set to end. We refunded $3.75 to your card and added $2 back to your account credit. It can take 5–10 business days to show."
+    const note = "We couldn't turn on Big change because your hosting plan has ended or is set to end. We refunded $3.75 to your card and added $2 back to your account credit. The card refund can take 5–10 business days to show up."
     expect(h.emails.map((e) => e.note)).toEqual([note])
   })
 

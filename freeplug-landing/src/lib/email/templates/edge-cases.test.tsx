@@ -131,7 +131,7 @@ describe('template coverage', () => {
   })
 
   it("addon-refunded (Aria 9:27): Sable's subject as the heading, the reason + split line, the help line, Go to Plans", async () => {
-    const note = "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We refunded $0.35 to your card and added $5.40 back to your account credit. It can take 5–10 business days to show."
+    const note = "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We refunded $0.35 to your card and added $5.40 back to your account credit. The card refund can take 5–10 business days to show up."
     const text = toPlainText(await render(AddonRefundedEmail({ userName: 'Dana', addonName: 'Big change', note, baseUrl: 'http://localhost:3000' })))
     expect(text).toContain("We couldn't turn on Big change")
     expect(text).toContain('Hi Dana,')

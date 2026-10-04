@@ -339,11 +339,11 @@ describe('add-ons block, live plan', () => {
 
   it('discount or tax (Aria 9:27, ruling 2): Confirm is refused with exactly the price line, the switch stays off', async () => {
     const { onChange } = live({}, async () => ({ ok: false, message: 'x', prorationDate: 1_790_000_123, fallback: { priceCents: 575, nextAmountCents: null, nextDate: null } }))
-    onChange.mockResolvedValueOnce({ ok: false, message: "We couldn't confirm this price. Please contact us." })
+    onChange.mockResolvedValueOnce({ ok: false, message: "We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help." })
     fireEvent.click(sw('big_change'))
     expect(await screen.findByTestId('addon-confirm')).toHaveTextContent("We'll charge up to $5.75 today for this billing period.")
     fireEvent.click(screen.getByTestId('addon-confirm-button'))
-    expect(await screen.findByTestId('addons-error')).toHaveTextContent("We couldn't confirm this price. Please contact us.")
+    expect(await screen.findByTestId('addons-error')).toHaveTextContent("We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help.")
     expect(sw('big_change')).toHaveAttribute('aria-checked', 'false')
   })
 

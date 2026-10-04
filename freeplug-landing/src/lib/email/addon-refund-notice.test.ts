@@ -35,7 +35,7 @@ describe('sendAddonRefundNoticeOnce (Aria 9:27: the email line, through the webh
     expect(h.sends).toEqual([
       [
         'dana@example.invalid',
-        { addonName: 'Big change', note: "We couldn't turn on Big change because it would have lowered your tip, and you hadn't agreed to that. We refunded $5.75 to your card. It can take 5–10 business days to show." },
+        { addonName: 'Big change', note: "We couldn't turn on Big change because it would have lowered your tip, which you hadn't confirmed. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up." },
         { idempotencyKey: 'addon-refund:in_1:addon-refunded' },
       ],
     ])

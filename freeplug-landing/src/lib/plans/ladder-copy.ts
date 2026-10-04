@@ -429,7 +429,7 @@ export const addonThenLine = (nextCents: number, date: string | null) =>
  */
 export const addonAddedToNextBill = (cents: number) => `${dollars(cents)} will be added to your next bill.`
 /** Aria 9:27: the charge total isn't exactly the add-on price (a discount or tax on the account): refused. */
-export const ADDON_PRICE_UNCONFIRMED = "We couldn't confirm this price. Please contact us."
+export const ADDON_PRICE_UNCONFIRMED = `We couldn't confirm this price. Please try again, or email ${SUPPORT_EMAIL} and we'll help.`
 /** The preview failed: the add-on's full price is the most it can charge (credit can only lower it). */
 export const addonChargeUpToLine = (priceCents: number) => `We'll charge up to ${dollars(priceCents)} today for this billing period.`
 /** Live plan, Starter tip drop: the tip goes down from the next renewal (this period's tip is already paid). */
@@ -465,8 +465,8 @@ export function addonRefundSplitLine(cardCents: number, creditCents: number): st
   if (creditCents > 0) return `We added ${dollars(creditCents)} back to your account credit.`
   return `We refunded ${dollars(cardCents)} to your card.`
 }
-/** "5–10 business days" only when money went back to a card. */
-const cardRefundDelay = (cardCents: number) => (cardCents > 0 ? ' It can take 5–10 business days to show.' : '')
+/** Sable 9:55: the card delay sentence, only when money went back to a card. */
+const cardRefundDelay = (cardCents: number) => (cardCents > 0 ? ' The card refund can take 5–10 business days to show up.' : '')
 export const addonRefunded = (name: string, cardCents: number, creditCents: number) =>
   `We couldn't turn on ${name}. ${addonRefundSplitLine(cardCents, creditCents)}${cardRefundDelay(cardCents)}`
 /**
@@ -478,7 +478,7 @@ export const ADDON_REFUND_REASONS: Record<AddonRefundReason, (name: string) => s
   switch_pending: (name) => `We couldn't turn on ${name} because a plan switch was already scheduled. Add-ons can't change until the switch happens.`,
   removal_pending: (name) => `We couldn't turn on ${name} because another add-on was already set to end. Add-ons can't change until it ends.`,
   period_ended: (name) => `We couldn't turn on ${name} because the billing period you paid for ended before we could add it.`,
-  tip_unconfirmed: (name) => `We couldn't turn on ${name} because it would have lowered your tip, and you hadn't agreed to that.`,
+  tip_unconfirmed: (name) => `We couldn't turn on ${name} because it would have lowered your tip, which you hadn't confirmed.`,
   plan_ended: (name) => `We couldn't turn on ${name} because your hosting plan has ended or is set to end.`,
   not_added: (name) => `We couldn't turn on ${name} because of a problem adding it to your plan.`,
 }

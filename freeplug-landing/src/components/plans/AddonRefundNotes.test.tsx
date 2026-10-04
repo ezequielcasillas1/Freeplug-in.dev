@@ -29,7 +29,7 @@ describe('AddonRefundNotes (Plans page)', () => {
     expect(recentAddonRefundNotes(rows, NOW)).toEqual([
       {
         id: 'in_a',
-        text: "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We refunded $0.35 to your card and added $5.40 back to your account credit. It can take 5–10 business days to show.",
+        text: "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We refunded $0.35 to your card and added $5.40 back to your account credit. The card refund can take 5–10 business days to show up.",
       },
       {
         id: 'in_c',
