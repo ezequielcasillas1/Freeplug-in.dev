@@ -494,6 +494,88 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
 
 // ------------------------------------------------------------------ the tipping system (Oct 3)
 
+/** Previews that resolve one by one, in any order (each open gets its own). */
+function queuedPreviews() {
+  const pending: Array<(v: PlanPreviewResponse) => void> = []
+  const onPreviewChange = vi.fn(() => new Promise<PlanPreviewResponse>((r) => pending.push(r)))
+  /** Amount due today and proration date per open: open n -> $n.00-ish, distinct date. */
+  const resolve = async (n: number, amountDueCents: number) => {
+    await act(async () => {
+      pending[n](({ ok: true, prorationDate: 1_790_000_000 + n, amountDueCents, nextAmountCents: 6500, nextDate: 'November 3, 2026' }))
+      await new Promise((r) => setTimeout(r, 0))
+    })
+  }
+  return { onPreviewChange, resolve }
+}
+const lineFor = (today: string) => `Switch to Fast lane now? We'll charge ${today} today, then $65/month starting November 3, 2026.`
+
+describe("Vera's loading cases on the plan-switch card (a-c, mirrored in TipChangeBox.test.tsx)", () => {
+  it('(a) Enter while "Checking the amount…" is showing does nothing', async () => {
+    const q = queuedPreviews()
+    const { container, onChangePlan } = switching({ onPreviewChange: q.onPreviewChange })
+    pickStep(container, 'fast_lane')
+    const trigger = screen.getByRole('button', { name: 'Switch to Fast lane now' })
+    trigger.focus()
+    fireEvent.click(trigger)
+    expect(screen.getByTestId('upgrade-calculating')).toHaveTextContent('Checking the amount…')
+    pressEnter()
+    fireEvent.keyDown(document, { key: 'Enter' })
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    expect(screen.getByTestId('upgrade-calculating')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull()
+    expect(q.onPreviewChange).toHaveBeenCalledTimes(1)
+    expect(onChangePlan).not.toHaveBeenCalled()
+  })
+
+  it('(b) Esc, then reopen: the confirm shows the fresh preview, and the late result from the first open never appears', async () => {
+    const q = queuedPreviews()
+    const { container, onChangePlan } = switching({ onPreviewChange: q.onPreviewChange })
+    pickStep(container, 'fast_lane')
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+    fireEvent.keyDown(document, { key: 'Escape' })
+    const trigger = await screen.findByRole('button', { name: 'Switch to Fast lane now' })
+    await waitFor(() => expect(document.activeElement).toBe(trigger))
+    fireEvent.click(trigger) // reopen
+    await q.resolve(1, 2222) // the fresh preview
+    const confirm = await screen.findByTestId('upgrade-confirm')
+    expect(confirm).toHaveTextContent(lineFor('$22.22'))
+    await q.resolve(0, 1953) // the first open's result, late
+    expect(screen.getByTestId('upgrade-confirm')).toHaveTextContent(lineFor('$22.22'))
+    expect(screen.getByTestId('upgrade-confirm')).not.toHaveTextContent('$19.53')
+    expect(screen.getByTestId('confirm-live')).not.toHaveTextContent('$19.53')
+    // Confirm charges with the fresh preview's proration date, not the stale one
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Confirm' }))
+    pressEnter()
+    await waitFor(() => expect(onChangePlan).toHaveBeenCalledWith('fast_lane', 1_790_000_001))
+    expect(onChangePlan).toHaveBeenCalledTimes(1)
+  })
+
+  it('(c) two quick opens in a row: only the newest preview gets through', async () => {
+    const q = queuedPreviews()
+    const { container, onChangePlan } = switching({ onPreviewChange: q.onPreviewChange })
+    pickStep(container, 'fast_lane')
+    // A double click starts one preview: the trigger is replaced by "Checking the amount…" at once.
+    const trigger = screen.getByRole('button', { name: 'Switch to Fast lane now' })
+    fireEvent.click(trigger)
+    fireEvent.click(trigger)
+    expect(q.onPreviewChange).toHaveBeenCalledTimes(1)
+    // Open, Esc, open again before the first answers; the first then answers while the second loads.
+    fireEvent.keyDown(document, { key: 'Escape' })
+    fireEvent.click(await screen.findByRole('button', { name: 'Switch to Fast lane now' }))
+    expect(q.onPreviewChange).toHaveBeenCalledTimes(2)
+    await q.resolve(0, 1953)
+    expect(screen.getByTestId('upgrade-calculating')).toBeInTheDocument() // the old answer is not shown
+    expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
+    await q.resolve(1, 2222)
+    expect(await screen.findByTestId('upgrade-confirm')).toHaveTextContent(lineFor('$22.22'))
+    expect(screen.getByTestId('upgrade-confirm')).not.toHaveTextContent('$19.53')
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+    await waitFor(() => expect(onChangePlan).toHaveBeenCalledWith('fast_lane', 1_790_000_001))
+  })
+})
+
 describe('the tipping system: slider before checkout and in the claim flow', () => {
   const slider = () => screen.getByRole('slider', { name: TIP_SLIDER_LABEL }) as HTMLInputElement
 

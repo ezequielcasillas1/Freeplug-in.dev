@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PlanStep } from '@/lib/plans/ladder'
@@ -45,7 +45,8 @@ type Props = {
  * Plans page, live ladder plan: change the monthly tip (the tipping system). Same pattern as the
  * upgrade confirm (Lina §3a, no modal): Update tip -> "Checking the amount…" -> "Your next bill will be $X
  * on <date>." with Confirm / Not now. The change starts with the next bill (proration none); nothing is
- * charged today. Esc closes the confirm and focus returns to the button.
+ * charged today. Esc closes the confirm and focus returns to the button; Esc while "Checking the amount…"
+ * cancels the same way and the late preview is dropped.
  */
 export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = null, onPreviewTip, onChangeTip }: Props) {
   const [tip, setTip] = useState(currentTipDollars)
@@ -54,6 +55,15 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
   const [error, setError] = useState<string | null>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
+  // Stale-request guard for the preview: every preview takes a number, and closing (Esc, Not now,
+  // after Confirm, unmount) bumps it, so a preview that arrives after that is dropped.
+  const previewSeq = useRef(0)
+  useEffect(
+    () => () => {
+      previewSeq.current++
+    },
+    []
+  )
 
   // A new saved tip from the server (after router.refresh) resets the slider: adjust during render,
   // not in an effect (React "you might not need an effect").
@@ -64,14 +74,16 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
   }
 
   const close = useCallback(() => {
+    previewSeq.current++
     setState({ phase: 'idle' })
     setTimeout(() => buttonRef.current?.focus(), 0)
   }, [])
   // A layout effect (Vera, aaec23d report finding 2): focus and the Esc listener are set in the same
-  // commit that inserts Confirm, so an Esc right after it appears is not lost.
+  // commit that inserts Confirm, so an Esc right after it appears is not lost. Esc while "Checking the
+  // amount…" cancels too (as in HostingCheckoutCard).
   useLayoutEffect(() => {
-    if (state.phase !== 'confirm') return
-    confirmRef.current?.focus()
+    if (state.phase !== 'confirm' && state.phase !== 'loading') return
+    if (state.phase === 'confirm') confirmRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
     }
@@ -82,9 +94,12 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
   async function onUpdate() {
     setError(null)
     setNotice(null)
+    const seq = ++previewSeq.current
     setState({ phase: 'loading' })
     try {
       const p = await onPreviewTip(tip)
+      // Esc (or unmount) during the preview: drop the late result, no confirm, no error, no focus move.
+      if (seq !== previewSeq.current) return
       if (!p.ok) {
         setError(p.message)
         setState({ phase: 'idle' })
@@ -93,6 +108,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
       const text = p.nextDate ? TIP_NEXT_BILL(charge(p.nextAmountCents), p.nextDate) : TIP_NEXT_BILL_NO_DATE(charge(p.nextAmountCents))
       setState({ phase: 'confirm', text, tipDollars: tip, confirmId: p.confirmId })
     } catch {
+      if (seq !== previewSeq.current) return
       setError('Network error. Try again.')
       setState({ phase: 'idle' })
     }
