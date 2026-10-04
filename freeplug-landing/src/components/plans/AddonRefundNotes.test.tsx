@@ -29,10 +29,14 @@ describe('AddonRefundNotes (Plans page)', () => {
     expect(recentAddonRefundNotes(rows, NOW)).toEqual([
       {
         id: 'in_a',
+        at: '2026-10-03T14:00:00.000Z',
+        dateLabel: 'Oct 3',
         text: "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We refunded $0.35 to your card and added $5.40 back to your account credit. The card refund can take 5–10 business days to show up.",
       },
       {
         id: 'in_c',
+        at: '2026-09-05T14:00:00.000Z',
+        dateLabel: 'Sep 5',
         text: "We couldn't turn on +1 small edit because a plan switch was already scheduled. Add-ons can't change until the switch happens. We added $5 back to your account credit.",
       },
     ])
@@ -44,5 +48,36 @@ describe('AddonRefundNotes (Plans page)', () => {
     const { container } = render(<AddonRefundNotes invoices={[row('in_b', 1, null)]} now={NOW} />)
     expect(container.innerHTML).toBe('')
     expect(recentAddonRefundNotes(null, NOW)).toEqual([])
+  })
+})
+
+describe('Lina 10:33: a small gray date line at the top of each refund note card', () => {
+  const l1 = (refundedAt?: string): InvoiceRow['addonRefund'] => ({ kind: 'turned_off', addon: 'big_change', addons: ['big_change'], reason: 'turned_off', cardCents: 575, creditCents: 0, ...(refundedAt ? { refundedAt } : {}) })
+  it('the L-1 card: date line ("Oct 4") first, then Sable\'s reason, the split line and the delay line', () => {
+    render(<AddonRefundNotes invoices={[row('in_l1', 0.1, l1('2026-10-04T13:00:00.000Z'))]} now={NOW} />)
+    const card = screen.getByTestId('addon-refund-note')
+    const date = screen.getByTestId('addon-refund-note-date')
+    expect(card.firstElementChild).toBe(date)
+    expect(date.textContent).toBe('Oct 4')
+    expect(date.className).toContain('text-xs')
+    expect(date.className).toContain('text-gray-500')
+    expect(date.querySelector('time')).toHaveAttribute('dateTime', '2026-10-04T13:00:00.000Z')
+    expect(screen.getByTestId('addon-refund-note-text').textContent).toBe(
+      'You turned off Big change, but it was still charged this period, so we refunded it. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.'
+    )
+  })
+  it('the refund time wins over the invoice date; America/Chicago decides the day (11 PM CT is still that day, not tomorrow UTC)', () => {
+    // invoice from Sep 30; refunded Oct 3 at 11:30 PM CT (= Oct 4 04:30 UTC)
+    const r = row('in_late', 4, l1('2026-10-04T04:30:00.000Z'))
+    expect(recentAddonRefundNotes([r], NOW)[0]).toMatchObject({ dateLabel: 'Oct 3', at: '2026-10-04T04:30:00.000Z' })
+  })
+  it('no refund time recorded (older invoices): the invoice date', () => {
+    expect(recentAddonRefundNotes([row('in_old_mark', 2, l1())], NOW)[0]).toMatchObject({ dateLabel: 'Oct 2', at: '2026-10-02T14:00:00.000Z' })
+  })
+  it('the year only when it is not the current year (in Central time)', () => {
+    const jan1 = new Date('2027-01-01T12:00:00Z')
+    // Dec 31, 2026 at 8 PM CT = Jan 1 02:00 UTC: a different year in CT
+    expect(recentAddonRefundNotes([{ ...row('in_ny', 0, l1('2027-01-01T02:00:00.000Z')), created: '2026-12-31T20:00:00.000Z' }], jan1)[0].dateLabel).toBe('Dec 31, 2026')
+    expect(recentAddonRefundNotes([{ ...row('in_ny2', 0, l1('2027-01-01T10:00:00.000Z')), created: '2027-01-01T10:00:00.000Z' }], jan1)[0].dateLabel).toBe('Jan 1')
   })
 })

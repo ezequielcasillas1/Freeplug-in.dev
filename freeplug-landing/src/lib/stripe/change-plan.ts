@@ -11,6 +11,7 @@ import {
   ADDON_REFUND_CARD_META,
   ADDON_REFUND_CREDIT_META,
   ADDON_REFUND_REASON_META,
+  ADDON_REFUNDED_AT_META,
   ADDON_REFUNDED_META,
   addonRefundOf,
   addonRefundSplit,
@@ -1314,10 +1315,10 @@ export async function refundAddonCharge(
   log: (m: string) => void,
   reason: AddonRefundReason = 'not_added',
   /** L-1: extra invoice marks (which turned-off add-ons) and the add-on name(s) for the memo. */
-  opts: { extraMarks?: Record<string, string>; addonName?: string } = {}
+  opts: { extraMarks?: Record<string, string>; addonName?: string; now?: Date } = {}
 ): Promise<AddonRefundOutcome> {
   const split = addonRefundSplit(amountPaidCents, cents)
-  const marks = { ...refundMarks(reason, split), ...(opts.extraMarks ?? {}) }
+  const marks = { ...refundMarks(reason, split, opts.now ?? new Date()), ...(opts.extraMarks ?? {}) }
   try {
     const inv = await stripe.invoices.retrieve(invoiceId)
     const meta = (inv.metadata ?? {}) as Record<string, string | undefined>
@@ -1354,8 +1355,10 @@ const memoName = (addon: string | undefined) => {
   return a ? ADDON_NAMES[a.id] : 'the add-on'
 }
 
-const refundMarks = (reason: AddonRefundReason, split: { cardCents: number; creditCents: number }) => ({
+const refundMarks = (reason: AddonRefundReason, split: { cardCents: number; creditCents: number }, at: Date) => ({
   [ADDON_REFUNDED_META]: 'true',
+  // Lina 10:33: the note's date line reads the refund time.
+  [ADDON_REFUNDED_AT_META]: String(Math.floor(at.getTime() / 1000)),
   [ADDON_REFUND_REASON_META]: reason,
   [ADDON_REFUND_CARD_META]: String(split.cardCents),
   [ADDON_REFUND_CREDIT_META]: String(split.creditCents),
@@ -1641,7 +1644,7 @@ export async function healAddonCharge(deps: AddonDeps, invoiceId: string): Promi
   // Every refund is logged with its reason; the reason code goes on the invoice for the customer's note.
   const refund = async (reason: string, code: AddonRefundReason): Promise<AddonHealResult> => {
     log(`[addon-heal] ${inv.id} (${meta.addon ?? '?'}, user ${meta.user_id || '?'}): ${reason}; refunding (reason ${code})`)
-    const r = await refundAddonCharge(stripe, inv.id, inv.amount_paid ?? 0, cents, log, code)
+    const r = await refundAddonCharge(stripe, inv.id, inv.amount_paid ?? 0, cents, log, code, { now })
     return { outcome: r.ok ? 'refunded' : 'refund_failed', reason, addon: addon?.id, refundReason: code, cardCents: r.cardCents, creditCents: r.creditCents }
   }
   if (!addon || !meta.subscription) return refund('unknown add-on or subscription', 'not_added')

@@ -126,6 +126,7 @@ import { POST } from './route'
 import { changeAddon, previewAddonChange } from '@/lib/stripe/change-plan'
 import { listInvoicesForCustomer } from '@/lib/stripe/billing-routing'
 import { recentAddonRefundNotes } from '@/components/plans/AddonRefundNotes'
+import { formatNoteDate } from '@/lib/plans/note-date'
 import { ADDON_NAMES, ADDON_REFUND_REASONS, addonAddedToNextBill, addonRefundNote, type AddonRefundReason } from '@/lib/plans/ladder-copy'
 
 const USER = '11111111-2222-4333-8444-555555555555'
@@ -339,7 +340,9 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     expect(addonRefundNote(name, c.reason, cents, 0)).toBe(note)
     expect(h.emails).toEqual([expect.objectContaining({ addonName: name, note })])
     const rows = await listInvoicesForCustomer(sim.client() as unknown as Stripe, 'cus_1')
-    expect(recentAddonRefundNotes(rows, sim.now())).toEqual([{ id: paid.data.object.id, text: note }])
+    // Lina 10:33: the date line is the refund time (recorded on the invoice), in Central time
+    expect(recentAddonRefundNotes(rows, sim.now())).toEqual([{ id: paid.data.object.id, text: note, at: expect.any(String), dateLabel: formatNoteDate(sim.now(), sim.now()) }])
+    expect(Date.parse(recentAddonRefundNotes(rows, sim.now())[0].at)).toBeGreaterThan(paid.data.object.created * 1000 - 1)
   })
 
   it('ruling 1, credit paid part of it: the note and email split card and account credit (Sable 9:29)', async () => {
@@ -405,7 +408,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     expect(renewal.data.object.total).toBe(6075)
     expect(await deliver(renewal)).toBe(200)
     expect(addonItems(sim, 'big_change')).toHaveLength(0)
-    const reason = 'You turned off Big change, but it was still on your latest bill.'
+    const reason = 'You turned off Big change, but it was still charged this period, so we refunded it.'
     expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: renewal.data.object.id, amount: 575, refund_amount: 575, memo: reason })])
     expect(h.emails).toEqual([expect.objectContaining({ addonName: 'Big change', subject: 'We refunded your Big change charge.' })])
     expect(h.emails[0].note.startsWith(reason)).toBe(true)

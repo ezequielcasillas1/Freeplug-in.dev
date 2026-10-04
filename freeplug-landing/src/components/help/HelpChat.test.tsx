@@ -92,7 +92,9 @@ describe('HelpChat', () => {
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.')
     )
-    expect(screen.getByRole('button', { name: 'Send request' })).toBeInTheDocument()
+    // The error is set inside the send transition: under load the alert can render a tick before the
+    // button leaves "Sending…" (seen in Arkitect verify runs), so wait for the button, don't race it.
+    expect(await screen.findByRole('button', { name: 'Send request' })).toBeInTheDocument()
   })
 
   describe('Starter without +1 small edit (Sable, Oct 4 8:31 AM)', () => {

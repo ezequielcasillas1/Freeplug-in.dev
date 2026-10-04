@@ -4,7 +4,7 @@
  * in-app invoice list) is there with or without a schedule.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 
 let schedule: string | null = null
 /** What the schedule holds: a step switch (default) or only add-ons that end (Oct 4). */
@@ -222,6 +222,25 @@ describe('Aria 10:09 (option A), Lina: Resume worked but an add-on removal is st
     expect(box).toHaveAttribute('tabindex', '-1')
     expect(scrolled).toEqual([box])
     expect(document.activeElement).toBe(box)
+    // Lina 10:33: the Plans card focus style (2px solid #ba3d3d, 2px offset), not the old light-yellow ring
+    for (const c of ['focus-visible:outline', 'focus-visible:outline-2', 'focus-visible:outline-offset-2', 'focus-visible:outline-[#ba3d3d]']) expect(box.className.split(' ')).toContain(c)
+    expect(box.className).not.toMatch(/ring-amber|outline-none/)
+    // shown on this programmatic focus even where :focus-visible wouldn't match: data-focus-ring + focus: classes
+    expect(box).toHaveAttribute('data-focus-ring', 'true')
+    for (const c of ['data-[focus-ring=true]:focus:outline', 'data-[focus-ring=true]:focus:outline-2', 'data-[focus-ring=true]:focus:outline-offset-2', 'data-[focus-ring=true]:focus:outline-[#ba3d3d]']) expect(box.className.split(' ')).toContain(c)
+    // blur: back to the card's normal behaviour (keyboard focus only)
+    act(() => box.blur())
+    expect(box).not.toHaveAttribute('data-focus-ring')
+  })
+
+  it('Lina 10:33: the add-on rows use the same focus style the box now uses (one Plans card focus style)', async () => {
+    owedAddons = ['big_change']
+    await renderPage({ focus: 'removal-owed' })
+    const row = screen.getByTestId('addon-switch-small_edit')
+    for (const c of ['focus-visible:outline-2', 'focus-visible:outline-offset-2', 'focus-visible:outline-[#ba3d3d]']) {
+      expect(row.className.split(' ')).toContain(c)
+      expect(screen.getByTestId('removal-owed').className.split(' ')).toContain(c)
+    }
   })
 
   it('both add-ons owed: one sentence with both names', async () => {

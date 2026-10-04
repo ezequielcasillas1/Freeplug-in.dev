@@ -17,6 +17,8 @@ export const ADDON_REFUND_CREDIT_META = 'addon_refund_credit_cents'
  * billed and were refunded by the invoice.paid self-heal (comma-separated ids). Set with the refund marks.
  */
 export const ADDON_TURNED_OFF_META = 'addon_turned_off_refunded'
+/** When the refund was made (unix seconds), for the note's date line (Lina 10:33). Older invoices lack it. */
+export const ADDON_REFUNDED_AT_META = 'addon_refunded_at'
 
 /** Where an add-on charge's money came from: the card paid amount_paid, account credit the rest. */
 export function addonRefundSplit(amountPaidCents: number, cents: number): { cardCents: number; creditCents: number } {
@@ -37,10 +39,14 @@ export function addonRefundOf(inv: { metadata?: Record<string, string> | null; t
   reason: AddonRefundReason
   cardCents: number
   creditCents: number
+  /** ISO time of the refund (ADDON_REFUNDED_AT_META), only when recorded. */
+  refundedAt?: string
 } | null {
   const m = (inv.metadata ?? {}) as Record<string, string | undefined>
   if (!m[ADDON_REFUNDED_META]) return null
   const num = (v: string | undefined, d: number) => (v !== undefined && /^\d+$/.test(v) ? Number(v) : d)
+  const at = num(m[ADDON_REFUNDED_AT_META], 0)
+  const refundedAt = at > 0 ? { refundedAt: new Date(at * 1000).toISOString() } : {}
   const turnedOff = (m[ADDON_TURNED_OFF_META] ?? '')
     .split(',')
     .map((id) => addonById(id))
@@ -54,6 +60,7 @@ export function addonRefundOf(inv: { metadata?: Record<string, string> | null; t
       reason: 'turned_off',
       cardCents: num(m[ADDON_REFUND_CARD_META], 0),
       creditCents: num(m[ADDON_REFUND_CREDIT_META], 0),
+      ...refundedAt,
     }
   }
   const addon = addonById(m.addon)
@@ -66,5 +73,6 @@ export function addonRefundOf(inv: { metadata?: Record<string, string> | null; t
     reason: isAddonRefundReason(m[ADDON_REFUND_REASON_META]) ? (m[ADDON_REFUND_REASON_META] as AddonRefundReason) : 'not_added',
     cardCents: num(m[ADDON_REFUND_CARD_META], fallback.cardCents),
     creditCents: num(m[ADDON_REFUND_CREDIT_META], fallback.creditCents),
+    ...refundedAt,
   }
 }

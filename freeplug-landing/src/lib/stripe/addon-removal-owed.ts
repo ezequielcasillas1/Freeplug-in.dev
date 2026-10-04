@@ -121,6 +121,8 @@ export type OwedHealDeps = {
   log?: (m: string) => void
   /** The customer is told why (same refund email path as the other self-heal refunds; once per invoice). */
   notifyRefund?: (invoiceId: string) => Promise<unknown>
+  /** Clock for the refund-time mark (tests: the simulated clock). */
+  now?: () => Date
 }
 
 /**
@@ -181,6 +183,7 @@ export async function healOwedRemovals(deps: OwedHealDeps, inv: InvoiceLike): Pr
       const r = await refundAddonCharge(deps.stripe, invoiceId, fresh.amount_paid ?? 0, cents, log, 'turned_off', {
         extraMarks: { [ADDON_TURNED_OFF_META]: billedIds.join(',') },
         addonName: addonNameList(billedIds),
+        now: deps.now?.(),
       })
       if (!r.ok) return { outcome: 'retry', reason: 'refund_failed' }
       outcome = wasMarked ? 'already_refunded' : 'refunded'

@@ -58,7 +58,7 @@ describe('sendAddonRefundNoticeOnce (Aria 9:27: the email line, through the webh
     expect(h.sends[0][1]).toEqual({
       addonName: 'Big change',
       subject: 'We refunded your Big change charge.',
-      note: 'You turned off Big change, but it was still on your latest bill. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.',
+      note: 'You turned off Big change, but it was still charged this period, so we refunded it. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.',
     })
     h.claimed.clear()
     expect(await sendAddonRefundNoticeOnce(stripe(inv(refunded)), 'in_1')).toBe('sent')

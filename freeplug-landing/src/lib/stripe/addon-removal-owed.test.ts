@@ -100,7 +100,7 @@ describe('L-1: the removal of a turned-off add-on survives an upgrade (retries, 
     expect(await healOwedRemovals(deps, renewal)).toEqual({ outcome: 'refunded', invoiceId: renewal.id, addons: ['big_change'], cardCents: 575, creditCents: 0 })
     expect(addonsOn(sim)).toEqual(['small_edit'])
     expect(sim.creditNotes).toEqual([
-      expect.objectContaining({ invoice: renewal.id, amount: 575, refund_amount: 575, credit_amount: 0, memo: 'You turned off Big change, but it was still on your latest bill.' }),
+      expect.objectContaining({ invoice: renewal.id, amount: 575, refund_amount: 575, credit_amount: 0, memo: 'You turned off Big change, but it was still charged this period, so we refunded it.' }),
     ])
     expect(sim.invoice(renewal.id).metadata).toMatchObject({ addon_refunded: 'true', addon_refund_reason: 'turned_off', addon_turned_off_refunded: 'big_change', addon_refund_card_cents: '575', addon_refund_credit_cents: '0' })
     expect(t.rows[0]).toMatchObject({ clearedHow: 'refunded', clearedInvoiceId: renewal.id })
