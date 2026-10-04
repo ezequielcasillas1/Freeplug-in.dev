@@ -2,7 +2,7 @@ import type Stripe from 'stripe'
 import { sendAddonRefundedEmail } from '@/lib/email/send'
 import { sendWebhookEmailOnce } from '@/lib/email/webhook-email-ledger'
 import { addonRefundOf } from '@/lib/stripe/addon-refund-info'
-import { ADDON_NAMES, addonRefundNote } from '@/lib/plans/ladder-copy'
+import { addonNameList, addonRefundNote, addonTurnedOffRefundEmailSubject } from '@/lib/plans/ladder-copy'
 
 /** Template name in the email_sends ledger and in the Resend idempotency key. */
 export const ADDON_REFUND_EMAIL_TEMPLATE = 'addon-refunded'
@@ -27,11 +27,13 @@ export async function sendAddonRefundNoticeOnce(stripe: Pick<Stripe, 'invoices' 
   const customer = await stripe.customers.retrieve(customerId)
   const email = 'deleted' in customer && customer.deleted ? null : (customer as Stripe.Customer).email
   if (!email) return 'no_email'
-  const name = ADDON_NAMES[refund.addon]
+  const name = addonNameList(refund.addons)
   const note = addonRefundNote(name, refund.reason, refund.cardCents, refund.creditCents)
+  // Sable 10:01: the L-1 self-heal refund (a turned-off add-on still billed) has its own subject.
+  const subject = refund.kind === 'turned_off' ? addonTurnedOffRefundEmailSubject(name) : undefined
   const key = addonRefundEmailKey(invoiceId)
   const outcome = await sendWebhookEmailOnce(key, ADDON_REFUND_EMAIL_TEMPLATE, invoiceId, () =>
-    sendAddonRefundedEmail(email, { addonName: name, note }, { idempotencyKey: `${key}:${ADDON_REFUND_EMAIL_TEMPLATE}` })
+    sendAddonRefundedEmail(email, { addonName: name, note, ...(subject ? { subject } : {}) }, { idempotencyKey: `${key}:${ADDON_REFUND_EMAIL_TEMPLATE}` })
   )
   return outcome === 'skipped' ? 'already_sent' : outcome
 }

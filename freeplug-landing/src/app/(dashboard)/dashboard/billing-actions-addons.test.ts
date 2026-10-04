@@ -12,6 +12,7 @@ const h = vi.hoisted(() => ({
   previewThrows: false,
   change: null as unknown,
   notice: (async () => 'sent') as (...a: unknown[]) => Promise<unknown>,
+  keep: vi.fn<(...a: unknown[]) => Promise<void>>(async () => undefined),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: () => undefined }))
 vi.mock('next/navigation', () => ({ redirect: (url: string) => Promise.reject(Object.assign(new Error('NEXT_REDIRECT'), { url })) }))
@@ -31,6 +32,10 @@ vi.mock('@/lib/stripe/prices', () => ({ getAddonPriceId: async (id: string) => `
 vi.mock('@/lib/plans/plan-change-lock-server', () => ({
   planChangeLockStore: () => ({ claim: async () => 'claim-1', release: async () => undefined }),
 }))
+vi.mock('@/lib/stripe/addon-removal-owed-server', () => ({
+  recordRemovalOwedNow: () => async () => ({ saved: true, alerted: true }),
+  removalOwedStore: () => ({ keep: (...a: unknown[]) => h.keep(...a) }),
+}))
 vi.mock('@/lib/email/addon-refund-notice', () => ({ sendAddonRefundNoticeOnce: (...a: unknown[]) => h.notice(...a) }))
 vi.mock('@/lib/stripe/change-plan', async (orig) => ({
   ...(await orig<typeof import('@/lib/stripe/change-plan')>()),
@@ -42,6 +47,17 @@ vi.mock('@/lib/stripe/change-plan', async (orig) => ({
 }))
 
 import { changeAddonAction, previewAddonChangeAction } from './billing-actions'
+
+describe('L-1 (Aria 9:57): Keep it drops an owed removal for that add-on', () => {
+  it('kept: the owed flag for that add-on is cleared; a store error never changes the message', async () => {
+    h.keep.mockClear()
+    h.change = { ok: true, kind: 'kept', addon: 'big_change', effectiveAt: null }
+    expect(await changeAddonAction('big_change', 'keep')).toEqual({ ok: true, message: 'Big change stays on.' })
+    expect(h.keep).toHaveBeenCalledWith('sub_1', 'big_change')
+    h.keep.mockRejectedValueOnce(new Error('db down'))
+    expect(await changeAddonAction('big_change', 'keep')).toEqual({ ok: true, message: 'Big change stays on.' })
+  })
+})
 
 describe('Aria 9:27: a refund on Confirm also sends the email (once per invoice, through the ledger)', () => {
   it('not_applied + refunded: the notice is sent for that invoice; a notice failure never changes the message', async () => {

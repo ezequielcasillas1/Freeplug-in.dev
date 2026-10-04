@@ -10,6 +10,8 @@ type Props = {
   addonName: string
   /** addonRefundNote(): why it was refunded, then where the money went (Aria, Oct 4 9:27). */
   note: string
+  /** Overrides the default subject/heading (L-1: addonTurnedOffRefundEmailSubject). */
+  subject?: string
   baseUrl?: string
 }
 
@@ -17,9 +19,9 @@ type Props = {
  * Aria, Oct 4 9:27: the self-heal refunded an add-on charge automatically. One plain line says why and
  * where the money went, so it never just looks like it vanished. Copy lines are in ladder-copy.ts (for Sable).
  */
-export function AddonRefundedEmail({ userName, addonName, note, baseUrl }: Props) {
+export function AddonRefundedEmail({ userName, addonName, note, subject: subjectIn, baseUrl }: Props) {
   const base = emailBaseUrl(baseUrl)
-  const subject = addonRefundEmailSubject(addonName)
+  const subject = subjectIn ?? addonRefundEmailSubject(addonName)
   return (
     <BaseEmailLayout baseUrl={base} preview={subject}>
       <Text style={heading}>{subject}</Text>

@@ -52,4 +52,16 @@ describe('sendAddonRefundNoticeOnce (Aria 9:27: the email line, through the webh
     expect(await sendAddonRefundNoticeOnce(stripe(inv(refunded, null)), 'in_1')).toBe('no_email')
     expect(h.sends).toHaveLength(0)
   })
+  it('Sable 10:01: the L-1 refund (a turned-off add-on still on the renewal) uses its own subject; other refunds keep the default', async () => {
+    const l1 = { addon_refunded: 'true', addon_turned_off_refunded: 'big_change', addon_refund_card_cents: '575', addon_refund_credit_cents: '0' }
+    expect(await sendAddonRefundNoticeOnce(stripe(inv(l1)), 'in_1')).toBe('sent')
+    expect(h.sends[0][1]).toEqual({
+      addonName: 'Big change',
+      subject: 'We refunded your Big change charge.',
+      note: 'You turned off Big change, but it was still on your latest bill. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.',
+    })
+    h.claimed.clear()
+    expect(await sendAddonRefundNoticeOnce(stripe(inv(refunded)), 'in_1')).toBe('sent')
+    expect(h.sends[1][1]).not.toHaveProperty('subject')
+  })
 })

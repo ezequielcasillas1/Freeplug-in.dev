@@ -105,12 +105,12 @@ export async function sendSubscriptionCancelledEmail(
 /** Aria, Oct 4 9:27: an add-on charge was refunded automatically (why + where the money went). */
 export async function sendAddonRefundedEmail(
   to: string,
-  params: { userName?: string; addonName: string; note: string },
+  params: { userName?: string; addonName: string; note: string; subject?: string },
   options?: SendOptions
 ): Promise<SendResult> {
   return sendMail({
     to,
-    subject: addonRefundEmailSubject(params.addonName),
+    subject: params.subject ?? addonRefundEmailSubject(params.addonName),
     template: 'addon-refunded',
     react: AddonRefundedEmail(params),
     replyTo: options?.replyTo,

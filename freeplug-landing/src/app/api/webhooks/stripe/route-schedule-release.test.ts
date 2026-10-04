@@ -29,7 +29,7 @@ vi.mock('@/lib/outreach/server', () => ({ handleOutreachInvoicePaid: async () =>
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     from: () => {
-      const q = { select: () => q, eq: () => q, limit: async () => ({ data: [], error: null }) }
+      const q = { select: () => q, eq: () => q, is: async () => ({ data: [], error: null }), limit: async () => ({ data: [], error: null }) }
       return q
     },
   }),

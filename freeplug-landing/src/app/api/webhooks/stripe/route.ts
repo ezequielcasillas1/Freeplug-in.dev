@@ -14,6 +14,8 @@ import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
 import { healAddonChargeFromWebhook, healNeedsRedelivery, isAddonChargeInvoice } from '@/lib/stripe/addon-heal-webhook'
 import { getAddonPriceId } from '@/lib/stripe/prices'
 import { supabasePlanChangeLockStore } from '@/lib/plans/plan-change-lock'
+import { healOwedRemovals } from '@/lib/stripe/addon-removal-owed'
+import { supabaseRemovalOwedStore, type RemovalOwedDb } from '@/lib/stripe/addon-removal-owed-server'
 
 export const runtime = 'nodejs'
 
@@ -201,6 +203,22 @@ export async function POST(request: Request) {
         } catch (e) {
           console.error('[webhook] add-on self-heal failed', inv.id, e instanceof Error ? e.message : e)
           redeliver = 'add-on self-heal error'
+        }
+      }
+      // L-1 (Aria 9:57): a renewal that billed an add-on the customer turned off (removal owed): remove
+      // the item, refund that line once, clear the flag, tell the customer. Failure = redeliver.
+      if (inv.billing_reason === 'subscription_cycle') {
+        try {
+          const stripe = getStripe()
+          const owed = await healOwedRemovals(
+            { stripe, store: supabaseRemovalOwedStore(admin as unknown as RemovalOwedDb), notifyRefund: (invoiceId) => sendAddonRefundNoticeOnce(stripe, invoiceId) },
+            inv as Parameters<typeof healOwedRemovals>[1]
+          )
+          if (owed.outcome !== 'none') console.info('[webhook] removal owed', inv.id, owed.outcome)
+          if (owed.outcome === 'retry') redeliver = `removal owed ${owed.reason}`
+        } catch (e) {
+          console.error('[webhook] removal-owed self-heal failed', inv.id, e instanceof Error ? e.message : e)
+          redeliver = 'removal-owed self-heal error'
         }
       }
       // The renewal invoice at the switch date: the schedule's switch phase is now current.

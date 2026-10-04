@@ -15,8 +15,10 @@ import {
   addonRefundOf,
   addonRefundSplit,
 } from './addon-refund-info'
+import { REMOVAL_RESCHEDULE_TRIES, withRetries } from './retry'
+import type { RemovalOwedInput } from './addon-removal-owed'
 import { ADDON_MIN_CHARGE_CENTS, addonCapCheck, addonCentsInTipTotal, addonCentsOfItems, addonIdsOfItems, addonItemsOf, addonOfPrice, parseAddonIds } from '../plans/addons'
-import { ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_PRICE_UNCONFIRMED, ADDON_TURN_OFF_FIRST, type AddonRefundReason } from '../plans/ladder-copy'
+import { ADDON_NAMES, ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_PRICE_UNCONFIRMED, ADDON_REFUND_REASONS, ADDON_TURN_OFF_FIRST, type AddonRefundReason } from '../plans/ladder-copy'
 
 export { planMove, type PlanMove }
 
@@ -106,6 +108,8 @@ export type ChangePlanResult =
       invoiceStatus: string | null
       /** A pending add-on removal was re-scheduled on the new step (null = none was pending). */
       addonRemovalKept?: boolean | null
+      /** L-1: the removal could not be put back; true = saved as owed (the self-heal refunds), false = not saved. */
+      removalOwed?: boolean
     }
   | { ok: true; kind: 'scheduled'; step: PlanStepId; effectiveAt: string }
   | { ok: true; kind: 'unchanged'; step: PlanStepId }
@@ -499,7 +503,16 @@ export async function previewPlanStepChange(
 }
 
 export async function changePlanStep(
-  deps: { stripe: Stripe; priceIdFor: (id: PlanStepId) => Promise<string>; now?: () => Date; log?: (msg: string) => void },
+  deps: {
+    stripe: Stripe
+    priceIdFor: (id: PlanStepId) => Promise<string>
+    now?: () => Date
+    log?: (msg: string) => void
+    /** L-1: the removal could not be put back after 3 tries: save the flag + alert us (recordRemovalOwed). */
+    onRemovalOwed?: (o: RemovalOwedInput) => Promise<{ saved: boolean } | unknown>
+    /** Backoff between the re-schedule tries (tests). */
+    sleep?: (ms: number) => Promise<void>
+  },
   sub: Sub,
   targetId: PlanStepId,
   /** prorationDate: from previewPlanStepChange (upgrades only); userId: for the idempotency key. */
@@ -627,16 +640,53 @@ export async function changePlanStep(
     // An add-on removal that was pending stays pending on the new step (its next phase = the new step
     // + the add-ons left, no tip: the upgrade just reset it). A failure here is logged and reported;
     // the upgrade itself already went through.
+    // L-1 (Aria 9:57): retried 3 times with backoff; still failing = the removal is OWED (flag on our side +
+    // internal alert); the invoice.paid self-heal removes the item and refunds its renewal line once.
     let addonRemovalKept: boolean | null = null
+    let removalOwed: boolean | undefined
     const liveAddons = addonIdsOfItems(sub.items.data)
     if (restore && !sameSet(restore.addons, liveAddons) && updated.items?.data) {
       const left = liveAddons.filter((a) => restore.addons.includes(a))
       try {
-        await scheduleNextPhase(stripe, updated, null, nextPhaseItems(updated, priceId, left, 0), phaseMetadata(target.id, left, 0, 'addons'), now)
+        await withRetries(
+          async (attempt) => {
+            // A later try re-reads: an earlier try may have attached a schedule before failing.
+            let base: Pick<Stripe.Subscription, 'id' | 'items'> = updated
+            let existing: ScheduleLike | null = null
+            if (attempt > 1) {
+              const fresh = await stripe.subscriptions.retrieve(sub.id)
+              base = fresh
+              const schedId = idOf(fresh.schedule as string | { id: string } | null)
+              existing = schedId ? ((await stripe.subscriptionSchedules.retrieve(schedId)) as unknown as ScheduleLike) : null
+            }
+            await scheduleNextPhase(stripe, base, existing, nextPhaseItems(base, priceId, left, 0), phaseMetadata(target.id, left, 0, 'addons'), now)
+          },
+          {
+            sleep: deps.sleep,
+            onFail: (attempt, e) => log(`[change-plan] re-schedule of the add-on removal on ${sub.id} failed (try ${attempt}/${REMOVAL_RESCHEDULE_TRIES}): ${e instanceof Error ? e.message : String(e)}`),
+          }
+        )
         addonRemovalKept = true
-      } catch (e) {
-        log(`[change-plan] could not re-schedule the add-on removal on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`)
+      } catch {
         addonRemovalKept = false
+        const owed: RemovalOwedInput = {
+          subscriptionId: sub.id,
+          customerId: idOf(sub.customer ?? null),
+          userId: opts.userId ?? null,
+          addons: liveAddons.filter((a) => !restore.addons.includes(a)),
+          effectiveAt: restore.effectiveAt,
+        }
+        log(`[change-plan] REMOVAL OWED on ${sub.id}: ${owed.addons.join(',')} from ${owed.effectiveAt}`)
+        if (deps.onRemovalOwed) {
+          const r = await deps.onRemovalOwed(owed).catch((e: unknown) => {
+            log(`[change-plan] REMOVAL OWED NOT SAVED on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`)
+            return { saved: false }
+          })
+          removalOwed = !(r && typeof r === 'object' && 'saved' in r && r.saved === false)
+        } else {
+          log(`[change-plan] REMOVAL OWED NOT SAVED on ${sub.id}: no store`)
+          removalOwed = false
+        }
       }
     }
     return {
@@ -645,6 +695,7 @@ export async function changePlanStep(
       step: target.id,
       invoiceStatus: inv && typeof inv !== 'string' ? (inv.status ?? null) : null,
       ...(addonRemovalKept !== null ? { addonRemovalKept } : {}),
+      ...(removalOwed !== undefined ? { removalOwed } : {}),
     }
   }
 
@@ -974,7 +1025,7 @@ export type AddonChangePreview =
   | AddonRefusal
 
 export type AddonChangeResult =
-  /** invoiceId null + deferredCents: a charge under $0.50 put on the next monthly bill (Aria 9:27). */
+  /** deferredCents: under $0.50 after credit, nothing charged now; Stripe adds it to the next invoice (Aria 9:27). */
   | { ok: true; kind: 'on'; addon: AddonId; tipDollars: number; invoiceStatus: string | null; invoiceId: string | null; deferredCents?: number }
   | { ok: true; kind: 'removal_scheduled' | 'kept' | 'unchanged'; addon: AddonId; effectiveAt: string | null }
   | { ok: false; code: 'payment_failed'; message: string }
@@ -1108,6 +1159,9 @@ type AddonCharge =
  * the plan's card (subscription default, else the customer's default), off session. A declined,
  * unpaid or wrong-total invoice is voided (a draft is deleted) and nothing changes.
  */
+/** The add-on's first-period invoice line: "Add-on: +1 small edit (this billing period)". */
+export const addonInvoiceLineDescription = (addonId: AddonId) => `Add-on: ${ADDON_NAMES[addonId]} (this billing period)`
+
 async function chargeAddonFirstPeriod(
   stripe: Stripe,
   sub: Sub,
@@ -1135,7 +1189,8 @@ async function chargeAddonFirstPeriod(
     tip_before: String(ctx.tipBefore),
     tip_after: String(ctx.tipAfter),
   }
-  const description = `Add-on: ${addonId} (this billing period)`
+  // Aria 10:09: the customer sees this line on the Stripe invoice: the display name, not the raw id.
+  const description = addonInvoiceLineDescription(addonId)
   let invId: string | null = null
   let finalized = false
   const undo = async () => {
@@ -1202,16 +1257,19 @@ export async function refundAddonCharge(
   amountPaidCents: number,
   cents: number,
   log: (m: string) => void,
-  reason: AddonRefundReason = 'not_added'
+  reason: AddonRefundReason = 'not_added',
+  /** L-1: extra invoice marks (which turned-off add-ons) and the add-on name(s) for the memo. */
+  opts: { extraMarks?: Record<string, string>; addonName?: string } = {}
 ): Promise<AddonRefundOutcome> {
   const split = addonRefundSplit(amountPaidCents, cents)
+  const marks = { ...refundMarks(reason, split), ...(opts.extraMarks ?? {}) }
   try {
     const inv = await stripe.invoices.retrieve(invoiceId)
     const meta = (inv.metadata ?? {}) as Record<string, string | undefined>
     if (meta[ADDON_REFUNDED_META] || (inv.post_payment_credit_notes_amount ?? 0) >= cents) {
       log(`[change-addon] ${invoiceId} already refunded`)
       // Re-mark when the marker was lost (the credit note exists): the Plans note and the email read it.
-      if (!meta[ADDON_REFUNDED_META]) await markAddonInvoice(stripe, invoiceId, refundMarks(reason, split), log)
+      if (!meta[ADDON_REFUNDED_META]) await markAddonInvoice(stripe, invoiceId, marks, log)
       return { ok: true, ...split }
     }
     const refund = split.cardCents
@@ -1222,17 +1280,23 @@ export async function refundAddonCharge(
         ...(refund > 0 ? { refund_amount: refund } : {}),
         ...(cents - refund > 0 ? { credit_amount: cents - refund } : {}),
         reason: 'order_change',
-        memo: 'Add-on could not be turned on; refunded.',
+        // Aria 10:09: the memo is the refund reason's sentence, so it matches the email and the notes.
+        memo: ADDON_REFUND_REASONS[reason](opts.addonName ?? memoName(meta.addon)),
       },
       { idempotencyKey: `addon-refund:${invoiceId}` }
     )
     log(`[change-addon] REFUNDED ${invoiceId} (reason ${reason}): ${refund} to the card, ${cents - refund} as account credit`)
-    await markAddonInvoice(stripe, invoiceId, refundMarks(reason, split), log)
+    await markAddonInvoice(stripe, invoiceId, marks, log)
     return { ok: true, ...split }
   } catch (e) {
     log(`[change-addon] REFUND FAILED for ${invoiceId} (reason ${reason}): ${e instanceof Error ? e.message : String(e)}`)
     return { ok: false, ...split }
   }
+}
+
+const memoName = (addon: string | undefined) => {
+  const a = addonById(addon)
+  return a ? ADDON_NAMES[a.id] : 'the add-on'
 }
 
 const refundMarks = (reason: AddonRefundReason, split: { cardCents: number; creditCents: number }) => ({
@@ -1305,54 +1369,6 @@ export async function previewAddonChange(deps: AddonDeps, sub: Sub, addonId: unk
 }
 
 /**
- * Aria, Oct 4 9:27: what turning it on would charge today is above $0 and below Stripe's $0.50 minimum
- * (account credit pays the rest). Nothing is charged now: ONE subscription update adds the item (proration
- * none, the tip drop as confirmed) AND puts the add-on's first period on the next monthly invoice
- * (add_invoice_items, the full price; the account credit is still applied there, so the next bill goes up
- * by `amountDue`). One call, so there is nothing to self-heal: it either all happened or none of it did.
- * It reaches Total Paid when that invoice is paid (the webhook books paid invoices only).
- */
-async function turnOnWithNextBill(
-  deps: AddonDeps,
-  sub: Sub,
-  addonId: AddonId,
-  priceId: string,
-  key: string,
-  tipNow: number,
-  tipAfter: number,
-  amountDue: number,
-  log: (m: string) => void
-): Promise<AddonChangeResult> {
-  const { stripe } = deps
-  const addon = addonById(addonId)!
-  try {
-    const price = await stripe.prices.retrieve(priceId)
-    const product = typeof price.product === 'string' ? price.product : price.product.id
-    await stripe.subscriptions.update(
-      sub.id,
-      {
-        items: addonOnItems(sub, priceId, tipNow, tipAfter),
-        proration_behavior: 'none',
-        add_invoice_items: [{ price_data: { currency: 'usd', product, unit_amount: addon.monthlyCents }, quantity: 1 }],
-      },
-      { idempotencyKey: `${key}:next-bill` }
-    )
-  } catch (e) {
-    if (isKeyInUse(e)) return { ok: false, code: 'in_progress', message: 'This change is already going through.' }
-    log(`[change-addon] next-bill turn-on failed on ${sub.id} (${addonId}); nothing changed: ${errMsg(e)}`)
-    return { ok: false, code: 'mismatch', message: 'The add-on could not be turned on.' }
-  }
-  const fresh = await stripe.subscriptions.retrieve(sub.id)
-  const items = fresh?.items?.data ?? []
-  if (!addonItemsOf(items).some((i) => addonOfPrice(i.price)?.id === addonId) || tipDollarsOfItems(items) !== tipAfter) {
-    log(`[change-addon] MISMATCH after the next-bill turn-on on ${sub.id} (wanted ${addonId} + tip ${tipAfter})`)
-    return { ok: false, code: 'mismatch', message: 'The add-on could not be turned on.' }
-  }
-  log(`[change-addon] ${addonId} on for ${sub.id}; ${amountDue} cents (after credit) goes on the next bill`)
-  return { ok: true, kind: 'on', addon: addonId, tipDollars: tipAfter, invoiceStatus: null, invoiceId: null, deferredCents: amountDue }
-}
-
-/**
  * Turn an add-on on (now, charged), off (at period end) or keep it (undo a planned removal).
  *   on:   the full monthly price as a one-off invoice, paid first (a declined or unpaid charge is
  *         voided and nothing changes), then the add-on item with proration none (refunded with a
@@ -1416,9 +1432,10 @@ export async function changeAddon(
         log(`[change-addon] preview before the charge failed on ${sub.id}: ${errMsg(e)}`)
       }
     }
-    if (amountDue !== null && amountDue > 0 && amountDue < ADDON_MIN_CHARGE_CENTS) {
-      return turnOnWithNextBill(deps, sub, addon.id, priceId, key, check.tipNow, check.tipMaxAfter, amountDue, log)
-    }
+    // Above $0 and below $0.50 after credit (Aria 9:27, 9:57): the SAME charge path. The credit is used
+    // now; Stripe marks a too-small invoice paid with nothing charged and adds the rest to the next
+    // invoice (invoice_too_small debit). We don't promise anything about the credit later.
+    const smallCents = amountDue !== null && amountDue > 0 && amountDue < ADDON_MIN_CHARGE_CENTS ? amountDue : null
     // 1. The full price, charged and PAID before anything changes on the subscription.
     const ctx: AddonChargeContext = { userId: opts.userId, priceId, tipBefore: check.tipNow, tipAfter: check.tipMaxAfter }
     const charge = await chargeAddonFirstPeriod(stripe, sub, addon.id, addon.monthlyCents, key, ctx, log)
@@ -1431,6 +1448,8 @@ export async function changeAddon(
       }
       return { ok: false, code: 'payment_failed', message: 'The card was not charged, so the add-on is still off.' }
     }
+    // Nothing reached the card (paid by Stripe's invoice_too_small rule): the amount is on the next bill.
+    const deferred: { deferredCents?: number } = smallCents !== null && charge.amountPaidCents === 0 ? { deferredCents: smallCents } : {}
     // 2. Then the item, with no proration (this period is paid by the charge above); the next
     // renewal bills it at the normal monthly price. A tip drop applies from that renewal too.
     // Anything short of a verified item goes through the SAME self-heal as the invoice.paid webhook
@@ -1446,7 +1465,7 @@ export async function changeAddon(
         healed = { outcome: 'retry', reason: 'threw' }
       }
       if (healed.outcome === 'applied' || healed.outcome === 'already_applied') {
-        return { ok: true, kind: 'on', addon: addon.id, tipDollars: check.tipMaxAfter, invoiceStatus: 'paid', invoiceId: charge.invoiceId }
+        return { ok: true, kind: 'on', addon: addon.id, tipDollars: check.tipMaxAfter, invoiceStatus: 'paid', invoiceId: charge.invoiceId, ...deferred }
       }
       const money = { refundCardCents: healed.cardCents, refundCreditCents: healed.creditCents, invoiceId: charge.invoiceId }
       if (healed.outcome === 'refunded' || healed.outcome === 'already_refunded') return { ok: false, code: 'not_applied', message: 'Stripe did not add the add-on.', refunded: true, ...money }
@@ -1470,7 +1489,8 @@ export async function changeAddon(
       return finish(`MISMATCH (wanted ${addon.id} + tip ${check.tipMaxAfter})`)
     }
     await markAddonInvoice(stripe, charge.invoiceId, { [ADDON_APPLIED_META]: added.id }, log)
-    return { ok: true, kind: 'on', addon: addon.id, tipDollars: check.tipMaxAfter, invoiceStatus: 'paid', invoiceId: charge.invoiceId }
+    if (deferred.deferredCents) log(`[change-addon] ${addon.id} on for ${sub.id}; ${deferred.deferredCents} cents went to the next invoice (invoice_too_small)`)
+    return { ok: true, kind: 'on', addon: addon.id, tipDollars: check.tipMaxAfter, invoiceStatus: 'paid', invoiceId: charge.invoiceId, ...deferred }
   }
 
   if (check.unchanged) return { ok: true, kind: 'unchanged', addon: addon.id, effectiveAt: check.phase?.effectiveAt ?? null }

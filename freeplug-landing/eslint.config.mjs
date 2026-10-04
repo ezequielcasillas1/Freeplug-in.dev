@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
       "src/app/api/webhooks/stripe/route.ts",
       "src/lib/email/webhook-email-ledger.ts",
       "src/lib/plans/plan-change-lock-server.ts",
+      // L-1 (Oct 4): addon_removals_owed store (service_role-only table, RLS), same pattern as the lock store.
+      "src/lib/stripe/addon-removal-owed-server.ts",
       "src/lib/stripe/checkout-customer.ts",
       "src/lib/stripe/sync-checkout-customer.ts",
       "src/**/*.test.{ts,tsx}",

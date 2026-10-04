@@ -63,6 +63,8 @@ export type SimInvoice = {
 }
 export type SimEvent = { id: string; type: 'invoice.paid'; created: number; data: { object: SimInvoice } }
 
+/** Stripe's minimum charge in USD. */
+const MIN_CHARGE_CENTS = 50
 const err = (type: string, message: string, extra: Record<string, unknown> = {}) => Object.assign(new Error(message), { type, ...extra })
 export class SimCrash extends Error {
   constructor(after: string) {
@@ -90,12 +92,13 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
   prices.set(SIM_PRICE_ID.tip, price(SIM_PRICE_ID.tip, TIP_LOOKUP_KEY, TIP_PRODUCT_ID, 100))
 
   const customers = new Map<string, { id: string; balance: number; email: string | null }>()
+  const balanceTransactions: { customer: string; type: 'invoice_too_small'; amount: number; invoice: string }[] = []
   const schedules = new Map<string, SimSchedule>()
   /** add_invoice_items waiting for each subscription's next invoice. */
   const pendingLines = new Map<string, { amount: number; description: string }[]>()
   const subs = new Map<string, SimSub>()
   const invoices = new Map<string, SimInvoice>()
-  const creditNotes: { id: string; invoice: string; amount: number; refund_amount: number; credit_amount: number }[] = []
+  const creditNotes: { id: string; invoice: string; amount: number; refund_amount: number; credit_amount: number; memo: string | null }[] = []
   const events: SimEvent[] = []
   const idem = new Map<string, { params: string; result: unknown }>()
   const log: string[] = []
@@ -130,12 +133,24 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
   function finalize(inv: SimInvoice) {
     inv.total = inv.lines.data.reduce((n, l) => n + l.amount, 0)
     const cus = customers.get(inv.customer)!
-    const credit = cus.balance < 0 ? Math.min(-cus.balance, inv.total) : 0
-    cus.balance += credit
-    inv.starting_balance = -credit
-    inv.amount_due = inv.total - credit
+    // Stripe: a credit applies up to the invoice total; a debit (owed from an earlier too-small invoice)
+    // applies in full.
+    const applied = cus.balance < 0 ? -Math.min(-cus.balance, inv.total) : cus.balance
+    cus.balance -= applied
+    inv.starting_balance = applied
+    inv.amount_due = inv.total + applied
     inv.status = 'open'
     if (inv.amount_due === 0) markPaid(inv)
+    else if (inv.amount_due < MIN_CHARGE_CENTS) {
+      // invoice_too_small: marked paid with nothing charged; the amount is debited to the customer
+      // balance and added to the next finalized invoice (docs.stripe.com/billing/customer/balance).
+      cus.balance += inv.amount_due
+      balanceTransactions.push({ customer: cus.id, type: 'invoice_too_small', amount: inv.amount_due, invoice: inv.id })
+      inv.status = 'paid'
+      inv.amount_paid = 0
+      inv.status_transitions.paid_at = clock
+      emitPaid(inv)
+    }
   }
   function markPaid(inv: SimInvoice) {
     inv.status = 'paid'
@@ -201,7 +216,11 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
               }
               for (const it of p.items ?? []) {
                 if (it.id && it.deleted) s.items.data = s.items.data.filter((x) => x.id !== it.id)
-                else if (it.id) s.items.data.find((x) => x.id === it.id)!.quantity = it.quantity ?? 1
+                else if (it.id) {
+                  const x = s.items.data.find((y) => y.id === it.id)!
+                  if (it.price) x.price = clone(prices.get(it.price)!) // an upgrade swaps the step price in place
+                  x.quantity = it.quantity ?? 1
+                }
                 else {
                   const pr = prices.get(it.price!)
                   if (!pr || !pr.active) throw err('StripeInvalidRequestError', `price ${it.price} is not active`, { statusCode: 400 })
@@ -302,8 +321,8 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
           call('invoices.createPreview', () => {
             const total = (p.subscription_details?.items ?? []).reduce((n, i) => n + prices.get(i.price)!.unit_amount, 0) + previewAdjust.cents
             const bal = customers.get(p.customer)!.balance
-            const credit = bal < 0 ? Math.min(-bal, total) : 0
-            return { object: 'invoice', total, amount_due: total - credit, starting_balance: -credit, currency: 'usd' }
+            const applied = bal < 0 ? -Math.min(-bal, total) : bal
+            return { object: 'invoice', total, amount_due: total + applied, starting_balance: applied, currency: 'usd' }
           }),
       },
       invoiceItems: {
@@ -316,7 +335,7 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
           ),
       },
       creditNotes: {
-        create: (p: { invoice: string; amount: number; refund_amount?: number; credit_amount?: number }, o: O = {}) =>
+        create: (p: { invoice: string; amount: number; refund_amount?: number; credit_amount?: number; memo?: string }, o: O = {}) =>
           call('creditNotes.create', () =>
             idempotent(o.idempotencyKey, p, () => {
               const inv = getInv(p.invoice)
@@ -326,7 +345,7 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
               if (refund + credit !== p.amount) throw err('StripeInvalidRequestError', 'refund + credit must equal the amount', { statusCode: 400 })
               inv.post_payment_credit_notes_amount += p.amount
               customers.get(inv.customer)!.balance -= credit
-              const cn = { id: nextId('cn'), invoice: inv.id, amount: p.amount, refund_amount: refund, credit_amount: credit }
+              const cn = { id: nextId('cn'), invoice: inv.id, amount: p.amount, refund_amount: refund, credit_amount: credit, memo: p.memo ?? null }
               creditNotes.push(cn)
               return cn
             })
@@ -414,6 +433,8 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
     invoices: () => [...invoices.values()].map(clone),
     customer: (id: string) => ({ ...customers.get(id)! }),
     creditNotes,
+    /** Customer balance transactions the sim records (invoice_too_small debits). */
+    balanceTransactions,
     events,
     log,
     cancel: (id: string) => Object.assign(getSub(id), { status: 'canceled' }),

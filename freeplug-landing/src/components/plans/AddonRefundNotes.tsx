@@ -1,12 +1,13 @@
 import type { InvoiceRow } from '@/lib/stripe/billing-routing'
-import { ADDON_NAMES, addonRefundNote } from '@/lib/plans/ladder-copy'
+import { addonNameList, addonRefundNote } from '@/lib/plans/ladder-copy'
 
 /** How long the Plans page keeps explaining an automatic add-on refund (the email says it too). */
 export const ADDON_REFUND_NOTE_DAYS = 30
 
 /**
- * Aria, Oct 4 9:27: the Plans page note for every add-on charge refunded automatically in the last 30
- * days, read from the invoice's refund metadata (reason + card / credit split), newest first.
+ * Aria, Oct 4 9:27 / 9:57: the note for every add-on charge refunded automatically in the last 30 days
+ * (Plans page AND the dashboard), read from the invoice's refund metadata (reason + card / credit split),
+ * newest first. Also the L-1 refund of a turned-off add-on still billed at renewal.
  */
 export function recentAddonRefundNotes(invoices: readonly InvoiceRow[] | null | undefined, now: Date = new Date()): { id: string; text: string }[] {
   const since = now.getTime() - ADDON_REFUND_NOTE_DAYS * 86_400_000
@@ -14,7 +15,7 @@ export function recentAddonRefundNotes(invoices: readonly InvoiceRow[] | null | 
     .filter((r) => r.addonRefund && new Date(r.created).getTime() >= since)
     .map((r) => {
       const x = r.addonRefund!
-      return { id: r.id, text: addonRefundNote(ADDON_NAMES[x.addon], x.reason, x.cardCents, x.creditCents) }
+      return { id: r.id, text: addonRefundNote(addonNameList(x.addons), x.reason, x.cardCents, x.creditCents) }
     })
 }
 

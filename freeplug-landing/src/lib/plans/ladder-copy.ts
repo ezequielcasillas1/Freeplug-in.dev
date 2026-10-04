@@ -473,7 +473,7 @@ export const addonRefunded = (name: string, cardCents: number, creditCents: numb
  * Aria, Oct 4 9:27: why an add-on charge was refunded automatically (self-heal), in plain words, so the
  * money never just looks like it vanished. Shown on the Plans page and in the refund email.
  */
-export type AddonRefundReason = 'switch_pending' | 'removal_pending' | 'period_ended' | 'tip_unconfirmed' | 'plan_ended' | 'not_added'
+export type AddonRefundReason = 'switch_pending' | 'removal_pending' | 'period_ended' | 'tip_unconfirmed' | 'plan_ended' | 'not_added' | 'turned_off'
 export const ADDON_REFUND_REASONS: Record<AddonRefundReason, (name: string) => string> = {
   switch_pending: (name) => `We couldn't turn on ${name} because a plan switch was already scheduled. Add-ons can't change until the switch happens.`,
   removal_pending: (name) => `We couldn't turn on ${name} because another add-on was already set to end. Add-ons can't change until it ends.`,
@@ -481,13 +481,19 @@ export const ADDON_REFUND_REASONS: Record<AddonRefundReason, (name: string) => s
   tip_unconfirmed: (name) => `We couldn't turn on ${name} because it would have lowered your tip, which you hadn't confirmed.`,
   plan_ended: (name) => `We couldn't turn on ${name} because your hosting plan has ended or is set to end.`,
   not_added: (name) => `We couldn't turn on ${name} because of a problem adding it to your plan.`,
+  // L-1 (Aria 9:57): an add-on the customer turned off was still billed at renewal; refunded by the self-heal.
+  turned_off: (name) => `You turned off ${name}, but it was still on your latest bill.`,
 }
 export const isAddonRefundReason = (v: unknown): v is AddonRefundReason => typeof v === 'string' && Object.hasOwn(ADDON_REFUND_REASONS, v)
 /** Plans page note and the email line: the reason, then where the money went. */
 export const addonRefundNote = (name: string, reason: AddonRefundReason, cardCents: number, creditCents: number) =>
   `${ADDON_REFUND_REASONS[isAddonRefundReason(reason) ? reason : 'not_added'](name)} ${addonRefundSplitLine(cardCents, creditCents)}${cardRefundDelay(cardCents)}`
+/** Several add-ons in one line: "+1 small edit and Big change". */
+export const addonNameList = (ids: readonly AddonId[] | AddonId) => ([] as AddonId[]).concat(ids).map((id) => ADDON_NAMES[id] ?? id).join(' and ')
 /** Refund email (self-heal): subject and the closing line. */
 export const addonRefundEmailSubject = (name: string) => `We couldn't turn on ${name}`
+/** Sable, Oct 4 10:01: the subject of the L-1 self-heal refund email ONLY (a turned-off add-on still billed). */
+export const addonTurnedOffRefundEmailSubject = (name: string) => `We refunded your ${name} charge.`
 export const ADDON_REFUND_EMAIL_HELP = 'Questions? Email support@freeplug-in.dev.'
 export const addonRefundFailed = (name: string) =>
   `We couldn't turn on ${name}, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge.`

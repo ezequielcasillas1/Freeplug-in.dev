@@ -19,12 +19,14 @@ const h = vi.hoisted(() => ({
   total: 0,
   /** email_sends rows (the real claim / finish RPC shape): `${stripe_event_id}|${template}`. */
   emailRows: new Map<string, { id: string; status: string }>(),
-  emails: [] as { to: string; addonName: string; note: string; key?: string }[],
+  emails: [] as { to: string; addonName: string; note: string; subject?: string; key?: string }[],
+  /** addon_removals_owed rows (L-1), the store's query shape. */
+  owed: [] as Record<string, unknown>[],
 }))
 // No real email (tests only): the Resend send is a spy; the email_sends ledger is the real code below.
 vi.mock('@/lib/email/send', async (orig) => ({
   ...(await orig<typeof import('@/lib/email/send')>()),
-  sendAddonRefundedEmail: async (to: string, p: { addonName: string; note: string }, o?: { idempotencyKey?: string }) => {
+  sendAddonRefundedEmail: async (to: string, p: { addonName: string; note: string; subject?: string }, o?: { idempotencyKey?: string }) => {
     h.emails.push({ to, ...p, key: o?.idempotencyKey })
     return { success: true as const, id: `re_${h.emails.length}` }
   },
@@ -92,6 +94,29 @@ vi.mock('@/lib/supabase/admin', () => ({
           },
         }
       }
+      if (table === 'addon_removals_owed') {
+        const filters: [string, unknown][] = []
+        const q = {
+          select: () => q,
+          eq: (c: string, v: unknown) => (filters.push([c, v]), q),
+          is: (c: string, v: unknown) => (filters.push([c, v ?? null]), q),
+          then: (res: (v: { data: unknown[]; error: null }) => unknown) =>
+            Promise.resolve({ data: h.owed.filter((r) => filters.every(([c, v]) => (r[c] ?? null) === v)).map((r) => ({ ...r })), error: null }).then(res),
+          insert: async (row: Record<string, unknown>) => {
+            if (h.owed.some((r) => r.stripe_subscription_id === row.stripe_subscription_id && r.cleared_at == null)) return { error: { code: '23505', message: 'dup' } }
+            h.owed.push({ id: `ow_${h.owed.length + 1}`, cleared_at: null, ...row })
+            return { error: null }
+          },
+          update: (v: Record<string, unknown>) => ({
+            eq: async (_c: string, id: string) => {
+              const r = h.owed.find((x) => x.id === id)
+              if (r) Object.assign(r, v)
+              return { error: null }
+            },
+          }),
+        }
+        return q
+      }
       throw new Error(`unexpected table ${table}`)
     },
   }),
@@ -136,6 +161,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     h.total = 0
     h.emailRows.clear()
     h.emails.length = 0
+    h.owed.length = 0
     vi.spyOn(console, 'info').mockImplementation(() => undefined)
     vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
@@ -331,7 +357,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     expect(h.emails.map((e) => e.note)).toEqual([note])
   })
 
-  it('ruling 3: under $0.50 after credit: no charge now, the add-on is on, the amount rides on the next bill and reaches Total Paid only when that invoice is paid', async () => {
+  it('ruling 3 (B1, 10:01): under $0.50 after credit: the credit is used now, the invoice is paid with $0 charged, Stripe moves the rest to the next bill (invoice_too_small); Total Paid counts it when that bill is paid', async () => {
     const sim = (h.sim = createStripeSim({ nowSec: T0 }))
     sim.addCustomer('cus_1', 540) // $5.40 credit: Big change ($5.75) would charge $0.35 today
     sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', periodStart: T0 - 10 * 86_400 })
@@ -340,26 +366,54 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     expect(preview).toMatchObject({ ok: true, amountDueCents: 35, fullCents: 575, nextAmountCents: 6075 })
     expect(addonAddedToNextBill(35)).toBe('$0.35 will be added to your next bill.')
     const r = await changeAddon(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', { userId: USER, prorationDate: sim.nowSec() })
-    expect(r).toEqual({ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: null, invoiceId: null, deferredCents: 35 })
-    // no immediate charge: no invoice, no invoice.paid, credit untouched, nothing in Total Paid
-    expect(sim.invoices()).toHaveLength(0)
-    expect(sim.events).toHaveLength(0)
-    expect(sim.customer('cus_1').balance).toBe(-540)
+    expect(r).toEqual({ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: 'paid', invoiceId: expect.any(String), deferredCents: 35 })
+    // the normal first-period invoice: the credit is used, $0 charged, $0.35 debited to the balance
+    const [first] = sim.invoices()
+    expect(first).toMatchObject({ status: 'paid', amount_paid: 0, total: 575 })
+    expect(sim.customer('cus_1').balance).toBe(35)
+    expect(sim.balanceTransactions).toEqual([expect.objectContaining({ customer: 'cus_1', type: 'invoice_too_small', amount: 35, invoice: first.id })])
     expect(addonItems(sim, 'big_change')).toHaveLength(1)
-    expect(sim.pendingLines('sub_1')).toEqual([expect.objectContaining({ amount: 575 })])
-    expect(h.ledger).toHaveLength(0)
+    expect(sim.pendingLines('sub_1')).toEqual([])
+    // its invoice.paid books $0 (no ledger row for a $0 payment, nothing in Total Paid)
+    const firstPaid = sim.events.find((e) => e.data.object.id === first.id)!
+    expect(await deliver(firstPaid)).toBe(200)
+    expect(h.ledger.filter((l) => l.amount_cents > 0)).toHaveLength(0)
     expect(h.total).toBe(0)
-    // the renewal: $55 + $5.75 + the $5.75 first period - $5.40 credit = $60.75 + $0.35
+    // the renewal: $55 + $5.75 = $60.75, plus the $0.35 debit
     sim.advance(21 * 86_400)
     const renewal = sim.events.find((e) => e.data.object.billing_reason === 'subscription_cycle')!
-    expect(renewal.data.object).toMatchObject({ total: 6650, amount_paid: 6110 })
-    expect(h.total).toBe(0) // still not counted until the paid invoice is booked
+    expect(renewal.data.object).toMatchObject({ total: 6075, amount_paid: 6110 })
+    expect(h.total).toBe(0)
     expect(await deliver(renewal)).toBe(200)
-    expect(h.ledger).toEqual([expect.objectContaining({ stripe_invoice_id: renewal.data.object.id, amount_cents: 6075 + 35 })])
+    expect(h.ledger.filter((l) => l.amount_cents > 0)).toEqual([expect.objectContaining({ stripe_invoice_id: renewal.data.object.id, amount_cents: 6075 + 35 })])
     expect(h.total).toBe(6110)
-    // a retry of the same request is a replay: still one item, nothing on the bill twice
+    expect(sim.customer('cus_1').balance).toBe(0)
+    // a retry of the same request is a replay: still one item, nothing billed twice
     await changeAddon(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', { userId: USER, prorationDate: sim.nowSec() })
     expect(addonItems(sim, 'big_change')).toHaveLength(1)
+  })
+
+  it('L-1 (Aria 9:57, Sable 10:01): an owed removal + the renewal through the real route: Big change removed, its line refunded once (memo = the reason), email "We refunded your Big change charge.", flag cleared', async () => {
+    const sim = (h.sim = createStripeSim({ nowSec: T0 }))
+    sim.addCustomer('cus_1')
+    const start = T0 - 10 * 86_400
+    sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', addons: ['big_change'], periodStart: start })
+    const effectiveAt = new Date((start + 30 * 86_400) * 1000).toISOString()
+    h.owed.push({ id: 'ow_1', stripe_subscription_id: 'sub_1', stripe_customer_id: 'cus_1', user_id: USER, addons: ['big_change'], effective_at: effectiveAt, cleared_at: null })
+    sim.advance(21 * 86_400)
+    const renewal = sim.events.find((e) => e.data.object.billing_reason === 'subscription_cycle')!
+    expect(renewal.data.object.total).toBe(6075)
+    expect(await deliver(renewal)).toBe(200)
+    expect(addonItems(sim, 'big_change')).toHaveLength(0)
+    const reason = 'You turned off Big change, but it was still on your latest bill.'
+    expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: renewal.data.object.id, amount: 575, refund_amount: 575, memo: reason })])
+    expect(h.emails).toEqual([expect.objectContaining({ addonName: 'Big change', subject: 'We refunded your Big change charge.' })])
+    expect(h.emails[0].note.startsWith(reason)).toBe(true)
+    expect(h.owed[0]).toMatchObject({ cleared_how: 'refunded', cleared_invoice_id: renewal.data.object.id })
+    // the same event again: no second refund, no second email
+    expect(await deliver(renewal)).toBe(200)
+    expect(sim.creditNotes).toHaveLength(1)
+    expect(h.emails).toHaveLength(1)
   })
 
   it('ruling 3, the edges: exactly $0.50 is charged now; $0 (credit covers all) is a paid $0 invoice, nothing on the next bill', async () => {

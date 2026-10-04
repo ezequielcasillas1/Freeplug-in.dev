@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
 import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
+import { recordRemovalOwedNow, removalOwedStore } from '@/lib/stripe/addon-removal-owed-server'
 import { resumeEndingSubscriptions, resumeOutcomeFromLive, type ResumeOutcome } from '@/lib/stripe/resume-hosting'
 import { PortalNotConfiguredError } from '@/lib/stripe/portal'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH } from '@/lib/stripe/billing-routing'
@@ -275,7 +276,8 @@ async function runHostingPlanChange(
     if (!snapshot?.plan_step_synced_at) {
       await syncPlanSnapshotForCustomer(stripe, customerId)
     }
-    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe) }, live[0], step.id, { prorationDate, userId })
+    // L-1 (Aria 9:57): a pending add-on removal that can't be put back after the upgrade is saved as owed + alerted.
+    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe), onRemovalOwed: recordRemovalOwedNow('upgrade') }, live[0], step.id, { prorationDate, userId })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (r.ok && r.kind === 'upgraded') return { ok: true, message: CHANGE_PLAN_UPGRADED(step.name) }
@@ -554,7 +556,15 @@ async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { pro
     revalidatePath('/dashboard/plans')
     const name = ADDON_NAMES[addonId]
     if (r.ok && r.kind === 'on') return { ok: true, message: addonOnDone(name) }
-    if (r.ok && r.kind === 'kept') return { ok: true, message: addonKeepDone(name) }
+    if (r.ok && r.kind === 'kept') {
+      // L-1: Keep it = the customer wants it; an owed removal for it is dropped (errors logged only).
+      try {
+        await removalOwedStore().keep(own.sub.id, addonId)
+      } catch (e) {
+        console.error('[changeAddon] could not clear an owed removal on keep', e instanceof Error ? e.message : e)
+      }
+      return { ok: true, message: addonKeepDone(name) }
+    }
     if (r.ok) return { ok: true, message: addonOffDone(name, r.effectiveAt ? formatPlanEndDate(new Date(r.effectiveAt)) : null) }
     if (r.code === 'tip_drop_needed') return { ok: false, message: `${ADDON_NAMES[addonId]}: ${r.message}`, code: 'tip_drop_needed', tipDollars: r.tipDollars }
     if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }

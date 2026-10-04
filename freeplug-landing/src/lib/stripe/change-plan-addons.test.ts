@@ -289,7 +289,7 @@ describe('turning an add-on ON: charged now, once each, never a silent tip drop'
     expect((f.raw.subscriptions.update.mock.calls[1] as unknown as [string, unknown, { idempotencyKey: string }])[2].idempotencyKey).toMatch(/:heal$/)
     expect(f.inv.metadata.addon_refunded).toBe('true')
     expect(f.raw.creditNotes.create).toHaveBeenCalledWith(
-      { invoice: 'in_addon', amount: 500, refund_amount: 500, reason: 'order_change', memo: 'Add-on could not be turned on; refunded.' },
+      { invoice: 'in_addon', amount: 500, refund_amount: 500, reason: 'order_change', memo: "We couldn't turn on +1 small edit because of a problem adding it to your plan." },
       { idempotencyKey: 'addon-refund:in_addon' }
     )
   })
@@ -319,6 +319,9 @@ describe('Aria, Oct 4 8:28 AM: turning on charges the FULL price now, never a pa
     expect(invParams).not.toHaveProperty('subscription')
     const [itemParams] = f.raw.invoiceItems.create.mock.calls[0] as unknown as [Record<string, unknown>]
     expect(itemParams).toMatchObject({ customer: 'cus_1', invoice: 'in_addon', amount: cents, currency: 'usd' })
+    // Aria 10:09 (item 4): the Stripe invoice line shows the add-on's display name, never the raw id
+    expect(itemParams.description).toBe(id === 'small_edit' ? 'Add-on: +1 small edit (this billing period)' : 'Add-on: Big change (this billing period)')
+    expect(String(itemParams.description)).not.toContain(id)
     expect(f.raw.invoices.pay).toHaveBeenCalledWith('in_addon', { off_session: true }, expect.anything())
     // no proration anywhere: the subscription change itself bills nothing now
     const [, params] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams]

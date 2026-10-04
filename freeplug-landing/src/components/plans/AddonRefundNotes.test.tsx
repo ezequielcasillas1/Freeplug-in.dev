@@ -21,10 +21,10 @@ const row = (id: string, daysAgo: number, addonRefund: InvoiceRow['addonRefund']
 describe('AddonRefundNotes (Plans page)', () => {
   it('one note per refunded add-on charge in the last 30 days: the reason, then where the money went', () => {
     const rows = [
-      row('in_a', 1, { addon: 'big_change', reason: 'period_ended', cardCents: 35, creditCents: 540 }),
+      row('in_a', 1, { kind: 'first_period', addon: 'big_change', addons: ['big_change'], reason: 'period_ended', cardCents: 35, creditCents: 540 }),
       row('in_b', 2, null),
-      row('in_c', 29, { addon: 'small_edit', reason: 'switch_pending', cardCents: 0, creditCents: 500 }),
-      row('in_old', 31, { addon: 'small_edit', reason: 'not_added', cardCents: 500, creditCents: 0 }),
+      row('in_c', 29, { kind: 'first_period', addon: 'small_edit', addons: ['small_edit'], reason: 'switch_pending', cardCents: 0, creditCents: 500 }),
+      row('in_old', 31, { kind: 'first_period', addon: 'small_edit', addons: ['small_edit'], reason: 'not_added', cardCents: 500, creditCents: 0 }),
     ]
     expect(recentAddonRefundNotes(rows, NOW)).toEqual([
       {

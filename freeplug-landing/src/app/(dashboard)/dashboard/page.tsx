@@ -12,6 +12,7 @@ import { SubscriptionDetails } from './SubscriptionDetails'
 import { outreachDashboardState } from './outreach-dashboard'
 import { RecentActivity } from './RecentActivity'
 import { DashboardAlerts } from './DashboardAlerts'
+import { DashboardAddonRefundNotes } from './DashboardAddonRefundNotes'
 import { SupportCard } from './SupportCard'
 import { syncStripeCustomerFromCheckoutSession } from '@/lib/stripe/sync-checkout-customer'
 import { dashboardAccessAlert, getWebsiteAccessForCustomer, type WebsiteAccess } from '@/lib/website-access'
@@ -161,6 +162,8 @@ export default async function DashboardPage({ searchParams }: Props) {
           {RESUME_BUSY_MESSAGE}
         </p>
       ) : null}
+
+      {p?.stripe_customer_id ? <DashboardAddonRefundNotes customerId={p.stripe_customer_id} /> : null}
 
       {q.password_reset === '1' ? (
         <p
