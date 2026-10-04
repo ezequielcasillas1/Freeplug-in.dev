@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
@@ -169,24 +169,36 @@ export function HostingCheckoutCard({
   const switchRef = useRef<HTMLButtonElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Stale-request guard for the upgrade preview: every preview takes a number, and closing (Esc, Not
+  // now, expiry, unmount) bumps it, so a preview that arrives after that is dropped.
+  const previewSeq = useRef(0)
 
   const clearTimer = () => {
     if (timer.current) clearTimeout(timer.current)
     timer.current = null
   }
-  useEffect(() => clearTimer, [])
+  useEffect(
+    () => () => {
+      clearTimer()
+      previewSeq.current++
+    },
+    []
+  )
 
   const closeConfirm = useCallback((expired: boolean) => {
     clearTimer()
+    previewSeq.current++
     setConfirm({ phase: 'idle', expired })
     // Back to the switch button (Lina §3a: Esc and Cancel return focus to it).
     setTimeout(() => switchRef.current?.focus(), 0)
   }, [])
 
-  // Focus moves to Confirm when the confirm appears; Esc closes it.
-  useEffect(() => {
-    if (confirm.phase !== 'confirm') return
-    confirmRef.current?.focus()
+  // Focus moves to Confirm when the confirm appears; Esc closes it, and Esc while "Checking the
+  // amount…" cancels the same way (Vera, aaec23d report). A layout effect, so focus and the listener
+  // are set in the same commit that inserts Confirm: no gap where an Esc is lost (finding 2).
+  useLayoutEffect(() => {
+    if (confirm.phase !== 'confirm' && confirm.phase !== 'loading') return
+    if (confirm.phase === 'confirm') confirmRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeConfirm(false)
     }
@@ -246,6 +258,7 @@ export function HostingCheckoutCard({
     setError(null)
     setNotice(null)
     clearTimer()
+    const seq = ++previewSeq.current
     setConfirm({ phase: 'loading', step })
     let text = UPGRADE_CONFIRM_FALLBACK(name)
     let prorationDate: number | undefined
@@ -263,6 +276,8 @@ export function HostingCheckoutCard({
     } catch {
       // network: the fallback line, and the server charges at the time of Confirm
     }
+    // Esc (or unmount) during the preview: drop the late result, no confirm and no focus move.
+    if (seq !== previewSeq.current) return
     setConfirm({ phase: 'confirm', step, text, extra: upgradeExtras, prorationDate })
     timer.current = setTimeout(() => closeConfirm(true), CONFIRM_OPEN_MS)
   }

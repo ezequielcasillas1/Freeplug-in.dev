@@ -195,6 +195,44 @@ function switching(over: Partial<React.ComponentProps<typeof HostingCheckoutCard
   return { ...utils, onChangePlan, onPreviewChange }
 }
 
+/** A preview that resolves only when the test says so (the real one is a Stripe round trip). */
+function escDuringLoading() {
+  let resolve!: (v: PlanPreviewResponse) => void
+  const onPreviewChange = vi.fn(() => new Promise<PlanPreviewResponse>((r) => (resolve = r)))
+  const utils = switching({ onPreviewChange })
+  pickStep(utils.container, 'fast_lane')
+  fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+  expect(screen.getByTestId('upgrade-calculating')).toHaveTextContent('Checking the amount…')
+  fireEvent.keyDown(document, { key: 'Escape' })
+  const resolvePreview = () => resolve({ ok: true, prorationDate: 1_790_000_000, amountDueCents: 1953, nextAmountCents: 6500, nextDate: 'November 3, 2026' })
+  return { ...utils, onPreviewChange, resolvePreview }
+}
+
+/** jsdom has no default actions: in a browser, Enter on a focused button clicks it. */
+function pressEnter() {
+  const el = document.activeElement as HTMLElement | null
+  if (!el) return
+  fireEvent.keyDown(el, { key: 'Enter' })
+  if (el instanceof HTMLButtonElement && !el.disabled) fireEvent.click(el)
+}
+
+/**
+ * Sends Escape from a MutationObserver the moment find() returns an element, i.e. right after React
+ * inserts it and before any passive effect runs (Vera, aaec23d report finding 2, probe b).
+ */
+function escOnInsert(find: () => HTMLElement | null) {
+  const sent: { at: HTMLElement | null; focusedAtSend: boolean | null; stop: () => void } = { at: null, focusedAtSend: null, stop: () => mo.disconnect() }
+  const mo = new MutationObserver(() => {
+    const el = find()
+    if (!el || sent.at) return
+    sent.at = el
+    sent.focusedAtSend = document.activeElement === el
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  })
+  mo.observe(document.body, { childList: true, subtree: true })
+  return sent
+}
+
 describe('switching card: direction-aware button (Lina §3a)', () => {
   it('selected = current: disabled "Choose a different plan to switch", no help line', () => {
     switching()
@@ -348,13 +386,69 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     // Confirm to have focus (listener attached), then Esc, then wait for Confirm to be gone. (waitFor
     // on null, not waitForElementToBeRemoved: fireEvent runs in act, so it is usually gone already.)
     const confirmBtn = await screen.findByRole('button', { name: 'Confirm' })
-    await waitFor(() => expect(document.activeElement).toBe(confirmBtn))
+    await waitFor(() =>
+      expect(document.activeElement, 'Confirm should receive focus on open; the Esc listener is attached in the same effect').toBe(confirmBtn)
+    )
     fireEvent.keyDown(document, { key: 'Escape' })
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull())
     const third = screen.getByRole('button', { name: 'Switch to Fast lane now' })
     await waitFor(() => expect(document.activeElement).toBe(third))
     expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
     expect(screen.queryByTestId('confirm-expired')).toBeNull()
+    expect(onChangePlan).not.toHaveBeenCalled()
+  })
+
+  it('Esc while "Checking the amount…" cancels back to the switch button and returns focus to it (Vera, aaec23d report finding 1)', async () => {
+    const { onChangePlan, onPreviewChange } = escDuringLoading()
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Switch to Fast lane now' })))
+    expect(screen.queryByTestId('upgrade-calculating')).toBeNull()
+    expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
+    expect(screen.queryByTestId('confirm-expired')).toBeNull()
+    expect(screen.getByTestId('confirm-live')).toHaveTextContent('')
+    expect(onPreviewChange).toHaveBeenCalledTimes(1)
+    expect(onChangePlan).not.toHaveBeenCalled()
+  })
+
+  it('the preview resolving after that Esc is ignored: no confirm opens and focus stays on the switch button', async () => {
+    const { resolvePreview, onChangePlan } = escDuringLoading()
+    const back = screen.getByRole('button', { name: 'Switch to Fast lane now' })
+    await waitFor(() => expect(document.activeElement).toBe(back))
+    await act(async () => {
+      resolvePreview()
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull()
+    expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
+    expect(screen.getByTestId('confirm-live')).toHaveTextContent('')
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+    expect(onChangePlan).not.toHaveBeenCalled()
+  })
+
+  it('Enter after the late preview does not confirm (focus is on the switch button, not Confirm)', async () => {
+    const { resolvePreview, onChangePlan } = escDuringLoading()
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Switch to Fast lane now' })))
+    await act(async () => {
+      resolvePreview()
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    pressEnter()
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    expect(onChangePlan).not.toHaveBeenCalled()
+  })
+
+  it('Esc the instant Confirm is inserted still closes it: focus and the Esc listener are set in the commit (useLayoutEffect)', async () => {
+    const onPreviewChange = vi.fn(async (): Promise<PlanPreviewResponse> => ({ ok: true, prorationDate: 1_790_000_000, amountDueCents: 1953, nextAmountCents: 6500, nextDate: 'November 3, 2026' }))
+    const { container, onChangePlan } = switching({ onPreviewChange })
+    pickStep(container, 'fast_lane')
+    const sent = escOnInsert(() => screen.queryByRole('button', { name: 'Confirm' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+    await waitFor(() => expect(sent.at).not.toBeNull())
+    expect(sent.focusedAtSend, 'Confirm should already have focus when it is in the DOM').toBe(true)
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull())
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Switch to Fast lane now' })))
+    sent.stop()
     expect(onChangePlan).not.toHaveBeenCalled()
   })
 
@@ -644,6 +738,21 @@ describe('the tipping system: tip box on the Plans page (next bill, no modal)', 
     const ids = a.onChangeTip.mock.calls.map((c) => (c as unknown[])[1])
     expect(a.onChangeTip.mock.calls.map((c) => (c as unknown[])[0])).toEqual([6, 4, 6])
     expect(new Set(ids).size).toBe(3)
+  })
+
+  it('Esc the instant the tip Confirm is inserted still closes it and returns focus to Update tip (useLayoutEffect, Vera aaec23d finding 2)', async () => {
+    const a = tipActions()
+    switching({ currentStepId: 'fast_lane', currentPlanLines: ['x'], currentTipDollars: 2, ...a })
+    const box = screen.getByTestId('tip-change-box')
+    fireEvent.change(within(box).getByRole('slider'), { target: { value: '71' } })
+    const sent = escOnInsert(() => within(box).queryByRole('button', { name: 'Confirm' }))
+    fireEvent.click(within(box).getByTestId('tip-change-button'))
+    await waitFor(() => expect(sent.at).not.toBeNull())
+    expect(sent.focusedAtSend, 'the tip Confirm should already have focus when it is in the DOM').toBe(true)
+    await waitFor(() => expect(within(box).queryByTestId('tip-change-confirm')).toBeNull())
+    await waitFor(() => expect(document.activeElement).toBe(within(box).getByTestId('tip-change-button')))
+    sent.stop()
+    expect(a.onChangeTip).not.toHaveBeenCalled()
   })
 
   it('a planned switch locks the tip (Lina round 5b: no bar, one read-only row + the ends-on note); a grandfathered plan gets no tip box', () => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PlanStep } from '@/lib/plans/ladder'
@@ -67,7 +67,9 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
     setState({ phase: 'idle' })
     setTimeout(() => buttonRef.current?.focus(), 0)
   }, [])
-  useEffect(() => {
+  // A layout effect (Vera, aaec23d report finding 2): focus and the Esc listener are set in the same
+  // commit that inserts Confirm, so an Esc right after it appears is not lost.
+  useLayoutEffect(() => {
     if (state.phase !== 'confirm') return
     confirmRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
