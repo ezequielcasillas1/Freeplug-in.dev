@@ -219,3 +219,34 @@ describe("Vera's loading cases on the tip box (a-c, mirrored in HostingCheckoutC
     await waitFor(() => expect(t.onChangeTip).toHaveBeenCalledWith(6, 'confirm-1'))
   })
 })
+
+describe('TipChangeBox: unmount while "Checking the amount…" (Vera d0624bb, optional P2)', () => {
+  it('unmount while loading, then the preview resolves: no timers left and no React warnings', async () => {
+    vi.useFakeTimers()
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const warns = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      let resolve!: (v: TipPreviewResponse) => void
+      const onPreviewTip = vi.fn((): Promise<TipPreviewResponse> => new Promise<TipPreviewResponse>((r) => (resolve = r)))
+      const onChangeTip = vi.fn(async () => ({ ok: true, message: 'server' }))
+      const { unmount } = render(<TipChangeBox step={fastLane} currentTipDollars={2} locked={false} onPreviewTip={onPreviewTip} onChangeTip={onChangeTip} />)
+      const box = screen.getByTestId('tip-change-box')
+      fireEvent.change(within(box).getByRole('slider'), { target: { value: '71' } })
+      fireEvent.click(within(box).getByTestId('tip-change-button'))
+      expect(within(box).getByTestId('tip-change-button')).toHaveTextContent(UPGRADE_CALCULATING)
+      unmount()
+      await act(async () => {
+        resolve(okPreview(6))
+        for (let i = 0; i < 5; i++) await Promise.resolve()
+      })
+      expect(vi.getTimerCount(), 'no timer may be scheduled after unmount').toBe(0)
+      expect(errors).not.toHaveBeenCalled()
+      expect(warns).not.toHaveBeenCalled()
+      expect(onChangeTip).not.toHaveBeenCalled()
+    } finally {
+      errors.mockRestore()
+      warns.mockRestore()
+      vi.useRealTimers()
+    }
+  })
+})

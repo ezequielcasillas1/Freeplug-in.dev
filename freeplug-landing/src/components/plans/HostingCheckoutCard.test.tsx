@@ -576,6 +576,90 @@ describe("Vera's loading cases on the plan-switch card (a-c, mirrored in TipChan
   })
 })
 
+const radioOf = (c: HTMLElement, id: PlanStepId) => within(row(c, id)).getByRole('radio') as HTMLInputElement
+
+describe('Vera d0624bb: picking another plan or unmounting while "Checking the amount…" loads', () => {
+  it("Vera's repro: pick Priority while the Fast lane preview loads -> no 'Switch to Fast lane now?' confirm, and onChangePlan is never called with 'fast_lane'", async () => {
+    const q = queuedPreviews()
+    const { container, onChangePlan } = switching({ onPreviewChange: q.onPreviewChange })
+    pickStep(container, 'fast_lane')
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+    expect(screen.getByTestId('upgrade-calculating')).toBeInTheDocument()
+    pickStep(container, 'priority') // cancels the in-flight Fast lane preview
+    await q.resolve(0, 1953) // the Fast lane preview answers late
+    expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull()
+    expect(container).not.toHaveTextContent('Switch to Fast lane now?')
+    expect(screen.getByTestId('confirm-live')).toHaveTextContent('')
+    pressEnter()
+    // The Priority switch previews Priority and charges Priority only.
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to Priority now' }))
+    expect(q.onPreviewChange).toHaveBeenLastCalledWith('priority')
+    await q.resolve(q.onPreviewChange.mock.calls.length - 1, 2222)
+    const confirm = await screen.findByTestId('upgrade-confirm')
+    expect(confirm).toHaveTextContent(/^Switch to Priority now\? We'll charge \$22\.22 today/)
+    expect(confirm).not.toHaveTextContent('Fast lane')
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Confirm' }))
+    await waitFor(() => expect(onChangePlan).toHaveBeenCalledTimes(1))
+    expect(onChangePlan.mock.calls[0][0]).toBe('priority')
+    expect(onChangePlan.mock.calls.some((c) => c[0] === 'fast_lane')).toBe(false)
+  })
+
+  it('after that pick, the radio and the screen agree: Priority checked, "Switch to Priority now" ready, no loading line, before and after the late preview', async () => {
+    const q = queuedPreviews()
+    const { container, onChangePlan } = switching({ onPreviewChange: q.onPreviewChange })
+    pickStep(container, 'fast_lane')
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+    pickStep(container, 'priority')
+    const consistent = () => {
+      expect(radioOf(container, 'priority').checked).toBe(true)
+      expect(radioOf(container, 'fast_lane').checked).toBe(false)
+      expect(row(container, 'priority')).toHaveAttribute('data-selected', 'true')
+      expect(row(container, 'fast_lane')).toHaveAttribute('data-selected', 'false')
+      expect(screen.getByRole('button', { name: 'Switch to Priority now' })).toBeEnabled()
+      expect(screen.queryByRole('button', { name: 'Switch to Fast lane now' })).toBeNull()
+      expect(screen.queryByTestId('upgrade-calculating')).toBeNull()
+      expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
+      expect(screen.queryByTestId('confirm-expired')).toBeNull()
+      expect(screen.getByTestId('switch-help')).toHaveTextContent(CHANGE_PLAN_HELP_UP)
+    }
+    consistent()
+    await q.resolve(0, 1953)
+    consistent()
+    // Picking Fast lane again and switching asks for a fresh preview, it does not reuse the dropped one.
+    pickStep(container, 'fast_lane')
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+    expect(q.onPreviewChange).toHaveBeenCalledTimes(2)
+    expect(screen.getByTestId('upgrade-calculating')).toBeInTheDocument()
+    expect(onChangePlan).not.toHaveBeenCalled()
+  })
+
+  it('unmount while loading, then the preview resolves: no timers left and no React warnings', async () => {
+    vi.useFakeTimers()
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const warns = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      let resolve!: (v: PlanPreviewResponse) => void
+      const onPreviewChange = vi.fn(() => new Promise<PlanPreviewResponse>((r) => (resolve = r)))
+      const { container, unmount } = switching({ onPreviewChange })
+      pickStep(container, 'fast_lane')
+      fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+      expect(screen.getByTestId('upgrade-calculating')).toBeInTheDocument()
+      unmount()
+      await act(async () => {
+        resolve({ ok: true, prorationDate: 1_790_000_000, amountDueCents: 1953, nextAmountCents: 6500, nextDate: 'November 3, 2026' })
+        for (let i = 0; i < 5; i++) await Promise.resolve()
+      })
+      expect(vi.getTimerCount(), 'no CONFIRM_OPEN_MS expiry (or focus) timer may be scheduled after unmount').toBe(0)
+      expect(errors).not.toHaveBeenCalled()
+      expect(warns).not.toHaveBeenCalled()
+    } finally {
+      errors.mockRestore()
+      warns.mockRestore()
+    }
+  })
+})
+
 describe('the tipping system: slider before checkout and in the claim flow', () => {
   const slider = () => screen.getByRole('slider', { name: TIP_SLIDER_LABEL }) as HTMLInputElement
 

@@ -309,9 +309,13 @@ export function HostingCheckoutCard({
     setPlanStep(id)
     // The slider starts at the new step's price (no tip) after every pick.
     setTipDollars(0)
-    // A new pick closes an open confirm (its amount was for the old pick).
-    if (confirm.phase === 'confirm') {
+    // A new pick closes an open confirm (its amount was for the old pick), and cancels a preview still
+    // loading for the old pick: the counter bump drops its late answer, so no confirm opens for the
+    // old plan (Vera, d0624bb report finding 1). Like closeConfirm, minus the focus move: a pick
+    // keeps focus on the radio. The radios stay enabled while loading (a visible change; Lina's call).
+    if (confirm.phase === 'confirm' || confirm.phase === 'loading') {
       clearTimer()
+      previewSeq.current++
       setConfirm({ phase: 'idle', expired: false })
     } else if (confirm.phase === 'idle' && confirm.expired) setConfirm({ phase: 'idle', expired: false })
   }
