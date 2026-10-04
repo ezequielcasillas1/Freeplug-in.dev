@@ -488,7 +488,7 @@ export const ADDON_REFUND_REASONS: Record<AddonRefundReason, (name: string) => s
   plan_ended: (name) => `We couldn't turn on ${name} because your hosting plan has ended or is set to end.`,
   not_added: (name) => `We couldn't turn on ${name} because of a problem adding it to your plan.`,
   // L-1 (Aria 9:57): an add-on the customer turned off was still billed at renewal; refunded by the self-heal.
-  turned_off: (name) => `You turned off ${name}, but it was still charged this period, so we refunded it.`,
+  turned_off: (name) => `You turned off ${name}, but it was still charged this period.`,
 }
 export const isAddonRefundReason = (v: unknown): v is AddonRefundReason => typeof v === 'string' && Object.hasOwn(ADDON_REFUND_REASONS, v)
 /** Plans page note and the email line: the reason, then where the money went. */

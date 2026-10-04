@@ -63,7 +63,7 @@ describe('Lina 10:33: a small gray date line at the top of each refund note card
     expect(date.className).toContain('text-gray-500')
     expect(date.querySelector('time')).toHaveAttribute('dateTime', '2026-10-04T13:00:00.000Z')
     expect(screen.getByTestId('addon-refund-note-text').textContent).toBe(
-      'You turned off Big change, but it was still charged this period, so we refunded it. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.'
+      'You turned off Big change, but it was still charged this period. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.'
     )
   })
   it('the refund time wins over the invoice date; America/Chicago decides the day (11 PM CT is still that day, not tomorrow UTC)', () => {

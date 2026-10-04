@@ -102,7 +102,7 @@ describe('Vera M-1: a turned-off add-on can never renew, through off -> cancel -
     expect(renewal.total).toBe(5500 + 500 + 575)
     const heal = await healOwedRemovals({ stripe: sim.client() as unknown as Stripe, store, log: () => {} }, renewal as unknown as Parameters<typeof healOwedRemovals>[1])
     expect(heal).toMatchObject({ outcome: 'refunded' })
-    expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: renewal.id, amount: 575, memo: 'You turned off Big change, but it was still charged this period, so we refunded it.' })])
+    expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: renewal.id, amount: 575, memo: 'You turned off Big change, but it was still charged this period.' })])
     expect(addonsOn(sim)).toEqual(['small_edit'])
     expect(rows[0]).toMatchObject({ clearedHow: 'refunded' })
     expect(await healOwedRemovals({ stripe: sim.client() as unknown as Stripe, store, log: () => {} }, renewal as unknown as Parameters<typeof healOwedRemovals>[1])).toMatchObject({ outcome: 'none' })

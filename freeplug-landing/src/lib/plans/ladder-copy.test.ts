@@ -54,10 +54,10 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
       fn(copy.addonTurnedOffRefundEmailSubject),
       // Aria 10:09 (option A): the resume status promises a refund if the owed add-on is charged (the 10th)
       fn(copy.RESUME_REMOVAL_OWED_STATUS),
-      // Sable 10:33: the L-1 reason itself now says "so we refunded it" (the 11th; forced by this line)
-      fn(copy.ADDON_REFUND_REASONS.turned_off),
     ])
-    expect(exempt.size).toBe(11)
+    // Sable 10:47: the L-1 reason no longer says "refunded" (back to 10; it must stay off this list)
+    expect(exempt.size).toBe(10)
+    expect(exempt.has(fn(copy.ADDON_REFUND_REASONS.turned_off))).toBe(false)
     const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i
     expect(new Set(all.filter((s) => banned.test(s)))).toEqual(exempt)
     for (const s of all) if (!exempt.has(s)) expect(s).not.toMatch(/refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i)
@@ -188,7 +188,7 @@ describe('Aria 9:27 / 9:28: new strings (listed for Sable), word for word', () =
     expect(copy.addonRefundNote('Big change', 'period_ended', 0, 575)).toBe(
       "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We added $5.75 back to your account credit."
     )
-    expect(r('turned_off')).toBe('You turned off Big change, but it was still charged this period, so we refunded it.' + tail)
+    expect(r('turned_off')).toBe('You turned off Big change, but it was still charged this period.' + tail)
     expect(Object.keys(copy.ADDON_REFUND_REASONS).sort()).toEqual(['not_added', 'period_ended', 'plan_ended', 'removal_pending', 'switch_pending', 'tip_unconfirmed', 'turned_off'])
     expect(copy.isAddonRefundReason('period_ended')).toBe(true)
     expect(copy.isAddonRefundReason('nope')).toBe(false)

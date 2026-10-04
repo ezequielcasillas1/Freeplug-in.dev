@@ -46,7 +46,7 @@ describe('DashboardAddonRefundNotes (main dashboard)', () => {
     expect(screen.getAllByTestId('addon-refund-note-date').map((n) => n.textContent)).toEqual(['Oct 3', 'Oct 2', 'Oct 1'])
     for (const card of screen.getAllByTestId('addon-refund-note')) expect(card.firstElementChild).toHaveAttribute('data-testid', 'addon-refund-note-date')
     expect(notes).toEqual([
-      'You turned off Big change, but it was still charged this period, so we refunded it. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.',
+      'You turned off Big change, but it was still charged this period. We refunded $5.75 to your card. The card refund can take 5–10 business days to show up.',
       "We couldn't turn on Big change because a plan switch was already scheduled. Add-ons can't change until the switch happens. We refunded $0.35 to your card and added $5.40 back to your account credit. The card refund can take 5–10 business days to show up.",
       "We couldn't turn on Big change because a plan switch was already scheduled. Add-ons can't change until the switch happens. We added $5.75 back to your account credit.",
     ])

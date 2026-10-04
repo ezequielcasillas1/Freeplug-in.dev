@@ -408,7 +408,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     expect(renewal.data.object.total).toBe(6075)
     expect(await deliver(renewal)).toBe(200)
     expect(addonItems(sim, 'big_change')).toHaveLength(0)
-    const reason = 'You turned off Big change, but it was still charged this period, so we refunded it.'
+    const reason = 'You turned off Big change, but it was still charged this period.'
     expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: renewal.data.object.id, amount: 575, refund_amount: 575, memo: reason })])
     expect(h.emails).toEqual([expect.objectContaining({ addonName: 'Big change', subject: 'We refunded your Big change charge.' })])
     expect(h.emails[0].note.startsWith(reason)).toBe(true)
