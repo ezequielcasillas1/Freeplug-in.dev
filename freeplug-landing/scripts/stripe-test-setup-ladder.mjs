@@ -15,6 +15,13 @@
  *        [--probe-upgrade-confirm]  Aria 1:34 PM: preview amount == invoiced amount, pending downgrade,
  *                      stale/future proration_date refused, double Confirm charges once (probe customer)
  *        [--probe-billing]  card-update portal flow and invoice list, with and without a schedule
+ *        [--addons-only]  ONLY the add-on products and prices (Oct 4): no step prices, no portal
+ *                      configuration, no customers. Idempotent (fixed product ids + lookup keys).
+ *        [--probe-addons]  add-ons on a tagged probe customer (Aria, Oct 4 8:28 AM): turning one on
+ *                      charges its FULL price now as its own invoice (no proration), the next bill is
+ *                      plan + add-on, a removal stays on until period end, a declined card leaves it
+ *                      off. Creates a customer + subscription: run only when no listener forwards
+ *                      this account's events to a live app.
  *        [--probe-tips]  the tipping system: checkout line items with a tip, tip change next cycle
  *                      (no proration), upgrade with a tip (tip removed, preview == invoice), downgrade
  *                      with a tip (tip dropped in the schedule's next phase), tip change refused while
@@ -39,6 +46,9 @@
  *     update only (Aria 4:05 PM; the app uses the dedicated one from scripts/stripe-portal-config.mjs);
  *     plan switching OFF (the app does moves, so
  *     nobody gets an immediate mid-month downgrade credit). Id -> STRIPE_PORTAL_CONFIGURATION_ID.
+ *   - Add-ons (Oct 4): one Product per ladder.ts ADDONS entry (fixed id, e.g. freeplug_extra_small_edit)
+ *     with ONE monthly USD licensed price, lookup key from ADDONS (freeplug_addon_<id>_monthly), same
+ *     replace-if-mismatched rule (transfer_lookup_key). The portal configuration is not touched.
  *   - Retired: the single product freeplug_hosting_ladder from the first test run is archived
  *     once none of its prices is active.
  */
@@ -142,6 +152,82 @@ async function loadLadder() {
   const { createJiti } = await import('jiti')
   const jiti = createJiti(import.meta.url)
   return jiti.import(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'lib', 'plans', 'ladder.ts'))
+}
+
+/** Product names for the add-on products (Stripe dashboard / invoices). */
+export const ADDON_PRODUCT_NAMES = { small_edit: 'Freeplug add-on: +1 small edit', big_change: 'Freeplug add-on: Big change' }
+
+/**
+ * Add-ons (Oct 4): one product + one monthly licensed USD price per ladder.ts ADDONS entry.
+ * Idempotent: fixed product ids, lookup keys; a mismatched price is replaced (transfer_lookup_key) and
+ * the old one deactivated. Never touches step prices, the tip, the portal, or any customer.
+ */
+export async function setupAddons(stripe, ladder, { dryRun = false, log = console.log, quiet = false } = {}) {
+  const ADDONS = ladder.ADDONS ?? []
+  const actions = []
+  /** @type {Record<string, string>} */
+  const addonPriceIds = {}
+  for (const addon of ADDONS) {
+    const name = ADDON_PRODUCT_NAMES[addon.id] ?? `Freeplug add-on: ${addon.id}`
+    let product = null
+    try {
+      product = assertTestObject(await stripe.products.retrieve(addon.productId), `product ${addon.productId}`)
+    } catch (e) {
+      if (e instanceof SetupRefused) throw e
+      if (e?.statusCode !== 404 && e?.code !== 'resource_missing') throw e
+    }
+    if (!product) {
+      actions.push(`create product ${addon.productId}`)
+      if (!dryRun) {
+        assertTestObject(
+          await stripe.products.create(
+            { id: addon.productId, name, metadata: { app: 'freeplug', kind: 'addon', addon: addon.id, ladder: '2026-10-04' } },
+            { idempotencyKey: `ladder-product-${addon.productId}` }
+          ),
+          `product ${addon.productId}`
+        )
+      }
+    } else if (!product.active || product.name !== name) {
+      actions.push(`update product ${addon.productId} (active, name)`)
+      if (!dryRun) await stripe.products.update(addon.productId, { active: true, name })
+    }
+  }
+  const existing = ADDONS.length ? await stripe.prices.list({ lookup_keys: ADDONS.map((a) => a.lookupKey), limit: 20 }) : { data: [] }
+  for (const p of existing.data) assertTestObject(p, `price ${p.id}`)
+  for (const addon of ADDONS) {
+    const name = ADDON_PRODUCT_NAMES[addon.id] ?? `Freeplug add-on: ${addon.id}`
+    const found = existing.data.find((p) => p.lookup_key === addon.lookupKey)
+    const licensed = !found?.recurring?.usage_type || found.recurring.usage_type === 'licensed'
+    if (found && licensed && priceMatches(found, { monthlyCents: addon.monthlyCents, productId: addon.productId }, addon.productId)) {
+      addonPriceIds[addon.id] = found.id
+      continue
+    }
+    actions.push(found ? `replace price ${found.id} (${addon.lookupKey}: no longer matches the config)` : `create price ${addon.lookupKey} ($${(addon.monthlyCents / 100).toFixed(2)}/month)`)
+    if (dryRun) continue
+    const created = assertTestObject(
+      await stripe.prices.create(
+        {
+          product: addon.productId,
+          currency: 'usd',
+          unit_amount: addon.monthlyCents,
+          recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' },
+          lookup_key: addon.lookupKey,
+          transfer_lookup_key: Boolean(found),
+          nickname: name,
+          metadata: { kind: 'addon', addon: addon.id },
+        },
+        { idempotencyKey: `ladder-addon-price-${addon.lookupKey}-${addon.monthlyCents}-${found?.id ?? 'new'}` }
+      ),
+      `price ${addon.lookupKey}`
+    )
+    addonPriceIds[addon.id] = created.id
+    if (found?.active) await stripe.prices.update(found.id, { active: false })
+  }
+  if (!quiet) {
+    log(`mode: TEST (livemode=false on every object)${dryRun ? ' [dry run]' : ''} [add-ons]`)
+    for (const a of actions) log(`  ${dryRun ? 'would ' : ''}${a}`)
+  }
+  return { addonPriceIds, actions }
 }
 
 /** The idempotent setup. `stripe` is an initialised Stripe client on a test key. */
@@ -280,6 +366,10 @@ export async function setupLadder(stripe, ladder, { dryRun = false, log = consol
     }
   }
 
+  // Add-ons (Oct 4): their products and prices (never in the portal configuration).
+  const addonSetup = await setupAddons(stripe, ladder, { dryRun, log, quiet: true })
+  actions.push(...addonSetup.actions)
+
   // Billing Portal configuration (never the default one)
   const list = await stripe.billingPortal.configurations.list({ limit: 100 })
   const mine = list.data.find((c) => c.metadata?.freeplug_ladder === PORTAL_TAG && !c.is_default)
@@ -294,7 +384,7 @@ export async function setupLadder(stripe, ladder, { dryRun = false, log = consol
 
   log(`mode: TEST (livemode=false on every object)${dryRun ? ' [dry run]' : ''}`)
   for (const a of actions) log(`  ${dryRun ? 'would ' : ''}${a}`)
-  return { priceIds, tipPriceId, portalConfigurationId: portal?.id ?? null, actions }
+  return { priceIds, tipPriceId, addonPriceIds: addonSetup.addonPriceIds, portalConfigurationId: portal?.id ?? null, actions }
 }
 
 async function ensureProbeProduct(stripe, id, name) {
@@ -1113,6 +1203,67 @@ async function runLockProbe(stripe, ladder, setup, { deps, newSub, fresh, lk, lo
   }
 }
 
+/**
+ * Add-ons probe (Aria, Oct 4 8:28 AM) on a tagged probe customer, with the app's own changeAddon:
+ *   A1 Priority, turn on Big change: one new invoice of exactly 575 (paid, no subscription link,
+ *      metadata freeplug_kind=addon_first_period), the item added with no proration (no pending items)
+ *   A2 the next bill (invoices.createPreview) = 5500 + 575
+ *   A3 turn it off: still on the subscription now, the schedule's next phase has no add-on, the next
+ *      phase total = 5500
+ *   A4 a declined card (pm_card_chargeCustomerFail as the plan's card): payment_failed, add-on still
+ *      off, the one-off invoice voided
+ * Leaves the probe subscription canceled at the end. NOT RUN in the Oct 4 build (listener on :3000).
+ */
+export async function runAddonProbe(stripe, ladder, setup, { log = console.log } = {}) {
+  const { createJiti } = await import('jiti')
+  const jiti = createJiti(import.meta.url)
+  const cp = await jiti.import(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'lib', 'stripe', 'change-plan.ts'))
+  const addonPriceIdFor = async (id) => setup.addonPriceIds[id]
+  const deps = { stripe, addonPriceIdFor, log: (m) => log(`  [app] ${m}`) }
+  const results = {}
+  const check = (name, ok, detail) => {
+    results[name] = !!ok
+    log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail === undefined ? '' : `  ${JSON.stringify(detail)}`}`)
+  }
+  const customer = assertTestObject(await stripe.customers.create({ email: PROBE_EMAIL, name: 'Ladder probe (add-ons)', metadata: { freeplug_probe: PROBE_TAG, probe: 'true' } }), 'customer')
+  const pm = await stripe.paymentMethods.attach('pm_card_visa', { customer: customer.id })
+  await stripe.customers.update(customer.id, { invoice_settings: { default_payment_method: pm.id } })
+  const sub = assertTestObject(
+    await stripe.subscriptions.create({ customer: customer.id, items: [{ price: setup.priceIds.priority }], default_payment_method: pm.id, metadata: { freeplug_probe: PROBE_TAG, type: 'hosting' } }),
+    'subscription'
+  )
+  const invoiceCount = async () => (await stripe.invoices.list({ customer: customer.id, limit: 50 })).data.length
+  const before = await invoiceCount()
+  const on = await cp.changeAddon(deps, await stripe.subscriptions.retrieve(sub.id), 'big_change', 'on', { userId: 'probe-addons' })
+  const after = await stripe.subscriptions.retrieve(sub.id)
+  const oneOff = on.ok ? await stripe.invoices.retrieve(on.invoiceId) : null
+  const pending = (await stripe.invoiceItems.list({ customer: customer.id, pending: true, limit: 20 })).data
+  check('A1 turn on: one invoice of exactly 575, paid, own invoice, item added with no proration', on.ok && oneOff?.amount_paid === 575 && oneOff?.status === 'paid' && !oneOff?.parent?.subscription_details && (await invoiceCount()) === before + 1 && pending.length === 0 && cp.subscriptionAddons(after).ids.includes('big_change'), {
+    result: on,
+    invoice: oneOff ? { amount_paid: oneOff.amount_paid, status: oneOff.status, metadata: oneOff.metadata } : null,
+    pendingItems: pending.length,
+  })
+  const next = await stripe.invoices.createPreview({ subscription: sub.id })
+  check('A2 next bill = Priority 5500 + Big change 575', next.amount_due === 6075, { amount_due: next.amount_due })
+  const off = await cp.changeAddon(deps, await stripe.subscriptions.retrieve(sub.id), 'big_change', 'off')
+  const afterOff = await stripe.subscriptions.retrieve(sub.id)
+  const sched = afterOff.schedule ? await stripe.subscriptionSchedules.retrieve(typeof afterOff.schedule === 'string' ? afterOff.schedule : afterOff.schedule.id) : null
+  const nextPhase = sched?.phases?.[1]
+  check('A3 turn off: still on now; the next phase drops it (no credit)', off.ok && off.kind === 'removal_scheduled' && cp.subscriptionAddons(afterOff).ids.includes('big_change') && nextPhase?.items?.length === 1, {
+    result: off,
+    nextPhaseItems: nextPhase?.items?.map((i) => (typeof i.price === 'string' ? i.price : i.price.id)),
+  })
+  if (sched) await stripe.subscriptionSchedules.release(sched.id)
+  const bad = await stripe.paymentMethods.attach('pm_card_chargeCustomerFail', { customer: customer.id })
+  await stripe.subscriptions.update(sub.id, { default_payment_method: bad.id })
+  const declined = await cp.changeAddon(deps, await stripe.subscriptions.retrieve(sub.id), 'small_edit', 'on', { userId: 'probe-addons-declined' })
+  const afterDecline = await stripe.subscriptions.retrieve(sub.id)
+  const voided = (await stripe.invoices.list({ customer: customer.id, status: 'void', limit: 20 })).data.filter((i) => i.metadata?.addon === 'small_edit')
+  check('A4 declined card: payment_failed, still off, the one-off invoice voided', !declined.ok && declined.code === 'payment_failed' && !cp.subscriptionAddons(afterDecline).ids.includes('small_edit') && voided.length === 1, { result: declined, voided: voided.length })
+  await stripe.subscriptions.cancel(sub.id)
+  return results
+}
+
 /** Bot secrets the box injects into every shell: this script never reads them, and the app code it loads
  * (jiti) and the psql child never see them (Oct 3 audit). */
 export const BOT_SECRET_VARS = ['SUPABASE_DB_PASSWORD', 'SUPABASE_SERVICE_ROLE_KEY', 'CLOUDFLARE_API_TOKEN', 'STRIPE_WEBHOOK_SECRET']
@@ -1127,9 +1278,16 @@ async function main(argv) {
   const { default: Stripe } = await import('stripe')
   const stripe = new Stripe(key, { maxNetworkRetries: 2 })
   const ladder = await loadLadder()
+  if (argv.includes('--addons-only')) {
+    // Add-on products/prices only: no step prices, no portal configuration, no customers.
+    const a = await setupAddons(stripe, ladder, { dryRun: argv.includes('--dry-run') })
+    for (const addon of ladder.ADDONS) console.log(`  ${addon.productId} / ${addon.lookupKey} -> ${a.addonPriceIds[addon.id] ?? '(missing)'}`)
+    return
+  }
   const setup = await setupLadder(stripe, ladder, { dryRun: argv.includes('--dry-run') })
   for (const s of ladder.PLAN_STEPS) console.log(`  ${s.productId} / ${s.lookupKey} -> ${setup.priceIds[s.id] ?? '(missing)'}`)
   console.log(`  ${ladder.TIP_PRODUCT_ID} / ${ladder.TIP_LOOKUP_KEY} -> ${setup.tipPriceId ?? '(missing)'}`)
+  for (const addon of ladder.ADDONS ?? []) console.log(`  ${addon.productId} / ${addon.lookupKey} -> ${setup.addonPriceIds?.[addon.id] ?? '(missing)'}`)
   console.log(`portal configuration: ${setup.portalConfigurationId ?? '(none yet)'}`)
   if (setup.portalConfigurationId) console.log(`set STRIPE_PORTAL_CONFIGURATION_ID=${setup.portalConfigurationId} (not a secret)`)
   if (argv.includes('--probe') && !argv.includes('--dry-run')) await runProbes(stripe, ladder, setup)
@@ -1139,6 +1297,7 @@ async function main(argv) {
   if (argv.includes('--probe-billing') && !argv.includes('--dry-run')) await runBillingProbe(stripe, ladder, setup)
   if (argv.includes('--probe-upgrade-confirm') && !argv.includes('--dry-run')) await runUpgradeConfirmProbe(stripe, ladder, setup)
   if (argv.includes('--probe-tips') && !argv.includes('--dry-run')) await runTipProbe(stripe, ladder, setup, { lockDb: arg('--lock-db') ?? null })
+  if (argv.includes('--probe-addons') && !argv.includes('--dry-run')) await runAddonProbe(stripe, ladder, setup)
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {

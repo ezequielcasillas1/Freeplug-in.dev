@@ -93,8 +93,9 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
 
   it('first run: six products, one monthly lookup-key price each (from ladder.ts), the $1 tip price, one non-default portal configuration', async () => {
     const r = await setupLadder(f.stripe, ladder, quiet)
-    expect(f.stripe.products.create).toHaveBeenCalledTimes(7)
-    expect(f.stripe.prices.create).toHaveBeenCalledTimes(7)
+    // 6 steps + the tip + 2 add-ons (Oct 4)
+    expect(f.stripe.products.create).toHaveBeenCalledTimes(9)
+    expect(f.stripe.prices.create).toHaveBeenCalledTimes(9)
     // The tipping system: ONE recurring $1/month price on the fixed tip product; quantity = tip dollars.
     expect(f.state.products.get(ladder.TIP_PRODUCT_ID)).toMatchObject({ name: setup.TIP_PRODUCT_NAME })
     const tip = f.state.prices.find((x) => x.lookup_key === ladder.TIP_LOOKUP_KEY)!
@@ -126,8 +127,9 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
   it('second run creates nothing (only refreshes the portal configuration)', async () => {
     await setupLadder(f.stripe, ladder, quiet)
     const r2 = await setupLadder(f.stripe, ladder, quiet)
-    expect(f.stripe.products.create).toHaveBeenCalledTimes(7)
-    expect(f.stripe.prices.create).toHaveBeenCalledTimes(7)
+    // 6 steps + the tip + 2 add-ons (Oct 4)
+    expect(f.stripe.products.create).toHaveBeenCalledTimes(9)
+    expect(f.stripe.prices.create).toHaveBeenCalledTimes(9)
     expect(f.stripe.billingPortal.configurations.create).toHaveBeenCalledTimes(1)
     expect(r2.actions).toEqual([expect.stringMatching(/^update portal configuration bpc_/)])
   })
@@ -137,8 +139,8 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     const old = f.state.prices.find((x) => x.lookup_key === 'freeplug_step_leads_monthly')!
     old.unit_amount = 7000
     const r = await setupLadder(f.stripe, ladder, quiet)
-    expect(f.stripe.prices.create).toHaveBeenCalledTimes(8)
-    expect(f.stripe.prices.create.mock.calls[7][0]).toMatchObject({ lookup_key: 'freeplug_step_leads_monthly', unit_amount: 7500, transfer_lookup_key: true })
+    expect(f.stripe.prices.create).toHaveBeenCalledTimes(10)
+    expect(f.stripe.prices.create.mock.calls[9][0]).toMatchObject({ lookup_key: 'freeplug_step_leads_monthly', unit_amount: 7500, transfer_lookup_key: true })
     expect(old.active).toBe(false)
     expect(r.priceIds.leads).not.toBe(old.id)
   })
@@ -159,7 +161,7 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     expect(f.stripe.products.create).not.toHaveBeenCalled()
     expect(f.stripe.prices.create).not.toHaveBeenCalled()
     expect(f.stripe.billingPortal.configurations.create).not.toHaveBeenCalled()
-    expect(r.actions).toHaveLength(15) // 6 products + 6 prices + tip product + tip price + portal
+    expect(r.actions).toHaveLength(19) // 6 products + 6 prices + tip product + tip price + 2 add-on products + 2 add-on prices + portal
   })
 
   it('stops if Stripe ever answers with a live-mode object', async () => {
@@ -173,6 +175,39 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     expect(cfg.features.subscription_update.products).toHaveLength(6)
     expect(cfg.features.subscription_update.schedule_at_period_end).toEqual({ conditions: [{ type: 'decreasing_item_amount' }] })
     expect(cfg.metadata).toEqual({ freeplug_ladder_probe: 'v1' })
+  })
+})
+
+describe('stripe-test-setup-ladder: add-ons (Oct 4, --addons-only)', () => {
+  it('creates one product + one monthly licensed USD price per ADDONS entry, with the fixed ids and lookup keys; never the portal', async () => {
+    const f = fakeStripe()
+    const r = await setup.setupAddons(f.stripe, ladder, quiet)
+    expect(f.stripe.billingPortal.configurations.list).not.toHaveBeenCalled()
+    expect(f.stripe.billingPortal.configurations.create).not.toHaveBeenCalled()
+    expect([...f.state.products.keys()].sort()).toEqual(['freeplug_extra_big_change', 'freeplug_extra_small_edit'])
+    const small = f.state.prices.find((p) => p.lookup_key === 'freeplug_addon_small_edit_monthly')!
+    const big = f.state.prices.find((p) => p.lookup_key === 'freeplug_addon_big_change_monthly')!
+    expect(small).toMatchObject({ product: 'freeplug_extra_small_edit', currency: 'usd', unit_amount: 500, recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' } })
+    expect(big).toMatchObject({ product: 'freeplug_extra_big_change', currency: 'usd', unit_amount: 575, recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' } })
+    expect(r.addonPriceIds).toEqual({ small_edit: small.id, big_change: big.id })
+  })
+  it('idempotent: a second run creates nothing; a drifted price is replaced with the lookup key transferred', async () => {
+    const f = fakeStripe()
+    await setup.setupAddons(f.stripe, ladder, quiet)
+    const again = await setup.setupAddons(f.stripe, ladder, quiet)
+    expect(again.actions).toEqual([])
+    expect(f.stripe.prices.create).toHaveBeenCalledTimes(2)
+    const old = f.state.prices.find((p) => p.lookup_key === 'freeplug_addon_big_change_monthly')!
+    old.unit_amount = 600
+    await setup.setupAddons(f.stripe, ladder, quiet)
+    expect(f.stripe.prices.create.mock.calls[2][0]).toMatchObject({ lookup_key: 'freeplug_addon_big_change_monthly', unit_amount: 575, transfer_lookup_key: true })
+    expect(old.active).toBe(false)
+  })
+  it('stops on a live-mode object', async () => {
+    const live = fakeStripe({ livemode: true })
+    live.state.products.set('freeplug_extra_small_edit', { id: 'freeplug_extra_small_edit', active: true, livemode: true })
+    await expect(setup.setupAddons(live.stripe, ladder, quiet)).rejects.toThrow(/not a test-mode object/)
+    expect(live.stripe.prices.create).not.toHaveBeenCalled()
   })
 })
 

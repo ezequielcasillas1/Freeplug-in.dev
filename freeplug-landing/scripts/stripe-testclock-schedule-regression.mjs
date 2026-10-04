@@ -3,6 +3,8 @@
  * Schedule lifecycle regression on Stripe TEST CLOCKS (Aria, Oct 3 3:43 PM; Vera round 5 B4b/B4c).
  *
  *   node scripts/stripe-testclock-schedule-regression.mjs --env-file <file with STRIPE_SECRET_KEY=sk_test_...> [--keep]
+ *        [--addons]       also run the add-on cases (Clock E, below)
+ *        [--addons-only]  run ONLY the add-on cases
  *
  * Uses the app's own code (src/lib/stripe/change-plan.ts, billing-routing.ts) with now = the clock's
  * frozen time. Every customer lives on a test clock created here (metadata.probe=true) and the clocks
@@ -18,6 +20,18 @@
  *   Clock C  E7  cancel right after the switch, with the finished schedule still attached
  *   Clock D  E8  the clock LAGS wall time: a wall date past the switch, the clock before it -> still
  *               pending, nothing released (the app decides on the subscription's clock)
+ *
+ *   Clock E  (add-ons, Aria Oct 4 8:28 AM: full price on turn-on, removal at period end)
+ *            E9   Priority, clock moved to 2 days before the renewal, turn on Big change: exactly 575
+ *                 charged now on its own invoice (no proration lines, no pending items); at the
+ *                 renewal the cycle invoice is 5500 + 575 (the normal monthly amount)
+ *            E10  same for +1 small edit: exactly 500 now, renewal 5500 + 500
+ *            E11  Priority + both add-ons, turn Big change off: still on until the renewal; the cycle
+ *                 invoice is 5500 + 500 and Big change is gone after it
+ *            E12  declined card (pm_card_chargeCustomerFail as the plan's card): payment_failed, the
+ *                 add-on stays off, the one-off invoice is voided, nothing pending
+ *            E13  Starter + $19 tip, turn on +1 small edit with the confirmed drop to $14: 500 now,
+ *                 renewal 3500 + 500 + 1400 = 5400 ($54)
  *
  * Next round (Vera/Aria): the app now reads the subscription's test clock itself (frozen_time) and
  * Stripe's current_phase, so E5, E6 and the E1 lazy read pass WALL time (a month behind the
@@ -51,7 +65,7 @@ async function main(argv) {
   const routing = await jiti.import(path.join(here, '..', 'src', 'lib', 'stripe', 'billing-routing.ts'))
   const ladder = await jiti.import(path.join(here, '..', 'src', 'lib', 'plans', 'ladder.ts'))
 
-  const lookups = [...ladder.PLAN_STEPS.map((s) => s.lookupKey), ladder.TIP_LOOKUP_KEY]
+  const lookups = [...ladder.PLAN_STEPS.map((s) => s.lookupKey), ladder.TIP_LOOKUP_KEY, ...ladder.ADDONS.map((a) => a.lookupKey)]
   const prices = (await stripe.prices.list({ lookup_keys: lookups, active: true, limit: 20 })).data
   for (const p of prices) assertTestObject(p, 'price')
   const priceByKey = Object.fromEntries(prices.map((p) => [p.lookup_key, p.id]))
@@ -102,6 +116,10 @@ async function main(argv) {
   const invoicesOf = async (customer) =>
     (await stripe.invoices.list({ customer, limit: 20 })).data.map((i) => ({ reason: i.billing_reason, status: i.status, amount_due: i.amount_due, lines: i.lines.data.map((l) => [l.description, l.amount]) }))
   const pendingItems = async (customer) => (await stripe.invoiceItems.list({ customer, pending: true, limit: 20 })).data.map((ii) => [ii.description, ii.amount])
+
+  const addonCtx = { stripe, cp, ladder, priceIdFor, priceByKey, tipPrice, check, newClock, clockNow, advance, fresh, periodEnd, invoicesOf, pendingItems, lk }
+  if (argv.includes('--addons') || argv.includes('--addons-only')) await runAddonCases(addonCtx)
+  if (argv.includes('--addons-only')) return finish(stripe, out, argv)
 
   const A = await newClock('schedule lifecycle A')
   const B = await newClock('schedule lifecycle B')
@@ -284,6 +302,10 @@ async function main(argv) {
     check('E1 the next read releases that schedule too (lazy release, WALL time; clock ahead)', pending === null && released.schedule === null, { clock: nowA2.toISOString(), scheduleBefore: after.schedule, scheduleAfter: released.schedule })
   }
 
+  await finish(stripe, out, argv)
+}
+
+async function finish(stripe, out, argv) {
   out.passed = Object.values(out.checks).filter((c) => c.ok).length
   out.failed = Object.values(out.checks).filter((c) => !c.ok).length
   out.clocks = clocks
@@ -293,6 +315,86 @@ async function main(argv) {
   }
   console.log(JSON.stringify({ passed: out.passed, failed: out.failed, clocks: out.clocks, cleanup: out.cleanup ?? 'kept', clockAfterSwitch: out.clockAfterSwitch, e1: out.e1 }, null, 2))
   if (out.failed > 0) process.exitCode = 1
+}
+
+/** Clock E: the add-on cases (see the header). Uses the app's changeAddon with now = the clock's time. */
+async function runAddonCases({ stripe, cp, ladder, priceIdFor, priceByKey, tipPrice, check, newClock, clockNow, advance, fresh, periodEnd, invoicesOf, pendingItems, lk }) {
+  const addonPrice = Object.fromEntries(ladder.ADDONS.map((a) => [a.id, priceByKey[a.lookupKey]]))
+  const addonPriceIdFor = async (id) => {
+    if (!addonPrice[id]) throw new Error(`add-on price ${id} missing: run stripe-test-setup-ladder.mjs --addons-only first`)
+    return addonPrice[id]
+  }
+  const E = await newClock('add-ons E')
+  const start = async (n, step, { addons = [], tip = 0 } = {}) => {
+    const customer = assertTestObject(await stripe.customers.create({ test_clock: E.id, email: `addons-${n}@example.test`, name: `Add-ons ${n}`, metadata: TAG }), 'customer')
+    const pm = await stripe.paymentMethods.attach('pm_card_visa', { customer: customer.id })
+    await stripe.customers.update(customer.id, { invoice_settings: { default_payment_method: pm.id } })
+    const items = [{ price: await priceIdFor(step) }, ...addons.map((a) => ({ price: addonPrice[a] })), ...(tip ? [{ price: tipPrice, quantity: tip }] : [])]
+    const sub = assertTestObject(await stripe.subscriptions.create({ customer: customer.id, items, default_payment_method: pm.id, metadata: { ...TAG, type: 'hosting' } }), 'subscription')
+    return { customer: customer.id, sub: sub.id, renewal: periodEnd(sub) }
+  }
+  const [e9, e10, e11, e12, e13] = await Promise.all([
+    start('e9', 'priority'),
+    start('e10', 'priority'),
+    start('e11', 'priority', { addons: ['small_edit', 'big_change'] }),
+    start('e12', 'priority'),
+    start('e13', 'starter', { tip: 19 }),
+  ])
+  // Late in the period: 2 days before the renewal.
+  await advance(E.id, e9.renewal - 2 * 86400)
+  const late = await clockNow(E.id)
+  const deps = { stripe, addonPriceIdFor, now: () => late, log: (m) => console.log(`  [app] ${m}`) }
+
+  const turnOn = async (e, id, cents, opts = {}) => {
+    const before = await invoicesOf(e.customer)
+    const r = await cp.changeAddon(deps, await fresh(e.sub), id, 'on', { userId: `clock-${id}`, ...opts })
+    const after = await fresh(e.sub)
+    const invs = await invoicesOf(e.customer)
+    const newOnes = invs.slice(0, invs.length - before.length)
+    const pend = await pendingItems(e.customer)
+    check(`${id} on 2 days before the renewal: exactly ${cents} charged now on its own invoice, no proration, nothing pending`, r.ok && newOnes.length === 1 && newOnes[0].status === 'paid' && newOnes[0].amount_due === cents && newOnes[0].lines.length === 1 && pend.length === 0 && cp.subscriptionAddons(after).ids.includes(id), {
+      result: r,
+      newInvoices: newOnes,
+      pendingItems: pend,
+      items: lk(after),
+    })
+    return r
+  }
+  await turnOn(e9, 'big_change', 575)
+  await turnOn(e10, 'small_edit', 500)
+  await turnOn(e13, 'small_edit', 500, { tipDropTo: 14 })
+
+  // E11: removal at period end
+  {
+    const r = await cp.changeAddon(deps, await fresh(e11.sub), 'big_change', 'off')
+    const s = await fresh(e11.sub)
+    check('E11 Big change off: removal scheduled for the renewal, still on now, nothing charged or credited', r.ok && r.kind === 'removal_scheduled' && cp.subscriptionAddons(s).ids.includes('big_change') && (await pendingItems(e11.customer)).length === 0, { result: r, items: lk(s) })
+  }
+
+  // E12: declined card on the plan's card
+  {
+    const bad = await stripe.paymentMethods.attach('pm_card_chargeCustomerFail', { customer: e12.customer })
+    await stripe.subscriptions.update(e12.sub, { default_payment_method: bad.id })
+    const before = await invoicesOf(e12.customer)
+    const r = await cp.changeAddon(deps, await fresh(e12.sub), 'big_change', 'on', { userId: 'clock-e12' })
+    const s = await fresh(e12.sub)
+    const invs = await invoicesOf(e12.customer)
+    const newOnes = invs.slice(0, invs.length - before.length)
+    check('E12 declined card: payment_failed, add-on still off, the one-off invoice voided, nothing pending', !r.ok && r.code === 'payment_failed' && !cp.subscriptionAddons(s).ids.includes('big_change') && newOnes.every((i) => i.status === 'void') && (await pendingItems(e12.customer)).length === 0, { result: r, newInvoices: newOnes, items: lk(s) })
+  }
+
+  // Past the renewal: normal monthly amounts
+  await advance(E.id, e9.renewal + 3600)
+  const cycle = async (e) => (await invoicesOf(e.customer)).find((i) => i.reason === 'subscription_cycle')
+  const c9 = await cycle(e9)
+  const c10 = await cycle(e10)
+  const c11 = await cycle(e11)
+  const c13 = await cycle(e13)
+  check('E9 renewal after turning Big change on: 5500 + 575 (the normal monthly amount, no proration)', c9?.amount_due === 6075, c9)
+  check('E10 renewal after turning +1 small edit on: 5500 + 500', c10?.amount_due === 6000, c10)
+  const s11 = await fresh(e11.sub)
+  check('E11 renewal after the removal: 5500 + 500, Big change gone', c11?.amount_due === 6000 && !cp.subscriptionAddons(s11).ids.includes('big_change'), { cycle: c11, items: lk(s11) })
+  check('E13 Starter renewal with +1 small edit and the tip dropped to $14: 5400 ($54 cap)', c13?.amount_due === 5400, c13)
 }
 
 main(process.argv.slice(2)).catch(async (e) => {

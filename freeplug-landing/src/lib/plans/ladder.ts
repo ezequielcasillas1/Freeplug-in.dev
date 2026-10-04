@@ -170,7 +170,6 @@ export const ADDONS: readonly AddonDef[] = [
   },
 ]
 
-/** Shown as "Coming soon" only: no price, no switch, no backend. */
 /** Add-ons shown as Coming soon on the Plans card (display only: no price, no switch, never sold). */
 export const COMING_SOON_ADDONS = [{ id: 'visitor_snapshot', monthlyCents: 500 }] as const
 export const COMING_SOON_ADDON_IDS = COMING_SOON_ADDONS.map((a) => a.id)
