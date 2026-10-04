@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type Stripe from 'stripe'
 import type { AddonId, PlanStepId } from '@/lib/plans/ladder'
-import { changeAddon, changePlanStep } from './change-plan'
+import { changeAddon, changePlanStep, refundAddonCharge } from './change-plan'
+import { ADDON_REFUNDED_META } from './addon-refund-info'
 import { healOwedRemovals, recordRemovalOwed, removalOwedAlert, REMOVAL_RESCHEDULE_BACKOFF_MS, REMOVAL_RESCHEDULE_TRIES, type RemovalOwedInput } from './addon-removal-owed'
 import { createStripeSim, SIM_PRICE_ID, type StripeSim } from '../../../test/stripe-addon-sim'
 import { memRemovalOwedStore } from '../../../test/removal-owed-mem'
@@ -182,5 +183,103 @@ describe('L-1: the removal of a turned-off add-on survives an upgrade (retries, 
     )
     expect(r).toMatchObject({ ok: true, kind: 'upgraded', addonRemovalKept: false, removalOwed: false })
     expect(logs.some((m) => m.includes('FLAG NOT SAVED for sub_1'))).toBe(true)
+  })
+})
+
+/** Vera L-4 (QA de173c8): the guards that survived her mutants (A, F, I). */
+describe('L-4: once-only refund, no flag clear on a failed refund, stable owed-remove key', () => {
+  async function owedRenewal() {
+    const sim = setup()
+    await changeAddon(addonDeps(sim), live(sim), 'big_change', 'off')
+    const { store, rows } = memRemovalOwedStore()
+    await store.save({ subscriptionId: 'sub_1', customerId: 'cus_1', userId: USER, addons: ['big_change'], effectiveAt: new Date(END * 1000).toISOString() })
+    await sim.client().subscriptionSchedules.release(sim.sub('sub_1').schedule!) // what the failed upgrade left
+    sim.advance(21 * 86_400)
+    const [renewal] = renewals(sim)
+    expect(renewal.total).toBe(6575) // two 575 notes would fit under the total: the sim's cap cannot hide a double refund
+    return { sim, store, rows, renewal }
+  }
+  /** The same Stripe, but credit notes go out without our idempotency key: a redelivery more than 24 h later. */
+  const keyExpired = (sim: StripeSim, opts: { dropMarker?: boolean } = {}) => {
+    const c = sim.client()
+    return {
+      ...c,
+      creditNotes: { ...c.creditNotes, create: (p: Parameters<typeof c.creditNotes.create>[0]) => c.creditNotes.create(p) },
+      invoices: {
+        ...c.invoices,
+        retrieve: async (id: string) => {
+          const inv = await c.invoices.retrieve(id)
+          if (!opts.dropMarker) return inv
+          const metadata = { ...inv.metadata }
+          delete metadata[ADDON_REFUNDED_META]
+          return { ...inv, metadata }
+        },
+      },
+    } as unknown as Stripe
+  }
+
+  it('A: the refund guard holds on its own, with no Stripe idempotency key (a redelivery after 24 h): one credit note', async () => {
+    const { sim, renewal } = await owedRenewal()
+    const stripe = keyExpired(sim)
+    const logs: string[] = []
+    for (let i = 0; i < 3; i++) expect(await refundAddonCharge(stripe, renewal.id, renewal.amount_paid, 575, (m) => logs.push(m), 'turned_off')).toMatchObject({ ok: true })
+    expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: renewal.id, amount: 575 })])
+    expect(logs.filter((m) => m.includes('already refunded'))).toHaveLength(2)
+  })
+
+  it('A: the marker is lost but the credit note is on the invoice: still no second refund (and the mark is written back)', async () => {
+    const { sim, renewal } = await owedRenewal()
+    expect(await refundAddonCharge(keyExpired(sim), renewal.id, renewal.amount_paid, 575, () => {}, 'turned_off')).toMatchObject({ ok: true })
+    expect(await refundAddonCharge(keyExpired(sim, { dropMarker: true }), renewal.id, renewal.amount_paid, 575, () => {}, 'turned_off')).toMatchObject({ ok: true })
+    expect(sim.creditNotes).toHaveLength(1)
+  })
+
+  it('A: the heal redelivered after 24 h (flag re-opened, no key): already_refunded, one credit note', async () => {
+    const { sim, store, renewal } = await owedRenewal()
+    expect(await healOwedRemovals({ stripe: keyExpired(sim), store, log: () => {} }, renewal)).toMatchObject({ outcome: 'refunded' })
+    const again = memRemovalOwedStore()
+    await again.store.save({ subscriptionId: 'sub_1', customerId: 'cus_1', userId: USER, addons: ['big_change'], effectiveAt: new Date(END * 1000).toISOString() })
+    expect(await healOwedRemovals({ stripe: keyExpired(sim), store: again.store, log: () => {} }, renewal)).toMatchObject({ outcome: 'already_refunded' })
+    expect(sim.creditNotes).toHaveLength(1)
+  })
+
+  it('F: the refund fails inside the heal: retry, the flag stays open; the redelivery refunds once and clears it', async () => {
+    const { sim, store, rows, renewal } = await owedRenewal()
+    const c = sim.client()
+    const broken = { ...c, creditNotes: { ...c.creditNotes, create: () => Promise.reject(Object.assign(new Error('stripe 500 (simulated)'), { type: 'StripeAPIError', statusCode: 500 })) } } as unknown as Stripe
+    expect(await healOwedRemovals({ stripe: broken, store, log: () => {} }, renewal)).toMatchObject({ outcome: 'retry', reason: 'refund_failed' })
+    expect(rows[0].clearedHow).toBeNull()
+    expect(sim.creditNotes).toHaveLength(0)
+    expect(addonsOn(sim)).toEqual(['small_edit']) // Big change is already gone; only the money is still owed
+    expect(await healOwedRemovals({ stripe: c as unknown as Stripe, store, log: () => {} }, renewal)).toMatchObject({ outcome: 'refunded', cardCents: 575 })
+    expect(sim.creditNotes).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ clearedHow: 'refunded', clearedInvoiceId: renewal.id })
+  })
+
+  it('I: the owed removal uses the stable key owed-remove:{sub}:{invoice}, the same on a redelivery', async () => {
+    const { sim, store, rows, renewal } = await owedRenewal()
+    const c = sim.client()
+    const keys: (string | undefined)[] = []
+    let failFirst = true
+    const client = {
+      ...c,
+      subscriptions: {
+        ...c.subscriptions,
+        update: (id: string, p: Parameters<typeof c.subscriptions.update>[1], o?: { idempotencyKey?: string }) => {
+          keys.push(o?.idempotencyKey)
+          if (failFirst) {
+            failFirst = false
+            return Promise.reject(Object.assign(new Error('stripe 500 (simulated)'), { type: 'StripeAPIError', statusCode: 500 }))
+          }
+          return c.subscriptions.update(id, p, o)
+        },
+      },
+    } as unknown as Stripe
+    expect(await healOwedRemovals({ stripe: client, store, log: () => {} }, renewal)).toMatchObject({ outcome: 'retry' })
+    expect(rows[0].clearedHow).toBeNull()
+    expect(await healOwedRemovals({ stripe: client, store, log: () => {} }, renewal)).toMatchObject({ outcome: 'refunded' })
+    expect(keys).toEqual([`owed-remove:sub_1:${renewal.id}`, `owed-remove:sub_1:${renewal.id}`])
+    expect(addonsOn(sim)).toEqual(['small_edit'])
+    expect(sim.creditNotes).toHaveLength(1)
   })
 })

@@ -25,15 +25,18 @@ export async function sendAddonRefundNoticeOnce(stripe: Pick<Stripe, 'invoices' 
   const customerId = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id
   if (!customerId) return 'no_email'
   const customer = await stripe.customers.retrieve(customerId)
-  const email = 'deleted' in customer && customer.deleted ? null : (customer as Stripe.Customer).email
+  const live = 'deleted' in customer && customer.deleted ? null : (customer as Stripe.Customer)
+  const email = live?.email ?? null
   if (!email) return 'no_email'
+  // Vera L-2 / Sable: "Hi {userName}," with the customer's name on file; "Hi," only when there is none.
+  const userName = live?.name?.trim() || undefined
   const name = addonNameList(refund.addons)
   const note = addonRefundNote(name, refund.reason, refund.cardCents, refund.creditCents)
   // Sable 10:01: the L-1 self-heal refund (a turned-off add-on still billed) has its own subject.
   const subject = refund.kind === 'turned_off' ? addonTurnedOffRefundEmailSubject(name) : undefined
   const key = addonRefundEmailKey(invoiceId)
   const outcome = await sendWebhookEmailOnce(key, ADDON_REFUND_EMAIL_TEMPLATE, invoiceId, () =>
-    sendAddonRefundedEmail(email, { addonName: name, note, ...(subject ? { subject } : {}) }, { idempotencyKey: `${key}:${ADDON_REFUND_EMAIL_TEMPLATE}` })
+    sendAddonRefundedEmail(email, { ...(userName ? { userName } : {}), addonName: name, note, ...(subject ? { subject } : {}) }, { idempotencyKey: `${key}:${ADDON_REFUND_EMAIL_TEMPLATE}` })
   )
   return outcome === 'skipped' ? 'already_sent' : outcome
 }

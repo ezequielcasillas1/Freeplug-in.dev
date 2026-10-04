@@ -17,7 +17,7 @@ import {
   addonRefundSplit,
 } from './addon-refund-info'
 import { REMOVAL_RESCHEDULE_TRIES, withRetries } from './retry'
-import type { RemovalOwedInput } from './addon-removal-owed'
+import type { RemovalOwedInput, RemovalOwedUnrecorded } from './addon-removal-owed'
 import { ADDON_MIN_CHARGE_CENTS, addonCapCheck, addonCentsInTipTotal, addonCentsOfItems, addonIdsOfItems, addonItemsOf, addonOfPrice, parseAddonIds } from '../plans/addons'
 import { ADDON_NAMES, ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_PRICE_UNCONFIRMED, ADDON_REFUND_REASONS, ADDON_TURN_OFF_FIRST, type AddonRefundReason } from '../plans/ladder-copy'
 
@@ -771,6 +771,8 @@ export type ResumeOptions = {
   userId?: string | null
   /** Save the owed flag + alert us (recordRemovalOwedNow('resume')). Without it, a failed put-back undoes the resume. */
   onRemovalOwed?: (o: RemovalOwedInput) => Promise<{ saved: boolean } | unknown>
+  /** Vera L-1: nothing saved AND the undo failed: the support-inbox alert that is the only record (sendRemovalOwedUnrecordedAlert). */
+  alertUnrecorded?: (o: RemovalOwedUnrecorded) => Promise<unknown>
   sleep?: (ms: number) => Promise<void>
   log?: (msg: string) => void
 }
@@ -850,7 +852,36 @@ export async function resumeSubscription(stripe: Stripe, subIn: Sub, now: Date =
       return { resumed: true, restoredRemoval: [], removalOwed: owed.addons }
     }
     log(`[resume] could not put back the add-on removal on ${subIn.id} and no owed flag was saved; setting it to end again`)
-    await stripe.subscriptions.update(subIn.id, undo).catch((u: unknown) => log(`[resume] UNDO FAILED on ${subIn.id}: ${u instanceof Error ? u.message : String(u)}`))
+    // Vera L-1: a put-back that created its schedule but failed the phase update leaves that schedule
+    // attached, and Stripe refuses cancel_at_period_end on a subscription managed by a schedule. Release
+    // the half-made schedule first (only one this resume made: the cancel had released any earlier one).
+    let attached: string | null = null
+    let undoError: string | null = null
+    try {
+      const fresh = await stripe.subscriptions.retrieve(subIn.id)
+      attached = idOf(fresh.schedule as string | { id: string } | null)
+      if (attached && attached !== idOf(subIn.schedule as string | { id: string } | null)) {
+        await stripe.subscriptionSchedules.release(attached)
+        log(`[resume] released the half-made put-back schedule ${attached} on ${subIn.id}`)
+        attached = null
+      }
+      await stripe.subscriptions.update(subIn.id, undo)
+    } catch (u) {
+      undoError = u instanceof Error ? u.message : String(u)
+      log(`[resume] UNDO FAILED on ${subIn.id}: ${undoError}`)
+    }
+    if (undoError !== null) {
+      // Both writes failed: the plan is on, nothing saved will stop the renewal. Never silent: one line with
+      // everything needed to fix it by hand, and the support-inbox alert (sent without the database).
+      const lost: RemovalOwedUnrecorded = { ...owed, scheduleId: attached, putBackError: e instanceof Error ? e.message : String(e), undoError }
+      log(`[resume] REMOVAL OWED UNRECORDED ${JSON.stringify(lost)}`)
+      if (opts.alertUnrecorded) {
+        await opts.alertUnrecorded(lost).then(
+          () => log(`[resume] unrecorded-removal alert sent for ${subIn.id}`),
+          (err: unknown) => log(`[resume] UNRECORDED-REMOVAL ALERT FAILED for ${subIn.id}: ${err instanceof Error ? err.message : String(err)}`)
+        )
+      } else log(`[resume] UNRECORDED-REMOVAL ALERT NOT SENT for ${subIn.id}: no alert sender`)
+    }
     throw e
   }
 }

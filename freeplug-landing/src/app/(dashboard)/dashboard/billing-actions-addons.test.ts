@@ -34,6 +34,8 @@ vi.mock('@/lib/plans/plan-change-lock-server', () => ({
 }))
 vi.mock('@/lib/stripe/addon-removal-owed-server', () => ({
   recordRemovalOwedNow: () => async () => ({ saved: true, alerted: true }),
+  sendRemovalOwedUnrecordedAlert: async () => undefined,
+  resumeRemovalOwed: async () => ({ addons: [], effectiveAt: null }),
   removalOwedStore: () => ({ keep: (...a: unknown[]) => h.keep(...a) }),
 }))
 vi.mock('@/lib/email/addon-refund-notice', () => ({ sendAddonRefundNoticeOnce: (...a: unknown[]) => h.notice(...a) }))

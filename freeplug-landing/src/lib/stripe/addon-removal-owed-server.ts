@@ -4,7 +4,7 @@ import { sendWebhookEmailOnce } from '@/lib/email/webhook-email-ledger'
 import { SUPPORT_EMAIL } from '@/lib/site'
 import { parseAddonIds } from '@/lib/plans/addons'
 import type { AddonId } from '@/lib/plans/ladder'
-import { recordRemovalOwed, removalOwedAlert, type RemovalOwed, type RemovalOwedInput, type RemovalOwedStore } from './addon-removal-owed'
+import { recordRemovalOwed, removalOwedAlert, removalOwedUnrecordedAlert, type RemovalOwed, type RemovalOwedInput, type RemovalOwedStore, type RemovalOwedUnrecorded } from './addon-removal-owed'
 
 const TABLE = 'addon_removals_owed'
 type DbError = { code?: string; message: string } | null
@@ -53,11 +53,14 @@ export function supabaseRemovalOwedStore(db: RemovalOwedDb, source: 'upgrade' | 
       })
       if (!error) return
       if (error.code !== '23505') throw fail('insert', error)
-      // One open row per subscription: merge the add-ons into it.
+      // One open row per subscription (partial unique index): merge the add-ons into it, so the renewal
+      // still refunds once. Vera L-5: a resume's add-on must not hide under an open 'upgrade' row (the Plans
+      // box only reads 'resume' rows): the merged row takes the 'resume' label, and never drops it.
       const [row] = await open(o.subscriptionId)
       if (!row) throw fail('insert', error)
       const addons = [...new Set<AddonId>([...row.addons, ...o.addons])]
-      const { error: upErr } = await db.from(TABLE).update({ addons, effective_at: o.effectiveAt, updated_at: new Date().toISOString() }).eq('id', row.id)
+      const merged = source === 'resume' || row.source === 'resume' ? 'resume' : 'upgrade'
+      const { error: upErr } = await db.from(TABLE).update({ addons, effective_at: o.effectiveAt, source: merged, updated_at: new Date().toISOString() }).eq('id', row.id)
       if (upErr) throw fail('merge', upErr)
     },
     async clear(id, how, invoiceId) {
@@ -100,12 +103,26 @@ export const removalOwedStore = (source: 'upgrade' | 'resume' = 'upgrade') =>
 /** Internal alert to us (support inbox) through the app's Resend path; once per owed removal (email ledger). */
 export async function sendRemovalOwedAlert(o: RemovalOwedInput): Promise<string> {
   const { subject, text } = removalOwedAlert(o)
-  const key = `removal-owed:${o.subscriptionId}:${Math.floor(Date.parse(o.effectiveAt) / 1000)}`
+  const key = removalOwedAlertKey(o)
   const outcome = await sendWebhookEmailOnce(key, 'removal-owed-alert', o.subscriptionId, () =>
     sendMail({ to: SUPPORT_EMAIL, subject, text, template: 'removal-owed-alert', idempotencyKey: `${key}:removal-owed-alert` })
   )
   if (outcome === 'send_failed' || outcome === 'claim_error') throw new Error(`removal-owed alert ${outcome}`)
   return outcome
+}
+
+/** The ledger key of the once-only removal-owed alert (one per subscription + effective time). */
+export const removalOwedAlertKey = (o: Pick<RemovalOwedInput, 'subscriptionId' | 'effectiveAt'>) =>
+  `removal-owed:${o.subscriptionId}:${Math.floor(Date.parse(o.effectiveAt) / 1000)}`
+
+/**
+ * Vera L-1: the both-failed alert (nothing saved, undo refused). Sent straight through sendMail (no email
+ * ledger: the database may be what failed); Resend's idempotency key keeps it to one per removal in 24 h.
+ */
+export async function sendRemovalOwedUnrecordedAlert(o: RemovalOwedUnrecorded): Promise<void> {
+  const { subject, text } = removalOwedUnrecordedAlert(o)
+  const r = await sendMail({ to: SUPPORT_EMAIL, subject, text, template: 'removal-owed-unrecorded-alert', idempotencyKey: `removal-owed-unrecorded:${o.subscriptionId}:${Math.floor(Date.parse(o.effectiveAt) / 1000)}` })
+  if (!r.success) throw new Error(`removal-owed unrecorded alert not sent: ${r.reason}`)
 }
 
 /** For changePlanStep / resume: save the flag, then alert us. */

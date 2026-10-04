@@ -4,7 +4,7 @@ import type { AddonId } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changeAddon, pendingPlanChange, resumeSubscription, RESUME_REMOVE_ADDONS_META, RESUME_REMOVE_AT_META } from './change-plan'
 import { createStripeSim, SIM_PRICE_ID, type StripeSim } from '../../../test/stripe-addon-sim'
 import { memRemovalOwedStore } from '../../../test/removal-owed-mem'
-import { healOwedRemovals, recordRemovalOwed, type RemovalOwedInput } from './addon-removal-owed'
+import { healOwedRemovals, recordRemovalOwed, removalOwedUnrecordedAlert, type RemovalOwedInput, type RemovalOwedUnrecorded } from './addon-removal-owed'
 
 /**
  * Vera M-1 (QA report e3edb88), Aria Oct 4 9:28 AM CT: turning an add-on off, then canceling, then
@@ -141,6 +141,130 @@ describe('Vera M-1: a turned-off add-on can never renew, through off -> cancel -
     expect(await resumeSubscription(sim.client() as unknown as Stripe, live(sim), sim.now())).toMatchObject({ resumed: true, restoredRemoval: ['big_change'] })
     sim.advance(26 * 86_400)
     expect(addonsOn(sim)).toEqual(['small_edit'])
+  })
+
+  describe('Vera L-1 (QA de173c8): the schedule CREATE succeeds, the phase UPDATE fails', () => {
+    const boom = () => Promise.reject(Object.assign(new Error('boom-update'), { type: 'StripeAPIError', statusCode: 500 }))
+    /** Schedule update always fails (create works); optionally release fails too. */
+    const halfFailing = (sim: StripeSim, o: { releaseFails?: boolean } = {}) => {
+      const c = sim.client()
+      const calls = { create: 0, update: 0, release: 0 }
+      const client = {
+        ...c,
+        subscriptionSchedules: {
+          ...c.subscriptionSchedules,
+          create: (p: Parameters<typeof c.subscriptionSchedules.create>[0]) => (calls.create++, c.subscriptionSchedules.create(p)),
+          update: () => (calls.update++, boom()),
+          release: (id: string) => (calls.release++, o.releaseFails ? boom() : c.subscriptionSchedules.release(id)),
+        },
+      }
+      return { client: client as unknown as Stripe, calls }
+    }
+
+    it('owed-flag save works: resumed + owed, one alert; the renewal refunds Big change once, it is removed, and the next renewal is $60.00', async () => {
+      const sim = setup()
+      await turnOffBigChangeThenCancel(sim)
+      const { client, calls } = halfFailing(sim)
+      const { store, rows } = memRemovalOwedStore()
+      const alerts: RemovalOwedInput[] = []
+      const unrecorded: unknown[] = []
+      const r = await resumeSubscription(client, live(sim), sim.now(), {
+        userId: 'u1',
+        sleep: async () => {},
+        log: () => {},
+        onRemovalOwed: (o) => recordRemovalOwed({ store, alert: async (a) => void alerts.push(a), log: () => {} }, o),
+        alertUnrecorded: async (o) => void unrecorded.push(o),
+      })
+      expect(r).toEqual({ resumed: true, restoredRemoval: [], removalOwed: ['big_change'] })
+      expect(calls.create).toBe(1) // later tries re-read the half-made schedule and update it
+      expect(calls.update).toBe(3)
+      expect(alerts).toHaveLength(1)
+      expect(unrecorded).toEqual([])
+      expect(rows).toEqual([expect.objectContaining({ subscriptionId: 'sub_1', addons: ['big_change'], clearedHow: null })])
+      expect(sim.sub('sub_1')).toMatchObject({ cancel_at_period_end: false })
+      sim.advance(26 * 86_400)
+      const [renewal] = renewals(sim)
+      expect(renewal.total).toBe(5500 + 500 + 575)
+      const heal = (inv: unknown) => healOwedRemovals({ stripe: sim.client() as unknown as Stripe, store, log: () => {} }, inv as Parameters<typeof healOwedRemovals>[1])
+      expect(await heal(renewal)).toMatchObject({ outcome: 'refunded' })
+      expect(await heal(renewal)).toMatchObject({ outcome: 'none' })
+      expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: renewal.id, amount: 575 })])
+      expect(addonsOn(sim)).toEqual(['small_edit'])
+      sim.advance(30 * 86_400)
+      expect(renewals(sim).map((i) => i.total)).toEqual([6575, 6000])
+    })
+
+    it('owed-flag save fails: the half-made schedule is released, then the plan is set to end again; reported as failed; no unrecorded alert', async () => {
+      const sim = setup()
+      await turnOffBigChangeThenCancel(sim)
+      const { client, calls } = halfFailing(sim)
+      const unrecorded: unknown[] = []
+      const logs: string[] = []
+      const broken = { save: async () => Promise.reject(new Error('db down')), open: async () => [], clear: async () => {}, keep: async () => {} }
+      await expect(
+        resumeSubscription(client, live(sim), sim.now(), {
+          sleep: async () => {},
+          log: (m) => logs.push(m),
+          onRemovalOwed: (o) => recordRemovalOwed({ store: broken, alert: async () => Promise.reject(new Error('mail down')), log: () => {} }, o),
+          alertUnrecorded: async (o) => void unrecorded.push(o),
+        })
+      ).rejects.toThrow('boom-update')
+      expect(calls.release).toBe(1)
+      expect(sim.sub('sub_1')).toMatchObject({ cancel_at_period_end: true, schedule: null })
+      expect(sim.sub('sub_1').metadata[RESUME_REMOVE_ADDONS_META]).toBe('big_change')
+      expect(unrecorded).toEqual([])
+      expect(logs.some((l) => l.includes('released the half-made put-back schedule'))).toBe(true)
+      expect(logs.some((l) => l.includes('UNDO FAILED'))).toBe(false)
+      // the plan ends at the period end: Big change is never billed again
+      sim.advance(26 * 86_400)
+      expect(renewals(sim)).toEqual([])
+    })
+
+    it('owed-flag save fails AND the undo is refused (the schedule stays attached): never silent: one recovery log line + the "(NOT SAVED, fix by hand)" alert', async () => {
+      const sim = setup()
+      await turnOffBigChangeThenCancel(sim)
+      const { client } = halfFailing(sim, { releaseFails: true })
+      const unrecorded: RemovalOwedUnrecorded[] = []
+      const logs: string[] = []
+      const broken = { save: async () => Promise.reject(new Error('db down')), open: async () => [], clear: async () => {}, keep: async () => {} }
+      await expect(
+        resumeSubscription(client, live(sim), sim.now(), {
+          userId: 'u1',
+          sleep: async () => {},
+          log: (m) => logs.push(m),
+          onRemovalOwed: (o) => recordRemovalOwed({ store: broken, alert: async () => Promise.reject(new Error('mail down')), log: () => {} }, o),
+          alertUnrecorded: async (o) => void unrecorded.push(o),
+        })
+      ).rejects.toThrow('boom-update')
+      const schedId = sim.sub('sub_1').schedule as string
+      expect(schedId).toBeTruthy()
+      expect(sim.sub('sub_1')).toMatchObject({ cancel_at_period_end: false })
+      expect(unrecorded).toEqual([
+        { subscriptionId: 'sub_1', customerId: 'cus_1', userId: 'u1', addons: ['big_change'], effectiveAt: new Date(END * 1000).toISOString(), scheduleId: schedId, putBackError: 'boom-update', undoError: 'boom-update' },
+      ])
+      const line = logs.find((l) => l.startsWith('[resume] REMOVAL OWED UNRECORDED '))!
+      expect(JSON.parse(line.replace('[resume] REMOVAL OWED UNRECORDED ', ''))).toEqual(unrecorded[0])
+      expect(logs.some((l) => l.includes('UNDO FAILED on sub_1'))).toBe(true)
+      expect(logs.some((l) => l.includes('unrecorded-removal alert sent for sub_1'))).toBe(true)
+      const a = removalOwedUnrecordedAlert(unrecorded[0])
+      expect(a.subject).toBe('[Freeplug billing] Add-on removal owed on sub_1 (NOT SAVED, fix by hand)')
+      for (const s of ['sub_1', 'cus_1', 'big_change', schedId, 'boom-update', 'release it in Stripe']) expect(a.text).toContain(s)
+    })
+
+    it('both failed and the alert sender fails too (or is missing): logged loudly, still never silent', async () => {
+      const broken = { save: async () => Promise.reject(new Error('db down')), open: async () => [], clear: async () => {}, keep: async () => {} }
+      for (const alertUnrecorded of [async () => Promise.reject(new Error('resend down')), undefined]) {
+        const sim = setup()
+        await turnOffBigChangeThenCancel(sim)
+        const { client } = halfFailing(sim, { releaseFails: true })
+        const logs: string[] = []
+        await expect(
+          resumeSubscription(client, live(sim), sim.now(), { sleep: async () => {}, log: (m) => logs.push(m), onRemovalOwed: (o) => recordRemovalOwed({ store: broken, alert: async () => {}, log: () => {} }, o), alertUnrecorded })
+        ).rejects.toThrow()
+        expect(logs.some((l) => l.startsWith('[resume] REMOVAL OWED UNRECORDED '))).toBe(true)
+        expect(logs.some((l) => /UNRECORDED-REMOVAL ALERT (FAILED|NOT SENT) for sub_1/.test(l))).toBe(true)
+      }
+    })
   })
 
   it('a cancel with no add-on removal pending: resume is the old single update (no schedule, no metadata)', async () => {

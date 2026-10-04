@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
 import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
-import { recordRemovalOwedNow, removalOwedStore, resumeRemovalOwed } from '@/lib/stripe/addon-removal-owed-server'
+import { recordRemovalOwedNow, removalOwedStore, resumeRemovalOwed, sendRemovalOwedUnrecordedAlert } from '@/lib/stripe/addon-removal-owed-server'
 import { resumeEndingSubscriptions, resumeOutcomeFromLive, type ResumeOutcome } from '@/lib/stripe/resume-hosting'
 import { PortalNotConfiguredError } from '@/lib/stripe/portal'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH, RESUMED_REMOVAL_OWED_FOCUS_PATH, RESUMED_REMOVAL_OWED_PATH } from '@/lib/stripe/billing-routing'
@@ -146,7 +146,7 @@ export async function resumePlan() {
     let lockHeld = false
     try {
       const lock = await withPlanChangeLock(lockStore(), user.id, () =>
-        resumeEndingSubscriptions(getStripe(), customerId, new Date(), { userId: user.id, onRemovalOwed: recordRemovalOwedNow('resume') })
+        resumeEndingSubscriptions(getStripe(), customerId, new Date(), { userId: user.id, onRemovalOwed: recordRemovalOwedNow('resume'), alertUnrecorded: sendRemovalOwedUnrecordedAlert })
       )
       if (lock.ok && lock.value > 0) {
         outcome = 'resumed'

@@ -19,11 +19,13 @@ vi.mock('@/lib/email/webhook-email-ledger', () => ({
 
 import type Stripe from 'stripe'
 import { sendAddonRefundNoticeOnce } from './addon-refund-notice'
+import { render, toPlainText } from '@react-email/components'
+import { AddonRefundedEmail } from './templates/addon-refunded'
 
 const inv = (metadata: Record<string, string>, customer: string | null = 'cus_1') => ({ id: 'in_1', customer, total: 575, amount_paid: 575, metadata })
 const refunded = { freeplug_kind: 'addon_first_period', addon: 'big_change', addon_refunded: 'true', addon_refund_reason: 'tip_unconfirmed', addon_refund_card_cents: '575', addon_refund_credit_cents: '0' }
-const stripe = (i: unknown, email: string | null = 'dana@example.invalid') =>
-  ({ invoices: { retrieve: async () => i }, customers: { retrieve: async () => ({ id: 'cus_1', email }) } }) as unknown as Pick<Stripe, 'invoices' | 'customers'>
+const stripe = (i: unknown, email: string | null = 'dana@example.invalid', name: string | null = null) =>
+  ({ invoices: { retrieve: async () => i }, customers: { retrieve: async () => ({ id: 'cus_1', email, name }) } }) as unknown as Pick<Stripe, 'invoices' | 'customers'>
 
 describe('sendAddonRefundNoticeOnce (Aria 9:27: the email line, through the webhook email ledger)', () => {
   beforeEach(() => {
@@ -63,5 +65,20 @@ describe('sendAddonRefundNoticeOnce (Aria 9:27: the email line, through the webh
     h.claimed.clear()
     expect(await sendAddonRefundNoticeOnce(stripe(inv(refunded)), 'in_1')).toBe('sent')
     expect(h.sends[1][1]).not.toHaveProperty('subject')
+  })
+  it('Vera L-2: "Hi {userName}," with the Stripe customer name; "Hi," only when there is no name (or it is blank)', async () => {
+    expect(await sendAddonRefundNoticeOnce(stripe(inv(refunded), 'dana@example.invalid', '  Dana Ruiz '), 'in_1')).toBe('sent')
+    expect(h.sends[0][1]).toMatchObject({ userName: 'Dana Ruiz', addonName: 'Big change' })
+    const named = toPlainText(await render(AddonRefundedEmail(h.sends[0][1] as Parameters<typeof AddonRefundedEmail>[0])))
+    expect(named).toContain('Hi Dana Ruiz,')
+    for (const name of [null, '', '   ']) {
+      h.claimed.clear()
+      h.sends = []
+      expect(await sendAddonRefundNoticeOnce(stripe(inv(refunded), 'dana@example.invalid', name), 'in_1')).toBe('sent')
+      expect(h.sends[0][1]).not.toHaveProperty('userName')
+      const plain = toPlainText(await render(AddonRefundedEmail(h.sends[0][1] as Parameters<typeof AddonRefundedEmail>[0])))
+      expect(plain).toMatch(/(^|\n)Hi,/)
+      expect(plain).not.toMatch(/Hi [A-Za-z]/)
+    }
   })
 })

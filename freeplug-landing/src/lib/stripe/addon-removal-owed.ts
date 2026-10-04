@@ -55,6 +55,46 @@ export function removalOwedAlert(o: RemovalOwedInput): { subject: string; text: 
   }
 }
 
+/**
+ * Vera L-1 (QA de173c8): the put-back failed, the owed flag could NOT be saved, AND the undo (set to end
+ * again) failed. Nothing on our side will stop the add-on renewing, so this alert is the record: it goes to
+ * the support inbox even when the database is down (sent directly, not through the email ledger).
+ */
+export type RemovalOwedUnrecorded = RemovalOwedInput & {
+  /** A put-back schedule still attached to the subscription (release it before any other change). */
+  scheduleId: string | null
+  putBackError: string
+  undoError: string
+}
+
+export const removalOwedUnrecordedSubject = (subscriptionId: string) =>
+  `[Freeplug billing] Add-on removal owed on ${subscriptionId} (NOT SAVED, fix by hand)`
+
+export function removalOwedUnrecordedAlert(o: RemovalOwedUnrecorded): { subject: string; text: string } {
+  return {
+    subject: removalOwedUnrecordedSubject(o.subscriptionId),
+    text: [
+      'Resume could not put back a pending add-on removal (3 tries), the owed flag could NOT be saved, and setting the plan to end again also failed.',
+      'The plan is ON and nothing on our side will stop the add-on below from renewing. Fix it by hand.',
+      '',
+      `Subscription: ${o.subscriptionId}`,
+      `Customer: ${o.customerId ?? 'unknown'}`,
+      `User: ${o.userId ?? 'unknown'}`,
+      `Add-ons the customer turned off: ${o.addons.join(', ')}`,
+      `Should have ended: ${o.effectiveAt}`,
+      `Schedule still attached: ${o.scheduleId ?? 'none'}`,
+      `Put-back error: ${o.putBackError}`,
+      `Undo error: ${o.undoError}`,
+      '',
+      'To recover:',
+      `1. If a schedule is still attached (${o.scheduleId ?? 'none'}), release it in Stripe.`,
+      `2. Remove ${o.addons.join(' and ')} from ${o.subscriptionId} with no proration, or schedule the removal for ${o.effectiveAt}.`,
+      '3. If a renewal already billed it, refund that line with a credit note (memo: the turned_off reason).',
+      `4. Or insert the addon_removals_owed row (source resume, effective_at ${o.effectiveAt}) and the next renewal self-heal does steps 2-3.`,
+    ].join('\n'),
+  }
+}
+
 /** Save the flag first (it is what stops the charge), then alert. Never throws. */
 export async function recordRemovalOwed(
   deps: { store: RemovalOwedStore; alert: (o: RemovalOwedInput) => Promise<unknown>; log?: (m: string) => void },
