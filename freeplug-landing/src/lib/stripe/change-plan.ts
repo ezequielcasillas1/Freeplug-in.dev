@@ -9,6 +9,7 @@ import {
   ADDON_APPLIED_META,
   ADDON_FIRST_PERIOD_KIND,
   ADDON_REFUND_CARD_META,
+  ADDON_REFUND_CARRIED_META,
   ADDON_REFUND_CREDIT_META,
   ADDON_REFUND_REASON_META,
   ADDON_REFUNDED_AT_META,
@@ -890,6 +891,7 @@ export {
   ADDON_APPLIED_META,
   ADDON_FIRST_PERIOD_KIND,
   ADDON_REFUND_CARD_META,
+  ADDON_REFUND_CARRIED_META,
   ADDON_REFUND_CREDIT_META,
   ADDON_REFUND_REASON_META,
   ADDON_REFUNDED_META,
@@ -1091,6 +1093,11 @@ export type AddonChangePreview =
       amountDueCents: number
       /** The add-on's full monthly price (what the invoice totals before credit). */
       fullCents: number
+      /**
+       * Vera M-1 / Aria (a): an earlier under-$0.50 amount still on the account (Stripe's invoice_too_small
+       * debit) lands on this charge; amountDueCents includes it. 0 = nothing carried.
+       */
+      carriedCents: number
       currency: string
       /** The regular monthly bill after the change (plan + add-ons + tip). */
       nextAmountCents: number
@@ -1349,7 +1356,7 @@ export async function refundAddonCharge(
   opts: { extraMarks?: Record<string, string>; addonName?: string; now?: Date } = {}
 ): Promise<AddonRefundOutcome> {
   const split = addonRefundSplit(amountPaidCents, cents)
-  const marks = { ...refundMarks(reason, split, opts.now ?? new Date()), ...(opts.extraMarks ?? {}) }
+  const marks: Record<string, string> = { ...refundMarks(reason, split, opts.now ?? new Date()), ...(opts.extraMarks ?? {}) }
   try {
     const inv = await stripe.invoices.retrieve(invoiceId)
     const meta = (inv.metadata ?? {}) as Record<string, string | undefined>
@@ -1360,6 +1367,12 @@ export async function refundAddonCharge(
       return { ok: true, ...split }
     }
     const refund = split.cardCents
+    // L-3 (Sable): a small charge still unbilled on the account (an invoice_too_small debit = a positive
+    // customer balance) is canceled by the credit part of this refund; record it for the third split line.
+    if (split.creditCents > 0) {
+      const carried = await unbilledSmallChargeCents(stripe, inv.customer, log)
+      if (carried > 0) marks[ADDON_REFUND_CARRIED_META] = String(Math.min(carried, split.creditCents))
+    }
     await stripe.creditNotes.create(
       {
         invoice: invoiceId,
@@ -1378,6 +1391,20 @@ export async function refundAddonCharge(
   } catch (e) {
     log(`[change-addon] REFUND FAILED for ${invoiceId} (reason ${reason}): ${e instanceof Error ? e.message : String(e)}`)
     return { ok: false, ...split }
+  }
+}
+
+/** L-3: the debit on the customer balance before a refund (an unbilled small charge); 0 when none or unknown. */
+async function unbilledSmallChargeCents(stripe: Stripe, customer: string | { id: string } | null | undefined, log: (m: string) => void): Promise<number> {
+  const id = typeof customer === 'string' ? customer : customer?.id
+  if (!id) return 0
+  try {
+    const c = await stripe.customers.retrieve(id)
+    const balance = 'deleted' in c && c.deleted ? 0 : ((c as Stripe.Customer).balance ?? 0)
+    return balance > 0 ? balance : 0
+  } catch (e) {
+    log(`[change-addon] balance read before the refund failed on ${id}: ${e instanceof Error ? e.message : String(e)}; standard split line`)
+    return 0
   }
 }
 
@@ -1434,8 +1461,12 @@ export async function previewAddonChange(deps: AddonDeps, sub: Sub, addonId: unk
       action: 'on',
       addon: addon.id,
       prorationDate,
-      amountDueCents: Math.max(0, Math.min(addon.monthlyCents, preview.amount_due)),
+      // Vera M-1 / Aria (a): NOT capped at the price. A small amount carried from an earlier change
+      // (invoice_too_small debit on the balance) lands on whatever charge comes next: this one. The confirm
+      // shows the real total the card is charged, split out (price + carried).
+      amountDueCents: Math.max(0, preview.amount_due),
       fullCents: addon.monthlyCents,
+      carriedCents: Math.max(0, preview.starting_balance ?? 0),
       currency: preview.currency ?? 'usd',
       nextAmountCents: stepCents + addonCentsOfItems(sub.items.data) + addon.monthlyCents + check.tipMaxAfter * 100,
       nextBillingAt,
@@ -1515,7 +1546,7 @@ export async function changeAddon(
           log(`[change-addon] PRICE NOT CONFIRMED ${sub.id} ${addon.id}: preview total ${pv.total} != ${addon.monthlyCents} (discount or tax?); refused, nothing charged`)
           return { ok: false, code: 'price_mismatch', message: ADDON_PRICE_UNCONFIRMED }
         }
-        amountDue = Math.max(0, Math.min(addon.monthlyCents, pv.amount_due))
+        amountDue = Math.max(0, pv.amount_due) // Vera M-1: uncapped, like the confirm (a carried debit included)
       } catch (e) {
         // No preview: the charge path decides (its own total check refuses a wrong total).
         log(`[change-addon] preview before the charge failed on ${sub.id}: ${errMsg(e)}`)

@@ -81,3 +81,24 @@ describe('Lina 10:33: a small gray date line at the top of each refund note card
     expect(recentAddonRefundNotes([{ ...row('in_ny2', 0, l1('2027-01-01T10:00:00.000Z')), created: '2027-01-01T10:00:00.000Z' }], jan1)[0].dateLabel).toBe('Jan 1')
   })
 })
+
+describe("L-3 (Sable, locked): the refund's credit canceled a small charge still unbilled", () => {
+  const base = { kind: 'first_period' as const, addon: 'big_change' as const, addons: ['big_change' as const], reason: 'switch_pending' as const }
+  const text = (x: InvoiceRow['addonRefund']) => recentAddonRefundNotes([row('in_1', 1, x)], NOW)[0].text
+  it('unbilled small charge: the third line, with no delay line', () => {
+    const t = text({ ...base, cardCents: 0, creditCents: 575, carriedCents: 35 })
+    expect(t).toBe("We couldn't turn on Big change because a plan switch was already scheduled. Add-ons can't change until the switch happens. We added $5.40 back to your account credit and canceled the $0.35 small charge, so you won't pay it.")
+    expect(t).not.toContain('business days')
+  })
+  it('already paid on a bill (no carried mark): the existing credit line', () => {
+    expect(text({ ...base, cardCents: 0, creditCents: 575 })).toMatch(/ We added \$5\.75 back to your account credit\.$/)
+  })
+  it('card part: the existing card + credit line and the delay line (the third line never applies with a card refund)', () => {
+    expect(text({ ...base, cardCents: 75, creditCents: 500, carriedCents: 35 })).toMatch(/We refunded \$0\.75 to your card and added \$5 back to your account credit\. The card refund can take 5–10 business days to show up\.$/)
+  })
+  it('renders on the page', () => {
+    render(<AddonRefundNotes invoices={[row('in_1', 1, { ...base, cardCents: 0, creditCents: 575, carriedCents: 35 })]} now={NOW} />)
+    expect(screen.getByTestId('addon-refund-notes')).toHaveTextContent("canceled the $0.35 small charge, so you won't pay it.")
+  })
+})
+

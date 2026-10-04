@@ -31,7 +31,7 @@ export async function sendAddonRefundNoticeOnce(stripe: Pick<Stripe, 'invoices' 
   // Vera L-2 / Sable: "Hi {userName}," with the customer's name on file; "Hi," only when there is none.
   const userName = live?.name?.trim() || undefined
   const name = addonNameList(refund.addons)
-  const note = addonRefundNote(name, refund.reason, refund.cardCents, refund.creditCents)
+  const note = addonRefundNote(name, refund.reason, refund.cardCents, refund.creditCents, refund.carriedCents ?? 0)
   // Sable 10:01: the L-1 self-heal refund (a turned-off add-on still billed) has its own subject.
   const subject = refund.kind === 'turned_off' ? addonTurnedOffRefundEmailSubject(name) : undefined
   const key = addonRefundEmailKey(invoiceId)

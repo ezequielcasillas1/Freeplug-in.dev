@@ -29,7 +29,7 @@ export function recentAddonRefundNotes(invoices: readonly InvoiceRow[] | null | 
     .map((r) => {
       const x = r.addonRefund!
       const at = noteTime(r)
-      return { id: r.id, text: addonRefundNote(addonNameList(x.addons), x.reason, x.cardCents, x.creditCents), dateLabel: formatNoteDate(new Date(at), now), at }
+      return { id: r.id, text: addonRefundNote(addonNameList(x.addons), x.reason, x.cardCents, x.creditCents, x.carriedCents ?? 0), dateLabel: formatNoteDate(new Date(at), now), at }
     })
 }
 

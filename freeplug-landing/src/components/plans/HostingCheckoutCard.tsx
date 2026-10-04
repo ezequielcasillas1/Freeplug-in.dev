@@ -60,6 +60,7 @@ import {
   addonsStayOnLine,
   planTotalBreakdown,
   planTotalLine,
+  addonTodayTotal,
 } from '@/lib/plans/ladder-copy'
 
 function formatDollars(cents: number): string {
@@ -201,6 +202,8 @@ export function HostingCheckoutCard({
   const [tipDollars, setTipDollars] = useState(0)
   // New checkout: the add-ons picked (they stay through step picks; the server re-checks them).
   const [addonPicks, setAddonPicks] = useState<AddonId[]>([])
+  /** Vera M-1: an open add-on confirm with a carried small amount: its "{total} today" (phone bar), else null. */
+  const [addonTodayCents, setAddonTodayCents] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [keeping, setKeeping] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -584,6 +587,12 @@ export function HostingCheckoutCard({
       <p className="text-base font-bold text-gray-900" data-testid="plan-total-amount">
         {planTotalLine(selected.monthlyCents + totalParts.addons + totalParts.tip)}
       </p>
+      {stickyOnPhone && addonTodayCents !== null ? (
+        // Vera M-1 (Lina): the phone bar shows the same total the open add-on confirm charges today.
+        <p className="text-base font-bold text-gray-900 sm:hidden" data-testid="sticky-addon-today">
+          {addonTodayTotal(addonTodayCents)}
+        </p>
+      ) : null}
     </div>
   ) : null
   const phoneSummary = stickyOnPhone ? (
@@ -781,6 +790,7 @@ export function HostingCheckoutCard({
           legacy={!currentStepId}
           onPreview={onPreviewAddon!}
           onChange={onChangeAddon!}
+          onTodayTotal={setAddonTodayCents}
         />
       ) : null}
       {tipping ? (

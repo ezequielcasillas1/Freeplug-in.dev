@@ -25,7 +25,9 @@ import {
   addonChargeAfterCreditLine,
   addonChargeNote,
   addonAddedToNextBill,
+  addonCarriedBreakdown,
   addonChargeNowLine,
+  addonTodayTotal,
   addonChargeUpToLine,
   addonEndsLine,
   addonOffQuestion,
@@ -45,6 +47,26 @@ export function addonChargeTodayLine(amountDueCents: number, fullCents: number):
   if (amountDueCents < ADDON_MIN_CHARGE_CENTS) return addonAddedToNextBill(amountDueCents)
   return amountDueCents < fullCents ? addonChargeAfterCreditLine(amountDueCents) : addonChargeNowLine(amountDueCents)
 }
+
+/**
+ * The turn-on confirm's amount lines. Vera M-1 (Aria a): an earlier under-$0.50 amount carried onto this
+ * charge = bold "{total} today" + gray "{price} + {carried} left from your last change" (Lina/Sable), then
+ * the monthly line. Nothing carried = the approved lines, unchanged.
+ */
+export function addonOnConfirmLines(r: { amountDueCents: number; fullCents: number; carriedCents?: number; nextAmountCents: number; nextDate: string | null }): {
+  lines: string[]
+  today?: { totalCents: number; breakdown: string }
+} {
+  const carried = r.carriedCents ?? 0
+  if (carried > 0 && r.amountDueCents >= ADDON_MIN_CHARGE_CENTS) {
+    return {
+      today: { totalCents: r.amountDueCents, breakdown: addonCarriedBreakdown(r.amountDueCents - carried, carried) },
+      lines: [addonThenLine(r.nextAmountCents, r.nextDate)],
+    }
+  }
+  return { lines: [addonChargeTodayLine(r.amountDueCents, r.fullCents), addonThenLine(r.nextAmountCents, r.nextDate)] }
+}
+const todayLines = (p: { today?: { totalCents: number; breakdown: string } }) => (p.today ? [addonTodayTotal(p.today.totalCents), p.today.breakdown] : [])
 
 /** New checkout: the picks live in the card's state; the server re-checks every one (cap, tip max). */
 type CheckoutProps = {
@@ -72,6 +94,8 @@ type LiveProps = {
   legacy?: boolean
   onPreview: (addonId: AddonId, action: 'on' | 'off') => Promise<AddonPreviewResponse>
   onChange: (addonId: AddonId, action: 'on' | 'off' | 'keep', opts?: { prorationDate?: number; tipDropTo?: number }) => Promise<ChangeAddonResponse>
+  /** Vera M-1: the carried-split confirm's total ("$5.35 today") while it is open, for the phone sticky bar; null when closed. */
+  onTodayTotal?: (totalCents: number | null) => void
 }
 
 type Props = { stepId: PlanStepId; className?: string } & (CheckoutProps | LiveProps)
@@ -91,6 +115,8 @@ type Pending =
       nextDate?: string | null
       /** checkout: the picks and tip to apply on confirm */
       apply?: { ids: AddonId[]; tip: number }
+      /** Vera M-1 (Aria a, Lina/Sable): a small amount carried onto this charge: bold total + gray split. */
+      today?: { totalCents: number; breakdown: string }
     }
 
 const ON_CARD = 'border-[#ba3d3d] ring-1 ring-[#ba3d3d] bg-[#ba3d3d]/5'
@@ -121,6 +147,14 @@ export function AddonsBlock(props: Props) {
     },
     []
   )
+
+  // Vera M-1: the phone sticky bar shows the same "{total} today" as the open carried-split confirm.
+  const onTodayTotal = props.mode === 'live' ? props.onTodayTotal : undefined
+  const todayCents = pending && pending.kind !== 'loading' ? (pending.today?.totalCents ?? null) : null
+  useEffect(() => {
+    onTodayTotal?.(todayCents)
+  }, [onTodayTotal, todayCents])
+  useEffect(() => () => onTodayTotal?.(null), [onTodayTotal])
 
   const close = useCallback((focusId?: AddonId) => {
     previewSeq.current++
@@ -222,7 +256,7 @@ export function AddonsBlock(props: Props) {
         kind: 'confirm',
         action: 'on',
         question: drop ? addonTipGoesDownQuestion(r.tipDollarsAfter, r.nextDate, name) : addonTurnOnQuestion(name),
-        lines: [addonChargeTodayLine(r.amountDueCents, r.fullCents), addonThenLine(r.nextAmountCents, r.nextDate)],
+        ...addonOnConfirmLines(r),
         button: ADDON_TURN_ON,
         prorationDate: r.prorationDate,
         nextDate: r.nextDate,
@@ -348,6 +382,16 @@ export function AddonsBlock(props: Props) {
         <p className="text-sm text-gray-900" aria-hidden="true">
           {pending.question}
         </p>
+        {pending.today ? (
+          <>
+            <p className="mt-1 text-sm font-bold text-gray-900" aria-hidden="true" data-testid="addon-today-total">
+              {addonTodayTotal(pending.today.totalCents)}
+            </p>
+            <p className="text-xs text-gray-500" aria-hidden="true" data-testid="addon-today-breakdown">
+              {pending.today.breakdown}
+            </p>
+          </>
+        ) : null}
         {pending.lines.map((l) => (
           <p key={l} className="mt-1 text-sm text-gray-600" aria-hidden="true">
             {l}
@@ -452,7 +496,7 @@ export function AddonsBlock(props: Props) {
         </p>
       ) : null}
       <p role="status" aria-live="polite" className="sr-only" data-testid="addons-live">
-        {pending?.kind === 'loading' ? UPGRADE_CALCULATING : pending ? [pending.question, ...pending.lines].join(' ') : (notice ?? '')}
+        {pending?.kind === 'loading' ? UPGRADE_CALCULATING : pending ? [pending.question, ...todayLines(pending), ...pending.lines].join(' ') : (notice ?? '')}
       </p>
       <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
         {ADDONS.map((addon) => {

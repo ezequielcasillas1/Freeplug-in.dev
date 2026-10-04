@@ -229,6 +229,11 @@ implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
   `customer.subscription.updated` (plus `invoice.paid`) and the lazy release on read are enough. The
   handler for it stays in route.ts, harmless if it ever arrives.
 - Migrations 20261003200000 / 20261003210000 (and r13's 20261003220000) before the deploy.
+- **Add-ons launch guard (Jace, Oct 4):** the add-ons code must NEVER be deployed to a hosted project
+  until `20261004090000_plan_addons`, `20261004091000_addon_edit_uses` and
+  `20261004092000_addon_removals_owed` are already applied there (check `supabase_migrations.schema_migrations` on that
+  project first). Without `addon_removals_owed`, every owed-removal save fails, so a single Stripe error
+  on an upgrade or resume leaves a turned-off add-on renewing (Vera de173c8 L-1 / I-6).
 
 ## Buyout: existing pieces (for Aria's pay-to-own card)
 Nothing here changes until Aria's card is approved. Ezequiel wants a pay-to-own option; today there is

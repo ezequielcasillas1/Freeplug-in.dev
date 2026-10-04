@@ -367,7 +367,7 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     const deps = { stripe: sim.client() as unknown as Stripe, addonPriceIdFor: async (id: AddonId) => SIM_PRICE_ID.addon(id), now: sim.now, log: () => {} }
     const preview = await previewAddonChange(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', sim.nowSec())
     expect(preview).toMatchObject({ ok: true, amountDueCents: 35, fullCents: 575, nextAmountCents: 6075 })
-    expect(addonAddedToNextBill(35)).toBe('$0.35 will be added to your next bill.')
+    expect(addonAddedToNextBill(35)).toBe('$0.35 will be added to your next charge.')
     const r = await changeAddon(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', { userId: USER, prorationDate: sim.nowSec() })
     expect(r).toEqual({ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: 'paid', invoiceId: expect.any(String), deferredCents: 35 })
     // the normal first-period invoice: the credit is used, $0 charged, $0.35 debited to the balance

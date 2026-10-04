@@ -81,4 +81,15 @@ describe('sendAddonRefundNoticeOnce (Aria 9:27: the email line, through the webh
       expect(plain).not.toMatch(/Hi [A-Za-z]/)
     }
   })
+  it('L-3: the credit canceled a small charge still unbilled: the email uses the third line (no delay line)', async () => {
+    const carried = { ...refunded, addon_refund_card_cents: '0', addon_refund_credit_cents: '575', addon_refund_carried_cents: '35' }
+    expect(await sendAddonRefundNoticeOnce(stripe({ ...inv(carried), amount_paid: 0 }), 'in_1')).toBe('sent')
+    const note = (h.sends[0][1] as { note: string }).note
+    expect(note).toBe(
+      "We couldn't turn on Big change because it would have lowered your tip, which you hadn't confirmed. We added $5.40 back to your account credit and canceled the $0.35 small charge, so you won't pay it."
+    )
+    const plain = toPlainText(await render(AddonRefundedEmail(h.sends[0][1] as Parameters<typeof AddonRefundedEmail>[0])))
+    expect(plain).toContain("canceled the $0.35 small charge, so you won't pay it.")
+    expect(plain).not.toContain('business days')
+  })
 })

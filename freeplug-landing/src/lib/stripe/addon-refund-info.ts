@@ -19,6 +19,11 @@ export const ADDON_REFUND_CREDIT_META = 'addon_refund_credit_cents'
 export const ADDON_TURNED_OFF_META = 'addon_turned_off_refunded'
 /** When the refund was made (unix seconds), for the note's date line (Lina 10:33). Older invoices lack it. */
 export const ADDON_REFUNDED_AT_META = 'addon_refunded_at'
+/**
+ * L-3 (Sable, locked): the part of the credit refund that canceled a small charge still unbilled on the
+ * account (an invoice_too_small debit on the customer balance at refund time). Absent = none.
+ */
+export const ADDON_REFUND_CARRIED_META = 'addon_refund_carried_cents'
 
 /** Where an add-on charge's money came from: the card paid amount_paid, account credit the rest. */
 export function addonRefundSplit(amountPaidCents: number, cents: number): { cardCents: number; creditCents: number } {
@@ -39,6 +44,8 @@ export function addonRefundOf(inv: { metadata?: Record<string, string> | null; t
   reason: AddonRefundReason
   cardCents: number
   creditCents: number
+  /** L-3: of creditCents, what canceled an unbilled small charge (ADDON_REFUND_CARRIED_META); only when > 0. */
+  carriedCents?: number
   /** ISO time of the refund (ADDON_REFUNDED_AT_META), only when recorded. */
   refundedAt?: string
 } | null {
@@ -47,6 +54,8 @@ export function addonRefundOf(inv: { metadata?: Record<string, string> | null; t
   const num = (v: string | undefined, d: number) => (v !== undefined && /^\d+$/.test(v) ? Number(v) : d)
   const at = num(m[ADDON_REFUNDED_AT_META], 0)
   const refundedAt = at > 0 ? { refundedAt: new Date(at * 1000).toISOString() } : {}
+  const carriedNum = num(m[ADDON_REFUND_CARRIED_META], 0)
+  const carried = carriedNum > 0 ? { carriedCents: carriedNum } : {}
   const turnedOff = (m[ADDON_TURNED_OFF_META] ?? '')
     .split(',')
     .map((id) => addonById(id))
@@ -60,6 +69,7 @@ export function addonRefundOf(inv: { metadata?: Record<string, string> | null; t
       reason: 'turned_off',
       cardCents: num(m[ADDON_REFUND_CARD_META], 0),
       creditCents: num(m[ADDON_REFUND_CREDIT_META], 0),
+      ...carried,
       ...refundedAt,
     }
   }
@@ -73,6 +83,7 @@ export function addonRefundOf(inv: { metadata?: Record<string, string> | null; t
     reason: isAddonRefundReason(m[ADDON_REFUND_REASON_META]) ? (m[ADDON_REFUND_REASON_META] as AddonRefundReason) : 'not_added',
     cardCents: num(m[ADDON_REFUND_CARD_META], fallback.cardCents),
     creditCents: num(m[ADDON_REFUND_CREDIT_META], fallback.creditCents),
+    ...carried,
     ...refundedAt,
   }
 }

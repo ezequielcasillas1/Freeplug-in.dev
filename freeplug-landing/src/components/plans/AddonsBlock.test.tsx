@@ -316,21 +316,21 @@ describe('add-ons block, live plan', () => {
     expect(screen.getByTestId('addons-lock-note')).toHaveTextContent('You can change add-ons after your plan switch.')
   })
 
-  it('small charge under $0.50 (Aria 9:27, ruling 3): "$0.35 will be added to your next bill.", no "charge" line; Confirm still sends', async () => {
+  it('small charge under $0.50 (Aria 9:27, ruling 3): "$0.35 will be added to your next charge.", no "charge" line; Confirm still sends', async () => {
     const { onChange } = live({}, async () => ({ ok: true, action: 'on', prorationDate: 1_790_000_000, amountDueCents: 35, fullCents: 575, nextAmountCents: 6075, nextDate: 'November 3, 2026', tipDollarsNow: 0, tipDollarsAfter: 0 }))
     fireEvent.click(sw('big_change'))
     const box = await screen.findByTestId('addon-confirm')
     expect(box).toHaveTextContent('Turn on Big change?')
-    expect(box).toHaveTextContent('$0.35 will be added to your next bill.')
+    expect(box).toHaveTextContent('$0.35 will be added to your next charge.')
     expect(box).not.toHaveTextContent(/We'll charge|Nothing is charged/)
     fireEvent.click(screen.getByTestId('addon-confirm-button'))
     await waitFor(() => expect(onChange).toHaveBeenCalledWith('big_change', 'on', { prorationDate: 1_790_000_000, tipDropTo: undefined }))
   })
 
   it.each([
-    [49, '$0.49 will be added to your next bill.'],
+    [49, '$0.49 will be added to your next charge.'],
     [50, "We'll charge $0.50 today, after your account credit."],
-    [1, '$0.01 will be added to your next bill.'],
+    [1, '$0.01 will be added to your next charge.'],
   ])('the $0.50 edge: %i cents -> %s', async (cents, line) => {
     live({}, async () => ({ ok: true, action: 'on', prorationDate: 1_790_000_000, amountDueCents: cents, fullCents: 575, nextAmountCents: 6075, nextDate: null, tipDollarsNow: 0, tipDollarsAfter: 0 }))
     fireEvent.click(sw('big_change'))
@@ -421,5 +421,66 @@ describe('Plans card with a live plan and add-ons', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Switch to Priority now' }))
     await screen.findByTestId('upgrade-confirm')
     expect(screen.queryByText(/Your add-ons stay on/)).toBeNull()
+  })
+})
+
+describe('Vera M-1 (Aria a, Lina + Sable): a small amount carried from the last change lands on this charge', () => {
+  const carried = async (_id: AddonId, action: 'on' | 'off'): Promise<AddonPreviewResponse> =>
+    action === 'on'
+      ? { ok: true, action: 'on', prorationDate: 1_790_000_000, amountDueCents: 535, fullCents: 500, carriedCents: 35, nextAmountCents: 6575, nextDate: 'November 3, 2026', tipDollarsNow: 0, tipDollarsAfter: 0 }
+      : { ok: true, action: 'off', endDate: 'November 3, 2026', nextAmountCents: 5500, nextDate: 'November 3, 2026' }
+
+  it('line 1 bold "$5.35 today", line 2 its own gray small line "$5.00 + $0.35 left from your last change" (no parentheses), then the monthly line', async () => {
+    const { onChange } = live({}, carried)
+    fireEvent.click(sw('small_edit'))
+    const box = await screen.findByTestId('addon-confirm')
+    const totalLine = within(box).getByTestId('addon-today-total')
+    const split = within(box).getByTestId('addon-today-breakdown')
+    expect(totalLine.textContent).toBe('$5.35 today')
+    expect(totalLine.className).toMatch(/font-bold/)
+    expect(split.textContent).toBe('$5.00 + $0.35 left from your last change')
+    expect(split.className).toMatch(/text-gray-500/)
+    expect(split.className).toMatch(/text-xs/)
+    expect(box.textContent).not.toMatch(/[()]/)
+    expect(totalLine.compareDocumentPosition(split) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(box).toHaveTextContent('Then $65.75/month starting November 3, 2026.')
+    expect(box).not.toHaveTextContent(/We'll charge|next charge|next bill/)
+    expect(screen.getByTestId('addons-live')).toHaveTextContent('Turn on +1 small edit? $5.35 today $5.00 + $0.35 left from your last change Then $65.75/month')
+    fireEvent.click(screen.getByTestId('addon-confirm-button'))
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith('small_edit', 'on', { prorationDate: 1_790_000_000, tipDropTo: undefined }))
+  })
+
+  it('nothing carried: no bold total and no gray line (the approved charge line only)', async () => {
+    live({}, async () => ({ ok: true, action: 'on', prorationDate: 1, amountDueCents: 500, fullCents: 500, carriedCents: 0, nextAmountCents: 6000, nextDate: null, tipDollarsNow: 0, tipDollarsAfter: 0 }))
+    fireEvent.click(sw('small_edit'))
+    const box = await screen.findByTestId('addon-confirm')
+    expect(within(box).queryByTestId('addon-today-total')).toBeNull()
+    expect(within(box).queryByTestId('addon-today-breakdown')).toBeNull()
+    expect(box).toHaveTextContent("We'll charge $5 today for this billing period.")
+  })
+
+  it('the phone sticky bar shows the same total while the confirm is open, and drops it on Cancel', async () => {
+    render(
+      <HostingCheckoutCard
+        currentPlanLines={['Priority · $55/month']}
+        currentStepId="priority"
+        renewalDate="November 3, 2026"
+        onChangePlan={vi.fn(async () => ({ ok: true, message: 'done' }))}
+        onPreviewChange={vi.fn()}
+        currentAddons={['big_change']}
+        onPreviewAddon={vi.fn(carried)}
+        onChangeAddon={vi.fn()}
+        stickyOnPhone
+      />
+    )
+    expect(screen.queryByTestId('sticky-addon-today')).toBeNull()
+    fireEvent.click(sw('small_edit'))
+    const box = await screen.findByTestId('addon-confirm')
+    const bar = await screen.findByTestId('sticky-addon-today')
+    expect(bar.textContent).toBe('$5.35 today')
+    expect(bar.textContent).toBe(within(box).getByTestId('addon-today-total').textContent)
+    expect(bar.className).toMatch(/sm:hidden/)
+    fireEvent.click(within(box).getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.queryByTestId('sticky-addon-today')).toBeNull())
   })
 })

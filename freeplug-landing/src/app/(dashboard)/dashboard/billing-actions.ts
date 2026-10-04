@@ -457,6 +457,8 @@ export type AddonPreviewResponse =
       amountDueCents: number
       /** The add-on's full monthly price. */
       fullCents: number
+      /** Vera M-1: a small amount carried from the last change, included in amountDueCents (0 or absent = none). */
+      carriedCents?: number
       nextAmountCents: number
       nextDate: string | null
       tipDollarsNow: number
@@ -516,6 +518,7 @@ export async function previewAddonChangeAction(addonId: string, action: string):
         prorationDate: p.prorationDate,
         amountDueCents: p.amountDueCents,
         fullCents: p.fullCents,
+        carriedCents: p.carriedCents,
         nextAmountCents: p.nextAmountCents,
         nextDate,
         tipDollarsNow: p.tipDollarsNow,

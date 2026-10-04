@@ -70,3 +70,14 @@ describe('DashboardAddonRefundNotes (main dashboard)', () => {
     expect(src).toContain('<DashboardAddonRefundNotes customerId={p.stripe_customer_id} />')
   })
 })
+
+describe('L-3 on the main dashboard (same component, from the invoice marks)', () => {
+  it('a refund that canceled an unbilled small charge shows the third line', async () => {
+    h.fail = false
+    const inv = firstPeriod('in_carry', 1, 0, 575)
+    h.invoices = [{ ...inv, metadata: { ...inv.metadata, addon_refund_carried_cents: '35' } }]
+    render(await DashboardAddonRefundNotes({ customerId: 'cus_1', now: NOW }))
+    expect(screen.getByTestId('addon-refund-notes')).toHaveTextContent("We couldn't turn on Big change because a plan switch was already scheduled. Add-ons can't change until the switch happens. We added $5.40 back to your account credit and canceled the $0.35 small charge, so you won't pay it.")
+  })
+})
+

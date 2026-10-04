@@ -170,8 +170,19 @@ describe("Sable, Oct 4 9:29 AM CT: the five lines, word for word", () => {
 
 describe('Aria 9:27 / 9:28: new strings (listed for Sable), word for word', () => {
   it('small charge under $0.50: the confirm line', () => {
-    expect(copy.addonAddedToNextBill(35)).toBe('$0.35 will be added to your next bill.')
-    expect(copy.addonAddedToNextBill(5)).toBe('$0.05 will be added to your next bill.')
+    expect(copy.addonAddedToNextBill(35)).toBe('$0.35 will be added to your next charge.')
+    expect(copy.addonAddedToNextBill(5)).toBe('$0.05 will be added to your next charge.')
+  })
+  it('Vera M-1 (Sable + Lina): the carried split, two keys, no parentheses', () => {
+    expect(copy.addonTodayTotal(535)).toBe('$5.35 today')
+    expect(copy.addonTodayTotal(500)).toBe('$5 today')
+    expect(copy.addonCarriedBreakdown(500, 35)).toBe('$5.00 + $0.35 left from your last change')
+    expect(copy.addonCarriedBreakdown(575, 49)).toBe('$5.75 + $0.49 left from your last change')
+  })
+  it('L-3 (Sable, locked): the third refund split line, only for a credit refund that canceled an unbilled small charge', () => {
+    expect(copy.addonRefundSplitLine(0, 575, 35)).toBe("We added $5.40 back to your account credit and canceled the $0.35 small charge, so you won't pay it.")
+    expect(copy.addonRefundSplitLine(0, 575)).toBe('We added $5.75 back to your account credit.')
+    expect(copy.addonRefundSplitLine(75, 500, 35)).toBe('We refunded $0.75 to your card and added $5 back to your account credit.')
   })
   it('discount or tax: the refusal', () => {
     expect(copy.ADDON_PRICE_UNCONFIRMED).toBe("We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help.")

@@ -433,7 +433,16 @@ export const addonThenLine = (nextCents: number, date: string | null) =>
  * Aria, Oct 4 9:27: a charge above $0 and below Stripe's $0.50 minimum (account credit pays the rest)
  * is not charged now; it goes on the next monthly bill.
  */
-export const addonAddedToNextBill = (cents: number) => `${dollars(cents)} will be added to your next bill.`
+export const addonAddedToNextBill = (cents: number) => `${dollars(cents)} will be added to your next charge.`
+/** Two decimals always ("$5.00 + $0.35"): the carried split adds cents to whole dollars. */
+const cents2 = (cents: number) => `$${(cents / 100).toFixed(2)}`
+/**
+ * [Sable + Lina, M-1 (Aria a)] Add-on confirm when a small amount from the last change is carried onto
+ * this charge: line 1 bold "{total} today", line 2 gray small "{price} + {carried} left from your last
+ * change" (no parentheses). The phone sticky bar shows the same total line.
+ */
+export const addonTodayTotal = (totalCents: number) => `${dollars(totalCents)} today`
+export const addonCarriedBreakdown = (priceCents: number, carriedCents: number) => `${cents2(priceCents)} + ${cents2(carriedCents)} left from your last change`
 /** Aria 9:27: the charge total isn't exactly the add-on price (a discount or tax on the account): refused. */
 export const ADDON_PRICE_UNCONFIRMED = `We couldn't confirm this price. Please try again, or email ${SUPPORT_EMAIL} and we'll help.`
 /** The preview failed: the add-on's full price is the most it can charge (credit can only lower it). */
@@ -466,7 +475,12 @@ export const addonFinishing = (name: string) =>
  * Sable, Oct 4 9:29: the refund line split by where the money went (card part = what the card paid,
  * credit part = what account credit paid; refundAddonCharge returns both).
  */
-export function addonRefundSplitLine(cardCents: number, creditCents: number): string {
+export function addonRefundSplitLine(cardCents: number, creditCents: number, carriedCents: number = 0): string {
+  // L-3 (Sable, locked): part of the credit canceled a small charge still unbilled on the account (not yet
+  // paid on a bill). No card part, so no delay line follows. Already paid on a bill = the lines below.
+  if (carriedCents > 0 && cardCents === 0 && creditCents > carriedCents) {
+    return `We added ${dollars(creditCents - carriedCents)} back to your account credit and canceled the ${dollars(carriedCents)} small charge, so you won't pay it.`
+  }
   if (cardCents > 0 && creditCents > 0) return `We refunded ${dollars(cardCents)} to your card and added ${dollars(creditCents)} back to your account credit.`
   if (creditCents > 0) return `We added ${dollars(creditCents)} back to your account credit.`
   return `We refunded ${dollars(cardCents)} to your card.`
@@ -492,8 +506,8 @@ export const ADDON_REFUND_REASONS: Record<AddonRefundReason, (name: string) => s
 }
 export const isAddonRefundReason = (v: unknown): v is AddonRefundReason => typeof v === 'string' && Object.hasOwn(ADDON_REFUND_REASONS, v)
 /** Plans page note and the email line: the reason, then where the money went. */
-export const addonRefundNote = (name: string, reason: AddonRefundReason, cardCents: number, creditCents: number) =>
-  `${ADDON_REFUND_REASONS[isAddonRefundReason(reason) ? reason : 'not_added'](name)} ${addonRefundSplitLine(cardCents, creditCents)}${cardRefundDelay(cardCents)}`
+export const addonRefundNote = (name: string, reason: AddonRefundReason, cardCents: number, creditCents: number, carriedCents: number = 0) =>
+  `${ADDON_REFUND_REASONS[isAddonRefundReason(reason) ? reason : 'not_added'](name)} ${addonRefundSplitLine(cardCents, creditCents, carriedCents)}${cardRefundDelay(cardCents)}`
 /** Several add-ons in one line: "+1 small edit and Big change". */
 export const addonNameList = (ids: readonly AddonId[] | AddonId) => ([] as AddonId[]).concat(ids).map((id) => ADDON_NAMES[id] ?? id).join(' and ')
 /** Refund email (self-heal): subject and the closing line. */
