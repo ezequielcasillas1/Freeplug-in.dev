@@ -115,7 +115,7 @@ const OFF_CARD = 'border-gray-200 bg-white'
  */
 export function AddonsBlock(props: Props) {
   const copy = useLadderCopy()
-  const { ADDON_CANCEL, ADDON_ERROR, ADDON_KEEP, ADDON_NAMES, ADDON_TURN_OFF, ADDON_TURN_ON, ADDONS_HEADING, ADDONS_LEGACY_NOTE, ADDONS_LOCKED_BY_REMOVAL, ADDONS_STARTER_CAP_NOTE, BIG_CHANGE_BIGGER_NOTE, COMING_SOON_LABEL, UPGRADE_CALCULATING, addonChargeNote, addonChargeUpToLine, addonEndsLine, addonOffQuestion, addonPerkLine, addonPriceLine, addonsLockedBySwitch, addonThenLine, addonTipDropQuestion, addonTipGoesDownQuestion, addonTurnOnQuestion, addonTodayTotal } = copy
+  const { ADDON_GLOSS, ADDON_CANCEL, ADDON_ERROR, ADDON_KEEP, ADDON_NAMES, ADDON_TURN_OFF, ADDON_TURN_ON, ADDONS_HEADING, ADDONS_LEGACY_NOTE, ADDONS_LOCKED_BY_REMOVAL, ADDONS_STARTER_CAP_NOTE, BIG_CHANGE_BIGGER_NOTE, COMING_SOON_LABEL, UPGRADE_CALCULATING, addonChargeNote, addonChargeUpToLine, addonEndsLine, addonOffQuestion, addonPerkLine, addonPriceLine, addonsLockedBySwitch, addonThenLine, addonTipDropQuestion, addonTipGoesDownQuestion, addonTurnOnQuestion, addonTodayTotal } = copy
   const { stepId, className } = props
   const [pending, setPending] = useState<Pending | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -331,6 +331,7 @@ export function AddonsBlock(props: Props) {
           <span className={cn('font-semibold', muted ? 'text-gray-600' : 'text-gray-900')}>{ADDON_NAMES[addon.id]}</span>
           <span className={cn('shrink-0 whitespace-nowrap text-sm font-semibold', muted ? 'text-gray-600' : 'text-gray-900')}>{addonPriceLine(addon.monthlyCents)}</span>
         </span>
+        {ADDON_GLOSS[addon.id] ? <span className="block text-xs text-gray-600" data-testid="addon-gloss">{ADDON_GLOSS[addon.id]}</span> : null}
         <span className="mt-1 block text-sm text-gray-600" data-testid="addon-perk">
           {addonPerkLine(addon.id, { withIncludedEdit })}
         </span>
@@ -525,6 +526,7 @@ export function AddonsBlock(props: Props) {
                 <span className="font-semibold text-gray-600">{ADDON_NAMES[a.id]}</span>
                 <span className="rounded bg-amber-100 px-1.5 text-[11px] font-semibold text-amber-800">{COMING_SOON_LABEL}</span>
               </span>
+              {ADDON_GLOSS[a.id] ? <span className="block text-xs text-gray-600" data-testid="addon-gloss">{ADDON_GLOSS[a.id]}</span> : null}
               <span className="mt-1 block text-sm text-gray-600">{addonPriceLine(a.monthlyCents)}</span>
               <span className="mt-1 block text-sm text-gray-600">{addonPerkLine(a.id)}</span>
             </span>

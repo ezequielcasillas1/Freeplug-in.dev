@@ -154,7 +154,7 @@ export function HostingCheckoutCard({
   onPreviewAddon,
   onChangeAddon,
 }: Props) {
-  const { CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine, addonTodayTotal } = useLadderCopy()
+  const { PLAN_GLOSS, CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine, addonTodayTotal } = useLadderCopy()
   // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
   // customer is already on. The server refuses them too (checkout, claim, publish, switching).
   const pickable = (id: PlanStepId) => id === currentStepId || PLAN_STEPS.some((s) => s.id === id && s.sellable)
@@ -471,11 +471,22 @@ export function HostingCheckoutCard({
             <span className="font-semibold text-gray-900">{step.name}</span>
             {price(step)}
           </span>
+          {gloss(step.id)}
           {badgesFor(step)}
           {body(step)}
         </span>
       </label>
     )
+  }
+
+  /** Spanish only: one-line gloss under the English plan name (Aria ruling 2, Sable §3). */
+  function gloss(id: PlanStepId) {
+    const line = PLAN_GLOSS[id]
+    return line ? (
+      <span className="block text-xs text-gray-600" data-testid="plan-gloss">
+        {line}
+      </span>
+    ) : null
   }
 
   /** Coming soon (Lina §0): no radio, not clickable, no hover, grey text (no opacity). */
@@ -491,6 +502,7 @@ export function HostingCheckoutCard({
           <span className="font-semibold text-gray-600">{step.name}</span>
           {price(step, true)}
         </span>
+        {gloss(step.id)}
         {badgesFor(step)}
         {body(step, true)}
       </div>
