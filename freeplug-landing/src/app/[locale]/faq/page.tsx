@@ -74,7 +74,7 @@ export default function FAQPage() {
               className="mb-12"
             >
               <Accordion allowMultiple>
-                {faqs.map((faq, index) => (
+                {faqs.map((faq) => (
                   <motion.div key={faq.id} variants={fadeInUp}>
                     <AccordionItem id={faq.id}>
                       <AccordionTrigger id={faq.id}>{faq.question}</AccordionTrigger>
