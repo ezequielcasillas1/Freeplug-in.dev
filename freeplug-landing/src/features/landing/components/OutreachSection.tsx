@@ -8,57 +8,62 @@ import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
 import { fadeInUp, staggerContainer, cardVariants } from '../animations/landing.variants'
+import { useLocale, useTranslations } from 'next-intl'
+import { toAppLocale } from '@/i18n/config'
+import { publicHref } from '@/i18n/routing'
 
 const texasCities = [
   {
-    name: 'San Marcos',
+    name: 'sanMarcos',
     image: '/images/outreach/san-marcos.jpg',
-    alt: 'Stock photo of a city skyline — San Marcos, Texas',
+    alt: 'stockPhotoCitySkyline',
   },
   {
-    name: 'Kyle',
+    name: 'kyle',
     image: '/images/outreach/kyle.jpg',
-    alt: 'Stock photo of a residential street — Kyle, Texas',
+    alt: 'stockPhotoResidentialStreet',
   },
   {
-    name: 'New Braunfels',
+    name: 'newBraunfels',
     image: '/images/outreach/new-braunfels.jpg',
-    alt: 'Stock photo of a river landscape — New Braunfels, Texas',
+    alt: 'stockPhotoRiverLandscape',
   },
   {
-    name: 'San Antonio',
+    name: 'sanAntonio',
     image: '/images/outreach/san-antonio.jpg',
-    alt: 'Stock photo of San Antonio, Texas',
+    alt: 'stockPhotoSanAntonio',
   },
   {
-    name: 'Austin',
+    name: 'austin',
     image: '/images/outreach/austin.jpg',
-    alt: 'Stock photo of the Austin, Texas skyline',
+    alt: 'stockPhotoAustinTexas',
   },
-]
+] as const // keys under public.landing.outreach.name / .alt
 
 const howItWorks = [
   {
     step: '1',
     icon: MessageCircle,
-    title: 'Freeplug reaches out',
-    description: 'We contact owners who need a site — or you request one yourself.',
+    title: 'title.freeplugReachesOut',
+    description: 'description.contactOwnersWhoNeed',
   },
   {
     step: '2',
     icon: Wrench,
-    title: '72 After builds',
-    description: '72 After builds a free multi-page site from a solid template, your real services, and clear Get-a-quote pages.',
+    title: 'title.72AfterBuilds',
+    description: 'description.builds72AfterFreeMultiPage',
   },
   {
     step: '3',
     icon: Handshake,
-    title: 'You go live',
-    description: "You review the site and add your phone number and photos when you're ready. Then you go live, and monthly hosting keeps your site online.",
+    title: 'title.goLive',
+    description: 'description.reviewSiteAddPhone',
   },
-]
+] as const // keys under public.landing.outreach
 
 export function OutreachSection() {
+  const t = useTranslations('public.landing.outreach')
+  const locale = toAppLocale(useLocale())
   return (
     <>
       {/* Texas metros */}
@@ -77,22 +82,23 @@ export function OutreachSection() {
               variants={fadeInUp}
               className="inline-block px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
             >
-              Service areas
+              {t('serviceAreas')}
             </motion.span>
             <motion.h2
               variants={fadeInUp}
               className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
             >
-              Where we work in{' '}
-              <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-                Texas
-              </span>
+              {t.rich('whereWorkTexas', {
+                span: (chunks) => (
+                  <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">{chunks}</span>
+                ),
+              })}
             </motion.h2>
             <motion.p
               variants={fadeInUp}
               className="text-lg text-gray-600 max-w-2xl mx-auto"
             >
-              We’re focused on Central Texas first — San Marcos and nearby cities.
+              {t('wereFocusedCentralTexasFirst')}
             </motion.p>
           </motion.div>
 
@@ -109,7 +115,7 @@ export function OutreachSection() {
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <Image
                       src={city.image}
-                      alt={city.alt}
+                      alt={t(`alt.${city.alt}`)}
                       // City photos are all 800x600 and sit below the first screen at 375px and desktop:
                       // explicit size (no layout shift; the aspect box sets the shown size) and lazy load.
                       width={800}
@@ -123,11 +129,11 @@ export function OutreachSection() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white">
                       <MapPin className="w-4 h-4" />
-                      <span className="font-semibold text-lg drop-shadow">{city.name}</span>
+                      <span className="font-semibold text-lg drop-shadow">{t(`name.${city.name}`)}</span>
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">{city.name} — stock photo</p>
+                    <p className="text-sm text-gray-500">{t('stockPhoto', { name: t(`name.${city.name}`) })}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -141,7 +147,7 @@ export function OutreachSection() {
             viewport={{ once: true }}
             className="text-center text-gray-500 text-sm max-w-xl mx-auto"
           >
-            More Texas cities as capacity grows. Ask if your town isn’t listed.
+            {t('moreTexasCitiesCapacityGrows')}
           </motion.p>
         </div>
       </section>
@@ -164,35 +170,31 @@ export function OutreachSection() {
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider"
               >
                 <Globe2 className="w-4 h-4" />
-                International
+                {t('international')}
               </motion.span>
               <motion.h2
                 variants={fadeInUp}
                 className="text-3xl sm:text-4xl font-bold text-gray-900"
               >
-                Beyond Texas and the US
+                {t('beyondTexasUs')}
               </motion.h2>
               <motion.p variants={fadeInUp} className="text-lg text-gray-600 leading-relaxed">
-                Freeplug can reach businesses outside the US through our in-network partners and
-                channels. International outreach depends on language, local rules, and partner
-                capacity — we don’t promise every country or a set timeline. If you’re outside the
-                US and want a free site through the network, start a request and we’ll tell you
-                what’s possible.
+                {t('freeplugReachBusinessesOutsideUs')}
               </motion.p>
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/signup"
+                  href={publicHref('/signup', locale)}
                   className={cn(
                     buttonVariants({ size: 'lg' }),
                     'shadow-lg shadow-[#ba3d3d]/30'
                   )}
                 >
-                  Request international outreach
+                  {t('requestInternationalOutreach')}
                   <ArrowRight size={18} className="ml-2" />
                 </Link>
               </motion.div>
               <motion.p variants={fadeInUp} className="text-sm text-gray-500">
-                Availability varies by region and partner. No guaranteed coverage or launch date.
+                {t('availabilityVariesRegionPartnerNo')}
               </motion.p>
             </motion.div>
 
@@ -206,13 +208,13 @@ export function OutreachSection() {
               {[
                 {
                   src: '/images/outreach/international-1.jpg',
-                  alt: 'Stock photo of an international city skyline',
-                  label: 'International skyline — stock photo',
+                  alt: t('alt.stockPhotoInternationalCity'),
+                  label: t('label.internationalSkylineStockPhoto'),
                 },
                 {
                   src: '/images/outreach/international-2.jpg',
-                  alt: 'Stock photo of a city skyline outside the U.S.',
-                  label: 'City skyline — stock photo',
+                  alt: t('alt.stockPhotoCitySkyline2'),
+                  label: t('label.citySkylineStockPhoto'),
                 },
               ].map((img) => (
                 <motion.div key={img.src} variants={cardVariants}>
@@ -252,22 +254,23 @@ export function OutreachSection() {
               variants={fadeInUp}
               className="inline-block px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
             >
-              How it connects
+              {t('howItConnects')}
             </motion.span>
             <motion.h2
               variants={fadeInUp}
               className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
             >
-              How it{' '}
-              <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-                works
-              </span>
+              {t.rich('howItWorks', {
+                span: (chunks) => (
+                  <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">{chunks}</span>
+                ),
+              })}
             </motion.h2>
             <motion.p
               variants={fadeInUp}
               className="text-lg text-gray-600 max-w-2xl mx-auto"
             >
-              Freeplug connects the conversation. 72 After does the build.
+              {t('freeplugConnectsConversation72After')}
             </motion.p>
           </motion.div>
 
@@ -288,11 +291,11 @@ export function OutreachSection() {
                         <item.icon className="w-6 h-6 text-white" />
                       </div>
                       <span className="text-sm font-semibold text-[#ba3d3d] uppercase tracking-wider">
-                        Step {item.step}
+                        {t('step', { step: item.step })}
                       </span>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">{t(item.title)}</h3>
+                    <p className="text-gray-600 leading-relaxed">{t(item.description)}</p>
                   </CardContent>
                 </Card>
               </motion.div>

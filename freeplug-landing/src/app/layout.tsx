@@ -1,40 +1,21 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next'
+import './globals.css'
+import { EN_MESSAGES } from '@/i18n/messages'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const meta = EN_MESSAGES.public.meta
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
+/**
+ * Pass-through root layout (next-intl pattern, Spanish build Oct 4). The <html> document is
+ * rendered one level down so `lang` can follow the locale: [locale]/layout.tsx for public pages,
+ * and AppTreeDocument in the (auth), (dashboard), claim and preview layouts; admin is English.
+ * Defaults below are the English site metadata; Spanish public pages override them.
+ */
 export const metadata: Metadata = {
-  title: { default: "Free Website Outreach | Freeplug", template: "%s" },
-  description: "Freeplug finds local business owners who need a website. 72 After builds the free site. We serve San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
-  openGraph: {
-    title: "Free Websites for Local Businesses | Freeplug",
-    description: "Local business without a website? Request one. 72 After builds it for free.",
-    type: "website",
-  },
-};
+  title: { default: meta.siteTitle, template: '%s' },
+  description: meta.siteDescription,
+  openGraph: { title: meta.ogTitle, description: meta.ogDescription, type: 'website' },
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-    >
-      <body className="min-h-screen" suppressHydrationWarning>
-        {children}
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return children
 }

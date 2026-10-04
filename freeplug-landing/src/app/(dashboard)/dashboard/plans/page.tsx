@@ -10,7 +10,9 @@ import { pendingPlanChange, subscriptionAddons, subscriptionMonthlyCents, subscr
 import { subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { getStripe } from '@/lib/stripe/server'
 import { changeAddonAction, changeHostingPlan, changeTipAction, previewAddonChangeAction, previewPlanChange, previewTipChangeAction, updatePaymentMethod } from '../billing-actions'
-import { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE, DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 import { stepById } from '@/lib/plans/ladder'
 import { BillingTools } from '@/components/plans/BillingTools'
 import { AddonRefundNotes } from '@/components/plans/AddonRefundNotes'
@@ -30,6 +32,7 @@ async function loadInvoices(customerId: string): Promise<InvoiceRow[] | null> {
 }
 
 function BillingNotices({ billing, card, pendingChange }: { billing?: string; card?: string; pendingChange: { stepId: PlanStepId; date: string } | null }) {
+  const { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE } = useLadderCopy()
   return (
     <>
       {billing === 'pending' && pendingChange ? (
@@ -50,6 +53,8 @@ function BillingNotices({ billing, card, pendingChange }: { billing?: string; ca
 }
 
 export default async function DashboardPlansPage({ searchParams }: Props) {
+  const locale = await currentLocale()
+  const { DASHBOARD_PLANS_INTRO } = ladderCopy(locale)
   const { billing, card, focus } = (await searchParams) ?? {}
   const supabase = await createClient()
   const {
@@ -133,12 +138,12 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
             console.error('[plans] owed removal read failed', e instanceof Error ? e.message : e)
           }
           const end = subscriptionPeriodEnd(live[0])
-          renewalDate = end ? formatPlanEndDate(end) : null
-          renewalDateShort = end ? formatShortPlanDate(end) : null
+          renewalDate = end ? formatPlanEndDate(end, locale) : null
+          renewalDateShort = end ? formatShortPlanDate(end, undefined, locale) : null
           if (live[0].schedule) {
             const p = await pendingPlanChange(getStripe(), live[0])
             if (p) {
-              const date = formatPlanEndDate(new Date(p.effectiveAt))
+              const date = formatPlanEndDate(new Date(p.effectiveAt), locale)
               // Only a STEP switch is a "plan change" here; add-ons that end show on their cards.
               if (p.isSwitch) pendingChange = { stepId: p.step, date }
               if (p.removedAddons.length > 0) {

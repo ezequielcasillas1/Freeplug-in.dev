@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { signUp, signInWithGoogle } from '../actions'
+import { getTranslations } from 'next-intl/server'
+import { ogLocale, publicAlternates } from '@/i18n/seo'
+import { toAppLocale } from '@/i18n/config'
+import { signUp, signInWithGoogle } from '@/app/(auth)/actions'
 import { Button } from '@/components/ui/button'
 import { isGoogleSignInEnabled } from '@/lib/auth/google-enabled'
 import { ClaimStepLine } from '@/components/outreach/ClaimStepLine'
@@ -16,14 +19,12 @@ import {
   step1Body,
 } from '@/lib/outreach/copy'
 
-export const metadata: Metadata = {
-  title: 'Create Your Account | Freeplug',
-  description: 'Create a free Freeplug account to request a website for your local business.',
-  openGraph: {
-    title: 'Create Your Account | Freeplug',
-    description: 'Create a free Freeplug account to request a website for your local business.',
-    type: 'website',
-  },
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const locale = toAppLocale((await params).locale)
+  const t = await getTranslations({ locale, namespace: 'auth.signup' })
+  const title = t('metaTitle')
+  const description = t('metaDescription')
+  return { title, description, ...publicAlternates('/signup', locale), openGraph: { title, description, type: 'website', ...ogLocale(locale) } }
 }
 
 type Props = {

@@ -412,7 +412,7 @@ describe('Plans card with a live plan and add-ons', () => {
     const { container } = card()
     pickStep(container, 'priority')
     fireEvent.click(screen.getByRole('button', { name: 'Switch to Priority now' }))
-    expect(await screen.findByTestId('upgrade-confirm-extra')).toHaveTextContent('Your add-ons stay on: +1 small edit, Big change.')
+    expect(await screen.findByTestId('upgrade-confirm-extra')).toHaveTextContent('Your add-ons stay on: +1 small edit and Big change.') // Intl.ListFormat (Aria, Oct 4)
   })
 
   it('no add-ons on: no stay-on line', async () => {

@@ -1,16 +1,9 @@
 import Link from 'next/link'
-import { ADDON_TOTAL_LINE } from '@/lib/plans/ladder-copy'
+import type { LadderCopy } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { Button } from '@/components/ui/button'
 import { cancelHostingAtPeriodEnd, resumePlan } from '../billing-actions'
 import { ResumePlanSubmit } from '../ResumePlanSubmit'
-import {
-  CANCEL_FAILED_MESSAGE,
-  CANCEL_IN_APP_LINE,
-  CANCEL_PLAN_BUTTON,
-  CANCEL_WITH_PENDING_NOTE,
-  addonsPendingEndLine,
-  TIP_TOTAL_LINE,
-} from '@/lib/plans/ladder-copy'
 import type { CancelPageData } from './actions'
 import type { OutreachPlanBox } from '../outreach-dashboard'
 import { OutreachPlanCard } from '../OutreachPlanCard'
@@ -52,14 +45,15 @@ function formatCents(cents: number): string {
  * "$65.00/month", or with a tip Sable's final TIP_TOTAL_LINE: "$65.00 + $6.00 tip = $71.00/month"
  * (Vera bug 4: the cancel page showed the plan price only).
  */
-function priceLine(sub: { amount: number; tipCents?: number; addonCents?: number; interval: string }): string {
+function priceLine(sub: { amount: number; tipCents?: number; addonCents?: number; interval: string }, copy: LadderCopy): string {
+  const { ADDON_TOTAL_LINE, TIP_TOTAL_LINE } = copy
   const tip = sub.tipCents ?? 0
   const addons = sub.addonCents ?? 0
   if (addons > 0 && sub.interval === 'month') {
     return ADDON_TOTAL_LINE(formatCents(sub.amount), formatCents(addons), tip > 0 ? formatCents(tip) : null, formatCents(sub.amount + addons + tip))
   }
   if (tip > 0 && sub.interval === 'month') return TIP_TOTAL_LINE(formatCents(sub.amount), formatCents(tip), formatCents(sub.amount + tip))
-  return `${formatCents(sub.amount)}/${sub.interval}`
+  return sub.interval === 'month' ? copy.AMOUNT_PER_MONTH(formatCents(sub.amount)) : `${formatCents(sub.amount)}/${sub.interval}`
 }
 
 /** Cancel page body (split from page.tsx so it can be rendered with sample data for QA shots). */
@@ -84,6 +78,8 @@ export function CancelPlanView({
    */
   outreachBox?: OutreachPlanBox | null
 }) {
+  const copy = useLadderCopy()
+  const { CANCEL_FAILED_MESSAGE, CANCEL_IN_APP_LINE, CANCEL_PLAN_BUTTON, CANCEL_WITH_PENDING_NOTE, addonsPendingEndLine } = copy
   if (outreachBox && outreachBox !== 'plan') {
     return (
       <div className="max-w-3xl">
@@ -156,7 +152,7 @@ export function CancelPlanView({
                   <div>
                     <h3 className="font-semibold text-gray-900">{sub.planName ?? sub.productName}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {priceLine(sub)}
+                      {priceLine(sub, copy)}
                     </p>
                   </div>
                   <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
@@ -189,7 +185,7 @@ export function CancelPlanView({
                   <div>
                     <h3 className="font-semibold text-gray-900">{sub.planName ?? sub.productName}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {priceLine(sub)}
+                      {priceLine(sub, copy)}
                     </p>
                   </div>
                   <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">

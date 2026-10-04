@@ -89,13 +89,19 @@ describe.skipIf(!existsSync(LOCKED_FILE))('help / FAQ page copy matches the lock
   const page = (rel: string) => readFileSync(join(__dirname, '..', '..', 'app', rel), 'utf8')
   const cases: [string, string][] = [
     ['help/page.tsx:85', '(dashboard)/dashboard/help/page.tsx'],
-    ['faq/page.tsx:26', 'faq/page.tsx'],
   ]
   for (const [label, rel] of cases) {
     it(label, () => {
       expect(page(rel)).toContain(locked(label))
     })
   }
+  // Spanish build (card C1): the public FAQ page moved to [locale]/faq and reads its copy from
+  // messages/en.json (the English lock); the locked line must be the value of the key it renders.
+  it('faq/page.tsx:26 (now en.json public.faq.answer.yesWebsiteDevelopmentFree)', () => {
+    const en = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', 'messages', 'en.json'), 'utf8'))
+    expect(en.public.faq.answer.yesWebsiteDevelopmentFree).toBe(locked('faq/page.tsx:26'))
+    expect(page('[locale]/faq/page.tsx')).toContain("'public.faq.answer.yesWebsiteDevelopmentFree'")
+  })
   // Hosting ladder (Oct 3): help/page.tsx:91 is a PLACEHOLDER until Sable re-locks it; the page and
   // the chat share one constant, so they cannot drift from each other.
   // Round 5b: Sable re-locked help/page.tsx:79 with the Manage-billing sentence (Oct 3, 3:15 PM CT).

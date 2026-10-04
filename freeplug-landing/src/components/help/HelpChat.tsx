@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { GO_TO_PLANS } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import {
   CHANGE_REQUEST_COPY as C,
   CHANGE_TYPES,
@@ -60,6 +60,7 @@ function UserBubble({ children }: { children: React.ReactNode }) {
 }
 
 export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, sendRequest }: Props) {
+  const { GO_TO_PLANS } = useLadderCopy()
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null)
   const [step, setStep] = useState<Step>('menu')
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT)

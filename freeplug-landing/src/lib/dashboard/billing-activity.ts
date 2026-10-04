@@ -1,3 +1,5 @@
+import { intlLocale } from '@/i18n/format'
+import type { AppLocale } from '@/i18n/config'
 /** Recent activity helpers for billing_ledger rows (kept out of the 'use server' actions file). */
 
 /**
@@ -8,8 +10,8 @@
 export const BILLING_ACTIVITY_COLUMNS = 'id, created_at, amount_cents'
 
 /** Formats a ledger date as e.g. "Oct 3, 2026" (UTC, so server and tests agree). */
-function formatLedgerDate(d: Date): string {
-  return d.toLocaleDateString('en-US', {
+function formatLedgerDate(d: Date, locale: AppLocale = 'en'): string {
+  return d.toLocaleDateString(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

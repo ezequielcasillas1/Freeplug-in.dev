@@ -7,7 +7,8 @@ import {
   getActiveSubscriptionStatus,
   type ActiveSubscriptionStatus,
 } from '@/lib/stripe/active-subscription'
-import { CANCEL_OPTIONS_LINK } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
 
@@ -21,6 +22,7 @@ type Props = {
 }
 
 export default async function RequestWebsitePage({ searchParams }: Props) {
+  const { CANCEL_OPTIONS_LINK } = ladderCopy(await currentLocale())
   const q = await searchParams
   const focusMaintenance = q.focus === 'maintenance'
 

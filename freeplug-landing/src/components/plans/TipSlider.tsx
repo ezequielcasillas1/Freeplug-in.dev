@@ -4,28 +4,15 @@ import { useId } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import type { PlanStep, PlanStepId } from '@/lib/plans/ladder'
 import { tipNudge, tipRangeFor } from '@/lib/plans/tips'
-import {
-  TIP_END_MAX,
-  TIP_END_NONE,
-  TIP_LOWER_LABEL,
-  TIP_NUDGE,
-  TIP_NUDGE_BUTTON,
-  TIP_NUDGE_PERK,
-  TIP_RAISE_LABEL,
-  TIP_SLIDER_HELP,
-  TIP_SLIDER_HINT,
-  TIP_SLIDER_LABEL,
-  TIP_TOTAL_LINE,
-  TIP_VALUETEXT,
-  tipAmountLine,
-} from '@/lib/plans/ladder-copy'
+import { ladderCopy, type LadderCopy } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 
 const usd = (dollars: number) => `$${dollars}`
 
 /** "$65 + $5 tip = $70/month" (or "$65/month, no tip"); shared by the slider and the phone bar. */
-export function tipTotalText(step: Pick<PlanStep, 'monthlyCents'>, tipDollars: number): string {
+export function tipTotalText(step: Pick<PlanStep, 'monthlyCents'>, tipDollars: number, copy: LadderCopy = ladderCopy()): string {
   const price = Math.round(step.monthlyCents / 100)
-  return TIP_TOTAL_LINE(usd(price), tipDollars > 0 ? usd(tipDollars) : null, usd(price + tipDollars))
+  return copy.TIP_TOTAL_LINE(usd(price), tipDollars > 0 ? usd(tipDollars) : null, usd(price + tipDollars))
 }
 
 type Props = {
@@ -58,7 +45,10 @@ const stepBtn =
 
 const fmt = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
 
-export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, help = TIP_SLIDER_HELP, testId = 'tip-slider', addonCents = 0, amountOnly = false }: Props) {
+export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, help: helpProp, testId = 'tip-slider', addonCents = 0, amountOnly = false }: Props) {
+  const copy = useLadderCopy()
+  const help = helpProp ?? copy.TIP_SLIDER_HELP
+  const { TIP_END_MAX, TIP_END_NONE, TIP_LOWER_LABEL, TIP_NUDGE, TIP_NUDGE_BUTTON, TIP_NUDGE_PERK, TIP_RAISE_LABEL, TIP_SLIDER_HINT, TIP_SLIDER_LABEL, TIP_VALUETEXT, tipAmountLine } = copy
   const id = useId()
   const helpId = `${id}-help`
   const hintId = `${id}-hint`
@@ -76,7 +66,7 @@ export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, he
         </label>
         {/* Visible total; screen readers get the same through aria-valuetext, so it isn't announced twice. */}
         <output htmlFor={id} aria-live="off" className="text-sm font-semibold text-gray-900" data-testid="tip-total">
-          {amountOnly ? tipAmountLine(tip) : tipTotalText(step, tip)}
+          {amountOnly ? tipAmountLine(tip) : tipTotalText(step, tip, copy)}
         </output>
       </div>
       <p id={hintId} className="mt-1 text-xs text-gray-600" data-testid="tip-hint">

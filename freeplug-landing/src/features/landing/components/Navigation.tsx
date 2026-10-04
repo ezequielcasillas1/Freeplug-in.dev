@@ -8,18 +8,25 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { fadeIn } from '../animations/landing.variants'
+import { useLocale, useTranslations } from 'next-intl'
+import { LanguagePicker } from '@/components/i18n/LanguagePicker'
+import { toAppLocale } from '@/i18n/config'
+import { publicHref } from '@/i18n/routing'
 
+// Labels are message keys (public.landing.*); hrefs get /es on Spanish pages (publicHref).
 const navLinks = [
-  { label: 'Home', href: '/#hero' },
-  { label: 'About', href: '/#about' },
-  { label: 'Outreach', href: '/#outreach' },
-  { label: 'Services', href: '/#services' },
-  { label: 'Reviews', href: '/#reviews' },
-  { label: 'Plans', href: '/#hosting-plans' },
-]
+  { labelKey: 'navigation.label.home', href: '/#hero' },
+  { labelKey: 'footer.label.about', href: '/#about' },
+  { labelKey: 'footer.label.outreach', href: '/#outreach' },
+  { labelKey: 'footer.label.services', href: '/#services' },
+  { labelKey: 'footer.label.reviews', href: '/#reviews' },
+  { labelKey: 'footer.label.plans', href: '/#hosting-plans' },
+] as const
 
 export function Navigation() {
   const router = useRouter()
+  const t = useTranslations('public.landing')
+  const locale = toAppLocale(useLocale())
   const [isOpen, setIsOpen] = useState(false)
   const [hasScrolled, setHasScrolled] = useState(false)
   
@@ -57,7 +64,7 @@ export function Navigation() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href={publicHref('/', locale)} className="flex items-center gap-2 group">
             <motion.div
               whileHover={{ rotate: [0, -10, 10, 0] }}
               transition={{ duration: 0.5 }}
@@ -65,28 +72,29 @@ export function Navigation() {
             >
               <Sparkles className="w-4 h-4 text-white" />
             </motion.div>
-            <span className="text-2xl font-bold text-[#ba3d3d] group-hover:text-[#8a2e2e] transition-colors">Freeplug</span>
+            <span className="text-2xl font-bold text-[#ba3d3d] group-hover:text-[#8a2e2e] transition-colors">{t('footer.freeplug')}</span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
               <a
-                key={link.label}
-                href={link.href}
+                key={link.labelKey}
+                href={publicHref(link.href, locale)}
                 className="relative px-4 py-2 text-gray-600 hover:text-[#ba3d3d] transition-colors font-medium group"
               >
-                {link.label}
+                {t(link.labelKey)}
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#ba3d3d] group-hover:w-1/2 transition-all duration-300 rounded-full" />
               </a>
             ))}
           </div>
 
           <div className="hidden lg:flex items-center gap-3">
+            <LanguagePicker />
             <Link
               href="/login"
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#ba3d3d] transition-colors"
             >
-              Log in
+              {t('navigation.logIn')}
             </Link>
             <Button
               size="sm"
@@ -95,15 +103,15 @@ export function Navigation() {
               onClick={() => router.push('/dashboard')}
               className="bg-gray-100 hover:bg-gray-200"
             >
-              Dashboard
+              {t('navigation.dashboard')}
             </Button>
             <Button
               size="sm"
               type="button"
-              onClick={() => router.push('/signup')}
+              onClick={() => router.push(publicHref('/signup', locale))}
               className="shadow-lg shadow-[#ba3d3d]/30 hover:shadow-xl hover:shadow-[#ba3d3d]/40 transition-all"
             >
-              Get Started
+              {t('footer.label.getStarted')}
             </Button>
           </div>
 
@@ -111,7 +119,7 @@ export function Navigation() {
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 text-gray-600 hover:text-[#ba3d3d] transition-colors rounded-xl hover:bg-gray-100"
-            aria-label="Toggle menu"
+            aria-label={t('navigation.ariaLabel.toggleMenu')}
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </motion.button>
@@ -129,15 +137,15 @@ export function Navigation() {
           <div className="py-4 space-y-2 border-t border-gray-100">
             {navLinks.map((link, index) => (
               <motion.a
-                key={link.label}
-                href={link.href}
+                key={link.labelKey}
+                href={publicHref(link.href, locale)}
                 onClick={() => setIsOpen(false)}
                 initial={{ opacity: 0, x: -20 }}
                 animate={isOpen ? { opacity: 1, x: 0 } : {}}
                 transition={{ delay: index * 0.05 }}
                 className="block px-4 py-3 text-gray-600 hover:text-[#ba3d3d] hover:bg-[#ba3d3d]/5 transition-colors font-medium rounded-xl"
               >
-                {link.label}
+                {t(link.labelKey)}
               </motion.a>
             ))}
             <div className="pt-4 mt-4 border-t border-gray-100 space-y-3">
@@ -146,8 +154,9 @@ export function Navigation() {
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-3 text-gray-600 hover:text-[#ba3d3d] hover:bg-[#ba3d3d]/5 transition-colors font-medium rounded-xl"
               >
-                Log in
+                {t('navigation.logIn')}
               </Link>
+              <LanguagePicker className="px-4" />
               <div className="px-4 flex gap-3">
                 <Button
                   size="sm"
@@ -159,7 +168,7 @@ export function Navigation() {
                     router.push('/dashboard')
                   }}
                 >
-                  Dashboard
+                  {t('navigation.dashboard')}
                 </Button>
                 <Button
                   size="sm"
@@ -167,10 +176,10 @@ export function Navigation() {
                   type="button"
                   onClick={() => {
                     setIsOpen(false)
-                    router.push('/signup')
+                    router.push(publicHref('/signup', locale))
                   }}
                 >
-                  Get Started
+                  {t('footer.label.getStarted')}
                 </Button>
               </div>
             </div>

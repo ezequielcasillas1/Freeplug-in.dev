@@ -1,0 +1,1280 @@
+{
+  "auth": {
+    "messages": {
+      "subject": {
+        "signFreeplug": "How to sign in to Freeplug"
+      },
+      "googleDisabledMessage": "Google sign-in is not set up on this server. Use your email and password.",
+      "linkExpiredMessage": "This link has expired. Request a new one.",
+      "resetNeutralMessage": "If an account exists for that email, we sent a reset link."
+    },
+    "password": {
+      "forgotMetaTitle": "Reset Your Password | Freeplug",
+      "forgotPassword": "Forgot your password?",
+      "enterEmailUseSignWell": "Enter the email you use to sign in and we'll send you a link to set a new password.",
+      "securityChangingPasswordNeedsFresh": "For your security, changing your password needs a fresh reset link. Enter your email and we'll send one.",
+      "email": "Email",
+      "sendResetLink": "Send reset link",
+      "rememberedBackLog": "Remembered it? <a>Back to log in</a>",
+      "linkExpiredMetaTitle": "Link expired | Freeplug",
+      "label": {
+        "requestNewResetLink": "Request a new reset link"
+      },
+      "backToLogin": "Back to log in",
+      "linkExpired": "Link expired",
+      "resetMetaTitle": "Set a New Password | Freeplug",
+      "resetLinkExpired": "Reset link expired",
+      "passwordResetLinkInvalidHas": "This password reset link is invalid, has already been used, or has expired.",
+      "setNewPassword": "Set a new password",
+      "chooseNewPasswordFor": "Choose a new password for {email}.",
+      "yourAccountFallback": "your account",
+      "newPassword": "New password",
+      "leastCharacters": "At least {min} characters.",
+      "confirmNewPassword": "Confirm new password",
+      "saveNewPassword": "Save new password"
+    },
+    "login": {
+      "metaTitle": "Log In | Freeplug",
+      "heading": "Log in",
+      "subtitle": "Freeplug account — hosting and dashboard access.",
+      "continueGoogle": "Continue with Google",
+      "or": "or",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "signIn": "Sign in",
+      "noAccountCreateOne": "No account? <a>Create one</a>",
+      "backSite": "← Back to site"
+    },
+    "signup": {
+      "metaTitle": "Create Your Account | Freeplug",
+      "metaDescription": "Create a free Freeplug account to request a website for your local business.",
+      "heading": "Create account",
+      "subtitle": "Sign up to access your dashboard.",
+      "continueGoogle": "Continue with Google",
+      "or": "or",
+      "businessName": "Business name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "signUp": "Sign up",
+      "SignUpPage": {
+        "alreadyHaveAccount": "Already have an account?"
+      },
+      "logIn": "Log in",
+      "backSite": "Back to site"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "freeplug": "Freeplug",
+      "signOut": "Sign out",
+      "label": {
+        "overview": "Overview",
+        "plans": "Plans",
+        "requestWebsite": "Request website",
+        "help": "Help",
+        "cancel": "Cancel"
+      },
+      "ariaLabel": {
+        "dashboard": "Dashboard"
+      }
+    },
+    "home": {
+      "account": "Account",
+      "activeSubscriptions": "Active Subscriptions",
+      "label": {
+        "live": "Live",
+        "pending": "Pending",
+        "offline": "Offline",
+        "notStarted": "Not started"
+      },
+      "totalPaid": "Total Paid",
+      "activePlans": "Active Plans",
+      "customerSince": "Customer Since",
+      "today": "Today",
+      "daysShort": "{days}d",
+      "website": "Website",
+      "justNow": "Just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago",
+      "recentActivity": "Recent Activity",
+      "couldntLoadActivity": "Couldn't load activity",
+      "refreshPageTryAgain": "Refresh the page to try again.",
+      "noRecentActivityDisplay": "No recent activity to display.",
+      "showing5Activities": "Showing 5 of {total} activities",
+      "noActiveSubscriptions": "No active subscriptions.",
+      "viewAvailablePlans": "View available plans",
+      "canceling": "Canceling",
+      "ends": "Ends",
+      "renews": "Renews",
+      "cancelOptions": "Cancel options",
+      "needHelp": "Need Help?",
+      "emailSupport": "Email Support",
+      "supportFreeplugDev": "support@freeplug-in.dev",
+      "helpCenter": "Help Center",
+      "faqsGuides": "FAQs and guides",
+      "requestStatusLabel": {
+        "submitted": "Submitted",
+        "inReview": "In review",
+        "closed": "Closed"
+      },
+      "businessName": {
+        "yourRequest": "Your request"
+      },
+      "dashboard": "Dashboard",
+      "welcomeBackHereOverviewAccount": "Welcome back! Here is an overview of your account.",
+      "passwordHasBeenUpdatedYoure": "Your password has been updated. You're signed in.",
+      "thanksRequestWasSubmittedFollow": "Thanks — your request was submitted. We will follow up by email or phone.",
+      "checkoutCompletedPaymentTotalsMay": "Checkout completed. Payment totals may take a short time to appear here after the webhook runs.",
+      "statusLine": "Status: {status}",
+      "requestClosedStartNewRequest": "This request is closed. You can start a new request when you are ready.",
+      "noWebsiteRequestYet": "No website request yet.",
+      "nextStep": "Next step:",
+      "lastRequestClosedOpenNew": "Your last request is closed. Open a new request if you want us to review a new or updated project.",
+      "tellUsAboutBusinessLink": "Tell us about your business and link your Google Business Profile.",
+      "updateRequestDetailsWhileStill": "You can update your request details while it is still marked submitted.",
+      "useRequestFormWhenReady": "Use the request form when you are ready for us to review your business.",
+      "viewUpdate": "View or update →",
+      "newRequest": "New request →",
+      "startRequest": "Start a request →",
+      "viewPlansHosting": "View plans & hosting →",
+      "manageBilling": "Manage billing",
+      "payment": {
+        "amountOnDate": "Payment of {amount} on {date}",
+        "amount": "Payment of {amount}",
+        "onDate": "Payment on {date}",
+        "plain": "Payment"
+      },
+      "alertSubjectPlan": "Your {planName} plan",
+      "alertSubjectGrandfathered": "Your {name}",
+      "alertEndingNoDate": "{subject} will end at the end of the current billing period. Resume to keep your website live.",
+      "alertEndingDays": "{subject} will end in {days, plural, one {# day} other {# days}}. Resume to keep your website live."
+    },
+    "activity": {
+      "title": {
+        "paymentReceived": "Payment received",
+        "requestSubmitted": "Request submitted",
+        "requestReview": "Request in review",
+        "requestClosed": "Request closed",
+        "subscriptionStarted": "Subscription started",
+        "upcomingBilling": "Upcoming billing",
+        "subscriptionEnding": "Subscription ending",
+        "getStarted": "Get started"
+      },
+      "description": {
+        "websiteRequest": "Website request"
+      },
+      "upcomingBillingMessage": "Your next payment of {amount} is due in {days, plural, one {# day} other {# days}}.",
+      "actionLabel": {
+        "resumePlan": "Resume plan",
+        "requestWebsite": "Request a website"
+      },
+      "message": {
+        "submitWebsiteRequestBegin": "Submit a website request to begin your journey with Freeplug."
+      }
+    },
+    "meta": {
+      "domainTitle": "Set up my domain | Freeplug",
+      "photosTitle": "Upload photos | Freeplug",
+      "requestWebsiteTitle": "Request a website | Freeplug",
+      "websiteTitle": "Your website | Freeplug",
+      "dashboardTitle": "Dashboard | Freeplug"
+    },
+    "request": {
+      "CloseOpenRequestButton": {
+        "noLongerWantUs": "If you no longer want us to continue with this request, you can close it here. We will treat this intake as ended on your side.",
+        "closeRequestBeforeFinish": "You can close this request before we finish review if your plans changed. You may submit a new request later.",
+        "closing": "Closing…",
+        "closeRequest": "Close my request"
+      },
+      "submitLabel": {
+        "saveChanges": "Save changes",
+        "submitRequest": "Submit request"
+      },
+      "notesLabel": {
+        "describeMaintenanceChangesNeeded": "Describe the maintenance or changes needed *",
+        "tellUsAboutBusiness": "Tell us about your business"
+      },
+      "notesHint": "Include what should change (e.g. hours, photos, a section overhaul). We will review and quote before charging.",
+      "maintenancePricingFollowsQuickReview": "Maintenance pricing follows a quick review — it starts at $50, up to $100. You'll see the exact price before you pay.",
+      "businessName": "Business name *",
+      "googleBusinessProfileUrl": "Google Business Profile URL",
+      "phone": "Phone",
+      "sending": "Sending…",
+      "updateRequest": "Update your request",
+      "changeAnythingBelowSaveWell": "Change anything below and save. We'll use the latest version when we review it.",
+      "requestBeingReviewed": "Your request is being reviewed",
+      "wereWorkingFromDetailsSent": "We're working from the details you sent, so this form is locked for now. If something changed, email <a>support@freeplug-in.dev</a> and we'll update it for you.",
+      "requestWebsite": "Request a website",
+      "shareLocalBusinessDetailsEvaluate": "Share your local business details. We evaluate every request in person, by email, or phone. After we review your Google Business presence and scope, we will follow up with next steps.",
+      "haveOpenRequest": "You have an open request",
+      "backDashboard": "← Back to dashboard"
+    },
+    "access": {
+      "accessEndingMessage": "Your hosting is canceled. Your website stays online until {date}, then goes offline. Resume your plan before then to keep it online.",
+      "accessOfflineMessage": "Your website is offline because your hosting was canceled. Sign up for hosting again to bring it back.",
+      "restartHostingLabel": "Restart hosting",
+      "resumePlanLabel": "Resume plan"
+    }
+  },
+  "errors": {
+    "buyout": {
+      "error": {
+        "mustSigned": "You must be signed in.",
+        "somethingWentWrongSide": "Something went wrong on our side. Try again later.",
+        "requestNotesFullEmail": "Your request notes are full. Email support@freeplug-in.dev to ask for a buyout quote."
+      }
+    },
+    "request": {
+      "business_name": {
+        "businessNameRequired": "Business name is required"
+      },
+      "message": {
+        "enterValidUrlHttps": "Enter a valid URL (https://…)"
+      },
+      "error": {
+        "requestAlreadyBeingReviewed": "Your request is already being reviewed. We will contact you by email or phone.",
+        "alreadyHaveRequestProgress": "You already have a request in progress. We will contact you soon.",
+        "serverConfigurationIncompleteMissing": "Server configuration is incomplete (missing service role). Your request was saved; profile status could not be updated.",
+        "mustSigned": "You must be signed in.",
+        "invalidInput": "Invalid input.",
+        "startWebsiteRequestFirst": "Start a website request first, then you can ask for changes here.",
+        "requestNotesFullEmail": "Your request notes are full. Email support@freeplug-in.dev with this change.",
+        "couldNotVerifyBilling": "Could not verify your billing status. Try again later.",
+        "serverConfigurationIncompleteTry": "Server configuration is incomplete. Try again later.",
+        "couldNotCloseRequest": "Could not close your request. Try again later."
+      },
+      "page": {
+        "tellUsWhichPage": "Tell us which page it is on."
+      },
+      "description": {
+        "describeChange": "Describe the change."
+      }
+    },
+    "checkout": {
+      "error": {
+        "signStartCheckout": "Sign in to start checkout.",
+        "submitWebsiteRequestFrom": "Submit a website request from your dashboard before choosing a hosting plan.",
+        "addOnsCustomAmounts": "Add-ons and custom amounts are no longer offered. Choose a hosting plan.",
+        "invalidHostingPlan": "Invalid hosting plan.",
+        "invalidAddOns": "Invalid add-ons.",
+        "couldntLoadHostingPrices": "We couldn't load hosting prices. Try again in a moment.",
+        "couldntCheckCurrentPlan": "We couldn't check your current plan. Try again in a moment.",
+        "couldNotStartCheckout": "Could not start checkout.",
+        "invalidAmountUse50": "Invalid amount. Use $50–$100 (whole dollars)."
+      },
+      "clientMsg": "Checkout failed. Try again later."
+    },
+    "plans": {
+      "networkError": "Network error. Try again.",
+      "somethingWentWrong": "Something went wrong.",
+      "startHostingCheckout": {
+        "noCheckoutUrlReturned": "No checkout URL returned. Try again."
+      },
+      "closeBlockedActivePlanMessage": "You can't close this request while your plan is active, because your site is still hosted under it. To cancel your plan, choose Cancel options in your dashboard. Once the plan has ended, you can close the request here.",
+      "closeBlockedPlanEndingMessage": {
+        "planCanceledEndsEnd": "Your plan is canceled and ends at the end of the current billing period. You can close this request after that date.",
+        "planCanceledEndsClose": "Your plan is canceled and ends on {date}. You can close this request after that date."
+      },
+      "alreadyHasPlanMessage": "You already have an active hosting plan. Use Manage billing to change it."
+    },
+    "email": {
+      "sendFailed": "We couldn't send that email right now. Please try again in a few minutes. If it still doesn't work, email support@freeplug-in.dev."
+    }
+  },
+  "cancel": {
+    "managePlan": "Manage Your Plan",
+    "reviewCurrentServicesUnderstandGet": "Review your current services, understand what you get with Freeplug, and manage your subscriptions.",
+    "activeServices": "Your Active Services",
+    "active": "Active",
+    "nextBillingDate": "Next billing date: {date}",
+    "canceledScheduledCancel": "Canceled or Scheduled to Cancel",
+    "canceled": "Canceled",
+    "canceling": "Canceling",
+    "accessUntil": "Access until: {date}",
+    "canceledOn": "Canceled on: {date}",
+    "noActiveSubscriptions": "No Active Subscriptions",
+    "dontHaveAnyActiveHosting": "You don't have any active hosting or maintenance plans.",
+    "startWebsiteRequestThenChoose": "Start with a website request, then choose a hosting plan that fits your needs.",
+    "viewAvailablePlans": "View available plans →",
+    "planIncludes": "What your plan includes",
+    "websiteHosting": "Website hosting",
+    "keepsWebsiteOnlineOwnWeb": "Keeps your website online at your own web address.",
+    "secureConnectionSsl": "Secure connection (SSL)",
+    "websiteLoadsOverSecureHttps": "Your website loads over a secure HTTPS connection.",
+    "questionsAboutSite": "Questions about your site",
+    "askUsFromDashboardTeam": "Ask us from your dashboard. Our team is available Mon–Wed 1–2 PM and Thu–Fri 1–3 PM Central.",
+    "happensCancel": "What happens if you cancel",
+    "websiteGoesOfflineEndPaid": "Your website goes offline at the end of your paid period.",
+    "searchEnginesMayDropWebsite": "Search engines may drop your website if it stays offline for a long time.",
+    "whileItsOfflineCustomersCant": "While it's offline, customers can't find you there.",
+    "websiteSavedBringBackSigning": "Your website is saved, and you can bring it back by signing up for hosting again.",
+    "cancelSubscription": "Cancel Your Subscription",
+    "changedMindLater": "Changed your mind later?",
+    "cancelComeBackSignUp": "If you cancel, you can come back. Sign up for hosting again, and we'll bring your website back.",
+    "viewPlans": "View Plans",
+    "backDashboard": "Back to Dashboard",
+    "haveQuestionsBeforeMakingDecision": "Have questions before making a decision? <a>Contact us</a> — we're happy to help.",
+    "cancelServices": "Cancel Services",
+    "unableLoadAccountInformationPlease": "Unable to load your account information. Please try again.",
+    "withPendingNote": "You have a switch to {name} planned for {date}. Canceling your plan also cancels that switch.",
+    "planButton": "Cancel my plan at the end of this billing period",
+    "inAppLine": "If you still want to cancel, use the button at the bottom of this box. Your access continues until the end of your current billing period.",
+    "resumeFailedMessage": "We couldn't resume your plan, so it's still set to end. Please try again in a moment, or contact us at {supportEmail} or {supportPhone} and we'll help.",
+    "resumeBusyMessage": "Your plan is already being updated. Please try again in a moment.",
+    "failedMessage": "We couldn't cancel your plan just now, so nothing has changed. Please try again in a moment, or contact us at {supportEmail} or {supportPhone}.",
+    "optionsLink": "Cancel options",
+    "addonTotalLine": {
+      "withTip": "{plan} + {addons} add-ons + {tip} tip = {total}/month",
+      "noTip": "{plan} + {addons} add-ons = {total}/month"
+    },
+    "accessWarning": "If you cancel, your website stays online until {date} and then goes offline. You can bring it back by signing up for hosting again.",
+    "resumeUntilText": "You can resume your plan until {date}. After that, your website is saved, and you can bring it back by signing up for hosting again.",
+    "resumeHeading": "Ready to resume?",
+    "offlineHeading": "Bring your website back",
+    "offlineSavedText": "Your website is saved, and you can bring it back by signing up for hosting again."
+  },
+  "help": {
+    "center": {
+      "label": {
+        "guides": "Guides",
+        "contact": "Contact"
+      },
+      "title": {
+        "gettingStarted": "Getting started",
+        "billingPlans": "Billing and plans",
+        "technicalSupport": "Technical support",
+        "account": "Account",
+        "gettingFirstWebsite": "Getting your first website",
+        "understandingDashboard": "Understanding your dashboard",
+        "choosingRightPlan": "Choosing the right plan",
+        "preparingBrandAssets": "Preparing your brand assets"
+      },
+      "question": {
+        "requestWebsite": "How do I request a website?",
+        "informationNeedProvide": "What information do I need to provide?",
+        "longDoesProcessTake": "How long does the process take?",
+        "hostingPlanOptions": "What are the hosting plan options?",
+        "updatePaymentMethod": "How do I update my payment method?",
+        "cancelPlan": "Can I cancel my plan?",
+        "thereAnyHiddenFees": "Are there any hidden fees?",
+        "closeRequestCancelPlan": "How do I close my request or cancel my plan?",
+        "requestChangesWebsite": "Can I request changes to my website?",
+        "websiteMobileFriendly": "Is my website mobile-friendly?",
+        "helpSeoSearchEngine": "Do you help with SEO (search engine optimization)?",
+        "secureWebsite": "How secure is my website?",
+        "resetPassword": "How do I reset my password?",
+        "changeEmailAddress": "Can I change my email address?",
+        "deleteAccount": "How do I delete my account?"
+      },
+      "answer": {
+        "goRequestWebsiteDashboard": "Go to \"Request website\" in your dashboard. Fill out the form with your business details and what you need. Our team will review your request and contact you about next steps.",
+        "youllNeedBusinessName": "You'll need your business name, description, contact information, and any branding materials (logo, colors) you have. The more details you provide about your vision, the better we can match your expectations.",
+        "wellGiveTimelineAfter": "We'll give you a timeline after we review your request. The process includes the first design, your revisions, and launch. Most of the time depends on how quickly we get your details and approvals. We'll keep you updated along the way.",
+        "yesCancelAnyTime": "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.",
+        "closeRequestFromRequest": "You can close a request from the request page (Dashboard, then View or update). If you have an active hosting plan, you'll need to cancel the plan first, because your site is still hosted under it and we don't want you charged for a request that's closed. To cancel your plan, choose Cancel options in your dashboard. Your plan stays active until the end of the current billing period. Once it has ended, you can close the request. Closing a request never cancels a plan on its own.",
+        "yesEverySiteBuild": "Yes. Every site we build works on phones, tablets and computers, and we check it on each before launch.",
+        "everySiteIncludesBasics": "Every site includes the basics that help search engines read it: a page title and description for each page, clean page structure, and a mobile-friendly layout. We can't promise any search ranking.",
+        "signPageClickForgot": "On the sign-in page, click \"Forgot password?\" and enter your email. We'll email you a link to set a new password. No email after a few minutes? Check your spam folder, or email support@freeplug-in.dev. If you sign in with Google, use \"Continue with Google\" instead.",
+        "contactSupportSupportFreeplug": "Contact support at support@freeplug-in.dev to request an email change. We'll confirm it's you, then update your account and let you know.",
+        "emailSupportFreeplugDev": "Email support@freeplug-in.dev with your account deletion request. We'll delete it and email you when it's done. This can't be undone."
+      },
+      "description": {
+        "stepStepGuideRequesting": "Step-by-step guide to requesting and launching your business website",
+        "learnNavigateUseAll": "Learn how to navigate and use all dashboard features",
+        "haveReadyBeforeRequesting": "What to have ready before requesting your website"
+      },
+      "steps": {
+        "createFreeplugAccount": "Create your Freeplug account",
+        "completeBusinessProfile": "Complete your business profile",
+        "submitWebsiteRequestRequirements": "Submit a website request with your requirements",
+        "reviewApproveInitialDesign": "Review and approve the initial design",
+        "provideFeedbackDuringDevelopment": "Provide feedback during development",
+        "launchWebsite": "Launch your website",
+        "overviewSeeWebsiteStatus": "Overview: See your website status and quick actions",
+        "requestWebsiteSubmitUpdate": "Request website: Submit or update your website request",
+        "helpAccessFaqsGuides": "Help: Access FAQs, guides, and contact support",
+        "logoFilesPngSvg": "Logo files (PNG, SVG preferred)",
+        "brandColorsHexCodes": "Brand colors (hex codes if available)",
+        "businessDescriptionTagline": "Business description and tagline",
+        "contactInformation": "Contact information",
+        "photosBusinessProductsTeam": "Photos of your business, products, or team",
+        "examplesWebsitesLikePick": "Examples of websites you like: you can pick a few yourself, or let us pick for you. We recommend letting us pick."
+      },
+      "planGuideStep": "{name} ({price}/mo): {blurb}",
+      "helpCenter": "Help center",
+      "findAnswersGuidesSupportResources": "Find answers, guides, and support resources",
+      "questionCount": "{count, plural, one {# question} other {# questions}}",
+      "backCategories": "Back to categories",
+      "contactSupport": "Contact support",
+      "emailSupport": "Email support",
+      "supportFreeplugDev": "support@freeplug-in.dev",
+      "supportHours": "Support hours",
+      "needUrgentHelp": "Need urgent help?",
+      "criticalIssuesAffectingLiveWebsite": "For critical issues affecting your live website, include \"URGENT\" in your email subject line so it stands out in our inbox.",
+      "sendUrgentRequest": "Send urgent request",
+      "planGuideStepComingSoon": "{name} ({price}/mo) (coming soon): {blurb}"
+    },
+    "chat": {
+      "ariaLabel": {
+        "helpChat": "Help chat"
+      },
+      "back": "Back",
+      "next": "Next",
+      "sending": "Sending…",
+      "requestChange": "Request a change",
+      "chatGreeting": "Hi! Pick a question below, or tell us about a change you need.",
+      "question": {
+        "reallyFree": "Is it really free?",
+        "whatDoIPay": "What do I pay for?",
+        "thereAnyHiddenFees": "Are there any hidden fees?",
+        "longSiteTake": "How long will my site take?",
+        "updatePaymentMethod": "How do I update my payment method?",
+        "cancelPlan": "How do I cancel my plan?",
+        "buyWebsite": "Can I buy my website?",
+        "resetPassword": "How do I reset my password?",
+        "requestChangesSite": "Can I request changes to my site?"
+      },
+      "answer": {
+        "yesWebsiteDevelopmentFree": "Yes. Website development is free. 72 After designs and builds your website at no charge. After your site is live, you pay for monthly hosting, which is required. Maintenance or a buyout costs extra only if you ask for it. There are no hidden fees or surprise charges.",
+        "wellGiveTimelineAfter": "We'll give you a timeline after we review your request. The process includes the first design, your revisions, and launch. Most of the time depends on how quickly we get your details and approvals. We'll keep you updated along the way.",
+        "yesCancelAnyTime": "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.",
+        "signPageClickForgot": "On the sign-in page, click \"Forgot password?\" and enter your email. We'll email you a link to set a new password. No email after a few minutes? Check your spam folder, or email support@freeplug-in.dev. If you sign in with Google, use \"Continue with Google\" instead."
+      },
+      "changeTypes": {
+        "textPrices": "Text or prices",
+        "photos": "Photos",
+        "hoursContactInfo": "Hours or contact info",
+        "somethingElse": "Something else"
+      },
+      "step1": {
+        "wouldLikeChanged": "What would you like changed?"
+      },
+      "step2": {
+        "whichPage": "Which page is it on?"
+      },
+      "step2Placeholder": {
+        "exampleHomeServicesContact": "For example: Home, Services, Contact"
+      },
+      "step3": {
+        "describeChange": "Describe the change."
+      },
+      "step3Placeholder": {
+        "shouldSayShowInstead": "What should it say or show instead?"
+      },
+      "step4": {
+        "addPhotoScreenshotOptional": "Add a photo or screenshot (optional)."
+      },
+      "review": {
+        "heresRequestWellReview": "Here's your request. We'll review it and tell you the price before any paid work starts."
+      },
+      "send": {
+        "sendRequest": "Send request"
+      },
+      "edit": {
+        "edit": "Edit"
+      },
+      "changeRequestSentMessage": {
+        "gotWellEmailAfter": "Got it. We'll email you at {email} after we review your request."
+      },
+      "chatNotFound": "Didn't find your answer? Email support@freeplug-in.dev. Our team is available {supportHours}.",
+      "starterSmallEditAddon": "Small edits are {price} with the {addonName} add-on. Turn it on and we'll take care of it this month. You can turn it off anytime.",
+      "starterSmallEditAiBuilder": "Or make the change yourself with the AI builder, at no extra cost.",
+      "goToPlans": "Go to Plans"
+    },
+    "answers": {
+      "whatDoIPay": "Hosting is required. It keeps your website online. Plans are {priceList} a month, and each plan includes everything in the ones before it. Maintenance starts at $50, up to $100. You'll see the exact price before you pay. Building the website is free.",
+      "hostingPlans": "Hosting plans are {priceList} a month. Each plan includes everything in the ones before it. See Plans in your dashboard for what each plan adds. Already have an add-on? You keep it at the same price.",
+      "requestChanges": "Yes. {name} ({price}) and higher plans include one small edit each billing period. For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You'll see the exact price before you pay.",
+      "hiddenFees": "No. You pay for monthly hosting, which is required. One-time maintenance or a buyout costs extra only if you request it. Building your website is free, and you'll see the price before you pay.",
+      "security": "Every site includes an SSL certificate, so it loads over a secure https connection.",
+      "plansGuideTitleLine": "Plans: Choose a hosting plan, or request maintenance",
+      "plansGuideDescription": "Compare hosting plans for your business",
+      "chatIncludedEditNote": "Your plan includes one small edit each billing period.",
+      "paymentMethod": "Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there. If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices."
+    },
+    "priority": {
+      "priorityHelpQuestion": "What is Priority?",
+      "priorityHelpAnswer": "Priority comes with the Priority plan ($55 a month) and every plan above it. When you ask us for a change, your request goes ahead of requests from lower plans in line. On an older plan, you have Priority if your hosting plus any add-on comes to $55 a month or more. An optional tip doesn't count toward Priority."
+    }
+  },
+  "plans": {
+    "page": {
+      "plans": "Plans",
+      "afterSubmitWebsiteRequestChoose": "After you submit a website request, you can choose monthly hosting here. Maintenance stays quote-first — describe work on the request form.",
+      "submitBusinessDetailsSoReview": "Submit your business details so we can review your site and Google Business presence. Then hosting checkout will be available.",
+      "requestWebsite": "Request a website"
+    },
+    "maintenance": {
+      "stripeLineItem": "Maintenance (one-time)",
+      "maintenancePlanTitle": "One-time maintenance",
+      "maintenancePlanSummary": "We review your request first, then give you the exact price. You'll see it before you pay.",
+      "maintenancePlanBody": {
+        "jobsTakeMoreThan": "For jobs that take more than about an hour, like a new page or a new feature.",
+        "maintenanceStarts50Up": "Maintenance starts at $50, up to $100. You'll see the exact price before you pay."
+      },
+      "maintenanceCtaLabel": "Request maintenance"
+    },
+    "checkout": {
+      "chooseText": "Continue",
+      "manageBilling": "Manage billing",
+      "signRequestWebsite": "Sign in & request a website",
+      "submitWebsiteRequestFirst": "Submit a website request first",
+      "hostingCheckoutOpensAfterSubmit": "Hosting checkout opens after you submit a website request from your dashboard."
+    },
+    "nextBusinessDayTarget": "by end of next business day (Mon–Fri, excluding holidays)",
+    "stepBlurbs": {
+      "starter": "Your website, hosted and kept secure.",
+      "priority": "Everything in Starter. Your change requests go ahead of lower plans in line.",
+      "fast_lane": "Everything in Priority, plus one small edit by us each billing period.",
+      "leads": "Everything in Fast lane, plus a monthly report and quote alerts.",
+      "get_found": "Everything in Leads, plus Google Business Profile upkeep.",
+      "growth": "Everything in Get found, plus a seasonal refresh and a quarterly call."
+    },
+    "perkLines": {
+      "priorityQueue": "When you ask us for a change, you're ahead of lower plans in line.",
+      "includedSmallEdit": "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over.",
+      "leadsReport": "A monthly email showing how many people visited your site, filled out your form, and tapped your call button.",
+      "quoteAlerts": "An email the moment someone asks for a quote.",
+      "gbpManaged": "We keep your Google Business Profile up to date (hours, photos) and post to it for you.",
+      "reviewKit": "A ready-made message and link you can send your customers to ask for reviews.",
+      "seasonalRefresh": "Each season we refresh your site with your new photos and offers.",
+      "quarterlyCall": "A 15-minute planning call with us every quarter.",
+      "doneForYouEdits": "Tell us what you want changed, and we make it for you."
+    },
+    "smallEditsNextBusinessDay": "Small edits: by end of next business day (Mon–Fri, excluding holidays).",
+    "starterBaseLines": {
+      "hostingSslSecureHttps": "Hosting and SSL (a secure https connection)",
+      "emailSupportDuringSupport": "Email support during support hours"
+    },
+    "ladderHeading": "Choose your hosting plan",
+    "ladderSubheading": "Each plan includes everything in the plans before it. Billed monthly through Stripe.",
+    "mostPopularLabel": "Most popular",
+    "everythingIn": "Everything in {name}, plus:",
+    "continueToPayment": "Continue to payment",
+    "legacyPlanNote": "Already have an add-on? You keep it at the same price. You can switch to one of these plans on the Plans page at any time.",
+    "legacyPlanLabel": "Your current plan (no longer sold)",
+    "includedEdits": {
+      "allUsed": "Your included edits: all used this billing period.",
+      "someLeft": "Your included edits: {remaining} of {available} available this billing period."
+    },
+    "includedEdit": {
+      "used": "Your included edit: used this billing period.",
+      "available": "Your included edit: {remaining} available this billing period."
+    },
+    "aiEditsLine": "AI edits: {count} a month",
+    "landingPlansIntro": "Choose a monthly hosting plan. Each plan includes everything in the plans before it. For maintenance, we analyze your request first — then quote and invoice.",
+    "dashboardPlansIntro": "Hosting is billed monthly through Stripe. Pick the plan that fits; each one includes everything in the plans before it. Maintenance is quoted after we review your request — describe the work on the request form and we will follow up with pricing.",
+    "comingSoonLabel": "Coming soon",
+    "stepNotSellableMessage": "{name} isn't available yet. Choose another plan for now.",
+    "change": {
+      "button": "Switch to {name}",
+      "current": "Your current plan",
+      "help": "Moving up starts right away, and you pay only the difference for the rest of this billing period. Moving down starts at your next billing date, so you keep what you paid for until then.",
+      "upgraded": "You're moving to {name}. We charged the difference for the rest of this billing period. Your new plan shows here as soon as Stripe confirms it, usually within a minute.",
+      "scheduled": "You'll move to {name} on {date}. You keep your current plan until then.",
+      "unchanged": "You're on this plan. Any planned change has been cancelled.",
+      "ending": "Your plan is set to end. Choose Resume plan first, then switch.",
+      "paymentFailed": "We couldn't charge your card, so your plan didn't change. Update your payment method in Manage billing and try again.",
+      "paymentFailedPendingLost": "We couldn't charge your card, so your plan didn't change. Your planned switch at the next billing date was cancelled too; pick it again if you still want it.",
+      "unavailable": "We couldn't change your plan right now. Try again, or email support@freeplug-in.dev.",
+      "pendingChangeLine": "Changing to {name} on {date}. You keep your current plan until then.",
+      "keepPlanButton": "Keep {name}",
+      "alreadyHasPlanSwitch": "You already have an active hosting plan. To change it, pick a plan on the Plans page and choose Switch.",
+      "startsOnBadge": "Starts {date}",
+      "changePlanLink": "Change plan",
+      "pickToSwitch": "Choose a different plan to switch",
+      "buttonNow": "Switch to {name} now",
+      "buttonOn": "Switch to {name} on {date}",
+      "helpUp": "Starts right away. Today you pay only the difference for the rest of this billing period, and your billing date stays the same.",
+      "helpDown": "Starts on your next billing date, when the lower price begins. Nothing is charged today, and you keep your current plan until then.",
+      "calculating": "Checking the amount…",
+      "confirmLine": "Switch to {name} now? We'll charge {todayAmount} today, then {monthly}/month starting {date}.",
+      "confirmFallback": "Switch to {name} now? We'll charge the difference for the rest of this billing period today.",
+      "confirmButton": "Confirm",
+      "cancelButton": "Not now",
+      "previewExpired": "That amount is out of date. Use the Switch button again to see the current amount.",
+      "inProgress": "Your plan change is already going through. Refresh in a moment to see it.",
+      "confirmZero": "Switch to {name} now? Nothing is charged today. Then {monthly}/month starting {date}.",
+      "replacesPending": "This replaces your planned switch to {pendingName}."
+    },
+    "billing": {
+      "pendingNotice": "You have a switch to {name} planned for {date}, so billing is handled here until then. You can update your card and see your invoices below.",
+      "unavailable": "We couldn't open billing right now. Try again, or email support@freeplug-in.dev.",
+      "heading": "Billing",
+      "updateCardButton": "Update card",
+      "cardUpdatedNotice": "Thanks. If you saved a new card, we use it for your next payment.",
+      "invoicesHeading": "Invoices",
+      "invoicesEmpty": "No invoices yet.",
+      "invoiceStatus": {
+        "paid": "Paid",
+        "open": "Due",
+        "uncollectible": "Unpaid"
+      },
+      "viewInvoice": "View",
+      "invoicePlanPart": "Plan {amount}"
+    },
+    "currentPlanLine": "Current plan: {line}",
+    "seeComingSoon": "Plans coming soon ({count})",
+    "chooseStepButton": "Choose {name}",
+    "grandfatheredHostingOnlyName": "Hosting plan",
+    "grandfatheredHostingShort": "Hosting",
+    "legacyAddonName": "{tier} add-on",
+    "totalBreakdown": {
+      "addons": "Add-ons {amount}",
+      "tip": "Tip {amount}",
+      "plan": "{plan} {amount}"
+    },
+    "names": {
+      "starter": "Starter",
+      "priority": "Priority",
+      "fastLane": "Fast lane",
+      "leads": "Leads",
+      "getFound": "Get found",
+      "growthPartner": "Growth partner",
+      "basic": "Basic",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "perMonth": "/month"
+  },
+  "claim": {
+    "thisPlanFallback": "This plan",
+    "metaTitle": "Claim your website | Freeplug",
+    "stepLine": "Step {step} of {total} · {stepName}",
+    "stepLineAria": "Step {step} of {total}",
+    "ariaLabel": {
+      "checked": "Checked"
+    },
+    "bannerHeading": "We built this website for {businessName}",
+    "bannerBody": "Freeplug found your business, and 72 After built this site for it at no charge. This is a private preview, so only people with this link can see it.",
+    "underMainButton": "Building it was free. You won't pay anything unless you pick a hosting plan and your site goes live.",
+    "label": "Claim my website",
+    "cardLine": "Tap the button to start claiming it. You won't pay anything unless you pick a hosting plan and your site goes live.",
+    "staleLine": "This page was open for a while, so we refreshed it. Tap Claim my website again to continue.",
+    "neutralHeading": "Open your preview link on this device",
+    "neutralBody": "To keep going, open the link from the message we sent you, on this phone or computer.",
+    "neutralHelpLine": "Can't find it? Call or text us at {supportPhone}, or email {supportEmail}.",
+    "neutralHelpPhone": "Can't find it? We can help.",
+    "confirmFirstLine": "First, confirm your email. Open the email we sent to {accountEmail} and tap the link inside.",
+    "resendLabel": "Send it again",
+    "resendSent": "Sent. Check your inbox.",
+    "resendLimited": "Please wait a few minutes and try again.",
+    "addDetailsLabel": "Add your details",
+    "requestChangeLabel": "Request a change",
+    "callTextLabel": "Call or text us",
+    "emailUsLabel": "Email us",
+    "notNowLabel": "Not right now",
+    "notNowConfirm": "No problem. You can come back to this link until {expiryDate}.",
+    "expiredHeading": "This preview link has expired",
+    "expiredBody": "To see your website, call or text us at {supportPhone}, or email {supportEmail}.",
+    "openFullScreenLabel": "Open full screen",
+    "screenshotNote": "This is a picture of your website, so its buttons won't work here. Open full screen to try them.",
+    "desktopContactText": "Call or text us: {supportPhone}",
+    "callUsLabel": "Call us",
+    "textUsLabel": "Text us",
+    "callAria": "Call {supportPhone}",
+    "textAria": "Text {supportPhone}",
+    "emailAria": "Email {supportEmail}",
+    "detailsHeading": "Add your details",
+    "detailsIntro": "We filled in what we found online. Check each detail and fix anything that's wrong. Nothing on your site changes until we review it.",
+    "fieldPhone": "Business phone",
+    "fieldAddress": "Business address",
+    "fieldAddressHelp": "Leave this blank if customers don't come to you.",
+    "fieldHours": "Hours",
+    "fieldServiceArea": "Service area",
+    "fieldServiceAreaHelp": "List the cities or areas you serve.",
+    "fieldQuoteEmail": "Email for quote requests",
+    "fieldQuoteEmailHelp": "Where should we send quote requests from your site?",
+    "fieldPhotos": "Photos",
+    "fieldPhotosHelp": "Photos of your real work help customers trust you. You can send up to {max} photos, 10 MB each (JPG, PNG, WebP, or iPhone HEIC).",
+    "sendDetailsLabel": "Send my details",
+    "detailsSuccess": "Thanks, we got your details. You'll see them in your preview once we've added them.",
+    "errorTooLarge": "That photo is too large. Please upload one under 10 MB.",
+    "serverTooLarge": "That photo is too large to upload. Try a smaller photo, or email it to {supportEmail}.",
+    "serverBadType": "We couldn't use this photo. Try it as a JPG or PNG, or email it to {supportEmail}.",
+    "errorTooManyTries": "You've sent this form a few times already. Please try again later.",
+    "errorTooManyPhotos": "You can send up to {max} photos. Remove one to add another.",
+    "sourceLine": "From your {source}",
+    "looksRightLabel": "Looks right",
+    "editLabel": "Edit",
+    "blankFieldHint": "We couldn't find this online. Please add it.",
+    "servicesHeading": "Services you offer",
+    "servicesIntro": "These are the services on the website we built for you. Keep the ones you offer, remove any you don't, and add any we missed.",
+    "serviceSourceSite": "On your new website",
+    "serviceSourceSiteAndThumbtack": "On your new website and your Thumbtack profile",
+    "serviceSourceThumbtackOnly": "From your Thumbtack profile",
+    "keepLabel": "Keep",
+    "removeLabel": "Remove",
+    "undoLabel": "Undo",
+    "addServiceLabel": "Add a service",
+    "addLabel": "Add",
+    "counterText": "{n} of {total} checked",
+    "step1Heading": "Create your account",
+    "step1Body": "We've filled in your business name and email. Check them and choose a password.",
+    "step1BodyNameOnly": "We've filled in your business name. Check it, add your email, and choose a password.",
+    "step1SignInPrompt": "Already have an account?",
+    "step1SignInLink": "Sign in",
+    "step1BackLink": "Back to your preview",
+    "step1Button": "Create account",
+    "step2Heading": "Confirm your details",
+    "step2Body": "Check that everything is right before your site goes live.",
+    "checkPhone": "Phone",
+    "checkAddress": "Address",
+    "checkHours": "Hours",
+    "checkServiceArea": "Service area",
+    "checkQuoteEmail": "Email for quote requests",
+    "checkPhotos": "Photos",
+    "step2Button": "Confirm details",
+    "uploadPhotosLabel": "Upload photos",
+    "step3Heading": "Choose your hosting plan",
+    "step3Button": "Choose this plan",
+    "noChargeUntilLive": "You won't be charged until your site goes live.",
+    "step4Heading": "Add your card",
+    "step4Body": "Add the card you want to pay with. We'll save it now and won't charge it until your site goes live.",
+    "step4Button": "Add my card",
+    "step4Note": "You'll enter your card on Stripe's payment page.",
+    "cardSavedLine": "Your card is saved.",
+    "waitingLine": "You're all set. Your dashboard will show when your site is live.",
+    "trackerOutreachSteps": {
+      "built": "Built",
+      "yourReview": "Your review",
+      "detailsConfirmed": "Details confirmed",
+      "hostingSetUp": "Hosting set up",
+      "live": "Live"
+    },
+    "viewWebsiteLabel": "View my website",
+    "setUpDomainLabel": "Set up my domain",
+    "manageBillingLabel": "Manage billing",
+    "domainHelper": "Until you connect your own domain, your site runs on a free web address we give you.",
+    "needDomainLabel": "I need a domain",
+    "needDomainHelper": "You buy and own your domain. We'll send you step-by-step instructions and connect it for you.",
+    "stepNames": {
+      "account": "Account",
+      "yourDetails": "Your details",
+      "hostingPlan": "Hosting plan",
+      "addCard": "Add card"
+    },
+    "claimingForLine": "Claiming the website for {businessName}",
+    "goToDashboardLabel": "Go to my dashboard",
+    "viewPreviewLabel": "View my preview",
+    "yourWebsiteHeading": "Your website",
+    "phoneInvalid": "Please enter a 10-digit phone number, including the area code.",
+    "refusedDismissAria": "Dismiss message about {fileName}",
+    "trackerLiveWaiting": "Waiting for us to publish your site.",
+    "haveDomainLabel": "I already have a domain",
+    "trackerOrganicSteps": {
+      "requestSent": "Request sent",
+      "building": "Building",
+      "yourReview": "Your review",
+      "hostingSetUp": "Hosting set up",
+      "live": "Live"
+    },
+    "photoCountText": "{n} of {max} photos",
+    "photoRetryingText": "Upload paused. Trying again…",
+    "photoFailedText": "This photo didn't upload. Tap to try again.",
+    "photoLimitReached": "You've sent {max} photos, which is the most we can take here. To send more, email {supportEmail}.",
+    "photoRefused": "We couldn't use this photo. Try it as a JPG or PNG, or email it to {supportEmail}. It doesn't count toward your {max}.",
+    "showAllPhotos": "Show all {n} photos",
+    "showFewerPhotos": "Show fewer photos",
+    "thumbTryingAgain": "Trying again…",
+    "thumbTapToRetry": "Tap to try again",
+    "reopenLinkLine": "Open your preview link again to finish claiming your website.",
+    "planWaitingForPublishMessage": "You already chose a hosting plan. You won't be charged until your site goes live.",
+    "planLiveUnavailableMessage": "Your site is live. We couldn't load your plan details right now. Refresh the page to try again, or email {supportEmail}.",
+    "accountAddCardLine": "After you add your card, you can manage your billing and payment method here.",
+    "accountFirstPaymentLine": "After your first payment, you can manage your billing and payment method here.",
+    "beforeLiveHelp": "If you don't want to go ahead, email {supportEmail} and we'll help.",
+    "genericTryAgain": "Something went wrong. Please try again. If it keeps happening, email {supportEmail}.",
+    "photoRemoveAria": "Remove photo {n}",
+    "photoUploadingAria": "Uploading photo {n}",
+    "photoUploadedAria": "Photo {n} uploaded",
+    "addPhotosLabel": "Add photos",
+    "confirmEmailLine": "Check your email to confirm your account.",
+    "changeSent": "Got it. We'll review your request and let you know when your preview is updated.",
+    "domainRequestSent": "Got it. We'll email you the next steps for your domain.",
+    "message": {
+      "enterValidEmailAddress": "Enter a valid email address.",
+      "sourceLinksMustStart": "Source links must start with https://",
+      "enterValidEmail": "Enter a valid email."
+    },
+    "description": {
+      "describeChange": "Describe the change."
+    },
+    "businessName": {
+      "businessNameRequired": "Business name is required."
+    },
+    "enterDomainLikeYourbusinessCom": "Enter a domain like yourbusiness.com",
+    "error": {
+      "invalidPlan": "Invalid plan.",
+      "invalidInput": "Invalid input.",
+      "couldNotSave": "Could not save."
+    },
+    "step3Body": "Hosting keeps your website online. Plans start at {price} a month."
+  },
+  "public": {
+    "faq": {
+      "metaTitle": "FAQ: How Freeplug Works | Freeplug",
+      "metaDescription": "Answers about Freeplug's free website build, what you pay for after launch, timelines, and how to request your site.",
+      "question": {
+        "whatIsFreeplug": "What is Freeplug?",
+        "reallyFree": "Is it really free?",
+        "whatDoIPay": "What do I pay for?",
+        "happensCancelHosting": "What happens if I cancel hosting?",
+        "longDoesTakeBuild": "How long does it take to build my website?",
+        "getStarted": "How do I get started?"
+      },
+      "answer": {
+        "freeplugReachesLocalBusiness": "Freeplug reaches local business owners who need a website, and 72 After builds the site for free. We work in Central Texas: San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
+        "yesWebsiteDevelopmentFree": "Yes. Website development is free. 72 After designs and builds your website at no charge. After your site is live, you pay for monthly hosting, which is required. Maintenance or a buyout costs extra only if you ask for it. There are no hidden fees or surprise charges.",
+        "hostingRequiredKeepWebsite": "Hosting is required to keep your website online. You can cancel any time. Your website stays online until your paid period ends, then goes offline. If you sign up for hosting again, we bring it back.",
+        "everySiteDifferentSo": "Every site is different, so we'll give you a timeline after we review your request. Most of the time depends on how quickly we get your business details and approvals. We'll keep you updated along the way.",
+        "createAccountFillOut": "Create an account and fill out the website request form. Tell us about your business and what you need. Our team will review your request. Once it's approved, we'll contact you to discuss your project and start the design."
+      },
+      "helpCenter": "Help center",
+      "frequentlyAskedQuestions": "Frequently asked <span>questions</span>",
+      "answersCommonQuestionsAboutFreeplug": "Answers to common questions about Freeplug and how it works.",
+      "stillHaveQuestions": "Still have questions?",
+      "wereHereHelpEmailSupport": "We're here to help. Email our support team.",
+      "contactSupport": "Contact support"
+    },
+    "meta": {
+      "siteTitle": "Free Website Outreach | Freeplug",
+      "siteDescription": "Freeplug finds local business owners who need a website. 72 After builds the free site. We serve San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
+      "ogTitle": "Free Websites for Local Businesses | Freeplug",
+      "ogDescription": "Local business without a website? Request one. 72 After builds it for free.",
+      "homeTitle": "Free Websites for Local Businesses in Central Texas | Freeplug",
+      "homeDescription": "Freeplug helps local business owners get a website. 72 After builds it for free. Serving San Marcos, Kyle, New Braunfels, San Antonio and Austin.",
+      "previewTitle": "Your website preview | Freeplug",
+      "requestWebsiteTitle": "Request a website | Freeplug",
+      "faqTitle": "FAQ: How Freeplug Works | Freeplug",
+      "faqDescription": "Answers about Freeplug's free website build, what you pay for after launch, timelines, and how to request your site."
+    },
+    "notFound": {
+      "heading": "Page not found",
+      "link": "Go to the homepage",
+      "metaTitle": "Page not found | Freeplug"
+    },
+    "landing": {
+      "about": {
+        "title": {
+          "outreachOwnersWhoNeed": "Outreach to owners who need a website",
+          "handOff72After": "Hand-off to 72 After for the free build",
+          "monthlyHostingKeepsOnline": "Monthly hosting keeps it online"
+        },
+        "description": {
+          "freeplugFindsLocalBusinesses": "Freeplug finds local businesses with a weak or missing website and invites them to get a free site.",
+          "onceSiteLivePay": "Once your site is live, you pay for monthly hosting, from $35 a month. Freeplug handles outreach, and 72 After builds the site.",
+          "whenOwnerSaysYes": "When an owner says yes, 72 After builds the site from a solid template, their real services, and clear Get-a-quote pages."
+        },
+        "aboutFreeplug": "About Freeplug",
+        "freeplugDoes": "What <span>Freeplug</span> does",
+        "freeplug72AfterWorkTogether": "Freeplug and 72 After work together: Freeplug handles owner outreach; 72 After builds the free websites. We’re starting in Central Texas and growing from there.",
+        "freeplugOutreachSide": "Freeplug is the outreach side. We find local businesses with a weak or missing website and invite them to get a free site. When an owner says yes, 72 After builds the site from a solid template, their real services, and clear Get-a-quote pages. Freeplug connects the conversation. 72 After does the build."
+      },
+      "cTA": {
+        "freeplug72After": "Freeplug · 72 After",
+        "readyFreeWebsite": "Ready for a free website?",
+        "localOwnersSanMarcosKyle": "Local owners in San Marcos, Kyle, New Braunfels, San Antonio, and Austin — request a site. Outside the US — tell us your city and we’ll check the network.",
+        "requestFreeWebsite": "Request a free website",
+        "freeplugFindsBusinesses72After": "Freeplug finds the businesses. 72 After builds the sites."
+      },
+      "footer": {
+        "label": {
+          "about": "About",
+          "outreach": "Outreach",
+          "services": "Services",
+          "reviews": "Reviews",
+          "plans": "Plans",
+          "termsConditions": "Terms & Conditions",
+          "privacyPolicy": "Privacy Policy",
+          "cookiePolicy": "Cookie Policy",
+          "getStarted": "Get Started",
+          "support": "Support",
+          "faq": "FAQ"
+        },
+        "freeplug": "Freeplug",
+        "freeplugHandlesOwnerOutreach72": "Freeplug handles owner outreach; 72 After builds the free websites. Starting in Central Texas and growing from there.",
+        "supportFreeplugDev": "support@freeplug-in.dev",
+        "centralTexasOutsideUsVia": "Central Texas · Outside the US via partners",
+        "headingCompany": "Company",
+        "headingLegal": "Legal",
+        "legalComingSoonTitle": "Coming soon",
+        "legalSoonTag": "(soon)",
+        "headingGetStarted": "Get Started",
+        "followUs": "Follow us",
+        "copyright": "© {year} Freeplug. All rights reserved.",
+        "outreachFreeplugBuilds72After": "Outreach = Freeplug · Builds = 72 After"
+      },
+      "hero": {
+        "freeplugOutreach72AfterBuilds": "Freeplug outreach · 72 After builds",
+        "headline": "Free websites for<br/><span>local businesses</span>",
+        "freeplugReachesOwnersWhoNeed": "Freeplug reaches owners who need a site. <span>72 After builds it for free.</span> Once it's live, monthly hosting keeps it online.",
+        "label": {
+          "modernTech": "Modern Tech",
+          "lightningFast": "Lightning Fast",
+          "customDesign": "Custom Design",
+          "secure": "Secure"
+        },
+        "seeWhereWork": "See where we work",
+        "outreachHubFreeplugDevBuilds": "Outreach hub = freeplug-in.dev · Builds = 72 After"
+      },
+      "hostingPlans": {
+        "stripeCheckout": "Stripe checkout",
+        "hostingMaintenance": "Hosting & maintenance"
+      },
+      "navigation": {
+        "label": {
+          "home": "Home"
+        },
+        "logIn": "Log in",
+        "dashboard": "Dashboard",
+        "ariaLabel": {
+          "toggleMenu": "Toggle menu"
+        }
+      },
+      "outreach": {
+        "name": {
+          "sanMarcos": "San Marcos",
+          "kyle": "Kyle",
+          "newBraunfels": "New Braunfels",
+          "sanAntonio": "San Antonio",
+          "austin": "Austin"
+        },
+        "alt": {
+          "stockPhotoCitySkyline": "Stock photo of a city skyline — San Marcos, Texas",
+          "stockPhotoResidentialStreet": "Stock photo of a residential street — Kyle, Texas",
+          "stockPhotoRiverLandscape": "Stock photo of a river landscape — New Braunfels, Texas",
+          "stockPhotoSanAntonio": "Stock photo of San Antonio, Texas",
+          "stockPhotoAustinTexas": "Stock photo of the Austin, Texas skyline",
+          "stockPhotoInternationalCity": "Stock photo of an international city skyline",
+          "stockPhotoCitySkyline2": "Stock photo of a city skyline outside the U.S."
+        },
+        "title": {
+          "freeplugReachesOut": "Freeplug reaches out",
+          "72AfterBuilds": "72 After builds",
+          "goLive": "You go live"
+        },
+        "description": {
+          "contactOwnersWhoNeed": "We contact owners who need a site — or you request one yourself.",
+          "reviewSiteAddPhone": "You review the site and add your phone number and photos when you're ready. Then you go live, and monthly hosting keeps your site online.",
+          "builds72AfterFreeMultiPage": "72 After builds a free multi-page site from a solid template, your real services, and clear Get-a-quote pages."
+        },
+        "serviceAreas": "Service areas",
+        "whereWorkTexas": "Where we work in <span>Texas</span>",
+        "wereFocusedCentralTexasFirst": "We’re focused on Central Texas first — San Marcos and nearby cities.",
+        "stockPhoto": "{name} — stock photo",
+        "moreTexasCitiesCapacityGrows": "More Texas cities as capacity grows. Ask if your town isn’t listed.",
+        "international": "International",
+        "beyondTexasUs": "Beyond Texas and the US",
+        "freeplugReachBusinessesOutsideUs": "Freeplug can reach businesses outside the US through our in-network partners and channels. International outreach depends on language, local rules, and partner capacity — we don’t promise every country or a set timeline. If you’re outside the US and want a free site through the network, start a request and we’ll tell you what’s possible.",
+        "requestInternationalOutreach": "Request international outreach",
+        "availabilityVariesRegionPartnerNo": "Availability varies by region and partner. No guaranteed coverage or launch date.",
+        "label": {
+          "internationalSkylineStockPhoto": "International skyline — stock photo",
+          "citySkylineStockPhoto": "City skyline — stock photo"
+        },
+        "howItConnects": "How it connects",
+        "howItWorks": "How it <span>works</span>",
+        "freeplugConnectsConversation72After": "Freeplug connects the conversation. 72 After does the build.",
+        "step": "Step {step}"
+      },
+      "reviews": {
+        "testimonials": "Testimonials",
+        "reviewsComingSoon": "Reviews <span>coming soon</span>",
+        "wellShareRealOwnerFeedback": "We'll share real owner feedback here once the first Freeplug / 72 After sites are live. No invented stats.",
+        "realReviewsComingSoonFreeplug": "<span>Real reviews coming soon.</span> Freeplug is in early outreach — we won't invent client counts."
+      },
+      "techStack": {
+        "name": {
+          "envatoTemplate": "Envato template",
+          "htmlCss": "HTML & CSS",
+          "bootstrap5": "Bootstrap 5",
+          "cloudflare": "Cloudflare",
+          "cloudflareTurnstile": "Cloudflare Turnstile",
+          "resend": "Resend"
+        },
+        "description": {
+          "premiumTemplatesDevelopersAccess": "Premium templates our developers can access, enhanced with your details.",
+          "plainLightweightPagesLoad": "Plain, lightweight pages that load quickly.",
+          "layoutFitsPhonesTablets": "A layout that fits phones, tablets and computers.",
+          "hostsSiteProvidesSsl": "Hosts your site and provides the SSL certificate for https.",
+          "filtersOutSpamBots": "Filters out spam bots on your quote form, without picture puzzles.",
+          "emailsEachQuoteRequest": "Emails each quote request to you.",
+          "lightweightPagesServedFrom": "Lightweight pages served from Cloudflare's network.",
+          "responsiveLayoutAdjustsPhones": "A responsive layout that adjusts to phones, tablets and computers.",
+          "clearPageTitlesDescriptions": "Clear page titles, descriptions and business details that search engines can read.",
+          "httpsEveryPageThrough": "HTTPS on every page through Cloudflare's SSL."
+        },
+        "title": {
+          "fastLoading": "Fast Loading",
+          "mobileFirst": "Mobile First",
+          "seoBasicsIncluded": "SEO Basics Included",
+          "secureConnection": "Secure Connection"
+        },
+        "ourTechnology": "Our Technology",
+        "builtProvenTools": "Built On <span>Proven Tools</span>",
+        "everyLocalBusinessSiteBuild": "Every local business site we build uses the same setup: lightweight pages, a layout that works on phones, a quote form that filters out spam, and a secure https address.",
+        "performanceMatters": "Performance That <span>Matters</span>",
+        "sitesBuiltMobileFriendlyReasonably": "Sites are built to be mobile-friendly and reasonably fast. We don't invent uptime or score guarantees.",
+        "responsiveLayoutsClearQuoteRequest": "Responsive layouts · Clear quote request pages · Monthly hosting keeps it online"
+      }
+    }
+  },
+  "buyout": {
+    "dashboardHeading": "Want to keep your website?",
+    "dashboardBody": "You can buy your website for a one-time fee. We'll estimate your website's value and tell you the exact price before you pay.",
+    "requestLabel": "Request a buyout quote",
+    "thanks": "Thanks. We got your buyout request. We'll let you know the price before you pay anything.",
+    "cancelHeading": "Keep your website",
+    "cancelBody": "Want to keep your website instead of hosting it with us? You can buy it for a one-time fee based on an estimate of its value. You'll see the exact price before you pay.",
+    "faqQuestion": "Can I keep my website if I stop hosting with Freeplug?",
+    "faqAnswer": "Yes. You can buy your website for a one-time fee. The price is based on an estimate of your website's value, and you'll see the exact price before you pay. The fee covers your finished website. Moving your domain is handled separately.",
+    "requestRecordName": "Website buyout"
+  },
+  "common": {
+    "listAnd": "{list} and {last}",
+    "amountPerMonth": "{amount}/month",
+    "listOr": "{list} or {last}",
+    "dateFallback": "Date not available",
+    "support": {
+      "hours": "Monday to Wednesday, 1 to 2 PM, and Thursday and Friday, 1 to 3 PM (Central time)",
+      "availabilityLabel": "When we're available",
+      "availabilityLine": "Our team is available during the support hours below.",
+      "cardLine": "Our team is available {supportHours}."
+    },
+    "legal": {
+      "translationNotice": "Translation provided for your convenience; the English version prevails."
+    }
+  },
+  "email": {
+    "subjects": {
+      "subject": {
+        "welcomeFreeplug": "Welcome to Freeplug!",
+        "paymentReceived": "Payment received - {amount}",
+        "requestUpdate": "Request Update: {businessName}",
+        "upcomingBillingReminder": "Upcoming billing reminder - {amount} on {date}",
+        "resetFreeplugPassword": "Reset your Freeplug password"
+      },
+      "subscriptionCancelled": "Your Freeplug hosting is canceled"
+    },
+    "common": {
+      "copyright": "© {year} Freeplug. All rights reserved.",
+      "greetingNamed": "Hi {userName},",
+      "accountHistory": "Your Account History",
+      "totalPaidToDate": "Total paid to date: {amount}",
+      "greeting": "Hi,"
+    },
+    "baseLayout": {
+      "visitWebsite": "Visit our website",
+      "contactSupport": "Contact support"
+    },
+    "billingReminder": {
+      "preview": {
+        "upcomingBillingReminder": "Upcoming billing reminder - {amount} on {date}"
+      },
+      "upcomingBillingReminder": "Upcoming Billing Reminder",
+      "friendlyReminderNextBillingComing": "This is a friendly reminder that your next billing is coming up in {days, plural, one {# day} other {# days}}.",
+      "plan": "Plan",
+      "amount": "Amount",
+      "billingDate": "Billing date",
+      "makeSurePaymentMethodUp": "Make sure your payment method is up to date to avoid any interruption to your service.",
+      "viewDashboard": "View Dashboard",
+      "manageSubscription": "or <a>manage your subscription</a>",
+      "haveQuestionsAboutBillingPlease": "If you have questions about your billing, please contact our support team."
+    },
+    "googleSignIn": {
+      "preview": {
+        "freeplugAccountUsesGoogle": "Your Freeplug account uses Google sign-in"
+      },
+      "signGoogle": "Sign in with Google",
+      "receivedRequestResetPasswordFreeplug": "We received a request to reset the password for your Freeplug account. Your account signs in with Google, so there is no Freeplug password to reset.",
+      "loginPageChooseContinueGoogle": "On the login page, choose <strong>Continue with Google</strong> and use this email address.",
+      "goLog": "Go to log in",
+      "didntRequestSafelyIgnoreEmail": "If you didn't request this, you can safely ignore this email."
+    },
+    "passwordReset": {
+      "expiresInOneHour": "1 hour",
+      "preview": {
+        "resetFreeplugPassword": "Reset your Freeplug password"
+      },
+      "resetPassword": "Reset Your Password",
+      "receivedRequestResetPasswordFreeplug": "We received a request to reset your password for your Freeplug account. Click the button below to create a new password:",
+      "resetPassword2": "Reset Password",
+      "linkExpireDidntRequestPassword": "This link will expire in <strong>{expiresIn}</strong>. If you didn't request a password reset, you can safely ignore this email — your password will remain unchanged.",
+      "securityTips": "Security Tips",
+      "neverShareLinkAnyone": "• Never share this link with anyone",
+      "neverAskPasswordViaEmail": "• We will never ask for your password via email",
+      "useStrongUniquePassword": "• Use a strong, unique password",
+      "youreHavingTroubleClickingButton": "If you're having trouble clicking the button, copy and paste this URL into your browser:"
+    },
+    "paymentReceived": {
+      "preview": {
+        "paymentReceived": "Payment received - {amount} for {planName}"
+      },
+      "paymentReceived": "Payment Received",
+      "thankPaymentHereDetailsTransaction": "Thank you for your payment! Here are the details of your transaction:",
+      "amount": "Amount",
+      "plan": "Plan",
+      "date": "Date",
+      "invoice": "Invoice",
+      "nextBilling": "Next billing",
+      "viewDashboard": "View Dashboard",
+      "viewAllInvoicesManageSubscription": "You can view all your invoices and manage your subscription from your dashboard."
+    },
+    "requestStatusUpdate": {
+      "title": {
+        "requestSubmitted": "Request Submitted",
+        "requestReview": "Request In Review",
+        "requestClosed": "Request Closed"
+      },
+      "description": {
+        "haveReceivedWebsiteRequest": "We have received your website request and will begin reviewing it shortly.",
+        "greatNewsTeamNow": "Great news! Our team is now actively reviewing your website request. We will reach out soon with next steps.",
+        "websiteRequestHasBeen": "Your website request has been closed. This may mean we have completed our review, moved to a different workflow, or need additional information."
+      },
+      "websiteRequestHasBeenUpdated": "Your website request for <strong>{businessName}</strong> has been updated.",
+      "currentStatus": "Current Status",
+      "messageFromTeam": "Message from our team:",
+      "viewDashboard": "View Dashboard",
+      "haveQuestionsReplyEmailContact": "If you have questions, reply to this email or contact our support team."
+    },
+    "subscriptionCancelled": {
+      "hostingPlanCanceled": "Your hosting plan is canceled.",
+      "websiteStaysOnlineUntilThen": "Your website stays online until <strong>{date}</strong>, then goes offline.",
+      "changedMind": "Changed your mind?",
+      "untilResumePlanFromDashboard": "Until {date}, you can resume your plan from your dashboard. After that, choose Restart hosting in your dashboard and we'll bring your website back.",
+      "goDashboard": "Go to your dashboard"
+    },
+    "welcome": {
+      "preview": {
+        "welcomeFreeplugLetsBuild": "Welcome to Freeplug - Let's build your online presence"
+      },
+      "welcomeFreeplug": "Welcome to Freeplug!",
+      "thankJoiningFreeplugExcitedHelp": "Thank you for joining Freeplug! We are excited to help you establish and grow your online presence with professional website hosting and maintenance services.",
+      "hereNext": "Here is what you can do next:",
+      "1SubmitWebsiteRequestFrom": "1. Submit a website request from your dashboard",
+      "2TeamReviewBusinessDetails": "2. Our team will review your business details",
+      "3ChooseHostingPlanFits": "3. Choose a hosting plan that fits your needs",
+      "4WatchOnlinePresenceGrow": "4. Watch your online presence grow",
+      "goDashboard": "Go to Dashboard",
+      "haveAnyQuestionsJustReply": "If you have any questions, just reply to this email or reach out to our support team.",
+      "freeplugTeam": "— The Freeplug Team"
+    }
+  },
+  "tips": {
+    "invoiceTipPart": "Optional tip {amount}",
+    "planChangeTipEnds": "Your {tip} monthly tip ends with this switch.",
+    "planChangeTipEndsOn": "Your {tip} monthly tip ends on {date}, when this switch starts.",
+    "sliderLabel": "Optional tip to support Freeplug",
+    "sliderHelp": "An optional extra to support Freeplug. It doesn't change what your plan includes.",
+    "valuetext": {
+      "withTip": "{total} a month, including a {tip} tip",
+      "noTip": "{total} a month, no tip"
+    },
+    "totalLine": {
+      "withTip": "{price} + {tip} tip = {total}/month",
+      "noTip": "{total}/month, no tip"
+    },
+    "sliderHint": "Pick a tip if you'd like, or leave it at No tip.",
+    "endNone": "No tip",
+    "endMax": "{max} tip",
+    "lowerLabel": "Lower tip by $1",
+    "raiseLabel": "Raise tip by $1",
+    "lockedAmount": "{tip} monthly tip",
+    "lockedNote": "Your tip ends on {date}, when your planned switch starts. You can choose a new tip after that.",
+    "nudge": "{next} is {price} a month and adds {perk}. Want that instead? Keeping your tip is fine too.",
+    "nudgeButton": "Choose {next}",
+    "nudgePerk": {
+      "priorityQueue": "a place ahead of lower plans when you ask for changes",
+      "includedSmallEdit": "one small edit by us each billing period",
+      "nextBusinessDayEdits": "small edits by end of next business day (Mon–Fri, excluding holidays)",
+      "leadsReport": "a monthly report on visits, form requests and call button taps",
+      "quoteAlerts": "an email the moment someone asks for a quote",
+      "gbpManaged": "Google Business Profile upkeep",
+      "reviewKit": "a review request kit",
+      "seasonalRefresh": "a seasonal refresh",
+      "quarterlyCall": "a 15-minute planning call every quarter",
+      "doneForYouEdits": "done-for-you edits"
+    },
+    "planStripTip": " + {tip} tip",
+    "changeHeading": "Your monthly tip",
+    "changeNote": "Changes start with your next bill. Nothing is charged today. To stop your tip, set it to No tip.",
+    "changeButton": "Update tip",
+    "nextBill": "Your next bill will be {amount} on {date}.",
+    "nextBillNoDate": "Your next bill will be {amount}.",
+    "changed": "Your tip is updated. {nextBill}",
+    "changePending": "Tips can't be changed while a plan switch is planned. Once the switch starts, you can choose a new tip.",
+    "changeEnding": "Your plan is set to end, so your tip can't be changed. Choose Resume plan first.",
+    "notForPlan": "Tips aren't available on your plan.",
+    "outOfRange": "Choose a tip within the range on the slider.",
+    "changeUnavailable": "We couldn't change your tip right now. Try again, or email support@freeplug-in.dev.",
+    "inProgress": "Your tip change is already going through. Refresh in a moment to see it."
+  },
+  "addons": {
+    "heading": "Add-ons",
+    "starterCapNote": "up to {amount}/month on Starter",
+    "names": {
+      "small_edit": "+1 small edit",
+      "big_change": "Big change",
+      "visitor_snapshot": "Visitor snapshot"
+    },
+    "perk": {
+      "smallEditWithIncluded": "One more small edit on top of the one your plan includes. Unused edits don't roll over.",
+      "smallEdit": "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over.",
+      "bigChange": "One larger change each billing period, up to about an hour of work on your existing pages. For example, adding a section, a new service with photos, a gallery refresh, or rewriting one page. Unused changes don't roll over.",
+      "visitorSnapshot": "A monthly email with how many people visited your site."
+    },
+    "bigChangeBiggerNote": "Need something bigger, like a new page or feature? We'll quote it as maintenance first, and you can still use this month's change.",
+    "chargeNote": "Turning it on charges {price} today for this billing period, then {price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.",
+    "tipDropQuestionCheckout": "Your tip goes down to {tip}. Turn on {name}?",
+    "turnOn": "Turn on",
+    "turnOnQuestion": "Turn on {name}?",
+    "tipAmount": "{tip} tip",
+    "cancel": "Cancel",
+    "chargeToday": "We'll charge {amount} today for this billing period.",
+    "chargeUpTo": "We'll charge up to {price} today for this billing period.",
+    "thenMonthly": "Then {price}/month starting {date}.",
+    "thenMonthlyNoDate": "Then {price}/month.",
+    "turnOffQuestion": "Turn off {name}? It stays on until {date}, then it ends.",
+    "turnOffQuestionNoDate": "Turn off {name}? It stays on until the end of this billing period.",
+    "turnOff": "Turn off",
+    "endsBadge": "Ends {date}",
+    "endsBadgeNoDate": "Ends at the end of this billing period",
+    "keep": "Keep it",
+    "doneOn": "{name} is on.",
+    "doneOff": "{name} ends {date}.",
+    "doneOffNoDate": "{name} ends at the end of this billing period.",
+    "doneKeep": "{name} stays on.",
+    "lockedBySwitch": "You can change add-ons after your switch on {date}.",
+    "lockedBySwitchNoDate": "You can change add-ons after your plan switch.",
+    "lockedByRemoval": "An add-on is set to end. Choose Keep it, or wait until it ends to make other changes.",
+    "legacyNote": "Add-ons aren't available on your plan. To use them, switch to one of the plans above.",
+    "error": "We couldn't change your add-ons right now. Try again, or email support@freeplug-in.dev.",
+    "paymentFailed": "Your card wasn't charged, so {name} is still off. Update your card in Manage billing, then try again.",
+    "refunded": "We couldn't turn on {name}, so we've refunded the charge to your card. It can take 5–10 business days to show.",
+    "refundFailed": "We couldn't turn on {name}, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge.",
+    "turnOffFirst": "Turn off an add-on first",
+    "stayOnLine": "Your add-ons stay on: {names}.",
+    "bigChangeUsage": "Big change: {used} of {total} used this period",
+    "planStripAddons": " + {amount} add-ons",
+    "tipDropNeeded": "{addonName}: Your tip will drop to {tip}.",
+    "chargeAfterCredit": "We'll charge {amount} today, after your account credit.",
+    "creditCovers": "Nothing is charged today. Your account credit covers it.",
+    "tipGoesDownQuestion": "Your tip goes down to {tip} starting {date}. Turn on {name}?",
+    "tipGoesDownQuestionNoDate": "Your tip goes down to {tip} starting with your next bill. Turn on {name}?",
+    "finishing": "Your payment went through. We're finishing turning on {name}. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically.",
+    "pendingEndLine": "{names} {count, plural, one {ends} other {end}} {date}."
+  },
+  "i18n": {
+    "picker": {
+      "label": "Language"
+    },
+    "banner": {
+      "prompt": "Prefer Spanish?",
+      "dismiss": "No thanks"
+    }
+  }
+}

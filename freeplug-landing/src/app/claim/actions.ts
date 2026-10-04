@@ -11,7 +11,8 @@ import {
 import { customerMessage } from '@/lib/outreach/errors'
 import { GENERIC_TRY_AGAIN } from '@/lib/outreach/copy'
 import { resolvePlanStep } from '@/lib/plans/ladder'
-import { STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 
 type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; code?: string; error: string }
 
@@ -40,6 +41,7 @@ export async function uploadCustomerPhotoAction(formData: FormData): Promise<Act
 }
 
 export async function saveClaimPlanAction(plan: unknown): Promise<string | null> {
+  const { STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } = ladderCopy(await currentLocale())
   const user = await signedInUser()
   if (!user) return GENERIC_TRY_AGAIN
   const res = await saveChosenPlan(user.id, plan)

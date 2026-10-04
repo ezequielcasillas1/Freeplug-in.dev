@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardNav } from '@/app/(dashboard)/DashboardNav'
 import { DashboardHeader } from '@/app/(dashboard)/DashboardHeader'
+import { AppTreeDocument } from '@/app/app-document-server'
 
 /** Private pages: keep out of search results. */
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default async function DashboardLayout({
   }
 
   return (
+    <AppTreeDocument>
     <div className="min-h-screen bg-zinc-50">
       <DashboardHeader email={user.email} />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
@@ -32,5 +34,6 @@ export default async function DashboardLayout({
         {children}
       </main>
     </div>
+    </AppTreeDocument>
   )
 }

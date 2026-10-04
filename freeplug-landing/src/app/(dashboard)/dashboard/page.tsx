@@ -4,7 +4,8 @@ import { ensureProfile } from '@/lib/supabase/ensure-profile'
 import type { EvaluationStatus, ProfileRow } from '@/types/supabase'
 import { Button } from '@/components/ui/button'
 import { openBillingPortal } from './billing-actions'
-import { RESUME_BUSY_MESSAGE, RESUME_FAILED_MESSAGE } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 import { getEnhancedDashboardData } from './dashboard-actions'
 import { QuickStats } from './QuickStats'
 import { AccountCard } from './AccountCard'
@@ -49,6 +50,7 @@ function requestStatusLabel(status: string | undefined): string {
 }
 
 export default async function DashboardPage({ searchParams }: Props) {
+  const { RESUME_BUSY_MESSAGE, RESUME_FAILED_MESSAGE } = ladderCopy(await currentLocale())
   const q = await searchParams
   const supabase = await createClient()
   const {

@@ -1,3 +1,5 @@
+import { intlLocale } from '@/i18n/format'
+import type { AppLocale } from '@/i18n/config'
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { isLiveSubscriptionStatus } from './subscription-status'
@@ -26,13 +28,14 @@ export const CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE =
 export const NBSP = '\u00A0'
 
 /**
- * Formats a plan end date as "Month D, YYYY" (UTC, so server and client agree), with no-break spaces
- * between month and day and between day and year ("October\u00A09,\u00A02026"), so a date never wraps
- * across lines (Lina, Oct 4). The ONE place this happens: renewalLineText and every other caller get it.
+ * Formats a plan end date as "Month D, YYYY" / "D de mes de YYYY" (UTC, so server and client agree), with
+ * every space a no-break space ("October\u00A09,\u00A02026"; Spanish "9\u00A0de\u00A0octubre\u00A0de\u00A02026"),
+ * so a date never wraps across lines (Lina, Oct 4). The ONE place this happens: renewalLineText and every
+ * other caller get it.
  */
-export function formatPlanEndDate(date: Date): string {
+export function formatPlanEndDate(date: Date, locale: AppLocale = 'en'): string {
   return date
-    .toLocaleDateString('en-US', {
+    .toLocaleDateString(intlLocale(locale), {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
@@ -45,9 +48,9 @@ export function formatPlanEndDate(date: Date): string {
  * Short date for buttons: "Nov 3", or "Nov 3, 2027" when the year isn't the current one (UTC, like
  * formatPlanEndDate). Lina, round 5b: "Switch to Starter on Nov 3" fits on one line at 375.
  */
-export function formatShortPlanDate(date: Date, now: Date = new Date()): string {
+export function formatShortPlanDate(date: Date, now: Date = new Date(), locale: AppLocale = 'en'): string {
   const sameYear = date.getUTCFullYear() === now.getUTCFullYear()
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     ...(sameYear ? {} : { year: 'numeric' as const }),

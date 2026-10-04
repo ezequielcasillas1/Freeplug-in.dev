@@ -1,3 +1,5 @@
+import { intlLocale } from '@/i18n/format'
+import type { AppLocale } from '@/i18n/config'
 import type Stripe from 'stripe'
 
 /**
@@ -70,10 +72,11 @@ export function subscriptionPeriodStart(sub: Stripe.Subscription): Date | null {
  */
 export function formatBillingDate(
   date: Date | null | undefined,
-  fallback: string = BILLING_DATE_FALLBACK
+  fallback: string = BILLING_DATE_FALLBACK,
+  locale: AppLocale = 'en'
 ): string {
   if (!date || Number.isNaN(date.getTime())) return fallback
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

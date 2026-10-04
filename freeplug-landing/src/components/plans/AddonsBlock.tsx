@@ -7,45 +7,15 @@ import { cn } from '@/lib/utils/cn'
 import { ADDONS, COMING_SOON_ADDONS, entitlementsFor, type AddonDef, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
 import { ADDON_MIN_CHARGE_CENTS } from '@/lib/plans/addons'
 import type { AddonPreviewResponse, ChangeAddonResponse } from '@/app/(dashboard)/dashboard/billing-actions'
-import {
-  ADDON_CANCEL,
-  ADDON_ERROR,
-  ADDON_KEEP,
-  ADDON_NAMES,
-  ADDON_TURN_OFF,
-  ADDON_TURN_ON,
-  ADDONS_HEADING,
-  ADDONS_LEGACY_NOTE,
-  ADDONS_LOCKED_BY_REMOVAL,
-  ADDONS_STARTER_CAP_NOTE,
-  BIG_CHANGE_BIGGER_NOTE,
-  COMING_SOON_LABEL,
-  UPGRADE_CALCULATING,
-  ADDON_CREDIT_COVERS,
-  addonChargeAfterCreditLine,
-  addonChargeNote,
-  addonAddedToNextBill,
-  addonCarriedBreakdown,
-  addonChargeNowLine,
-  addonTodayTotal,
-  addonChargeUpToLine,
-  addonEndsLine,
-  addonOffQuestion,
-  addonPerkLine,
-  addonPriceLine,
-  addonsLockedBySwitch,
-  addonThenLine,
-  addonTipDropQuestion,
-  addonTipGoesDownQuestion,
-  addonTurnOnQuestion,
-} from '@/lib/plans/ladder-copy'
+import { ladderCopy, type LadderCopy } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 
 /** [Sable 9:05] What turning it on charges today, from the server's Stripe preview (credit applied). */
-export function addonChargeTodayLine(amountDueCents: number, fullCents: number): string {
-  if (amountDueCents <= 0) return ADDON_CREDIT_COVERS
+export function addonChargeTodayLine(amountDueCents: number, fullCents: number, copy: LadderCopy = ladderCopy()): string {
+  if (amountDueCents <= 0) return copy.ADDON_CREDIT_COVERS
   // Aria 9:27: under Stripe's $0.50 minimum it isn't charged today; it goes on the next bill.
-  if (amountDueCents < ADDON_MIN_CHARGE_CENTS) return addonAddedToNextBill(amountDueCents)
-  return amountDueCents < fullCents ? addonChargeAfterCreditLine(amountDueCents) : addonChargeNowLine(amountDueCents)
+  if (amountDueCents < ADDON_MIN_CHARGE_CENTS) return copy.addonAddedToNextBill(amountDueCents)
+  return amountDueCents < fullCents ? copy.addonChargeAfterCreditLine(amountDueCents) : copy.addonChargeNowLine(amountDueCents)
 }
 
 /**
@@ -53,20 +23,23 @@ export function addonChargeTodayLine(amountDueCents: number, fullCents: number):
  * charge = bold "{total} today" + gray "{price} + {carried} left from your last change" (Lina/Sable), then
  * the monthly line. Nothing carried = the approved lines, unchanged.
  */
-export function addonOnConfirmLines(r: { amountDueCents: number; fullCents: number; carriedCents?: number; nextAmountCents: number; nextDate: string | null }): {
+export function addonOnConfirmLines(
+  r: { amountDueCents: number; fullCents: number; carriedCents?: number; nextAmountCents: number; nextDate: string | null },
+  copy: LadderCopy = ladderCopy()
+): {
   lines: string[]
   today?: { totalCents: number; breakdown: string }
 } {
   const carried = r.carriedCents ?? 0
   if (carried > 0 && r.amountDueCents >= ADDON_MIN_CHARGE_CENTS) {
     return {
-      today: { totalCents: r.amountDueCents, breakdown: addonCarriedBreakdown(r.amountDueCents - carried, carried) },
-      lines: [addonThenLine(r.nextAmountCents, r.nextDate)],
+      today: { totalCents: r.amountDueCents, breakdown: copy.addonCarriedBreakdown(r.amountDueCents - carried, carried) },
+      lines: [copy.addonThenLine(r.nextAmountCents, r.nextDate)],
     }
   }
-  return { lines: [addonChargeTodayLine(r.amountDueCents, r.fullCents), addonThenLine(r.nextAmountCents, r.nextDate)] }
+  return { lines: [addonChargeTodayLine(r.amountDueCents, r.fullCents, copy), copy.addonThenLine(r.nextAmountCents, r.nextDate)] }
 }
-const todayLines = (p: { today?: { totalCents: number; breakdown: string } }) => (p.today ? [addonTodayTotal(p.today.totalCents), p.today.breakdown] : [])
+const todayLines = (p: { today?: { totalCents: number; breakdown: string } }, copy: LadderCopy) => (p.today ? [copy.addonTodayTotal(p.today.totalCents), p.today.breakdown] : [])
 
 /** New checkout: the picks live in the card's state; the server re-checks every one (cap, tip max). */
 type CheckoutProps = {
@@ -141,6 +114,8 @@ const OFF_CARD = 'border-gray-200 bg-white'
  * change with the server's numbers (full price now; removal at period end).
  */
 export function AddonsBlock(props: Props) {
+  const copy = useLadderCopy()
+  const { ADDON_CANCEL, ADDON_ERROR, ADDON_KEEP, ADDON_NAMES, ADDON_TURN_OFF, ADDON_TURN_ON, ADDONS_HEADING, ADDONS_LEGACY_NOTE, ADDONS_LOCKED_BY_REMOVAL, ADDONS_STARTER_CAP_NOTE, BIG_CHANGE_BIGGER_NOTE, COMING_SOON_LABEL, UPGRADE_CALCULATING, addonChargeNote, addonChargeUpToLine, addonEndsLine, addonOffQuestion, addonPerkLine, addonPriceLine, addonsLockedBySwitch, addonThenLine, addonTipDropQuestion, addonTipGoesDownQuestion, addonTurnOnQuestion, addonTodayTotal } = copy
   const { stepId, className } = props
   const [pending, setPending] = useState<Pending | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -269,7 +244,7 @@ export function AddonsBlock(props: Props) {
         kind: 'confirm',
         action: 'on',
         question: drop ? addonTipGoesDownQuestion(r.tipDollarsAfter, r.nextDate, name) : addonTurnOnQuestion(name),
-        ...addonOnConfirmLines(r),
+        ...addonOnConfirmLines(r, copy),
         button: ADDON_TURN_ON,
         prorationDate: r.prorationDate,
         nextDate: r.nextDate,
@@ -511,7 +486,7 @@ export function AddonsBlock(props: Props) {
         </p>
       ) : null}
       <p role="status" aria-live="polite" className="sr-only" data-testid="addons-live">
-        {pending?.kind === 'loading' ? UPGRADE_CALCULATING : pending ? [pending.question, ...todayLines(pending), ...pending.lines].join(' ') : (notice ?? '')}
+        {pending?.kind === 'loading' ? UPGRADE_CALCULATING : pending ? [pending.question, ...todayLines(pending, copy), ...pending.lines].join(' ') : (notice ?? '')}
       </p>
       <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
         {ADDONS.map((addon) => {
