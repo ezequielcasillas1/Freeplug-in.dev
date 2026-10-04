@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { MessageCircle, Mail, HelpCircle } from 'lucide-react'
 import { SUPPORT_AVAILABILITY_LABEL, SUPPORT_CARD_LINE } from '@/lib/support-hours'
 
@@ -23,7 +24,7 @@ export function SupportCard() {
           </div>
         </a>
 
-        <a
+        <Link
           href="/dashboard/help"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-50 transition-colors group"
         >
@@ -36,7 +37,7 @@ export function SupportCard() {
             </p>
             <p className="text-xs text-gray-500">FAQs and guides</p>
           </div>
-        </a>
+        </Link>
 
         <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
           <div className="rounded-lg bg-green-50 p-2">
