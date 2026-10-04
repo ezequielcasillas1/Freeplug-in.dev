@@ -277,7 +277,8 @@ export function AddonsBlock(props: Props) {
             {BIG_CHANGE_BIGGER_NOTE}
           </span>
         ) : null}
-        {addon.id !== 'visitor_snapshot' ? (
+        {/* Sable (Oct 4): the charge note is for an add-on turned on on a live plan, not at checkout. */}
+        {props.mode === 'live' && addon.id !== 'visitor_snapshot' ? (
           <span className="mt-1 block text-xs text-gray-500" data-testid="addon-charge-note">
             {addonChargeNote(addon.monthlyCents)}
           </span>

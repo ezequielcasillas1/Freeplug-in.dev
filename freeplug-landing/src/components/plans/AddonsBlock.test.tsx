@@ -5,7 +5,7 @@ vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPorta
 
 import { HostingCheckoutCard } from './HostingCheckoutCard'
 import { AddonsBlock } from './AddonsBlock'
-import type { AddonId, PlanStepId } from '@/lib/plans/ladder'
+import { ADDONS, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
 import type { AddonPreviewResponse, ChangeAddonResponse, PlanPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 import { addonChargeNote, addonPerkLine, BIG_CHANGE_BIGGER_NOTE, TIP_SLIDER_LABEL } from '@/lib/plans/ladder-copy'
 
@@ -50,12 +50,11 @@ describe('add-ons block, new checkout (Lina approved + Aria updates, Oct 4)', ()
     expect(screen.queryByTestId('addons-cap-note')).toBeNull()
   })
 
-  it("Sable's lines: perk (plain on Starter/Priority, 'one more' on Fast lane), Big change gray line, charge note with ADDONS prices", () => {
+  it("Sable's lines: perk (plain on Starter/Priority, 'one more' on Fast lane), Big change gray line; no charge note at checkout", () => {
     const { container } = render(<HostingCheckoutCard />)
     expect(sw('small_edit')).toHaveTextContent(addonPerkLine('small_edit'))
     expect(sw('big_change')).toHaveTextContent(BIG_CHANGE_BIGGER_NOTE)
-    expect(sw('small_edit')).toHaveTextContent(addonChargeNote(500))
-    expect(sw('big_change')).toHaveTextContent('Turning it on charges $5.75 now for this billing period, then $5.75 each month. If you turn it off, it stays on until the period ends.')
+    expect(screen.queryByTestId('addon-charge-note')).toBeNull()
     pickStep(container, 'priority')
     expect(sw('small_edit')).toHaveTextContent(addonPerkLine('small_edit'))
     pickStep(container, 'fast_lane')
@@ -172,6 +171,21 @@ function live(over: Partial<React.ComponentProps<typeof AddonsBlock> & { mode: '
 }
 
 describe('add-ons block, live plan', () => {
+  it("Sable's charge note: a gray line under the perk line on each live add-on card, prices from ADDONS; none on Coming soon", () => {
+    live()
+    for (const a of ADDONS) {
+      const card = sw(a.id)
+      const perk = within(card).getByTestId('addon-perk')
+      const note = within(card).getByTestId('addon-charge-note')
+      expect(note).toHaveTextContent(addonChargeNote(a.monthlyCents))
+      expect(note.className).toMatch(/text-gray-500/)
+      expect(perk.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    }
+    expect(sw('small_edit')).toHaveTextContent('Turning it on charges $5 now for this billing period, then $5 each month. If you turn it off, it stays on until the period ends.')
+    expect(sw('big_change')).toHaveTextContent('Turning it on charges $5.75 now for this billing period, then $5.75 each month. If you turn it off, it stays on until the period ends.')
+    expect(within(screen.getByTestId('addon-coming-soon')).queryByTestId('addon-charge-note')).toBeNull()
+  })
+
   it('turn on: full price now in the confirm, then the server change with the preview time', async () => {
     const { onChange } = live()
     fireEvent.click(sw('big_change'))
