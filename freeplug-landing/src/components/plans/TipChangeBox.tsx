@@ -14,16 +14,13 @@ import {
   TIP_END_NONE,
   TIP_LOCKED_AMOUNT,
   TIP_LOCKED_NOTE,
-  TIP_NEXT_BILL,
-  TIP_NEXT_BILL_NO_DATE,
   renewalCarriedLine,
+  renewalLineText,
   UPGRADE_CALCULATING,
   UPGRADE_CANCEL_BUTTON,
   UPGRADE_CONFIRM_BUTTON,
 } from '@/lib/plans/ladder-copy'
 import { TipSlider } from './TipSlider'
-
-const charge = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
 
 type Phase =
   | { phase: 'idle' }
@@ -113,7 +110,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
         setState({ phase: 'idle' })
         return
       }
-      const text = p.nextDate ? TIP_NEXT_BILL(charge(p.nextAmountCents), p.nextDate) : TIP_NEXT_BILL_NO_DATE(charge(p.nextAmountCents))
+      const text = renewalLineText(p.nextAmountCents, p.nextDate)
       const carried = p.carriedCents && p.carriedCents > 0 ? renewalCarriedLine(p.carriedCents) : undefined
       setState({ phase: 'confirm', text, tipDollars: tip, confirmId: p.confirmId, ...(carried ? { carried } : {}) })
     } catch {
