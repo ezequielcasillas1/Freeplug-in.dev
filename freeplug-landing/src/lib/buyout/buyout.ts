@@ -1,3 +1,5 @@
+import { intlLocale } from '@/i18n/format'
+import type { AppLocale } from '@/i18n/config'
 import type { WebsiteAccess } from '@/lib/website-access'
 
 /**
@@ -73,9 +75,9 @@ export function parseBuyoutPriceInput(
 }
 
 /** "$1,200" / "$1,200.50" for a cents value (admin display). */
-export function formatBuyoutPrice(cents: number): string {
+export function formatBuyoutPrice(cents: number, locale: AppLocale = 'en'): string {
   const whole = cents % 100 === 0
-  return `$${(cents / 100).toLocaleString('en-US', {
+  return `$${(cents / 100).toLocaleString(intlLocale(locale), {
     minimumFractionDigits: whole ? 0 : 2,
     maximumFractionDigits: 2,
   })}`

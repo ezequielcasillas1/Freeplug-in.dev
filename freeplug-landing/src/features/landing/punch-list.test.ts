@@ -6,10 +6,13 @@ import { describe, expect, it } from 'vitest'
 const ROOT = join(__dirname, '..', '..', '..')
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8')
 const COMPONENTS = 'src/features/landing/components'
+/** Spanish build (card C1): public copy lives in messages/en.json, the English lock. */
+const EN = JSON.parse(read('messages/en.json'))
+const enValue = (key: string): string => key.split('.').reduce((o, k) => o?.[k], EN) as unknown as string
 
-/** ids rendered on the home page: every landing component that src/app/page.tsx renders. */
+/** ids rendered on the home page: every landing component that src/app/[locale]/page.tsx renders. */
 function homeIds(): Set<string> {
-  const page = read('src/app/page.tsx')
+  const page = read('src/app/[locale]/page.tsx')
   const rendered = [...page.matchAll(/<([A-Z][A-Za-z]+)[\s/>]/g)].map((m) => m[1])
   const ids = new Set<string>()
   for (const name of rendered) {
@@ -42,7 +45,7 @@ describe('jump links (G6, G7, G8, H3)', () => {
   })
 
   it('no bare "#..." hrefs on non-home pages (e.g. /faq)', () => {
-    expect(read('src/app/faq/page.tsx')).not.toMatch(/href=["'{`]+#/)
+    expect(read('src/app/[locale]/faq/page.tsx')).not.toMatch(/href=["'{`]+#/)
   })
 })
 
@@ -54,22 +57,30 @@ describe('reviews section (R2, R3)', () => {
     expect(src).not.toMatch(/placeholderReviews/)
   })
   it('keeps the honest "Real reviews coming soon." line and heading', () => {
-    expect(src).toContain('Real reviews coming soon.')
+    expect(enValue('public.landing.reviews.realReviewsComingSoonFreeplug')).toContain('Real reviews coming soon.')
+    expect(src).toContain("t.rich('realReviewsComingSoonFreeplug'")
     expect(src).toContain('id="reviews"')
   })
 })
 
 describe('titles (G2)', () => {
+  // Public pages moved under [locale] and read their titles from en.json (per-locale metadata).
   it.each([
-    ['src/app/page.tsx'],
-    ['src/app/faq/layout.tsx'],
+    ['src/app/[locale]/page.tsx', 'public.meta.homeTitle'],
+    ['src/app/[locale]/faq/layout.tsx', 'public.meta.faqTitle'],
+    ['src/app/[locale]/signup/page.tsx', 'auth.signup.metaTitle'],
+    ['src/app/[locale]/request-website/page.tsx', 'public.meta.requestWebsiteTitle'],
+    ['src/app/not-found.tsx', 'public.notFound.metaTitle'],
+  ])('%s sets its own "… | Freeplug" title from en.json (%s)', (rel, key) => {
+    expect(enValue(key)).toMatch(/^[^|]+ \| Freeplug$/)
+    const leaf = key.split('.').pop()!
+    expect(read(rel)).toMatch(new RegExp(`'${leaf}'|${key.replace(/\./g, '\\.')}`))
+  })
+  it.each([
     ['src/app/(auth)/login/page.tsx'],
-    ['src/app/(auth)/signup/page.tsx'],
     ['src/app/(auth)/forgot-password/page.tsx'],
     ['src/app/(auth)/reset-password/page.tsx'],
-    ['src/app/request-website/page.tsx'],
     ['src/app/(dashboard)/dashboard/request-website/page.tsx'],
-    ['src/app/not-found.tsx'],
   ])('%s sets its own "… | Freeplug" title', (rel) => {
     expect(read(rel)).toMatch(/title[:=]?\s*'[^']+ \| Freeplug'|const title = '[^']+ \| Freeplug'/)
   })
@@ -97,10 +108,14 @@ describe('favicon and starter assets (assets notes)', () => {
 })
 
 describe('404 page (G16)', () => {
-  const src = read('src/app/not-found.tsx')
+  // Spanish build: one NotFoundView for / and /es (copy in en.json public.notFound).
+  const src = read('src/app/NotFoundView.tsx')
   it('has the neutral heading and a link home', () => {
-    expect(src).toContain("'Page not found'")
-    expect(src).toContain("'Go to the homepage'")
-    expect(src).toMatch(/<Link\s+href="\/"/)
+    expect(enValue('public.notFound.heading')).toBe('Page not found')
+    expect(enValue('public.notFound.link')).toBe('Go to the homepage')
+    expect(src).toContain("t('heading')")
+    expect(src).toContain("localizedPath('/', locale)")
+    expect(src).toMatch(/<Link\s+href=\{homeHref\}/)
+    expect(read('src/app/not-found.tsx')).toContain("locale=\"en\"")
   })
 })

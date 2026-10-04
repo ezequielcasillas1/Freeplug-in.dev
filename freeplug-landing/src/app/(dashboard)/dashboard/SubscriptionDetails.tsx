@@ -3,7 +3,7 @@ import { CreditCard, Calendar, ArrowRight } from 'lucide-react'
 import type { SubscriptionDetail } from './dashboard-actions'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
-import { addonsPendingEndLine, bigChangeLine } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import {
   CHANGE_PLAN_LINK,
   INCLUDED_EDIT_LINE,
@@ -51,6 +51,7 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 }
 
 export function SubscriptionDetails({ subscriptions, websiteAccess = null, outreach = null }: Props) {
+  const { addonsPendingEndLine, bigChangeLine } = useLadderCopy()
   const activeSubscriptions = subscriptions.filter(
     (s) => s.status === 'active' || s.status === 'trialing'
   )

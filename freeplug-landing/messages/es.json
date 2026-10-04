@@ -1,0 +1,1262 @@
+{
+  "auth": {
+    "messages": {
+      "subject": {
+        "signFreeplug": "Cómo iniciar sesión en Freeplug"
+      },
+      "googleDisabledMessage": "El inicio de sesión con Google no está configurado en este servidor. Usa tu correo y contraseña.",
+      "linkExpiredMessage": "Este enlace venció. Pide uno nuevo.",
+      "resetNeutralMessage": "Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña."
+    },
+    "password": {
+      "forgotMetaTitle": "Restablece tu contraseña | Freeplug",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "enterEmailUseSignWell": "Escribe el correo con el que inicias sesión y te enviaremos un enlace para crear una contraseña nueva.",
+      "securityChangingPasswordNeedsFresh": "Por tu seguridad, para cambiar tu contraseña necesitas un enlace nuevo. Escribe tu correo y te enviaremos uno.",
+      "email": "Correo",
+      "sendResetLink": "Enviar enlace",
+      "rememberedBackLog": "¿Ya la recordaste? <a>Volver a iniciar sesión</a>",
+      "linkExpiredMetaTitle": "Enlace vencido | Freeplug",
+      "label": {
+        "requestNewResetLink": "Pedir un enlace nuevo"
+      },
+      "backToLogin": "Volver a iniciar sesión",
+      "linkExpired": "Enlace vencido",
+      "resetMetaTitle": "Crea una contraseña nueva | Freeplug",
+      "resetLinkExpired": "El enlace venció",
+      "passwordResetLinkInvalidHas": "Este enlace para restablecer la contraseña no es válido, ya se usó o ya venció.",
+      "setNewPassword": "Crea una contraseña nueva",
+      "chooseNewPasswordFor": "Elige una contraseña nueva para {email}.",
+      "yourAccountFallback": "tu cuenta",
+      "newPassword": "Contraseña nueva",
+      "leastCharacters": "Mínimo {min} caracteres.",
+      "confirmNewPassword": "Confirma la contraseña nueva",
+      "saveNewPassword": "Guardar contraseña"
+    },
+    "login": {
+      "metaTitle": "Iniciar sesión | Freeplug",
+      "heading": "Iniciar sesión",
+      "subtitle": "Cuenta de Freeplug: acceso a tu hosting y a tu panel.",
+      "continueGoogle": "Continuar con Google",
+      "or": "o",
+      "email": "Correo",
+      "password": "Contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "signIn": "Iniciar sesión",
+      "noAccountCreateOne": "¿No tienes cuenta? <a>Crea una</a>",
+      "backSite": "← Volver al sitio"
+    },
+    "signup": {
+      "metaTitle": "Crea tu cuenta | Freeplug",
+      "metaDescription": "Crea una cuenta gratis en Freeplug para pedir un sitio web para tu negocio local.",
+      "heading": "Crear cuenta",
+      "subtitle": "Regístrate para entrar a tu panel.",
+      "continueGoogle": "Continuar con Google",
+      "or": "o",
+      "businessName": "Nombre del negocio",
+      "email": "Correo",
+      "password": "Contraseña",
+      "confirmPassword": "Confirma la contraseña",
+      "signUp": "Registrarme",
+      "SignUpPage": {
+        "alreadyHaveAccount": "¿Ya tienes cuenta?"
+      },
+      "logIn": "Iniciar sesión",
+      "backSite": "Volver al sitio"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "freeplug": "Freeplug",
+      "signOut": "Cerrar sesión",
+      "label": {
+        "overview": "Resumen",
+        "plans": "Planes",
+        "requestWebsite": "Pedir sitio web",
+        "help": "Ayuda",
+        "cancel": "Cancelar"
+      },
+      "ariaLabel": {
+        "dashboard": "Panel"
+      }
+    },
+    "home": {
+      "account": "Cuenta",
+      "activeSubscriptions": "Suscripciones activas",
+      "label": {
+        "live": "En línea",
+        "pending": "Pendiente",
+        "offline": "Fuera de línea",
+        "notStarted": "Sin empezar"
+      },
+      "totalPaid": "Total pagado",
+      "activePlans": "Planes activos",
+      "customerSince": "Cliente desde",
+      "today": "Hoy",
+      "daysShort": "{days} d",
+      "website": "Sitio web",
+      "justNow": "Justo ahora",
+      "minutesAgo": "Hace {minutes} min",
+      "hoursAgo": "Hace {hours} h",
+      "daysAgo": "Hace {days} d",
+      "recentActivity": "Actividad reciente",
+      "couldntLoadActivity": "No pudimos cargar la actividad",
+      "refreshPageTryAgain": "Recarga la página para intentarlo de nuevo.",
+      "noRecentActivityDisplay": "No hay actividad reciente.",
+      "showing5Activities": "Mostrando 5 de {total} actividades",
+      "noActiveSubscriptions": "No tienes suscripciones activas.",
+      "viewAvailablePlans": "Ver planes disponibles",
+      "canceling": "Por cancelarse",
+      "ends": "Termina",
+      "renews": "Se renueva",
+      "cancelOptions": "Opciones de cancelación",
+      "needHelp": "¿Necesitas ayuda?",
+      "emailSupport": "Escríbenos por correo",
+      "supportFreeplugDev": "support@freeplug-in.dev",
+      "helpCenter": "Centro de ayuda",
+      "faqsGuides": "Preguntas frecuentes y guías",
+      "requestStatusLabel": {
+        "submitted": "Enviada",
+        "inReview": "En revisión",
+        "closed": "Cerrada"
+      },
+      "businessName": {
+        "yourRequest": "Tu solicitud"
+      },
+      "dashboard": "Panel",
+      "welcomeBackHereOverviewAccount": "¡Qué gusto verte! Este es el resumen de tu cuenta.",
+      "passwordHasBeenUpdatedYoure": "Tu contraseña se actualizó. Ya iniciaste sesión.",
+      "thanksRequestWasSubmittedFollow": "Gracias, recibimos tu solicitud. Te contactaremos por correo o por teléfono.",
+      "checkoutCompletedPaymentTotalsMay": "El pago se completó. Los totales pueden tardar un poco en aparecer aquí mientras se registra el pago.",
+      "statusLine": "Estado: {status}",
+      "requestClosedStartNewRequest": "Esta solicitud está cerrada. Puedes empezar una nueva cuando quieras.",
+      "noWebsiteRequestYet": "Todavía no tienes una solicitud de sitio web.",
+      "nextStep": "Siguiente paso:",
+      "lastRequestClosedOpenNew": "Tu última solicitud está cerrada. Abre una nueva si quieres que revisemos un proyecto nuevo o actualizado.",
+      "tellUsAboutBusinessLink": "Cuéntanos sobre tu negocio y conecta tu perfil de Google Business.",
+      "updateRequestDetailsWhileStill": "Puedes actualizar los datos de tu solicitud mientras siga como enviada.",
+      "useRequestFormWhenReady": "Usa el formulario de solicitud cuando quieras que revisemos tu negocio.",
+      "viewUpdate": "Ver o actualizar →",
+      "newRequest": "Nueva solicitud →",
+      "startRequest": "Empezar una solicitud →",
+      "viewPlansHosting": "Ver planes y hosting →",
+      "manageBilling": "Administrar facturación",
+      "payment": {
+        "amountOnDate": "Pago de {amount} el {date}",
+        "amount": "Pago de {amount}",
+        "onDate": "Pago el {date}",
+        "plain": "Pago"
+      },
+      "alertSubjectPlan": "Tu plan {planName}",
+      "alertSubjectGrandfathered": "Tu {name}",
+      "alertEndingNoDate": "{subject} terminará al final del periodo de facturación actual. Reanúdalo para mantener tu sitio web en línea.",
+      "alertEndingDays": "{subject} terminará en {days, plural, one {# día} other {# días}}. Reanúdalo para mantener tu sitio web en línea."
+    },
+    "activity": {
+      "title": {
+        "paymentReceived": "Pago recibido",
+        "requestSubmitted": "Solicitud enviada",
+        "requestReview": "Solicitud en revisión",
+        "requestClosed": "Solicitud cerrada",
+        "subscriptionStarted": "Suscripción iniciada",
+        "upcomingBilling": "Próximo cobro",
+        "subscriptionEnding": "Suscripción por terminar",
+        "getStarted": "Empieza aquí"
+      },
+      "description": {
+        "websiteRequest": "Solicitud de sitio web"
+      },
+      "upcomingBillingMessage": "Tu próximo pago de {amount} vence en {days, plural, one {# día} other {# días}}.",
+      "actionLabel": {
+        "resumePlan": "Reanudar plan",
+        "requestWebsite": "Pedir un sitio web"
+      },
+      "message": {
+        "submitWebsiteRequestBegin": "Envía una solicitud de sitio web para empezar con Freeplug."
+      }
+    },
+    "meta": {
+      "domainTitle": "Configurar mi dominio | Freeplug",
+      "photosTitle": "Subir fotos | Freeplug",
+      "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
+      "websiteTitle": "Tu sitio web | Freeplug",
+      "dashboardTitle": "Panel | Freeplug"
+    },
+    "request": {
+      "CloseOpenRequestButton": {
+        "noLongerWantUs": "Si ya no quieres que sigamos con esta solicitud, puedes cerrarla aquí. La daremos por terminada de tu parte.",
+        "closeRequestBeforeFinish": "Puedes cerrar esta solicitud antes de que terminemos la revisión si cambiaron tus planes. Puedes enviar una nueva más adelante.",
+        "closing": "Cerrando…",
+        "closeRequest": "Cerrar mi solicitud"
+      },
+      "submitLabel": {
+        "saveChanges": "Guardar cambios",
+        "submitRequest": "Enviar solicitud"
+      },
+      "notesLabel": {
+        "describeMaintenanceChangesNeeded": "Describe el mantenimiento o los cambios que necesitas *",
+        "tellUsAboutBusiness": "Cuéntanos sobre tu negocio"
+      },
+      "notesHint": "Incluye lo que hay que cambiar (por ejemplo, horario, fotos o rehacer una sección). Lo revisaremos y te daremos una cotización antes de cobrarte.",
+      "maintenancePricingFollowsQuickReview": "El precio del mantenimiento se define después de una revisión rápida: empieza en $50 y llega hasta $100. Verás el precio exacto antes de pagar.",
+      "businessName": "Nombre del negocio *",
+      "googleBusinessProfileUrl": "URL de tu perfil de Google Business",
+      "phone": "Teléfono",
+      "sending": "Enviando…",
+      "updateRequest": "Actualiza tu solicitud",
+      "changeAnythingBelowSaveWell": "Cambia lo que quieras y guarda. Usaremos la versión más reciente cuando la revisemos.",
+      "requestBeingReviewed": "Estamos revisando tu solicitud",
+      "wereWorkingFromDetailsSent": "Estamos trabajando con los datos que nos enviaste, así que por ahora este formulario está bloqueado. Si algo cambió, escribe a <a>support@freeplug-in.dev</a> y lo actualizamos por ti.",
+      "requestWebsite": "Pedir un sitio web",
+      "shareLocalBusinessDetailsEvaluate": "Compártenos los datos de tu negocio local. Revisamos cada solicitud en persona, por correo o por teléfono. Después de revisar tu presencia en Google Business y el alcance del proyecto, te contactaremos con los siguientes pasos.",
+      "haveOpenRequest": "Tienes una solicitud abierta",
+      "backDashboard": "← Volver al panel"
+    },
+    "access": {
+      "accessEndingMessage": "Tu hosting está cancelado. Tu sitio web sigue en línea hasta el {date} y después se desconecta. Reanuda tu plan antes de esa fecha para mantenerlo en línea.",
+      "accessOfflineMessage": "Tu sitio web está fuera de línea porque se canceló tu hosting. Vuelve a contratar el hosting para recuperarlo.",
+      "restartHostingLabel": "Reactivar hosting",
+      "resumePlanLabel": "Reanudar plan"
+    }
+  },
+  "errors": {
+    "buyout": {
+      "error": {
+        "mustSigned": "Tienes que iniciar sesión.",
+        "somethingWentWrongSide": "Algo falló de nuestro lado. Inténtalo más tarde.",
+        "requestNotesFullEmail": "Las notas de tu solicitud ya están llenas. Escribe a support@freeplug-in.dev para pedir una cotización de compra."
+      }
+    },
+    "request": {
+      "business_name": {
+        "businessNameRequired": "El nombre del negocio es obligatorio"
+      },
+      "message": {
+        "enterValidUrlHttps": "Escribe una URL válida (https://…)"
+      },
+      "error": {
+        "requestAlreadyBeingReviewed": "Ya estamos revisando tu solicitud. Te contactaremos por correo o por teléfono.",
+        "alreadyHaveRequestProgress": "Ya tienes una solicitud en curso. Te contactaremos pronto.",
+        "serverConfigurationIncompleteMissing": "La configuración del servidor está incompleta (falta el rol de servicio). Tu solicitud se guardó, pero no se pudo actualizar el estado del perfil.",
+        "mustSigned": "Tienes que iniciar sesión.",
+        "invalidInput": "Datos no válidos.",
+        "startWebsiteRequestFirst": "Primero empieza una solicitud de sitio web y luego podrás pedir cambios aquí.",
+        "requestNotesFullEmail": "Las notas de tu solicitud ya están llenas. Escribe a support@freeplug-in.dev con este cambio.",
+        "couldNotVerifyBilling": "No pudimos verificar el estado de tu facturación. Inténtalo más tarde.",
+        "serverConfigurationIncompleteTry": "La configuración del servidor está incompleta. Inténtalo más tarde.",
+        "couldNotCloseRequest": "No pudimos cerrar tu solicitud. Inténtalo más tarde."
+      },
+      "page": {
+        "tellUsWhichPage": "Dinos en qué página está."
+      },
+      "description": {
+        "describeChange": "Describe el cambio."
+      }
+    },
+    "checkout": {
+      "error": {
+        "signStartCheckout": "Inicia sesión para pagar.",
+        "submitWebsiteRequestFrom": "Envía una solicitud de sitio web desde tu panel antes de elegir un plan de hosting.",
+        "addOnsCustomAmounts": "Ya no ofrecemos complementos ni montos personalizados. Elige un plan de hosting.",
+        "invalidHostingPlan": "Plan de hosting no válido.",
+        "invalidAddOns": "Complementos no válidos.",
+        "couldntLoadHostingPrices": "No pudimos cargar los precios del hosting. Inténtalo de nuevo en un momento.",
+        "couldntCheckCurrentPlan": "No pudimos revisar tu plan actual. Inténtalo de nuevo en un momento.",
+        "couldNotStartCheckout": "No se pudo iniciar el pago.",
+        "invalidAmountUse50": "Monto no válido. Usa de $50 a $100 (dólares enteros)."
+      },
+      "clientMsg": "El pago no se pudo completar. Inténtalo más tarde."
+    },
+    "plans": {
+      "networkError": "Error de conexión. Inténtalo de nuevo.",
+      "somethingWentWrong": "Algo salió mal.",
+      "startHostingCheckout": {
+        "noCheckoutUrlReturned": "No recibimos la página de pago. Inténtalo de nuevo."
+      },
+      "closeBlockedActivePlanMessage": "No puedes cerrar esta solicitud mientras tu plan esté activo, porque tu sitio sigue alojado con ese plan. Para cancelar tu plan, elige Opciones de cancelación en tu panel. Cuando el plan termine, podrás cerrar la solicitud aquí.",
+      "closeBlockedPlanEndingMessage": {
+        "planCanceledEndsEnd": "Tu plan está cancelado y termina al final del periodo de facturación actual. Podrás cerrar esta solicitud después de esa fecha.",
+        "planCanceledEndsClose": "Tu plan está cancelado y termina el {date}. Podrás cerrar esta solicitud después de esa fecha."
+      },
+      "alreadyHasPlanMessage": "Ya tienes un plan de hosting activo. Usa Administrar facturación para cambiarlo."
+    },
+    "email": {
+      "sendFailed": "No pudimos enviar ese correo en este momento. Inténtalo de nuevo en unos minutos. Si sigue sin funcionar, escribe a support@freeplug-in.dev."
+    }
+  },
+  "cancel": {
+    "managePlan": "Administra tu plan",
+    "reviewCurrentServicesUnderstandGet": "Revisa tus servicios actuales, lo que incluye Freeplug y administra tus suscripciones.",
+    "activeServices": "Tus servicios activos",
+    "active": "Activo",
+    "nextBillingDate": "Próxima fecha de cobro: {date}",
+    "canceledScheduledCancel": "Cancelados o por cancelarse",
+    "canceled": "Cancelado",
+    "canceling": "Por cancelarse",
+    "accessUntil": "Acceso hasta: {date}",
+    "canceledOn": "Cancelado el: {date}",
+    "noActiveSubscriptions": "No tienes suscripciones activas",
+    "dontHaveAnyActiveHosting": "No tienes ningún plan activo de hosting ni de mantenimiento.",
+    "startWebsiteRequestThenChoose": "Empieza con una solicitud de sitio web y luego elige el plan de hosting que más te convenga.",
+    "viewAvailablePlans": "Ver planes disponibles →",
+    "planIncludes": "Lo que incluye tu plan",
+    "websiteHosting": "Hosting del sitio web",
+    "keepsWebsiteOnlineOwnWeb": "Mantiene tu sitio web en línea en tu propia dirección web.",
+    "secureConnectionSsl": "Conexión segura (SSL)",
+    "websiteLoadsOverSecureHttps": "Tu sitio web carga con una conexión segura HTTPS.",
+    "questionsAboutSite": "Preguntas sobre tu sitio",
+    "askUsFromDashboardTeam": "Pregúntanos desde tu panel. Nuestro equipo está disponible lun–mié de 1 a 2 p. m. y jue–vie de 1 a 3 p. m. (hora del Centro).",
+    "happensCancel": "Qué pasa si cancelas",
+    "websiteGoesOfflineEndPaid": "Tu sitio web se desconecta al final del periodo que pagaste.",
+    "searchEnginesMayDropWebsite": "Los buscadores pueden dejar de mostrar tu sitio si pasa mucho tiempo fuera de línea.",
+    "whileItsOfflineCustomersCant": "Mientras esté fuera de línea, tus clientes no podrán encontrarte ahí.",
+    "websiteSavedBringBackSigning": "Tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting.",
+    "cancelSubscription": "Cancela tu suscripción",
+    "changedMindLater": "¿Cambiaste de opinión?",
+    "cancelComeBackSignUp": "Si cancelas, puedes volver. Contrata el hosting otra vez y recuperamos tu sitio web.",
+    "viewPlans": "Ver planes",
+    "backDashboard": "Volver al panel",
+    "haveQuestionsBeforeMakingDecision": "¿Tienes preguntas antes de decidir? <a>Contáctanos</a>, con gusto te ayudamos.",
+    "cancelServices": "Cancelar servicios",
+    "unableLoadAccountInformationPlease": "No pudimos cargar la información de tu cuenta. Inténtalo de nuevo.",
+    "withPendingNote": "Tienes un cambio a {name} planeado para el {date}. Si cancelas tu plan, también se cancela ese cambio.",
+    "planButton": "Cancelar mi plan al final de este periodo de facturación",
+    "inAppLine": "Si todavía quieres cancelar, usa el botón al final de este recuadro. Tu acceso sigue hasta el final de tu periodo de facturación actual.",
+    "resumeFailedMessage": "No pudimos reanudar tu plan, así que sigue programado para terminar. Inténtalo de nuevo en un momento o contáctanos en {supportEmail} o al {supportPhone} y te ayudamos.",
+    "resumeBusyMessage": "Tu plan ya se está actualizando. Inténtalo de nuevo en un momento.",
+    "failedMessage": "No pudimos cancelar tu plan en este momento, así que nada cambió. Inténtalo de nuevo en un momento o contáctanos en {supportEmail} o al {supportPhone}.",
+    "optionsLink": "Opciones de cancelación",
+    "addonTotalLine": {
+      "withTip": "{plan} + {addons} en complementos + {tip} de propina = {total} al mes",
+      "noTip": "{plan} + {addons} en complementos = {total} al mes"
+    },
+    "accessWarning": "Si cancelas, tu sitio web sigue en línea hasta el {date} y después se desconecta. Puedes recuperarlo si vuelves a contratar el hosting.",
+    "resumeUntilText": "Puedes reanudar tu plan hasta el {date}. Después de esa fecha, tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting.",
+    "resumeHeading": "¿Quieres reanudar?",
+    "offlineHeading": "Recupera tu sitio web",
+    "offlineSavedText": "Tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting."
+  },
+  "help": {
+    "center": {
+      "label": {
+        "guides": "Guías",
+        "contact": "Contacto"
+      },
+      "title": {
+        "gettingStarted": "Primeros pasos",
+        "billingPlans": "Facturación y planes",
+        "technicalSupport": "Soporte técnico",
+        "account": "Cuenta",
+        "gettingFirstWebsite": "Tu primer sitio web",
+        "understandingDashboard": "Cómo usar tu panel",
+        "choosingRightPlan": "Cómo elegir el plan correcto",
+        "preparingBrandAssets": "Prepara el material de tu marca"
+      },
+      "question": {
+        "requestWebsite": "¿Cómo pido un sitio web?",
+        "informationNeedProvide": "¿Qué información tengo que dar?",
+        "longDoesProcessTake": "¿Cuánto tarda el proceso?",
+        "hostingPlanOptions": "¿Qué opciones de plan de hosting hay?",
+        "updatePaymentMethod": "¿Cómo actualizo mi método de pago?",
+        "cancelPlan": "¿Puedo cancelar mi plan?",
+        "thereAnyHiddenFees": "¿Hay cargos ocultos?",
+        "closeRequestCancelPlan": "¿Cómo cierro mi solicitud o cancelo mi plan?",
+        "requestChangesWebsite": "¿Puedo pedir cambios en mi sitio web?",
+        "websiteMobileFriendly": "¿Mi sitio web se ve bien en el celular?",
+        "helpSeoSearchEngine": "¿Ayudan con el SEO (posicionamiento en buscadores)?",
+        "secureWebsite": "¿Qué tan seguro es mi sitio web?",
+        "resetPassword": "¿Cómo restablezco mi contraseña?",
+        "changeEmailAddress": "¿Puedo cambiar mi correo electrónico?",
+        "deleteAccount": "¿Cómo borro mi cuenta?"
+      },
+      "answer": {
+        "goRequestWebsiteDashboard": "Ve a \"Pedir sitio web\" en tu panel. Llena el formulario con los datos de tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud y te contactará sobre los siguientes pasos.",
+        "youllNeedBusinessName": "Necesitas el nombre de tu negocio, una descripción, tus datos de contacto y cualquier material de marca que tengas (logo, colores). Entre más detalles nos des sobre lo que imaginas, mejor podremos cumplir tus expectativas.",
+        "wellGiveTimelineAfter": "Te daremos un tiempo estimado después de revisar tu solicitud. El proceso incluye el primer diseño, tus cambios y el lanzamiento. La mayor parte del tiempo depende de qué tan rápido recibamos tus datos y aprobaciones. Te mantendremos al tanto en cada paso.",
+        "yesCancelAnyTime": "Sí, puedes cancelar cuando quieras. Elige Opciones de cancelación en tu panel. Tu sitio web sigue en línea hasta el final del periodo que pagaste. Si quieres quedarte con tu sitio web, puedes pedir una cotización para comprarlo.",
+        "closeRequestFromRequest": "Puedes cerrar una solicitud desde la página de la solicitud (Panel y luego Ver o actualizar). Si tienes un plan de hosting activo, primero tienes que cancelar el plan, porque tu sitio sigue alojado con ese plan y no queremos cobrarte por una solicitud cerrada. Para cancelar tu plan, elige Opciones de cancelación en tu panel. Tu plan sigue activo hasta el final del periodo de facturación actual. Cuando termine, puedes cerrar la solicitud. Cerrar una solicitud nunca cancela un plan por sí solo.",
+        "yesEverySiteBuild": "Sí. Cada sitio que hacemos funciona en celulares, tabletas y computadoras, y lo revisamos en cada uno antes de lanzarlo.",
+        "everySiteIncludesBasics": "Cada sitio incluye lo básico para que los buscadores lo puedan leer: un título y una descripción para cada página, una estructura limpia y un diseño que se adapta al celular. No podemos prometer ningún lugar en los resultados de búsqueda.",
+        "signPageClickForgot": "En la página para iniciar sesión, haz clic en \"¿Olvidaste tu contraseña?\" y escribe tu correo. Te enviaremos un enlace para crear una contraseña nueva. ¿No te llega después de unos minutos? Revisa tu carpeta de spam o escribe a support@freeplug-in.dev. Si inicias sesión con Google, usa \"Continuar con Google\".",
+        "contactSupportSupportFreeplug": "Escribe a support@freeplug-in.dev para pedir el cambio de correo. Confirmaremos que eres tú, actualizaremos tu cuenta y te avisaremos.",
+        "emailSupportFreeplugDev": "Escribe a support@freeplug-in.dev para pedir que borremos tu cuenta. La borraremos y te avisaremos por correo cuando esté listo. Esto no se puede deshacer."
+      },
+      "description": {
+        "stepStepGuideRequesting": "Guía paso a paso para pedir y lanzar el sitio web de tu negocio",
+        "learnNavigateUseAll": "Aprende a moverte por tu panel y a usar todas sus funciones",
+        "haveReadyBeforeRequesting": "Qué tener listo antes de pedir tu sitio web"
+      },
+      "steps": {
+        "createFreeplugAccount": "Crea tu cuenta de Freeplug",
+        "completeBusinessProfile": "Completa el perfil de tu negocio",
+        "submitWebsiteRequestRequirements": "Envía una solicitud de sitio web con lo que necesitas",
+        "reviewApproveInitialDesign": "Revisa y aprueba el primer diseño",
+        "provideFeedbackDuringDevelopment": "Danos tus comentarios mientras lo construimos",
+        "launchWebsite": "Lanza tu sitio web",
+        "overviewSeeWebsiteStatus": "Resumen: el estado de tu sitio web y acciones rápidas",
+        "requestWebsiteSubmitUpdate": "Pedir sitio web: envía o actualiza tu solicitud de sitio web",
+        "helpAccessFaqsGuides": "Ayuda: preguntas frecuentes, guías y contacto con soporte",
+        "logoFilesPngSvg": "Archivos del logo (de preferencia PNG o SVG)",
+        "brandColorsHexCodes": "Colores de tu marca (códigos hex, si los tienes)",
+        "businessDescriptionTagline": "Descripción del negocio y eslogan",
+        "contactInformation": "Datos de contacto",
+        "photosBusinessProductsTeam": "Fotos de tu negocio, tus productos o tu equipo",
+        "examplesWebsitesLikePick": "Ejemplos de sitios web que te gusten: puedes elegir algunos tú o dejar que los elijamos nosotros. Te recomendamos dejarnos elegir."
+      },
+      "planGuideStep": "{name} ({price}/mes): {blurb}",
+      "helpCenter": "Centro de ayuda",
+      "findAnswersGuidesSupportResources": "Respuestas, guías y recursos de soporte",
+      "questionCount": "{count, plural, one {# pregunta} other {# preguntas}}",
+      "backCategories": "Volver a las categorías",
+      "contactSupport": "Contactar a soporte",
+      "emailSupport": "Escribir a soporte",
+      "supportFreeplugDev": "support@freeplug-in.dev",
+      "supportHours": "Horario de atención",
+      "needUrgentHelp": "¿Necesitas ayuda urgente?",
+      "criticalIssuesAffectingLiveWebsite": "Si hay un problema grave con tu sitio web en línea, pon \"URGENT\" en el asunto de tu correo para que lo veamos rápido en nuestra bandeja.",
+      "sendUrgentRequest": "Enviar solicitud urgente",
+      "planGuideStepComingSoon": "{name} ({price}/mes) (próximamente): {blurb}"
+    },
+    "chat": {
+      "ariaLabel": {
+        "helpChat": "Chat de ayuda"
+      },
+      "back": "Atrás",
+      "next": "Siguiente",
+      "sending": "Enviando…",
+      "requestChange": "Pedir un cambio",
+      "chatGreeting": "¡Hola! Elige una pregunta o cuéntanos qué cambio necesitas.",
+      "question": {
+        "reallyFree": "¿De verdad es gratis?",
+        "whatDoIPay": "¿Qué pago?",
+        "thereAnyHiddenFees": "¿Hay cargos ocultos?",
+        "longSiteTake": "¿Cuánto va a tardar mi sitio?",
+        "updatePaymentMethod": "¿Cómo actualizo mi método de pago?",
+        "cancelPlan": "¿Cómo cancelo mi plan?",
+        "buyWebsite": "¿Puedo comprar mi sitio web?",
+        "resetPassword": "¿Cómo restablezco mi contraseña?",
+        "requestChangesSite": "¿Puedo pedir cambios en mi sitio?"
+      },
+      "answer": {
+        "yesWebsiteDevelopmentFree": "Sí. Hacer el sitio web es gratis. 72 After diseña y construye tu sitio web sin costo. Cuando tu sitio esté en línea, pagas el hosting mensual, que es obligatorio. El mantenimiento o la compra del sitio cuestan aparte solo si los pides. No hay cargos ocultos ni cobros sorpresa.",
+        "wellGiveTimelineAfter": "Te daremos un tiempo estimado después de revisar tu solicitud. El proceso incluye el primer diseño, tus cambios y el lanzamiento. La mayor parte del tiempo depende de qué tan rápido recibamos tus datos y aprobaciones. Te mantendremos al tanto en cada paso.",
+        "yesCancelAnyTime": "Sí, puedes cancelar cuando quieras. Elige Opciones de cancelación en tu panel. Tu sitio web sigue en línea hasta el final del periodo que pagaste. Si quieres quedarte con tu sitio web, puedes pedir una cotización para comprarlo.",
+        "signPageClickForgot": "En la página para iniciar sesión, haz clic en \"¿Olvidaste tu contraseña?\" y escribe tu correo. Te enviaremos un enlace para crear una contraseña nueva. ¿No te llega después de unos minutos? Revisa tu carpeta de spam o escribe a support@freeplug-in.dev. Si inicias sesión con Google, usa \"Continuar con Google\"."
+      },
+      "changeTypes": {
+        "textPrices": "Textos o precios",
+        "photos": "Fotos",
+        "hoursContactInfo": "Horario o datos de contacto",
+        "somethingElse": "Otra cosa"
+      },
+      "step1": {
+        "wouldLikeChanged": "¿Qué te gustaría cambiar?"
+      },
+      "step2": {
+        "whichPage": "¿En qué página está?"
+      },
+      "step2Placeholder": {
+        "exampleHomeServicesContact": "Por ejemplo: Inicio, Servicios, Contacto"
+      },
+      "step3": {
+        "describeChange": "Describe el cambio."
+      },
+      "step3Placeholder": {
+        "shouldSayShowInstead": "¿Qué debe decir o mostrar en su lugar?"
+      },
+      "step4": {
+        "addPhotoScreenshotOptional": "Agrega una foto o captura de pantalla (opcional)."
+      },
+      "review": {
+        "heresRequestWellReview": "Esta es tu solicitud. La revisaremos y te diremos el precio antes de empezar cualquier trabajo con costo."
+      },
+      "send": {
+        "sendRequest": "Enviar solicitud"
+      },
+      "edit": {
+        "edit": "Editar"
+      },
+      "changeRequestSentMessage": {
+        "gotWellEmailAfter": "Listo. Te escribiremos a {email} después de revisar tu solicitud."
+      },
+      "chatNotFound": "¿No encontraste tu respuesta? Escribe a support@freeplug-in.dev. Nuestro equipo está disponible {supportHours}.",
+      "starterSmallEditAddon": "Los cambios pequeños cuestan {price} con el complemento {addonName}. Actívalo y nos encargamos este mes. Puedes desactivarlo cuando quieras.",
+      "starterSmallEditAiBuilder": "O haz el cambio tú mismo con el creador de sitios con IA, sin costo extra.",
+      "goToPlans": "Ir a Planes"
+    },
+    "answers": {
+      "whatDoIPay": "El hosting es obligatorio. Mantiene tu sitio web en línea. Los planes cuestan {priceList} al mes, y cada plan incluye todo lo de los anteriores. El mantenimiento empieza en $50 y llega hasta $100. Verás el precio exacto antes de pagar. Hacer el sitio web es gratis.",
+      "hostingPlans": "Los planes de hosting cuestan {priceList} al mes. Cada plan incluye todo lo de los anteriores. Ve a Planes en tu panel para ver qué agrega cada plan. ¿Ya tienes un complemento? Lo conservas al mismo precio.",
+      "requestChanges": "Sí. {name} ({price}) y los planes más altos incluyen un cambio pequeño en cada periodo de facturación. Para otros cambios, pide mantenimiento desde tu panel. El mantenimiento empieza en $50 y llega hasta $100. Verás el precio exacto antes de pagar.",
+      "hiddenFees": "No. Pagas el hosting mensual, que es obligatorio. El mantenimiento único o la compra del sitio cuestan aparte solo si los pides. Hacer tu sitio web es gratis y verás el precio antes de pagar.",
+      "security": "Cada sitio incluye un certificado SSL, así que carga con una conexión https segura.",
+      "plansGuideTitleLine": "Planes: elige un plan de hosting o pide mantenimiento",
+      "plansGuideDescription": "Compara los planes de hosting para tu negocio",
+      "chatIncludedEditNote": "Tu plan incluye un cambio pequeño en cada periodo de facturación.",
+      "paymentMethod": "Ve a tu panel y abre Administrar facturación. Después de tu primer pago, ahí puedes administrar tu facturación y tu método de pago. Si tienes un cambio de plan planeado, Administrar facturación abre la sección Facturación en tu página de Planes, donde puedes actualizar tu tarjeta y ver tus facturas."
+    },
+    "priority": {
+      "priorityHelpQuestion": "¿Qué es Priority?",
+      "priorityHelpAnswer": "Priority viene con el plan Priority ($55 al mes) y con todos los planes superiores. Cuando nos pides un cambio, tu solicitud va antes que las de planes más bajos. En un plan anterior, tienes Priority si tu hosting más cualquier complemento suma $55 al mes o más. Una propina opcional no cuenta para Priority."
+    }
+  },
+  "plans": {
+    "page": {
+      "plans": "Planes",
+      "afterSubmitWebsiteRequestChoose": "Después de enviar una solicitud de sitio web, aquí puedes elegir tu hosting mensual. El mantenimiento siempre se cotiza primero: describe el trabajo en el formulario de solicitud.",
+      "submitBusinessDetailsSoReview": "Envía los datos de tu negocio para que revisemos tu sitio y tu presencia en Google Business. Después podrás pagar el hosting.",
+      "requestWebsite": "Pedir un sitio web"
+    },
+    "maintenance": {
+      "stripeLineItem": "Mantenimiento (único)",
+      "maintenancePlanTitle": "Mantenimiento único",
+      "maintenancePlanSummary": "Primero revisamos tu solicitud y luego te damos el precio exacto. Lo verás antes de pagar.",
+      "maintenancePlanBody": {
+        "jobsTakeMoreThan": "Para trabajos que toman más de una hora aproximadamente, como una página nueva o una función nueva.",
+        "maintenanceStarts50Up": "El mantenimiento empieza en $50 y llega hasta $100. Verás el precio exacto antes de pagar."
+      },
+      "maintenanceCtaLabel": "Pedir mantenimiento"
+    },
+    "checkout": {
+      "chooseText": "Continuar",
+      "manageBilling": "Administrar facturación",
+      "signRequestWebsite": "Inicia sesión y pide un sitio web",
+      "submitWebsiteRequestFirst": "Primero envía una solicitud de sitio web",
+      "hostingCheckoutOpensAfterSubmit": "El pago del hosting se habilita después de que envíes una solicitud de sitio web desde tu panel."
+    },
+    "nextBusinessDayTarget": "a más tardar al final del siguiente día hábil (lun–vie, sin contar días festivos)",
+    "stepBlurbs": {
+      "starter": "Tu sitio web, alojado y protegido.",
+      "priority": "Todo lo de Starter. Tus solicitudes de cambio van antes que las de planes más bajos.",
+      "fast_lane": "Todo lo de Priority, más un cambio pequeño hecho por nosotros en cada periodo de facturación.",
+      "leads": "Todo lo de Fast lane, más un reporte mensual y alertas de cotización.",
+      "get_found": "Todo lo de Leads, más el cuidado de tu perfil de Google Business.",
+      "growth": "Todo lo de Get found, más una actualización de temporada y una llamada cada trimestre."
+    },
+    "perkLines": {
+      "priorityQueue": "Cuando nos pides un cambio, vas antes que los planes más bajos.",
+      "includedSmallEdit": "Un cambio pequeño hecho por nosotros en cada periodo de facturación, como nuevo horario, cambiar una foto o un precio. Los cambios que no uses no se acumulan.",
+      "leadsReport": "Un correo mensual con cuántas personas visitaron tu sitio, llenaron tu formulario y tocaron tu botón de llamada.",
+      "quoteAlerts": "Un correo en cuanto alguien pide una cotización.",
+      "gbpManaged": "Mantenemos al día tu perfil de Google Business (horario, fotos) y publicamos en él por ti.",
+      "reviewKit": "Un mensaje listo y un enlace que puedes enviar a tus clientes para pedirles reseñas.",
+      "seasonalRefresh": "Cada temporada actualizamos tu sitio con tus fotos y ofertas nuevas.",
+      "quarterlyCall": "Una llamada de planeación de 15 minutos con nosotros cada trimestre.",
+      "doneForYouEdits": "Dinos qué quieres cambiar y nosotros lo hacemos."
+    },
+    "smallEditsNextBusinessDay": "Cambios pequeños: a más tardar al final del siguiente día hábil (lun–vie, sin contar días festivos).",
+    "starterBaseLines": {
+      "hostingSslSecureHttps": "Hosting y SSL (una conexión https segura)",
+      "emailSupportDuringSupport": "Soporte por correo en el horario de atención"
+    },
+    "ladderHeading": "Elige tu plan de hosting",
+    "ladderSubheading": "Cada plan incluye todo lo de los planes anteriores. Se cobra cada mes a través de Stripe.",
+    "mostPopularLabel": "El más popular",
+    "everythingIn": "Todo lo de {name}, más:",
+    "continueToPayment": "Continuar al pago",
+    "legacyPlanNote": "¿Ya tienes un complemento? Lo conservas al mismo precio. Puedes cambiarte a uno de estos planes en la página de Planes cuando quieras.",
+    "legacyPlanLabel": "Tu plan actual (ya no se vende)",
+    "includedEdits": {
+      "allUsed": "Tus cambios incluidos: ya los usaste todos en este periodo de facturación.",
+      "someLeft": "Tus cambios incluidos: {remaining} de {available} disponibles en este periodo de facturación."
+    },
+    "includedEdit": {
+      "used": "Tu cambio incluido: ya lo usaste en este periodo de facturación.",
+      "available": "Tu cambio incluido: {remaining} disponible en este periodo de facturación."
+    },
+    "aiEditsLine": "Cambios con IA: {count} al mes",
+    "landingPlansIntro": "Elige un plan de hosting mensual. Cada plan incluye todo lo de los planes anteriores. Para el mantenimiento, primero analizamos tu solicitud y luego te cotizamos y te facturamos.",
+    "dashboardPlansIntro": "El hosting se cobra cada mes a través de Stripe. Elige el plan que te convenga; cada uno incluye todo lo de los planes anteriores. El mantenimiento se cotiza después de revisar tu solicitud: describe el trabajo en el formulario de solicitud y te contactaremos con el precio.",
+    "comingSoonLabel": "Próximamente",
+    "stepNotSellableMessage": "{name} todavía no está disponible. Por ahora, elige otro plan.",
+    "change": {
+      "button": "Cambiar a {name}",
+      "current": "Tu plan actual",
+      "help": "Si subes de plan, el cambio empieza de inmediato y solo pagas la diferencia por lo que queda de este periodo de facturación. Si bajas de plan, el cambio empieza en tu próxima fecha de cobro, así que conservas lo que pagaste hasta entonces.",
+      "upgraded": "Te estás cambiando a {name}. Cobramos la diferencia por lo que queda de este periodo de facturación. Tu nuevo plan aparecerá aquí en cuanto Stripe lo confirme, normalmente en menos de un minuto.",
+      "scheduled": "Te cambiarás a {name} el {date}. Conservas tu plan actual hasta entonces.",
+      "unchanged": "Ya tienes este plan. Se canceló cualquier cambio que tuvieras planeado.",
+      "ending": "Tu plan está programado para terminar. Primero elige Reanudar plan y luego cámbialo.",
+      "paymentFailed": "No pudimos cobrar a tu tarjeta, así que tu plan no cambió. Actualiza tu método de pago en Administrar facturación e inténtalo de nuevo.",
+      "paymentFailedPendingLost": "No pudimos cobrar a tu tarjeta, así que tu plan no cambió. También se canceló el cambio que tenías planeado para tu próxima fecha de cobro; elígelo otra vez si todavía lo quieres.",
+      "unavailable": "No pudimos cambiar tu plan en este momento. Inténtalo de nuevo o escribe a support@freeplug-in.dev.",
+      "pendingChangeLine": "Cambias a {name} el {date}. Conservas tu plan actual hasta entonces.",
+      "keepPlanButton": "Mantener {name}",
+      "alreadyHasPlanSwitch": "Ya tienes un plan de hosting activo. Para cambiarlo, elige un plan en la página de Planes y toca Cambiar.",
+      "startsOnBadge": "Empieza el {date}",
+      "changePlanLink": "Cambiar de plan",
+      "pickToSwitch": "Elige otro plan para cambiarte",
+      "buttonNow": "Cambiar a {name} ahora",
+      "buttonOn": "Cambiar a {name} el {date}",
+      "helpUp": "Empieza de inmediato. Hoy solo pagas la diferencia por lo que queda de este periodo de facturación, y tu fecha de cobro sigue igual.",
+      "helpDown": "Empieza en tu próxima fecha de cobro, cuando comienza el precio más bajo. Hoy no se cobra nada y conservas tu plan actual hasta entonces.",
+      "calculating": "Revisando el monto…",
+      "confirmLine": "¿Cambiar a {name} ahora? Te cobraremos {todayAmount} hoy y luego {monthly} al mes a partir del {date}.",
+      "confirmFallback": "¿Cambiar a {name} ahora? Hoy te cobraremos la diferencia por lo que queda de este periodo de facturación.",
+      "confirmButton": "Confirmar",
+      "cancelButton": "Ahora no",
+      "previewExpired": "Ese monto ya no está actualizado. Vuelve a tocar el botón Cambiar para ver el monto actual.",
+      "inProgress": "Tu cambio de plan ya está en proceso. Recarga en un momento para verlo.",
+      "confirmZero": "¿Cambiar a {name} ahora? Hoy no se cobra nada. Luego {monthly} al mes a partir del {date}.",
+      "replacesPending": "Esto reemplaza el cambio que tenías planeado a {pendingName}."
+    },
+    "billing": {
+      "pendingNotice": "Tienes un cambio a {name} planeado para el {date}, así que hasta entonces la facturación se maneja aquí. Abajo puedes actualizar tu tarjeta y ver tus facturas.",
+      "unavailable": "No pudimos abrir la facturación en este momento. Inténtalo de nuevo o escribe a support@freeplug-in.dev.",
+      "heading": "Facturación",
+      "updateCardButton": "Actualizar tarjeta",
+      "cardUpdatedNotice": "Gracias. Si guardaste una tarjeta nueva, la usaremos para tu próximo pago.",
+      "invoicesHeading": "Facturas",
+      "invoicesEmpty": "Todavía no tienes facturas.",
+      "invoiceStatus": {
+        "paid": "Pagada",
+        "open": "Pendiente",
+        "uncollectible": "No pagada"
+      },
+      "viewInvoice": "Ver",
+      "invoicePlanPart": "Plan {amount}"
+    },
+    "currentPlanLine": "Plan actual: {line}",
+    "seeComingSoon": "Planes próximamente ({count})",
+    "chooseStepButton": "Elegir {name}",
+    "grandfatheredHostingOnlyName": "Plan de hosting",
+    "grandfatheredHostingShort": "Hosting",
+    "legacyAddonName": "Complemento {tier}",
+    "totalBreakdown": {
+      "addons": "Complementos {amount}",
+      "tip": "Propina {amount}",
+      "plan": "{plan} {amount}"
+    },
+    "names": {
+      "starter": "Starter",
+      "priority": "Priority",
+      "fastLane": "Fast lane",
+      "leads": "Leads",
+      "getFound": "Get found",
+      "growthPartner": "Growth partner",
+      "basic": "Basic",
+      "plus": "Plus",
+      "pro": "Pro"
+    }
+  },
+  "claim": {
+    "thisPlanFallback": "Este plan",
+    "metaTitle": "Reclama tu sitio web | Freeplug",
+    "stepLine": "Paso {step} de {total} · {stepName}",
+    "stepLineAria": "Paso {step} de {total}",
+    "ariaLabel": {
+      "checked": "Revisado"
+    },
+    "bannerHeading": "Hicimos este sitio web para {businessName}",
+    "bannerBody": "Freeplug encontró tu negocio y 72 After le hizo este sitio sin costo. Es una vista previa privada: solo quien tenga este enlace puede verla.",
+    "underMainButton": "Hacerlo fue gratis. No pagarás nada a menos que elijas un plan de hosting y tu sitio salga en línea.",
+    "label": "Reclamar mi sitio web",
+    "cardLine": "Toca el botón para empezar a reclamarlo. No pagarás nada a menos que elijas un plan de hosting y tu sitio salga en línea.",
+    "staleLine": "Esta página estuvo abierta un buen rato, así que la actualizamos. Toca Reclamar mi sitio web otra vez para continuar.",
+    "neutralHeading": "Abre tu enlace de vista previa en este dispositivo",
+    "neutralBody": "Para continuar, abre el enlace del mensaje que te enviamos, en este celular o computadora.",
+    "neutralHelpLine": "¿No lo encuentras? Llámanos o mándanos un mensaje al {supportPhone}, o escribe a {supportEmail}.",
+    "neutralHelpPhone": "¿No lo encuentras? Te ayudamos.",
+    "confirmFirstLine": "Primero, confirma tu correo. Abre el correo que enviamos a {accountEmail} y toca el enlace.",
+    "resendLabel": "Enviarlo otra vez",
+    "resendSent": "Enviado. Revisa tu bandeja de entrada.",
+    "resendLimited": "Espera unos minutos e inténtalo de nuevo.",
+    "addDetailsLabel": "Agrega tus datos",
+    "requestChangeLabel": "Pedir un cambio",
+    "callTextLabel": "Llámanos o mándanos un mensaje",
+    "emailUsLabel": "Escríbenos",
+    "notNowLabel": "Ahora no",
+    "notNowConfirm": "No hay problema. Puedes volver a este enlace hasta el {expiryDate}.",
+    "expiredHeading": "Este enlace de vista previa venció",
+    "expiredBody": "Para ver tu sitio web, llámanos o mándanos un mensaje al {supportPhone}, o escribe a {supportEmail}.",
+    "openFullScreenLabel": "Ver en pantalla completa",
+    "screenshotNote": "Esta es una imagen de tu sitio web, así que sus botones no funcionan aquí. Ábrela en pantalla completa para probarlos.",
+    "desktopContactText": "Llámanos o mándanos un mensaje: {supportPhone}",
+    "callUsLabel": "Llámanos",
+    "textUsLabel": "Mándanos un mensaje",
+    "callAria": "Llamar al {supportPhone}",
+    "textAria": "Mandar mensaje al {supportPhone}",
+    "emailAria": "Escribir a {supportEmail}",
+    "detailsHeading": "Agrega tus datos",
+    "detailsIntro": "Llenamos lo que encontramos en internet. Revisa cada dato y corrige lo que esté mal. Nada cambia en tu sitio hasta que lo revisemos.",
+    "fieldPhone": "Teléfono del negocio",
+    "fieldAddress": "Dirección del negocio",
+    "fieldAddressHelp": "Déjalo en blanco si tus clientes no van a tu local.",
+    "fieldHours": "Horario",
+    "fieldServiceArea": "Zona de servicio",
+    "fieldServiceAreaHelp": "Escribe las ciudades o zonas que atiendes.",
+    "fieldQuoteEmail": "Correo para solicitudes de cotización",
+    "fieldQuoteEmailHelp": "¿A dónde te enviamos las solicitudes de cotización de tu sitio?",
+    "fieldPhotos": "Fotos",
+    "fieldPhotosHelp": "Las fotos de tu trabajo real ayudan a que los clientes confíen en ti. Puedes enviar hasta {max} fotos de 10 MB cada una (JPG, PNG, WebP o HEIC de iPhone).",
+    "sendDetailsLabel": "Enviar mis datos",
+    "detailsSuccess": "Gracias, recibimos tus datos. Los verás en tu vista previa cuando los agreguemos.",
+    "errorTooLarge": "Esa foto es muy pesada. Sube una de menos de 10 MB.",
+    "serverTooLarge": "Esa foto es muy pesada para subirla. Prueba con una más pequeña o mándala por correo a {supportEmail}.",
+    "serverBadType": "No pudimos usar esta foto. Prueba en JPG o PNG, o mándala por correo a {supportEmail}.",
+    "errorTooManyTries": "Ya enviaste este formulario varias veces. Inténtalo más tarde.",
+    "errorTooManyPhotos": "Puedes enviar hasta {max} fotos. Quita una para agregar otra.",
+    "sourceLine": "De tu {source}",
+    "looksRightLabel": "Está bien",
+    "editLabel": "Editar",
+    "blankFieldHint": "No lo encontramos en internet. Agrégalo, por favor.",
+    "servicesHeading": "Servicios que ofreces",
+    "servicesIntro": "Estos son los servicios del sitio web que hicimos para ti. Deja los que ofreces, quita los que no y agrega los que nos faltaron.",
+    "serviceSourceSite": "En tu nuevo sitio web",
+    "serviceSourceSiteAndThumbtack": "En tu nuevo sitio web y en tu perfil de Thumbtack",
+    "serviceSourceThumbtackOnly": "De tu perfil de Thumbtack",
+    "keepLabel": "Dejar",
+    "removeLabel": "Quitar",
+    "undoLabel": "Deshacer",
+    "addServiceLabel": "Agregar un servicio",
+    "addLabel": "Agregar",
+    "counterText": "{n} de {total} revisados",
+    "step1Heading": "Crea tu cuenta",
+    "step1Body": "Ya llenamos el nombre de tu negocio y tu correo. Revísalos y elige una contraseña.",
+    "step1BodyNameOnly": "Ya llenamos el nombre de tu negocio. Revísalo, agrega tu correo y elige una contraseña.",
+    "step1SignInPrompt": "¿Ya tienes cuenta?",
+    "step1SignInLink": "Iniciar sesión",
+    "step1BackLink": "Volver a tu vista previa",
+    "step1Button": "Crear cuenta",
+    "step2Heading": "Confirma tus datos",
+    "step2Body": "Revisa que todo esté bien antes de que tu sitio salga en línea.",
+    "checkPhone": "Teléfono",
+    "checkAddress": "Dirección",
+    "checkHours": "Horario",
+    "checkServiceArea": "Zona de servicio",
+    "checkQuoteEmail": "Correo para solicitudes de cotización",
+    "checkPhotos": "Fotos",
+    "step2Button": "Confirmar datos",
+    "uploadPhotosLabel": "Subir fotos",
+    "step3Heading": "Elige tu plan de hosting",
+    "step3Button": "Elegir este plan",
+    "noChargeUntilLive": "No te cobraremos nada hasta que tu sitio salga en línea.",
+    "step4Heading": "Agrega tu tarjeta",
+    "step4Body": "Agrega la tarjeta con la que quieres pagar. La guardamos ahora y no le haremos ningún cargo hasta que tu sitio salga en línea.",
+    "step4Button": "Agregar mi tarjeta",
+    "step4Note": "Vas a ingresar tu tarjeta en la página de pago de Stripe.",
+    "cardSavedLine": "Tu tarjeta está guardada.",
+    "waitingLine": "Todo listo. Tu panel te avisará cuando tu sitio esté en línea.",
+    "trackerOutreachSteps": {
+      "built": "Construido",
+      "yourReview": "Tu revisión",
+      "detailsConfirmed": "Datos confirmados",
+      "hostingSetUp": "Hosting listo",
+      "live": "En línea"
+    },
+    "viewWebsiteLabel": "Ver mi sitio web",
+    "setUpDomainLabel": "Configurar mi dominio",
+    "manageBillingLabel": "Administrar facturación",
+    "domainHelper": "Mientras no conectes tu propio dominio, tu sitio funciona en una dirección web gratis que te damos.",
+    "needDomainLabel": "Necesito un dominio",
+    "needDomainHelper": "Tú compras tu dominio y es tuyo. Te enviaremos instrucciones paso a paso y nosotros lo conectamos.",
+    "stepNames": {
+      "account": "Cuenta",
+      "yourDetails": "Tus datos",
+      "hostingPlan": "Plan de hosting",
+      "addCard": "Agregar tarjeta"
+    },
+    "claimingForLine": "Reclamando el sitio web de {businessName}",
+    "goToDashboardLabel": "Ir a mi panel",
+    "viewPreviewLabel": "Ver mi vista previa",
+    "yourWebsiteHeading": "Tu sitio web",
+    "phoneInvalid": "Escribe un número de teléfono de 10 dígitos, con código de área.",
+    "refusedDismissAria": "Cerrar el mensaje sobre {fileName}",
+    "trackerLiveWaiting": "Esperando a que publiquemos tu sitio.",
+    "haveDomainLabel": "Ya tengo un dominio",
+    "trackerOrganicSteps": {
+      "requestSent": "Solicitud enviada",
+      "building": "En construcción",
+      "yourReview": "Tu revisión",
+      "hostingSetUp": "Hosting listo",
+      "live": "En línea"
+    },
+    "photoCountText": "{n} de {max} fotos",
+    "photoRetryingText": "Subida en pausa. Intentando de nuevo…",
+    "photoFailedText": "Esta foto no se subió. Toca para intentarlo de nuevo.",
+    "photoLimitReached": "Ya enviaste {max} fotos, que es lo máximo que podemos recibir aquí. Para enviar más, escribe a {supportEmail}.",
+    "photoRefused": "No pudimos usar esta foto. Prueba en JPG o PNG, o mándala por correo a {supportEmail}. No cuenta dentro de tus {max}.",
+    "showAllPhotos": "Ver las {n} fotos",
+    "showFewerPhotos": "Ver menos fotos",
+    "thumbTryingAgain": "Intentando de nuevo…",
+    "thumbTapToRetry": "Toca para intentarlo de nuevo",
+    "reopenLinkLine": "Vuelve a abrir tu enlace de vista previa para terminar de reclamar tu sitio web.",
+    "planWaitingForPublishMessage": "Ya elegiste un plan de hosting. No te cobraremos nada hasta que tu sitio salga en línea.",
+    "planLiveUnavailableMessage": "Tu sitio está en línea. No pudimos cargar los datos de tu plan en este momento. Recarga la página para intentarlo de nuevo o escribe a {supportEmail}.",
+    "accountAddCardLine": "Cuando agregues tu tarjeta, aquí podrás administrar tu facturación y tu método de pago.",
+    "accountFirstPaymentLine": "Después de tu primer pago, aquí podrás administrar tu facturación y tu método de pago.",
+    "beforeLiveHelp": "Si no quieres seguir, escribe a {supportEmail} y te ayudamos.",
+    "genericTryAgain": "Algo salió mal. Inténtalo de nuevo. Si sigue pasando, escribe a {supportEmail}.",
+    "photoRemoveAria": "Quitar la foto {n}",
+    "photoUploadingAria": "Subiendo la foto {n}",
+    "photoUploadedAria": "Foto {n} subida",
+    "addPhotosLabel": "Agregar fotos",
+    "confirmEmailLine": "Revisa tu correo para confirmar tu cuenta.",
+    "changeSent": "Listo. Revisaremos tu solicitud y te avisaremos cuando tu vista previa esté actualizada.",
+    "domainRequestSent": "Listo. Te enviaremos por correo los siguientes pasos para tu dominio.",
+    "message": {
+      "enterValidEmailAddress": "Escribe un correo electrónico válido.",
+      "sourceLinksMustStart": "Los enlaces de origen deben empezar con https://",
+      "enterValidEmail": "Escribe un correo válido."
+    },
+    "description": {
+      "describeChange": "Describe el cambio."
+    },
+    "businessName": {
+      "businessNameRequired": "El nombre del negocio es obligatorio."
+    },
+    "enterDomainLikeYourbusinessCom": "Escribe un dominio como tunegocio.com",
+    "error": {
+      "invalidPlan": "Plan no válido.",
+      "invalidInput": "Datos no válidos.",
+      "couldNotSave": "No se pudo guardar."
+    },
+    "step3Body": "El hosting mantiene tu sitio web en línea. Los planes empiezan en {price} al mes."
+  },
+  "public": {
+    "faq": {
+      "metaTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
+      "metaDescription": "Respuestas sobre el sitio web gratis de Freeplug, lo que pagas después del lanzamiento, los tiempos y cómo pedir tu sitio.",
+      "question": {
+        "whatIsFreeplug": "¿Qué es Freeplug?",
+        "reallyFree": "¿De verdad es gratis?",
+        "whatDoIPay": "¿Qué pago?",
+        "happensCancelHosting": "¿Qué pasa si cancelo el hosting?",
+        "longDoesTakeBuild": "¿Cuánto tardan en hacer mi sitio web?",
+        "getStarted": "¿Cómo empiezo?"
+      },
+      "answer": {
+        "freeplugReachesLocalBusiness": "Freeplug contacta a dueños de negocios locales que necesitan un sitio web, y 72 After lo construye gratis. Trabajamos en el centro de Texas: San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+        "yesWebsiteDevelopmentFree": "Sí. Hacer el sitio web es gratis. 72 After diseña y construye tu sitio web sin costo. Cuando tu sitio esté en línea, pagas el hosting mensual, que es obligatorio. El mantenimiento o la compra del sitio cuestan aparte solo si los pides. No hay cargos ocultos ni cobros sorpresa.",
+        "hostingRequiredKeepWebsite": "El hosting es obligatorio para mantener tu sitio web en línea. Puedes cancelar cuando quieras. Tu sitio sigue en línea hasta que termine el periodo que pagaste y luego se desconecta. Si vuelves a contratar el hosting, lo recuperamos.",
+        "everySiteDifferentSo": "Cada sitio es diferente, así que te daremos un tiempo estimado después de revisar tu solicitud. La mayor parte del tiempo depende de qué tan rápido recibamos los datos de tu negocio y tus aprobaciones. Te mantendremos al tanto en cada paso.",
+        "createAccountFillOut": "Crea una cuenta y llena el formulario de solicitud de sitio web. Cuéntanos sobre tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud. Cuando se apruebe, te contactaremos para hablar de tu proyecto y empezar el diseño."
+      },
+      "helpCenter": "Centro de ayuda",
+      "frequentlyAskedQuestions": "Preguntas <span>frecuentes</span>",
+      "answersCommonQuestionsAboutFreeplug": "Respuestas a las preguntas más comunes sobre Freeplug y cómo funciona.",
+      "stillHaveQuestions": "¿Todavía tienes preguntas?",
+      "wereHereHelpEmailSupport": "Estamos para ayudarte. Escríbele a nuestro equipo de soporte.",
+      "contactSupport": "Contactar a soporte"
+    },
+    "meta": {
+      "siteTitle": "Sitios web gratis para negocios | Freeplug",
+      "siteDescription": "Freeplug encuentra a dueños de negocios locales que necesitan un sitio web. 72 After construye el sitio gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+      "ogTitle": "Sitios web gratis para negocios locales | Freeplug",
+      "ogDescription": "¿Tienes un negocio local sin sitio web? Pide uno. 72 After lo construye gratis.",
+      "homeTitle": "Sitios web gratis para negocios locales en el centro de Texas | Freeplug",
+      "homeDescription": "Freeplug ayuda a dueños de negocios locales a tener un sitio web. 72 After lo construye gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+      "previewTitle": "Vista previa de tu sitio web | Freeplug",
+      "requestWebsiteTitle": "Pedir un sitio web | Freeplug"
+    },
+    "notFound": {
+      "heading": "Página no encontrada",
+      "link": "Ir a la página principal",
+      "metaTitle": "Página no encontrada | Freeplug"
+    },
+    "landing": {
+      "about": {
+        "title": {
+          "outreachOwnersWhoNeed": "Contactamos a dueños que necesitan un sitio web",
+          "handOff72After": "72 After lo construye gratis",
+          "monthlyHostingKeepsOnline": "El hosting mensual lo mantiene en línea"
+        },
+        "description": {
+          "freeplugFindsLocalBusinesses": "Freeplug encuentra negocios locales con un sitio web débil o sin sitio, y los invita a tener un sitio gratis.",
+          "onceSiteLivePay": "Cuando tu sitio esté en línea, pagas el hosting mensual, desde $35 al mes. Freeplug se encarga del contacto con los negocios y 72 After construye el sitio."
+        },
+        "aboutFreeplug": "Sobre Freeplug",
+        "freeplugDoes": "Qué hace <span>Freeplug</span>",
+        "freeplug72AfterWorkTogether": "Freeplug y 72 After trabajan juntos: Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo."
+      },
+      "cTA": {
+        "freeplug72After": "Freeplug · 72 After",
+        "readyFreeWebsite": "¿Quieres un sitio web gratis?",
+        "localOwnersSanMarcosKyle": "Si tienes un negocio local en San Marcos, Kyle, New Braunfels, San Antonio o Austin, pide tu sitio. ¿Estás fuera de EE. UU.? Dinos tu ciudad y revisamos la red.",
+        "requestFreeWebsite": "Pide un sitio web gratis",
+        "freeplugFindsBusinesses72After": "Freeplug encuentra los negocios. 72 After construye los sitios."
+      },
+      "footer": {
+        "label": {
+          "about": "Nosotros",
+          "outreach": "Cómo funciona",
+          "services": "Servicios",
+          "reviews": "Reseñas",
+          "plans": "Planes",
+          "termsConditions": "Términos y condiciones",
+          "privacyPolicy": "Aviso de privacidad",
+          "cookiePolicy": "Política de cookies",
+          "getStarted": "Empieza",
+          "support": "Soporte"
+        },
+        "freeplug": "Freeplug",
+        "freeplugHandlesOwnerOutreach72": "Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
+        "supportFreeplugDev": "support@freeplug-in.dev",
+        "centralTexasOutsideUsVia": "Centro de Texas · Fuera de EE. UU. con socios",
+        "headingCompany": "Empresa",
+        "headingLegal": "Legal",
+        "legalComingSoonTitle": "Próximamente",
+        "legalSoonTag": "(pronto)",
+        "headingGetStarted": "Empieza",
+        "followUs": "Síguenos",
+        "copyright": "© {year} Freeplug. Todos los derechos reservados.",
+        "outreachFreeplugBuilds72After": "Contacto = Freeplug · Construcción = 72 After"
+      },
+      "hero": {
+        "freeplugOutreach72AfterBuilds": "Freeplug contacta · 72 After construye",
+        "headline": "Sitios web gratis para<br/><span>negocios locales</span>",
+        "freeplugReachesOwnersWhoNeed": "Freeplug contacta a dueños que necesitan un sitio. <span>72 After lo construye gratis.</span> Cuando esté en línea, el hosting mensual lo mantiene funcionando.",
+        "label": {
+          "modernTech": "Tecnología moderna",
+          "lightningFast": "Súper rápido",
+          "customDesign": "Diseño a la medida",
+          "secure": "Seguro"
+        },
+        "seeWhereWork": "Mira dónde trabajamos",
+        "outreachHubFreeplugDevBuilds": "Contacto = freeplug-in.dev · Construcción = 72 After"
+      },
+      "hostingPlans": {
+        "stripeCheckout": "Pago con Stripe",
+        "hostingMaintenance": "Hosting y mantenimiento"
+      },
+      "navigation": {
+        "label": {
+          "home": "Inicio"
+        },
+        "logIn": "Iniciar sesión",
+        "dashboard": "Panel",
+        "ariaLabel": {
+          "toggleMenu": "Abrir o cerrar menú"
+        }
+      },
+      "outreach": {
+        "name": {
+          "sanMarcos": "San Marcos",
+          "kyle": "Kyle",
+          "newBraunfels": "New Braunfels",
+          "sanAntonio": "San Antonio",
+          "austin": "Austin"
+        },
+        "alt": {
+          "stockPhotoCitySkyline": "Foto de archivo del horizonte de una ciudad: San Marcos, Texas",
+          "stockPhotoResidentialStreet": "Foto de archivo de una calle residencial: Kyle, Texas",
+          "stockPhotoRiverLandscape": "Foto de archivo de un paisaje con río: New Braunfels, Texas",
+          "stockPhotoSanAntonio": "Foto de archivo de San Antonio, Texas",
+          "stockPhotoAustinTexas": "Foto de archivo del horizonte de Austin, Texas",
+          "stockPhotoInternationalCity": "Foto de archivo del horizonte de una ciudad internacional",
+          "stockPhotoCitySkyline2": "Foto de archivo del horizonte de una ciudad fuera de EE. UU."
+        },
+        "title": {
+          "freeplugReachesOut": "Freeplug te contacta",
+          "72AfterBuilds": "72 After lo construye",
+          "goLive": "Tu sitio sale en línea"
+        },
+        "description": {
+          "contactOwnersWhoNeed": "Contactamos a dueños que necesitan un sitio, o tú mismo puedes pedir uno.",
+          "reviewSiteAddPhone": "Revisas el sitio y agregas tu teléfono y tus fotos cuando quieras. Luego sale en línea y el hosting mensual lo mantiene funcionando."
+        },
+        "serviceAreas": "Zonas de servicio",
+        "whereWorkTexas": "Dónde trabajamos en <span>Texas</span>",
+        "wereFocusedCentralTexasFirst": "Empezamos por el centro de Texas: San Marcos y ciudades cercanas.",
+        "stockPhoto": "{name}: foto de archivo",
+        "moreTexasCitiesCapacityGrows": "Más ciudades de Texas a medida que crezcamos. Pregúntanos si tu ciudad no aparece.",
+        "international": "Internacional",
+        "beyondTexasUs": "Más allá de Texas y EE. UU.",
+        "freeplugReachBusinessesOutsideUs": "Freeplug puede llegar a negocios fuera de EE. UU. a través de socios y canales de nuestra red. El alcance internacional depende del idioma, las reglas locales y la capacidad de los socios; no prometemos todos los países ni un plazo fijo. Si estás fuera de EE. UU. y quieres un sitio gratis a través de la red, empieza una solicitud y te diremos qué se puede hacer.",
+        "requestInternationalOutreach": "Pedir contacto internacional",
+        "availabilityVariesRegionPartnerNo": "La disponibilidad depende de la región y del socio. No garantizamos cobertura ni fecha de lanzamiento.",
+        "label": {
+          "internationalSkylineStockPhoto": "Horizonte internacional: foto de archivo",
+          "citySkylineStockPhoto": "Horizonte de una ciudad: foto de archivo"
+        },
+        "howItConnects": "Cómo se conecta",
+        "howItWorks": "Cómo <span>funciona</span>",
+        "freeplugConnectsConversation72After": "Freeplug inicia la conversación. 72 After construye el sitio.",
+        "step": "Paso {step}"
+      },
+      "reviews": {
+        "testimonials": "Testimonios",
+        "reviewsComingSoon": "Reseñas <span>próximamente</span>",
+        "wellShareRealOwnerFeedback": "Aquí compartiremos opiniones reales de dueños cuando los primeros sitios de Freeplug / 72 After estén en línea. Sin cifras inventadas.",
+        "realReviewsComingSoonFreeplug": "<span>Reseñas reales próximamente.</span> Freeplug está empezando a contactar negocios; no vamos a inventar cifras de clientes."
+      },
+      "techStack": {
+        "name": {
+          "envatoTemplate": "Plantilla de Envato",
+          "htmlCss": "HTML y CSS",
+          "bootstrap5": "Bootstrap 5",
+          "cloudflare": "Cloudflare",
+          "cloudflareTurnstile": "Cloudflare Turnstile",
+          "resend": "Resend"
+        },
+        "description": {
+          "premiumTemplatesDevelopersAccess": "Plantillas premium a las que tienen acceso nuestros desarrolladores, adaptadas con tus datos.",
+          "plainLightweightPagesLoad": "Páginas simples y ligeras que cargan rápido.",
+          "layoutFitsPhonesTablets": "Un diseño que se adapta a celulares, tabletas y computadoras.",
+          "hostsSiteProvidesSsl": "Aloja tu sitio y da el certificado SSL para https.",
+          "filtersOutSpamBots": "Filtra los bots de spam en tu formulario de cotización, sin rompecabezas de imágenes.",
+          "emailsEachQuoteRequest": "Te envía por correo cada solicitud de cotización.",
+          "lightweightPagesServedFrom": "Páginas ligeras servidas desde la red de Cloudflare.",
+          "responsiveLayoutAdjustsPhones": "Un diseño adaptable a celulares, tabletas y computadoras.",
+          "clearPageTitlesDescriptions": "Títulos de página, descripciones y datos del negocio claros que los buscadores pueden leer.",
+          "httpsEveryPageThrough": "HTTPS en todas las páginas con el SSL de Cloudflare."
+        },
+        "title": {
+          "fastLoading": "Carga rápida",
+          "mobileFirst": "Pensado para celular",
+          "seoBasicsIncluded": "SEO básico incluido",
+          "secureConnection": "Conexión segura"
+        },
+        "ourTechnology": "Nuestra tecnología",
+        "builtProvenTools": "Hecho con <span>herramientas probadas</span>",
+        "everyLocalBusinessSiteBuild": "Cada sitio de negocio local que construimos usa la misma base: páginas ligeras, un diseño que funciona en celulares, un formulario de cotización que filtra el spam y una dirección https segura.",
+        "performanceMatters": "Rendimiento que <span>importa</span>",
+        "sitesBuiltMobileFriendlyReasonably": "Los sitios están hechos para verse bien en celular y ser razonablemente rápidos. No inventamos garantías de disponibilidad ni de puntajes.",
+        "responsiveLayoutsClearQuoteRequest": "Diseños adaptables · Páginas claras para pedir cotización · El hosting mensual lo mantiene en línea"
+      }
+    }
+  },
+  "buyout": {
+    "dashboardHeading": "¿Quieres quedarte con tu sitio web?",
+    "dashboardBody": "Puedes comprar tu sitio web con un pago único. Calcularemos el valor de tu sitio y te diremos el precio exacto antes de que pagues.",
+    "requestLabel": "Pedir cotización de compra",
+    "thanks": "Gracias. Recibimos tu solicitud de compra. Te diremos el precio antes de que pagues nada.",
+    "cancelHeading": "Quédate con tu sitio web",
+    "cancelBody": "¿Prefieres quedarte con tu sitio web en lugar de alojarlo con nosotros? Puedes comprarlo con un pago único, según un cálculo de su valor. Verás el precio exacto antes de pagar.",
+    "faqQuestion": "¿Puedo quedarme con mi sitio web si dejo el hosting de Freeplug?",
+    "faqAnswer": "Sí. Puedes comprar tu sitio web con un pago único. El precio se basa en un cálculo del valor de tu sitio y verás el precio exacto antes de pagar. El pago cubre tu sitio web terminado. El cambio de tu dominio se maneja por separado.",
+    "requestRecordName": "Compra del sitio web"
+  },
+  "common": {
+    "listAnd": "{list} y {last}",
+    "amountPerMonth": "{amount} al mes",
+    "listOr": "{list} o {last}",
+    "dateFallback": "Fecha no disponible",
+    "support": {
+      "hours": "de lunes a miércoles, de 1 a 2 p. m., y jueves y viernes, de 1 a 3 p. m. (hora del Centro)",
+      "availabilityLabel": "Cuándo estamos disponibles",
+      "availabilityLine": "Nuestro equipo está disponible en el horario de atención de abajo.",
+      "cardLine": "Nuestro equipo está disponible {supportHours}."
+    },
+    "legal": {
+      "translationNotice": "Traducción para tu conveniencia; la versión en inglés prevalece."
+    }
+  },
+  "email": {
+    "subjects": {
+      "subject": {
+        "welcomeFreeplug": "¡Te damos la bienvenida a Freeplug!",
+        "paymentReceived": "Pago recibido: {amount}",
+        "requestUpdate": "Novedades de tu solicitud: {businessName}",
+        "upcomingBillingReminder": "Recordatorio de próximo cobro: {amount} el {date}",
+        "resetFreeplugPassword": "Restablece tu contraseña de Freeplug"
+      },
+      "subscriptionCancelled": "Tu hosting de Freeplug está cancelado"
+    },
+    "common": {
+      "copyright": "© {year} Freeplug. Todos los derechos reservados.",
+      "greetingNamed": "Hola, {userName}:",
+      "accountHistory": "Historial de tu cuenta",
+      "totalPaidToDate": "Total pagado hasta hoy: {amount}",
+      "greeting": "Hola:"
+    },
+    "baseLayout": {
+      "visitWebsite": "Visita nuestro sitio web",
+      "contactSupport": "Contactar a soporte"
+    },
+    "billingReminder": {
+      "preview": {
+        "upcomingBillingReminder": "Recordatorio de próximo cobro: {amount} el {date}"
+      },
+      "upcomingBillingReminder": "Recordatorio de próximo cobro",
+      "friendlyReminderNextBillingComing": "Te recordamos que tu próximo cobro será en {days, plural, one {# día} other {# días}}.",
+      "plan": "Plan",
+      "amount": "Monto",
+      "billingDate": "Fecha de cobro",
+      "makeSurePaymentMethodUp": "Asegúrate de que tu método de pago esté al día para que tu servicio no se interrumpa.",
+      "viewDashboard": "Ver panel",
+      "manageSubscription": "o <a>administra tu suscripción</a>",
+      "haveQuestionsAboutBillingPlease": "Si tienes preguntas sobre tu facturación, contacta a nuestro equipo de soporte."
+    },
+    "googleSignIn": {
+      "preview": {
+        "freeplugAccountUsesGoogle": "Tu cuenta de Freeplug inicia sesión con Google"
+      },
+      "signGoogle": "Iniciar sesión con Google",
+      "receivedRequestResetPasswordFreeplug": "Recibimos una solicitud para restablecer la contraseña de tu cuenta de Freeplug. Tu cuenta inicia sesión con Google, así que no hay una contraseña de Freeplug que restablecer.",
+      "loginPageChooseContinueGoogle": "En la página para iniciar sesión, elige <strong>Continuar con Google</strong> y usa este correo electrónico.",
+      "goLog": "Ir a iniciar sesión",
+      "didntRequestSafelyIgnoreEmail": "Si no lo pediste tú, puedes ignorar este correo sin problema."
+    },
+    "passwordReset": {
+      "expiresInOneHour": "1 hora",
+      "preview": {
+        "resetFreeplugPassword": "Restablece tu contraseña de Freeplug"
+      },
+      "resetPassword": "Restablece tu contraseña",
+      "receivedRequestResetPasswordFreeplug": "Recibimos una solicitud para restablecer la contraseña de tu cuenta de Freeplug. Haz clic en el botón de abajo para crear una contraseña nueva:",
+      "resetPassword2": "Restablecer contraseña",
+      "linkExpireDidntRequestPassword": "Este enlace vence en <strong>{expiresIn}</strong>. Si no pediste restablecer tu contraseña, puedes ignorar este correo sin problema: tu contraseña no cambiará.",
+      "securityTips": "Consejos de seguridad",
+      "neverShareLinkAnyone": "• Nunca compartas este enlace con nadie",
+      "neverAskPasswordViaEmail": "• Nunca te pediremos tu contraseña por correo",
+      "useStrongUniquePassword": "• Usa una contraseña segura y única",
+      "youreHavingTroubleClickingButton": "Si el botón no funciona, copia y pega esta URL en tu navegador:"
+    },
+    "paymentReceived": {
+      "preview": {
+        "paymentReceived": "Pago recibido: {amount} por {planName}"
+      },
+      "paymentReceived": "Pago recibido",
+      "thankPaymentHereDetailsTransaction": "¡Gracias por tu pago! Estos son los detalles de tu transacción:",
+      "amount": "Monto",
+      "plan": "Plan",
+      "date": "Fecha",
+      "invoice": "Factura",
+      "nextBilling": "Próximo cobro",
+      "viewDashboard": "Ver panel",
+      "viewAllInvoicesManageSubscription": "Puedes ver todas tus facturas y administrar tu suscripción desde tu panel."
+    },
+    "requestStatusUpdate": {
+      "title": {
+        "requestSubmitted": "Solicitud enviada",
+        "requestReview": "Solicitud en revisión",
+        "requestClosed": "Solicitud cerrada"
+      },
+      "description": {
+        "haveReceivedWebsiteRequest": "Recibimos tu solicitud de sitio web y pronto empezaremos a revisarla.",
+        "greatNewsTeamNow": "¡Buenas noticias! Nuestro equipo ya está revisando tu solicitud de sitio web. Pronto te contactaremos con los siguientes pasos.",
+        "websiteRequestHasBeen": "Tu solicitud de sitio web se cerró. Esto puede significar que terminamos nuestra revisión, que pasó a otro proceso o que necesitamos más información."
+      },
+      "websiteRequestHasBeenUpdated": "Tu solicitud de sitio web para <strong>{businessName}</strong> se actualizó.",
+      "currentStatus": "Estado actual",
+      "messageFromTeam": "Mensaje de nuestro equipo:",
+      "viewDashboard": "Ver panel",
+      "haveQuestionsReplyEmailContact": "Si tienes preguntas, responde a este correo o contacta a nuestro equipo de soporte."
+    },
+    "subscriptionCancelled": {
+      "hostingPlanCanceled": "Tu plan de hosting está cancelado.",
+      "websiteStaysOnlineUntilThen": "Tu sitio web sigue en línea hasta el <strong>{date}</strong> y después se desconecta.",
+      "changedMind": "¿Cambiaste de opinión?",
+      "untilResumePlanFromDashboard": "Hasta el {date}, puedes reanudar tu plan desde tu panel. Después de esa fecha, elige Reactivar hosting en tu panel y recuperamos tu sitio web.",
+      "goDashboard": "Ir a tu panel"
+    },
+    "welcome": {
+      "preview": {
+        "welcomeFreeplugLetsBuild": "Te damos la bienvenida a Freeplug: construyamos tu presencia en línea"
+      },
+      "welcomeFreeplug": "¡Te damos la bienvenida a Freeplug!",
+      "thankJoiningFreeplugExcitedHelp": "¡Gracias por unirte a Freeplug! Nos da gusto ayudarte a crear y hacer crecer tu presencia en línea con servicios profesionales de hosting y mantenimiento de sitios web.",
+      "hereNext": "Esto es lo que puedes hacer ahora:",
+      "1SubmitWebsiteRequestFrom": "1. Envía una solicitud de sitio web desde tu panel",
+      "2TeamReviewBusinessDetails": "2. Nuestro equipo revisará los datos de tu negocio",
+      "3ChooseHostingPlanFits": "3. Elige el plan de hosting que más te convenga",
+      "4WatchOnlinePresenceGrow": "4. Mira cómo crece tu presencia en línea",
+      "goDashboard": "Ir al panel",
+      "haveAnyQuestionsJustReply": "Si tienes preguntas, responde a este correo o contacta a nuestro equipo de soporte.",
+      "freeplugTeam": "— El equipo de Freeplug"
+    }
+  },
+  "tips": {
+    "invoiceTipPart": "Propina opcional {amount}",
+    "planChangeTipEnds": "Tu propina mensual de {tip} termina con este cambio.",
+    "planChangeTipEndsOn": "Tu propina mensual de {tip} termina el {date}, cuando empieza este cambio.",
+    "sliderLabel": "Propina opcional para apoyar a Freeplug",
+    "sliderHelp": "Un extra opcional para apoyar a Freeplug. No cambia lo que incluye tu plan.",
+    "valuetext": {
+      "withTip": "{total} al mes, con una propina de {tip}",
+      "noTip": "{total} al mes, sin propina"
+    },
+    "totalLine": {
+      "withTip": "{price} + {tip} de propina = {total} al mes",
+      "noTip": "{total} al mes, sin propina"
+    },
+    "sliderHint": "Elige una propina si quieres o déjala en Sin propina.",
+    "endNone": "Sin propina",
+    "endMax": "Propina de {max}",
+    "lowerLabel": "Bajar la propina $1",
+    "raiseLabel": "Subir la propina $1",
+    "lockedAmount": "Propina mensual de {tip}",
+    "lockedNote": "Tu propina termina el {date}, cuando empieza el cambio de plan que tienes planeado. Después podrás elegir una propina nueva.",
+    "nudge": "{next} cuesta {price} al mes y agrega {perk}. ¿Prefieres eso? También está bien quedarte con tu propina.",
+    "nudgeButton": "Elegir {next}",
+    "nudgePerk": {
+      "priorityQueue": "un lugar antes que los planes más bajos cuando pides cambios",
+      "includedSmallEdit": "un cambio pequeño hecho por nosotros en cada periodo de facturación",
+      "nextBusinessDayEdits": "cambios pequeños a más tardar al final del siguiente día hábil (lun–vie, sin contar días festivos)",
+      "leadsReport": "un reporte mensual de visitas, solicitudes del formulario y toques al botón de llamada",
+      "quoteAlerts": "un correo en cuanto alguien pide una cotización",
+      "gbpManaged": "el cuidado de tu perfil de Google Business",
+      "reviewKit": "un kit para pedir reseñas",
+      "seasonalRefresh": "una actualización de temporada"
+    },
+    "planStripTip": " + {tip} de propina",
+    "changeHeading": "Tu propina mensual",
+    "changeNote": "Los cambios empiezan con tu próximo cobro. Hoy no se cobra nada. Para quitar tu propina, elige Sin propina.",
+    "changeButton": "Actualizar propina",
+    "nextBill": "Tu próximo cobro será de {amount} el {date}.",
+    "nextBillNoDate": "Tu próximo cobro será de {amount}.",
+    "changed": "Tu propina se actualizó. {nextBill}",
+    "changePending": "No puedes cambiar la propina mientras tengas un cambio de plan planeado. Cuando empiece el cambio, podrás elegir una propina nueva.",
+    "changeEnding": "Tu plan está programado para terminar, así que no puedes cambiar tu propina. Primero elige Reanudar plan.",
+    "notForPlan": "Las propinas no están disponibles en tu plan.",
+    "outOfRange": "Elige una propina dentro del rango de la barra.",
+    "changeUnavailable": "No pudimos cambiar tu propina en este momento. Inténtalo de nuevo o escribe a support@freeplug-in.dev.",
+    "inProgress": "Tu cambio de propina ya está en proceso. Recarga en un momento para verlo."
+  },
+  "addons": {
+    "heading": "Complementos",
+    "starterCapNote": "hasta {amount} al mes en Starter",
+    "names": {
+      "small_edit": "+1 small edit",
+      "big_change": "Big change",
+      "visitor_snapshot": "Visitor snapshot"
+    },
+    "perk": {
+      "smallEditWithIncluded": "Un cambio pequeño más, además del que incluye tu plan. Los cambios que no uses no se acumulan.",
+      "smallEdit": "Un cambio pequeño hecho por nosotros en cada periodo de facturación, como nuevo horario, cambiar una foto o un precio. Los cambios que no uses no se acumulan.",
+      "bigChange": "Un cambio más grande en cada periodo de facturación, de hasta una hora de trabajo aproximadamente en tus páginas actuales. Por ejemplo, agregar una sección, un servicio nuevo con fotos, renovar una galería o reescribir una página. Los cambios que no uses no se acumulan.",
+      "visitorSnapshot": "Un correo mensual con cuántas personas visitaron tu sitio."
+    },
+    "bigChangeBiggerNote": "¿Necesitas algo más grande, como una página o función nueva? Primero te lo cotizamos como mantenimiento, y aun así puedes usar el cambio de este mes.",
+    "chargeNote": "Al activarlo, te cobramos {price} ahora por este periodo de facturación y luego {price} cada mes. Si lo desactivas, sigue activo hasta que termine el periodo.",
+    "tipDropQuestionCheckout": "Tu propina bajará a {tip}. ¿Activar {name}?",
+    "turnOn": "Activar",
+    "turnOnQuestion": "¿Activar {name}?",
+    "tipAmount": "Propina de {tip}",
+    "cancel": "Cancelar",
+    "chargeToday": "Hoy te cobraremos {amount} por este periodo de facturación.",
+    "chargeUpTo": "Hoy te cobraremos hasta {price} por este periodo de facturación.",
+    "thenMonthly": "Luego {price} al mes a partir del {date}.",
+    "thenMonthlyNoDate": "Luego {price} al mes.",
+    "turnOffQuestion": "¿Desactivar {name}? Sigue activo hasta el {date} y luego termina.",
+    "turnOffQuestionNoDate": "¿Desactivar {name}? Sigue activo hasta el final de este periodo de facturación.",
+    "turnOff": "Desactivar",
+    "endsBadge": "Termina el {date}",
+    "endsBadgeNoDate": "Termina al final de este periodo de facturación",
+    "keep": "Mantenerlo",
+    "doneOn": "{name} está activo.",
+    "doneOff": "{name} termina el {date}.",
+    "doneOffNoDate": "{name} termina al final de este periodo de facturación.",
+    "doneKeep": "{name} sigue activo.",
+    "lockedBySwitch": "Podrás cambiar tus complementos después de tu cambio de plan del {date}.",
+    "lockedBySwitchNoDate": "Podrás cambiar tus complementos después de tu cambio de plan.",
+    "lockedByRemoval": "Hay un complemento programado para terminar. Elige Mantenerlo o espera a que termine para hacer otros cambios.",
+    "legacyNote": "Los complementos no están disponibles en tu plan. Para usarlos, cámbiate a uno de los planes de arriba.",
+    "error": "No pudimos cambiar tus complementos en este momento. Inténtalo de nuevo o escribe a support@freeplug-in.dev.",
+    "paymentFailed": "No se hizo ningún cargo a tu tarjeta, así que {name} sigue desactivado. Actualiza tu tarjeta en Administrar facturación e inténtalo de nuevo.",
+    "refunded": "No pudimos activar {name}, así que te reembolsamos el cargo a tu tarjeta. Puede tardar de 5 a 10 días hábiles en verse.",
+    "refundFailed": "No pudimos activar {name} y el reembolso no se hizo automáticamente. Escribe a support@freeplug-in.dev y resolvemos el cargo.",
+    "turnOffFirst": "Primero desactiva un complemento",
+    "stayOnLine": "Tus complementos siguen activos: {names}.",
+    "bigChangeUsage": "Big change: {used} de {total} usados en este periodo",
+    "planStripAddons": " + {amount} en complementos",
+    "tipDropNeeded": "{addonName}: tu propina bajará a {tip}.",
+    "chargeAfterCredit": "Hoy te cobraremos {amount}, después de aplicar tu saldo a favor.",
+    "creditCovers": "Hoy no se cobra nada. Tu saldo a favor lo cubre.",
+    "tipGoesDownQuestion": "Tu propina baja a {tip} a partir del {date}. ¿Activar {name}?",
+    "tipGoesDownQuestionNoDate": "Tu propina baja a {tip} a partir de tu próximo cobro. ¿Activar {name}?",
+    "finishing": "Tu pago se realizó. Estamos terminando de activar {name}. Recarga en un momento para verlo. Si no se puede agregar, te reembolsaremos el cargo automáticamente.",
+    "pendingEndLine": "{names} {count, plural, one {termina} other {terminan}} el {date}."
+  }
+}

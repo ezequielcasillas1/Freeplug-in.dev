@@ -21,45 +21,8 @@ import { PLAN_STEPS, type AddonId, type PlanStep, type PlanStepId } from '@/lib/
 import { addonConfigCents } from '@/lib/plans/addons'
 import { tipRangeFor } from '@/lib/plans/tips'
 import { PRORATION_DATE_MAX_AGE_SECONDS, planMove, type PlanMove } from '@/lib/plans/plan-direction'
-import {
-  CHANGE_PLAN_BUTTON_NOW,
-  CHANGE_PLAN_BUTTON_ON,
-  CHANGE_PLAN_BUTTON,
-  CHANGE_PLAN_CURRENT,
-  CHANGE_PLAN_HELP_DOWN,
-  CHANGE_PLAN_HELP_UP,
-  CHANGE_PLAN_PICK_TO_SWITCH,
-  COMING_SOON_LABEL,
-  CONTINUE_TO_PAYMENT,
-  CURRENT_PLAN_LINE,
-  KEEP_PLAN_BUTTON,
-  PENDING_CHANGE_LINE,
-  EVERYTHING_IN,
-  LADDER_HEADING,
-  LADDER_SUBHEADING,
-  MOST_POPULAR_LABEL,
-  MOST_POPULAR_STEP,
-  PER_MONTH,
-  PERK_LINES,
-  SEE_COMING_SOON,
-  STARTS_ON_BADGE,
-  aiEditsLine,
-  STARTER_BASE_LINES,
-  UPGRADE_CALCULATING,
-  UPGRADE_CANCEL_BUTTON,
-  UPGRADE_CONFIRM_BUTTON,
-  UPGRADE_CONFIRM_FALLBACK,
-  UPGRADE_CONFIRM_LINE,
-  UPGRADE_PREVIEW_EXPIRED,
-  UPGRADE_CONFIRM_ZERO,
-  UPGRADE_REPLACES_PENDING,
-  PLAN_CHANGE_TIP_ENDS,
-  PLAN_CHANGE_TIP_ENDS_ON,
-  ADDON_NAMES,
-  addonsStayOnLine,
-  planTotalBreakdown,
-  planTotalLine,
-} from '@/lib/plans/ladder-copy'
+import { MOST_POPULAR_STEP } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 
 function formatDollars(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
@@ -184,6 +147,7 @@ export function HostingCheckoutCard({
   onPreviewAddon,
   onChangeAddon,
 }: Props) {
+  const { CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine } = useLadderCopy()
   // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
   // customer is already on. The server refuses them too (checkout, claim, publish, switching).
   const pickable = (id: PlanStepId) => id === currentStepId || PLAN_STEPS.some((s) => s.id === id && s.sellable)

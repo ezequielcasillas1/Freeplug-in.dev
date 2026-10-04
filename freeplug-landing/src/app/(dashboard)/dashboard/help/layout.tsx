@@ -1,7 +1,8 @@
 import { HelpChat } from '@/components/help/HelpChat'
 import { createClient } from '@/lib/supabase/server'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
-import { starterSmallEditAddonLine } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 import { sendHelpChangeRequest } from '../request-website/actions'
 
 /**
@@ -9,6 +10,7 @@ import { sendHelpChangeRequest } from '../request-website/actions'
  * The help center page itself is a client component, so the server data is loaded here.
  */
 export default async function HelpLayout({ children }: { children: React.ReactNode }) {
+  const { starterSmallEditAddonLine } = ladderCopy(await currentLocale())
   const supabase = await createClient()
   const {
     data: { user },

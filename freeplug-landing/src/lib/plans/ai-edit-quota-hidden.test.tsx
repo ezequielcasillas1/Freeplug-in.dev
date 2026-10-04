@@ -117,8 +117,9 @@ describe('AI-edit counts stay hidden while showAiEditQuota is false', () => {
       if (rel === path.join('src', 'lib', 'plans', 'ladder-copy.ts')) {
         // The one gated template: it must go through customerAiEditsPerMonth() (flag-aware), and is
         // checked by value above; everything else in the file is scanned.
-        const start = src.indexOf('export const aiEditsLine')
-        const end = src.indexOf('\n}\n', start)
+        // i18n (Oct 4): the copy is built per locale in build(); the template is the aiEditsLine entry.
+        const start = src.indexOf('    aiEditsLine: (')
+        const end = src.indexOf('\n    },\n', start)
         expect(start).toBeGreaterThan(-1)
         expect(src.slice(start, end)).toContain('customerAiEditsPerMonth(step, show)')
         src = src.slice(0, start) + src.slice(end)

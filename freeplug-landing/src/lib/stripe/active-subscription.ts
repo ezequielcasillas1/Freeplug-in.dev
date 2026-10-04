@@ -1,3 +1,5 @@
+import { intlLocale } from '@/i18n/format'
+import type { AppLocale } from '@/i18n/config'
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { isLiveSubscriptionStatus } from './subscription-status'
@@ -23,8 +25,8 @@ export const CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE =
   "You can't close this request while your plan is active, because your site is still hosted under it. To cancel your plan, choose Cancel options in your dashboard. Once the plan has ended, you can close the request here."
 
 /** Formats a plan end date as "Month D, YYYY" (UTC, so server and client agree). */
-export function formatPlanEndDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
+export function formatPlanEndDate(date: Date, locale: AppLocale = 'en'): string {
+  return date.toLocaleDateString(intlLocale(locale), {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -36,9 +38,9 @@ export function formatPlanEndDate(date: Date): string {
  * Short date for buttons: "Nov 3", or "Nov 3, 2027" when the year isn't the current one (UTC, like
  * formatPlanEndDate). Lina, round 5b: "Switch to Starter on Nov 3" fits on one line at 375.
  */
-export function formatShortPlanDate(date: Date, now: Date = new Date()): string {
+export function formatShortPlanDate(date: Date, now: Date = new Date(), locale: AppLocale = 'en'): string {
   const sameYear = date.getUTCFullYear() === now.getUTCFullYear()
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     ...(sameYear ? {} : { year: 'numeric' as const }),

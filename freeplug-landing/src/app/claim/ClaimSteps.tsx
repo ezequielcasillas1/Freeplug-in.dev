@@ -19,7 +19,7 @@ import {
   WAITING_LINE,
 } from '@/lib/outreach/copy'
 import type { DetailKey, PrefillMap, ServiceItem } from '@/lib/outreach/schemas'
-import { CHOOSE_STEP_BUTTON, CLAIM_CHANGE_PLAN_LINK } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { clearClaimPlanAction, confirmClaimDetailsAction, saveClaimPlanAction, startClaimSetupAction, uploadCustomerPhotoAction } from './actions'
 
 export function ClaimDetailsStep(props: {
@@ -65,6 +65,7 @@ export function ClaimDetailsStep(props: {
 }
 
 export function ClaimPlanStep() {
+  const { CHOOSE_STEP_BUTTON } = useLadderCopy()
   const router = useRouter()
   return (
     <HostingCheckoutCard
@@ -88,6 +89,7 @@ export function ClaimPlanStep() {
  * setup Checkout stays valid because it doesn't carry the step (publish reads plan_step).
  */
 export function ClaimChangePlanLink() {
+  const { CLAIM_CHANGE_PLAN_LINK } = useLadderCopy()
   const router = useRouter()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)

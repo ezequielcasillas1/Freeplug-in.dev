@@ -5,21 +5,7 @@ import { Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PlanStep } from '@/lib/plans/ladder'
 import type { ChangeTipResponse, TipPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
-import {
-  TIP_CHANGE_BUTTON,
-  TIP_CHANGE_HEADING,
-  TIP_CHANGE_NOTE,
-  TIP_CHANGE_PENDING,
-  TIP_CHANGED,
-  TIP_END_NONE,
-  TIP_LOCKED_AMOUNT,
-  TIP_LOCKED_NOTE,
-  TIP_NEXT_BILL,
-  TIP_NEXT_BILL_NO_DATE,
-  UPGRADE_CALCULATING,
-  UPGRADE_CANCEL_BUTTON,
-  UPGRADE_CONFIRM_BUTTON,
-} from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { TipSlider } from './TipSlider'
 
 const charge = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
@@ -53,6 +39,7 @@ type Props = {
  * cancels the same way and the late preview is dropped.
  */
 export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = null, onPreviewTip, onChangeTip, addonCents = 0, amountOnly = false }: Props) {
+  const { TIP_CHANGE_BUTTON, TIP_CHANGE_HEADING, TIP_CHANGE_NOTE, TIP_CHANGE_PENDING, TIP_CHANGED, TIP_END_NONE, TIP_LOCKED_AMOUNT, TIP_LOCKED_NOTE, TIP_NEXT_BILL, TIP_NEXT_BILL_NO_DATE, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON } = useLadderCopy()
   const [tip, setTip] = useState(currentTipDollars)
   const [state, setState] = useState<Phase>({ phase: 'idle' })
   const [notice, setNotice] = useState<string | null>(null)

@@ -1,91 +1,28 @@
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
 import { ADDON_STEP_LIMITS, PLAN_STEPS, addonById, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
-
-/** "$35" style, from ladder.ts (never hard-code a price in copy). */
-const dollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
-/** "$35, $55 or $65", built from the SELLABLE steps in PLAN_STEPS (coming-soon steps not priced). */
-const PRICE_LIST = (() => {
-  const all = PLAN_STEPS.filter((s) => s.sellable).map((s) => dollars(s.monthlyCents))
-  return all.length > 1 ? `${all.slice(0, -1).join(', ')} or ${all[all.length - 1]}` : (all[0] ?? '')
-})()
-const STARTER_PRICE = dollars(stepById('starter').monthlyCents)
-const INCLUDED_EDIT_FROM = PLAN_STEPS.find((s) => s.adds.includes('includedSmallEdit'))!
+import { DEFAULT_LOCALE, type AppLocale } from '@/i18n/config'
+import { formatList } from '@/i18n/format'
+import { translatorFor, type Translate } from '@/i18n/translate'
 
 /**
- * Hosting-ladder customer copy. ALL strings here are PLACEHOLDERS drafted from Aria's card
- * (section 7) until Sable Quinn / Wren deliver final [STRICT] wording. Swap strings here only; no
- * other file hard-codes ladder copy. Rules for the final copy: no reply-time promise beyond "by end
- * of next business day (Mon–Fri, excluding holidays)" as a target (pending Ezequiel), no refund or
- * guarantee wording, no ranking or lead guarantees, "call button taps" not
- * "calls", and nothing about backups or downtime alerts until they are built.
+ * Hosting-ladder customer copy (Spanish build, Oct 4: card §5 C1/C3). Every string now lives in
+ * messages/<locale>.json; this module only fills in prices and names. `ladderCopy(locale)` returns
+ * the copy for one language; the named exports below are the ENGLISH copy (en.json, the English
+ * lock), kept so server code and tests that import them keep working. Customer screens use
+ * `ladderCopy(locale)` / useLadderCopy(). Plan and add-on NAMES stay English (card §9 Q3).
+ * Rules for the copy (unchanged): no reply-time promise beyond the next-business-day TARGET, no
+ * refund or guarantee wording, no ranking or lead guarantees, "call button taps" not "calls", and
+ * "tip" never "donation" (ladder-copy.test.ts checks).
  */
 export const LADDER_COPY_STATUS = 'PLACEHOLDER: pending Sable/Wren final copy' as const
+export const LAYOUT_COPY_STATUS = 'FINAL (Sable, Oct 3 2:30 PM): Lina round-4 layout strings' as const
+export const TIP_COPY_STATUS = 'FINAL: Sable, Oct 3, 3:20 PM CT (tipping system)' as const
 
-/**
- * PLACEHOLDER (Sable/Wren; Aria 12:25 wording). The small-edit turnaround is a TARGET: no refund,
- * credit or guarantee wording anywhere (ladder-copy.test.ts checks). Holidays: ladder.ts.
- */
-export const NEXT_BUSINESS_DAY_TARGET = 'by end of next business day (Mon–Fri, excluding holidays)'
-
-/** PLACEHOLDER (Sable/Wren): one-line blurb per step. */
-export const STEP_BLURBS: Record<PlanStepId, string> = {
-  starter: 'Your website, hosted and kept secure.',
-  priority: 'Everything in Starter. Your change requests go ahead of lower plans in line.',
-  fast_lane: 'Everything in Priority, plus one small edit by us each billing period.',
-  leads: 'Everything in Fast lane, plus a monthly report and quote alerts.',
-  get_found: 'Everything in Leads, plus Google Business Profile upkeep.',
-  growth: 'Everything in Get found, plus a seasonal refresh and a quarterly call.',
-}
-
-/** PLACEHOLDER (Sable/Wren): perk lines, shown under the step that adds them. */
-export const PERK_LINES: Record<PlanPerk, string> = {
-  priorityQueue: "When you ask us for a change, you're ahead of lower plans in line.",
-  includedSmallEdit:
-    "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over.",
-  nextBusinessDayEdits: `Small edits: ${NEXT_BUSINESS_DAY_TARGET}.`,
-  leadsReport:
-    'A monthly email showing how many people visited your site, filled out your form, and tapped your call button.',
-  quoteAlerts: 'An email the moment someone asks for a quote.',
-  gbpManaged: 'We keep your Google Business Profile up to date (hours, photos) and post to it for you.',
-  reviewKit: 'A ready-made message and link you can send your customers to ask for reviews.',
-  seasonalRefresh: 'Each season we refresh your site with your new photos and offers.',
-  quarterlyCall: 'A 15-minute planning call with us every quarter.',
-  doneForYouEdits: 'Tell us what you want changed, and we make it for you.',
-}
-
-/** PLACEHOLDER (Sable/Wren): included in every step (Starter). */
-export const STARTER_BASE_LINES: readonly string[] = [
-  'Hosting and SSL (a secure https connection)',
-  'Email support during support hours',
-]
-
-/** PLACEHOLDER (Sable/Wren). */
-export const LADDER_HEADING = 'Choose your hosting plan'
-export const LADDER_SUBHEADING = 'Each plan includes everything in the plans before it. Billed monthly through Stripe.'
-export const MOST_POPULAR_LABEL = 'Most popular'
-export const EVERYTHING_IN = (name: string) => `Everything in ${name}, plus:`
-export const PER_MONTH = '/month'
-export const CONTINUE_TO_PAYMENT = 'Continue to payment'
-export const LEGACY_PLAN_NOTE =
-  'Already have an add-on? You keep it at the same price. You can switch to one of these plans on the Plans page at any time.'
-export const LEGACY_PLAN_LABEL = 'Your current plan (no longer sold)'
-export const INCLUDED_EDIT_LINE = (used: number, available: number) =>
-  available > 1
-    ? used >= available
-      ? 'Your included edits: all used this billing period.'
-      : `Your included edits: ${available - used} of ${available} available this billing period.`
-    : used >= available
-      ? 'Your included edit: used this billing period.'
-      : `Your included edit: ${available - used} available this billing period.`
-export const NEXT_BUSINESS_DAY_LINE = `Small edits: ${NEXT_BUSINESS_DAY_TARGET}.`
-/**
- * AI-edit line for a step card. null while showAiEditQuota (ladder.ts) is false, which it stays until
- * the AI editor ships (Aria, Oct 3 12:56). PLACEHOLDER wording for when it ships.
- */
-export const aiEditsLine = (step: Pick<PlanStep, 'aiEditsPerMonth'>, show: boolean = showAiEditQuota): string | null => {
-  const n = customerAiEditsPerMonth(step, show)
-  return n === null ? null : `AI edits: ${n} a month`
-}
+/** "$35" style, from ladder.ts (never hard-code a price in copy). USD in every locale (card R3). */
+const dollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
+const wholeDollars = (n: number) => `$${n}`
+const STARTER_PRICE = dollars(stepById('starter').monthlyCents)
+const INCLUDED_EDIT_FROM = PLAN_STEPS.find((s) => s.adds.includes('includedSmallEdit'))!
 
 /**
  * Step marked "Most popular" on the cards; null for none. Off (Lina, Oct 3 round 4): no sales data
@@ -93,392 +30,402 @@ export const aiEditsLine = (step: Pick<PlanStep, 'aiEditsPerMonth'>, show: boole
  */
 export const MOST_POPULAR_STEP: PlanStepId | null = null
 
-/** PLACEHOLDER (Sable): landing "Hosting & maintenance" intro (replaces the slider + add-on line). */
-export const LANDING_PLANS_INTRO =
-  'Choose a monthly hosting plan. Each plan includes everything in the plans before it. For maintenance, we analyze your request first — then quote and invoice.'
-/** PLACEHOLDER (Sable): dashboard Plans page intro. */
-export const DASHBOARD_PLANS_INTRO =
-  'Hosting is billed monthly through Stripe. Pick the plan that fits; each one includes everything in the plans before it. Maintenance is quoted after we review your request — describe the work on the request form and we will follow up with pricing.'
+const PERKS: readonly PlanPerk[] = ['priorityQueue', 'includedSmallEdit', 'nextBusinessDayEdits', 'leadsReport', 'quoteAlerts', 'gbpManaged', 'reviewKit', 'seasonalRefresh', 'quarterlyCall', 'doneForYouEdits']
+const STEP_IDS: readonly PlanStepId[] = ['starter', 'priority', 'fast_lane', 'leads', 'get_found', 'growth']
 
-/** PLACEHOLDER (Sable): claim step 3 body, replaces "Plans start at $35 a month." */
-export const CLAIM_STEP3_BODY = `Hosting keeps your website online. Plans start at ${STARTER_PRICE} a month.`
-
-/** PLACEHOLDER (Sable/Wren): help center + FAQ + help chat answers. */
-export const HELP_WHAT_DO_I_PAY =
-  `Hosting is required. It keeps your website online. Plans are ${PRICE_LIST} a month, and each plan includes everything in the ones before it. Maintenance starts at $50, up to $100. You'll see the exact price before you pay. Building the website is free.`
-export const HELP_HOSTING_PLANS =
-  `Hosting plans are ${PRICE_LIST} a month. Each plan includes everything in the ones before it. See Plans in your dashboard for what each plan adds. Already have an add-on? You keep it at the same price.`
-export const HELP_REQUEST_CHANGES =
-  `Yes. ${INCLUDED_EDIT_FROM.name} (${dollars(INCLUDED_EDIT_FROM.monthlyCents)}) and higher plans include one small edit each billing period. For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You'll see the exact price before you pay.`
-export const HELP_HIDDEN_FEES =
-  "No. You pay for monthly hosting, which is required. One-time maintenance or a buyout costs extra only if you request it. Building your website is free, and you'll see the price before you pay."
-export const HELP_SECURITY = 'Every site includes an SSL certificate, so it loads over a secure https connection.'
-export const HELP_PLANS_GUIDE_TITLE_LINE = 'Plans: Choose a hosting plan, or request maintenance'
-export const HELP_PLANS_GUIDE_DESCRIPTION = 'Compare hosting plans for your business'
-/** Monthly edit note in the help chat (Fast lane+ and legacy Plus/Pro). */
-export const HELP_CHAT_INCLUDED_EDIT_NOTE = 'Your plan includes one small edit each billing period.'
-
-/** PLACEHOLDER (Sable/Wren): steps with sellable=false in ladder.ts ("coming soon"). */
-export const COMING_SOON_LABEL = 'Coming soon'
-export const STEP_NOT_SELLABLE_MESSAGE = (name: string) =>
-  `${name} isn't available yet. Choose another plan for now.`
-
-/** PLACEHOLDER (Sable/Wren): switching plans in the app (src/lib/stripe/change-plan.ts). */
-export const CHANGE_PLAN_BUTTON = (name: string) => `Switch to ${name}`
-export const CHANGE_PLAN_CURRENT = 'Your current plan'
-export const CHANGE_PLAN_HELP =
-  "Moving up starts right away, and you pay only the difference for the rest of this billing period. Moving down starts at your next billing date, so you keep what you paid for until then."
-export const CHANGE_PLAN_UPGRADED = (name: string) =>
-  `You're moving to ${name}. We charged the difference for the rest of this billing period. Your new plan shows here as soon as Stripe confirms it, usually within a minute.`
-export const CHANGE_PLAN_SCHEDULED = (name: string, date: string) =>
-  `You'll move to ${name} on ${date}. You keep your current plan until then.`
-export const CHANGE_PLAN_UNCHANGED = "You're on this plan. Any planned change has been cancelled."
-/** [Sable] FINAL (4:32 PM CT): a plan switch while the plan is set to end; names the real button. */
-export const CHANGE_PLAN_ENDING = 'Your plan is set to end. Choose Resume plan first, then switch.'
-export const CHANGE_PLAN_PAYMENT_FAILED =
-  "We couldn't charge your card, so your plan didn't change. Update your payment method in Manage billing and try again."
-export const CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST =
-  "We couldn't charge your card, so your plan didn't change. Your planned switch at the next billing date was cancelled too; pick it again if you still want it."
-export const CHANGE_PLAN_UNAVAILABLE = "We couldn't change your plan right now. Try again, or email support@freeplug-in.dev."
-/** Plans page: a downgrade waiting for the next billing date. */
-export const PENDING_CHANGE_LINE = (name: string, date: string) =>
-  `Changing to ${name} on ${date}. You keep your current plan until then.`
-export const KEEP_PLAN_BUTTON = (name: string) => `Keep ${name}`
-/** Cancel page, when a downgrade is pending (Stripe can't cancel a plan with a planned switch). */
-export const CANCEL_WITH_PENDING_NOTE = (name: string, date: string) =>
-  `You have a switch to ${name} planned for ${date}. Canceling your plan also cancels that switch.`
-export const CANCEL_PLAN_BUTTON = 'Cancel my plan at the end of this billing period'
-/**
- * [Final, Sable, Oct 3 ~5:52 PM; Vera N1] Cancel page "Cancel Your Subscription" box. The only cancel is
- * the in-app button at the bottom of that box (the billing portal's cancel is off since 4d02033). Replaces
- * the old portal line and its access sentence (one paragraph, so the access sentence shows once).
- */
-export const CANCEL_IN_APP_LINE =
-  'If you still want to cancel, use the button at the bottom of this box. Your access continues until the end of your current billing period.'
-
-/**
- * [Sable] FINAL (4:32 PM CT; Aria Oct 3 4:05 PM): "Resume plan" failed. The customer is never sent to the
- * billing portal; they get the support contact (src/lib/site.ts) instead.
- */
-export const RESUME_FAILED_MESSAGE = `We couldn't resume your plan, so it's still set to end. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY} and we'll help.`
-/**
- * [Sable] FINAL (5:11 PM CT; Vera B2): "Resume plan" while another plan change holds the lock AND a
- * fresh read from Stripe shows the plan is still set to end. (Already resumed = the success state.)
- */
-export const RESUME_BUSY_MESSAGE = 'Your plan is already being updated. Please try again in a moment.'
-/** [Sable] FINAL (4:32 PM CT): the in-app cancel (the only cancel) failed. */
-export const CANCEL_FAILED_MESSAGE = `We couldn't cancel your plan just now, so nothing has changed. Please try again in a moment, or contact us at ${SUPPORT_EMAIL} or ${SUPPORT_PHONE_DISPLAY}.`
-/** PLACEHOLDER (Sable/Wren): Plans page billing (Aria, Oct 3 12:56). */
-export const BILLING_PENDING_NOTICE = (name: string, date: string) =>
-  `You have a switch to ${name} planned for ${date}, so billing is handled here until then. You can update your card and see your invoices below.`
-export const BILLING_UNAVAILABLE = "We couldn't open billing right now. Try again, or email support@freeplug-in.dev."
-export const BILLING_HEADING = 'Billing'
-export const UPDATE_CARD_BUTTON = 'Update card'
-export const CARD_UPDATED_NOTICE = 'Thanks. If you saved a new card, we use it for your next payment.'
-export const INVOICES_HEADING = 'Invoices'
-export const INVOICES_EMPTY = 'No invoices yet.'
-export const INVOICE_STATUS_LABEL = { paid: 'Paid', open: 'Due', uncollectible: 'Unpaid' } as const
-export const VIEW_INVOICE = 'View'
-/** [Sable] FINAL (4:32 PM CT): invoice list, the tip as its own part ("Plan $55.00 · Optional tip $4.00"). */
-export const INVOICE_PLAN_PART = (amount: string) => `Plan ${amount}`
-export const INVOICE_TIP_PART = (amount: string) => `Optional tip ${amount}`
-export const DOWNLOAD_INVOICE_PDF = 'PDF'
-
-/**
- * PROPOSED for Sable, NOT wired: the [STRICT] double-charge message (active-subscription.ts
- * ALREADY_HAS_PLAN_MESSAGE, "Use Manage billing to change it.") stays until Sable re-locks it;
- * Manage billing no longer switches plans (portal switching is off, moves happen on Plans).
- */
-export const ALREADY_HAS_PLAN_SWITCH =
-  'You already have an active hosting plan. To change it, pick a plan on the Plans page and choose Switch.'
-
-/**
- * FINAL (Sable, /workspace/copy/freeplug-ladder-round4-copy-2026-10-03.md, Oct 3 ~2:30 PM CT) for Lina's
- * round-4 layout (hosting-ladder-ux-LINA-2026-10-03.md). The upgrade confirm line is Aria's wording (1:34 PM),
- * kept word for word.
- */
-export const LAYOUT_COPY_STATUS = 'FINAL (Sable, Oct 3 2:30 PM): Lina round-4 layout strings' as const
-/** [Final, Sable] Plans page "Your plan" strip (was the hard-coded "Current plan: …" under the list). */
-export const CURRENT_PLAN_LINE = (line: string) => `Current plan: ${line}`
-/** [Final, Sable] Badge on the step a pending downgrade moves to, so the list matches the pending box. */
-export const STARTS_ON_BADGE = (date: string) => `Starts ${date}`
-/** [Final, Sable] Phone only: the collapsed Coming soon group. */
-export const SEE_COMING_SOON = (count: number) => `Plans coming soon (${count})`
-/** [Final, Sable] Claim step 3 button, names the pick (replaces "Choose this plan"). */
-export const CHOOSE_STEP_BUTTON = (name: string) => `Choose ${name}`
-/** [Final, Sable] Claim step 4 summary: text link back to step 3 (only before the card is saved). */
-export const CLAIM_CHANGE_PLAN_LINK = 'Change plan'
-/** [Final, Sable] Switching card: selected = current plan (button disabled). */
-export const CHANGE_PLAN_PICK_TO_SWITCH = 'Choose a different plan to switch'
-/** [Final, Sable] Switching card: selected step is higher (starts now). */
-export const CHANGE_PLAN_BUTTON_NOW = (name: string) => `Switch to ${name} now`
-/**
- * [Final, Sable] Switching card: selected step is lower (starts at the next billing date). On the button
- * `date` is the short form ("Nov 3", formatShortPlanDate) so it fits on one line at 375 (Lina, round 5b);
- * the hint lines keep the full date.
- */
-export const CHANGE_PLAN_BUTTON_ON = (name: string, date: string) => `Switch to ${name} on ${date}`
-/** [Final, Sable] CHANGE_PLAN_HELP split in two: the line under an upgrade button… */
-export const CHANGE_PLAN_HELP_UP =
-  'Starts right away. Today you pay only the difference for the rest of this billing period, and your billing date stays the same.'
-/** [Final, Sable] …and the line under a downgrade button. */
-export const CHANGE_PLAN_HELP_DOWN =
-  'Starts on your next billing date, when the lower price begins. Nothing is charged today, and you keep your current plan until then.'
-/** [Final, Sable] Upgrade confirm, while the server preview runs (never a fake amount). */
-export const UPGRADE_CALCULATING = 'Checking the amount…'
-/** [Final: Aria's wording 1:34 PM, kept by Sable] Upgrade confirm with the previewed amounts. */
-export const UPGRADE_CONFIRM_LINE = (name: string, today: string, monthly: string, date: string) =>
-  `Switch to ${name} now? We'll charge ${today} today, then ${monthly}/month starting ${date}.`
-/** [Final, Sable] Upgrade confirm when the preview failed. */
-export const UPGRADE_CONFIRM_FALLBACK = (name: string) =>
-  `Switch to ${name} now? We'll charge the difference for the rest of this billing period today.`
-/** [Final, Sable] */
-export const UPGRADE_CONFIRM_BUTTON = 'Confirm'
-/** [Final, Sable] */
-export const UPGRADE_CANCEL_BUTTON = 'Not now'
-/** [Final, Sable] Grey line after the confirm expired (10 minutes) or the server refused a stale amount. */
-export const UPGRADE_PREVIEW_EXPIRED = 'That amount is out of date. Use the Switch button again to see the current amount.'
-/** [Final, Sable] A second Confirm arrived while the first was still going through (charged once). */
-export const UPGRADE_IN_PROGRESS = 'Your plan change is already going through. Refresh in a moment to see it.'
-/** [Final, Sable] Dashboard home plan card: plain link to the Plans page. */
-export const CHANGE_PLAN_LINK = 'Change plan'
-/** [Final, Sable 3:19 PM CT] Request page: text link to /dashboard/cancel under the close-blocked message (Lina, round 5b). */
-export const CANCEL_OPTIONS_LINK = 'Cancel options'
-
-/**
- * [Sable, Oct 3 6:19 PM CT] Grandfathered plan display name (cancel page cards, dashboard list and Recent
- * activity; built by planDisplayName in src/lib/stripe/plan-line.ts): "Hosting + Pro add-on", with a tip
- * "Hosting + Pro add-on + $4 tip" (PLAN_STRIP_TIP), and "Hosting plan" with no add-on. The ending alert
- * keeps its own wording ("Your hosting plan and Pro add-on will end…", grandfatheredAlertName).
- */
-export const GRANDFATHERED_HOSTING_ONLY_NAME = 'Hosting plan'
-/** [Sable 6:19 PM] The hosting part when an add-on follows: "Hosting + Pro add-on". */
-export const GRANDFATHERED_HOSTING_SHORT = 'Hosting'
-/** [Sable 6:19 PM] A retired add-on by its tier name: "Pro add-on". */
-export const LEGACY_ADDON_NAME = (tierName: string) => `${tierName} add-on`
-
-/**
- * Help "How do I update my payment method?" (help page b-2 and the help chat 'payment-method'): the
- * locked answer plus Sable's sentence for Manage billing while a switch is planned (Oct 3 ~2:30 PM,
- * item 40). One constant so the page and the chat can't drift. Waits for Sable's re-lock of
- * help/page.tsx:79 in the locked English file (the chat entry is marked pendingCopy until then).
- */
-export const HELP_PAYMENT_METHOD =
-  'Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there. If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices.'
-
-/**
- * FINAL (Sable, /workspace/copy/freeplug-ladder-round4-copy-2026-10-03.md "Added 2:20 PM CT"; Aria said
- * yes). Upgrade confirm extras and the tip-ends lines.
- */
-/** [Final, Sable 2:20 PM] Upgrade confirm when the preview total is exactly $0.00 (a partial credit keeps UPGRADE_CONFIRM_LINE). */
-export const UPGRADE_CONFIRM_ZERO = (name: string, monthly: string, date: string) =>
-  `Switch to ${name} now? Nothing is charged today. Then ${monthly}/month starting ${date}.`
-/** [Final, Sable 2:20 PM] Under the upgrade confirm, only when a downgrade is planned. */
-export const UPGRADE_REPLACES_PENDING = (pendingName: string) => `This replaces your planned switch to ${pendingName}.`
-/** [Final, Aria's wording via Sable 2:20 PM] Upgrade (immediate), only when the customer has a tip. */
-export const PLAN_CHANGE_TIP_ENDS = (tip: string) => `Your ${tip} monthly tip ends with this switch.`
-/** [Final, Sable 2:20 PM] Downgrade (scheduled), only with a tip: under the downgrade button and in the pending box. */
-export const PLAN_CHANGE_TIP_ENDS_ON = (tip: string, date: string) => `Your ${tip} monthly tip ends on ${date}, when this switch starts.`
-
-/**
- * [Sable] FINAL: the tipping system (Sable, Oct 3, 3:20 PM CT,
- * /workspace/copy/freeplug-ladder-round5-tip-copy-2026-10-03.md). An optional monthly extra to support
- * Freeplug; it never changes what a plan includes. Wording rules: "tip" / "optional extra to support
- * Freeplug", never "donation" (ladder-copy.test.ts checks). Swap strings here only.
- */
-export const TIP_COPY_STATUS = 'FINAL: Sable, Oct 3, 3:20 PM CT (tipping system)' as const
-/** [Sable] Slider label (the range input's visible label). */
-export const TIP_SLIDER_LABEL = 'Optional tip to support Freeplug'
-/** [Sable] Grey line under the slider. */
-export const TIP_SLIDER_HELP = "An optional extra to support Freeplug. It doesn't change what your plan includes."
-/** [Sable] Screen readers: the slider value in dollars (aria-valuetext). */
-export const TIP_VALUETEXT = (total: string, tip: string | null) =>
-  tip ? `${total} a month, including a ${tip} tip` : `${total} a month, no tip`
-/** [Sable] Readable live total next to the slider ("$65 + $5 tip = $70/month"). */
-export const TIP_TOTAL_LINE = (price: string, tip: string | null, total: string) =>
-  tip ? `${price} + ${tip} tip = ${total}/month` : `${total}/month, no tip`
-/** [Sable] FINAL (3:19 PM CT): hint between the total line and the bar (Lina, round 5b). */
-export const TIP_SLIDER_HINT = "Pick a tip if you'd like, or leave it at No tip."
-/** [Sable] FINAL (3:19 PM CT): end labels under the bar, in tip amounts (never plan totals). */
-export const TIP_END_NONE = 'No tip'
-export const TIP_END_MAX = (max: string) => `${max} tip`
-/** [Sable] FINAL (3:19 PM CT): aria-labels of the − / + buttons beside the bar ($1 each). */
-export const TIP_LOWER_LABEL = 'Lower tip by $1'
-export const TIP_RAISE_LABEL = 'Raise tip by $1'
-/**
- * [Sable] FINAL (4:32 PM CT): the read-only row in "Your monthly tip" while a switch is planned (the bar
- * is hidden). Matches "Your $X monthly tip ends…".
- */
-export const TIP_LOCKED_AMOUNT = (tip: string) => `${tip} monthly tip`
-/** [Sable] FINAL (3:19 PM CT; unchanged at 4:32): grey line under the locked row; `date` is the switch date ("November 3, 2026"). */
-export const TIP_LOCKED_NOTE = (date: string) =>
-  `Your tip ends on ${date}, when your planned switch starts. You can choose a new tip after that.`
-/** [Sable] Nudge when the total is within TIP_NUDGE_WINDOW_DOLLARS ($5) below the next sellable plan. */
-export const TIP_NUDGE = (next: string, price: string, perk: string) =>
-  `${next} is ${price} a month and adds ${perk}. Want that instead? Keeping your tip is fine too.`
-/** [Sable] Nudge button: picks the next plan (no charge; the normal flow continues). */
-export const TIP_NUDGE_BUTTON = (next: string) => `Choose ${next}`
-/** [Sable] Short "main perk" phrases for the nudge (the first perk a step adds). */
-export const TIP_NUDGE_PERK: Record<PlanPerk, string> = {
-  priorityQueue: 'a place ahead of lower plans when you ask for changes',
-  includedSmallEdit: 'one small edit by us each billing period',
-  nextBusinessDayEdits: `small edits ${NEXT_BUSINESS_DAY_TARGET}`,
-  leadsReport: 'a monthly report on visits, form requests and call button taps',
-  quoteAlerts: 'an email the moment someone asks for a quote',
-  gbpManaged: 'Google Business Profile upkeep',
-  reviewKit: 'a review request kit',
-  seasonalRefresh: 'a seasonal refresh',
-  quarterlyCall: 'a 15-minute planning call every quarter',
-  doneForYouEdits: 'done-for-you edits',
+function build(t: Translate, locale: AppLocale) {
+  /** "$35, $55 or $65": the SELLABLE steps in PLAN_STEPS (coming-soon steps not priced), Intl list. */
+  const priceList = formatList(PLAN_STEPS.filter((s) => s.sellable).map((s) => dollars(s.monthlyCents)), locale, 'disjunction')
+  const NEXT_BUSINESS_DAY_TARGET = t('plans.nextBusinessDayTarget')
+  const perkLine = (p: PlanPerk) => (p === 'nextBusinessDayEdits' ? t('plans.smallEditsNextBusinessDay') : t(`plans.perkLines.${p}`))
+  const ADDON_NAMES: Record<AddonId | 'visitor_snapshot', string> = {
+    small_edit: t('addons.names.small_edit'),
+    big_change: t('addons.names.big_change'),
+    visitor_snapshot: t('addons.names.visitor_snapshot'),
+  }
+  const addonsLockedBySwitch = (date: string | null) => (date ? t('addons.lockedBySwitch', { date }) : t('addons.lockedBySwitchNoDate'))
+  const ADDONS_LOCKED_BY_REMOVAL = t('addons.lockedByRemoval')
+  return {
+    /** The language this copy is in (for dates/amounts formatted next to it). */
+    LOCALE: locale,
+    NEXT_BUSINESS_DAY_TARGET,
+    STEP_BLURBS: Object.fromEntries(STEP_IDS.map((id) => [id, t(`plans.stepBlurbs.${id}`)])) as Record<PlanStepId, string>,
+    PERK_LINES: Object.fromEntries(PERKS.map((p) => [p, perkLine(p)])) as Record<PlanPerk, string>,
+    STARTER_BASE_LINES: [t('plans.starterBaseLines.hostingSslSecureHttps'), t('plans.starterBaseLines.emailSupportDuringSupport')] as readonly string[],
+    LADDER_HEADING: t('plans.ladderHeading'),
+    LADDER_SUBHEADING: t('plans.ladderSubheading'),
+    MOST_POPULAR_LABEL: t('plans.mostPopularLabel'),
+    EVERYTHING_IN: (name: string) => t('plans.everythingIn', { name }),
+    PER_MONTH: t('plans.perMonth'),
+    CONTINUE_TO_PAYMENT: t('plans.continueToPayment'),
+    LEGACY_PLAN_NOTE: t('plans.legacyPlanNote'),
+    LEGACY_PLAN_LABEL: t('plans.legacyPlanLabel'),
+    INCLUDED_EDIT_LINE: (used: number, available: number) =>
+      available > 1
+        ? used >= available
+          ? t('plans.includedEdits.allUsed')
+          : t('plans.includedEdits.someLeft', { remaining: available - used, available })
+        : used >= available
+          ? t('plans.includedEdit.used')
+          : t('plans.includedEdit.available', { remaining: available - used }),
+    NEXT_BUSINESS_DAY_LINE: t('plans.smallEditsNextBusinessDay'),
+    /** AI-edit line; null while showAiEditQuota (ladder.ts) is false (until the AI editor ships). */
+    aiEditsLine: (step: Pick<PlanStep, 'aiEditsPerMonth'>, show: boolean = showAiEditQuota): string | null => {
+      const n = customerAiEditsPerMonth(step, show)
+      return n === null ? null : t('plans.aiEditsLine', { count: n })
+    },
+    LANDING_PLANS_INTRO: t('plans.landingPlansIntro'),
+    DASHBOARD_PLANS_INTRO: t('plans.dashboardPlansIntro'),
+    CLAIM_STEP3_BODY: t('claim.step3Body', { price: STARTER_PRICE }),
+    HELP_WHAT_DO_I_PAY: t('help.answers.whatDoIPay', { priceList }),
+    HELP_HOSTING_PLANS: t('help.answers.hostingPlans', { priceList }),
+    HELP_REQUEST_CHANGES: t('help.answers.requestChanges', { name: INCLUDED_EDIT_FROM.name, price: dollars(INCLUDED_EDIT_FROM.monthlyCents) }),
+    HELP_HIDDEN_FEES: t('help.answers.hiddenFees'),
+    HELP_SECURITY: t('help.answers.security'),
+    HELP_PLANS_GUIDE_TITLE_LINE: t('help.answers.plansGuideTitleLine'),
+    HELP_PLANS_GUIDE_DESCRIPTION: t('help.answers.plansGuideDescription'),
+    HELP_CHAT_INCLUDED_EDIT_NOTE: t('help.answers.chatIncludedEditNote'),
+    COMING_SOON_LABEL: t('plans.comingSoonLabel'),
+    STEP_NOT_SELLABLE_MESSAGE: (name: string) => t('plans.stepNotSellableMessage', { name }),
+    CHANGE_PLAN_BUTTON: (name: string) => t('plans.change.button', { name }),
+    CHANGE_PLAN_CURRENT: t('plans.change.current'),
+    CHANGE_PLAN_HELP: t('plans.change.help'),
+    CHANGE_PLAN_UPGRADED: (name: string) => t('plans.change.upgraded', { name }),
+    CHANGE_PLAN_SCHEDULED: (name: string, date: string) => t('plans.change.scheduled', { name, date }),
+    CHANGE_PLAN_UNCHANGED: t('plans.change.unchanged'),
+    CHANGE_PLAN_ENDING: t('plans.change.ending'),
+    CHANGE_PLAN_PAYMENT_FAILED: t('plans.change.paymentFailed'),
+    CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST: t('plans.change.paymentFailedPendingLost'),
+    CHANGE_PLAN_UNAVAILABLE: t('plans.change.unavailable'),
+    PENDING_CHANGE_LINE: (name: string, date: string) => t('plans.change.pendingChangeLine', { name, date }),
+    KEEP_PLAN_BUTTON: (name: string) => t('plans.change.keepPlanButton', { name }),
+    CANCEL_WITH_PENDING_NOTE: (name: string, date: string) => t('cancel.withPendingNote', { name, date }),
+    CANCEL_PLAN_BUTTON: t('cancel.planButton'),
+    CANCEL_IN_APP_LINE: t('cancel.inAppLine'),
+    RESUME_FAILED_MESSAGE: t('cancel.resumeFailedMessage', { supportEmail: SUPPORT_EMAIL, supportPhone: SUPPORT_PHONE_DISPLAY }),
+    RESUME_BUSY_MESSAGE: t('cancel.resumeBusyMessage'),
+    CANCEL_FAILED_MESSAGE: t('cancel.failedMessage', { supportEmail: SUPPORT_EMAIL, supportPhone: SUPPORT_PHONE_DISPLAY }),
+    BILLING_PENDING_NOTICE: (name: string, date: string) => t('plans.billing.pendingNotice', { name, date }),
+    BILLING_UNAVAILABLE: t('plans.billing.unavailable'),
+    BILLING_HEADING: t('plans.billing.heading'),
+    UPDATE_CARD_BUTTON: t('plans.billing.updateCardButton'),
+    CARD_UPDATED_NOTICE: t('plans.billing.cardUpdatedNotice'),
+    INVOICES_HEADING: t('plans.billing.invoicesHeading'),
+    INVOICES_EMPTY: t('plans.billing.invoicesEmpty'),
+    INVOICE_STATUS_LABEL: {
+      paid: t('plans.billing.invoiceStatus.paid'),
+      open: t('plans.billing.invoiceStatus.open'),
+      uncollectible: t('plans.billing.invoiceStatus.uncollectible'),
+    } as const,
+    VIEW_INVOICE: t('plans.billing.viewInvoice'),
+    INVOICE_PLAN_PART: (amount: string) => t('plans.billing.invoicePlanPart', { amount }),
+    INVOICE_TIP_PART: (amount: string) => t('tips.invoiceTipPart', { amount }),
+    DOWNLOAD_INVOICE_PDF: 'PDF',
+    /** PROPOSED for Sable, NOT wired (see errors.plans.alreadyHasPlanMessage, awaiting Sable's fix). */
+    ALREADY_HAS_PLAN_SWITCH: t('plans.change.alreadyHasPlanSwitch'),
+    CURRENT_PLAN_LINE: (line: string) => t('plans.currentPlanLine', { line }),
+    STARTS_ON_BADGE: (date: string) => t('plans.change.startsOnBadge', { date }),
+    SEE_COMING_SOON: (count: number) => t('plans.seeComingSoon', { count }),
+    CHOOSE_STEP_BUTTON: (name: string) => t('plans.chooseStepButton', { name }),
+    CLAIM_CHANGE_PLAN_LINK: t('plans.change.changePlanLink'),
+    CHANGE_PLAN_PICK_TO_SWITCH: t('plans.change.pickToSwitch'),
+    CHANGE_PLAN_BUTTON_NOW: (name: string) => t('plans.change.buttonNow', { name }),
+    /** On the button `date` is the short form ("Nov 3") so it fits at 375 (Lina, round 5b). */
+    CHANGE_PLAN_BUTTON_ON: (name: string, date: string) => t('plans.change.buttonOn', { name, date }),
+    CHANGE_PLAN_HELP_UP: t('plans.change.helpUp'),
+    CHANGE_PLAN_HELP_DOWN: t('plans.change.helpDown'),
+    UPGRADE_CALCULATING: t('plans.change.calculating'),
+    UPGRADE_CONFIRM_LINE: (name: string, today: string, monthly: string, date: string) =>
+      t('plans.change.confirmLine', { name, todayAmount: today, monthly, date }),
+    UPGRADE_CONFIRM_FALLBACK: (name: string) => t('plans.change.confirmFallback', { name }),
+    UPGRADE_CONFIRM_BUTTON: t('plans.change.confirmButton'),
+    UPGRADE_CANCEL_BUTTON: t('plans.change.cancelButton'),
+    UPGRADE_PREVIEW_EXPIRED: t('plans.change.previewExpired'),
+    UPGRADE_IN_PROGRESS: t('plans.change.inProgress'),
+    CHANGE_PLAN_LINK: t('plans.change.changePlanLink'),
+    CANCEL_OPTIONS_LINK: t('cancel.optionsLink'),
+    GRANDFATHERED_HOSTING_ONLY_NAME: t('plans.grandfatheredHostingOnlyName'),
+    GRANDFATHERED_HOSTING_SHORT: t('plans.grandfatheredHostingShort'),
+    LEGACY_ADDON_NAME: (tierName: string) => t('plans.legacyAddonName', { tier: tierName }),
+    HELP_PAYMENT_METHOD: t('help.answers.paymentMethod'),
+    UPGRADE_CONFIRM_ZERO: (name: string, monthly: string, date: string) => t('plans.change.confirmZero', { name, monthly, date }),
+    UPGRADE_REPLACES_PENDING: (pendingName: string) => t('plans.change.replacesPending', { pendingName }),
+    PLAN_CHANGE_TIP_ENDS: (tip: string) => t('tips.planChangeTipEnds', { tip }),
+    PLAN_CHANGE_TIP_ENDS_ON: (tip: string, date: string) => t('tips.planChangeTipEndsOn', { tip, date }),
+    TIP_SLIDER_LABEL: t('tips.sliderLabel'),
+    TIP_SLIDER_HELP: t('tips.sliderHelp'),
+    TIP_VALUETEXT: (total: string, tip: string | null) => (tip ? t('tips.valuetext.withTip', { total, tip }) : t('tips.valuetext.noTip', { total })),
+    TIP_TOTAL_LINE: (price: string, tip: string | null, total: string) =>
+      tip ? t('tips.totalLine.withTip', { price, tip, total }) : t('tips.totalLine.noTip', { total }),
+    TIP_SLIDER_HINT: t('tips.sliderHint'),
+    TIP_END_NONE: t('tips.endNone'),
+    TIP_END_MAX: (max: string) => t('tips.endMax', { max }),
+    TIP_LOWER_LABEL: t('tips.lowerLabel'),
+    TIP_RAISE_LABEL: t('tips.raiseLabel'),
+    TIP_LOCKED_AMOUNT: (tip: string) => t('tips.lockedAmount', { tip }),
+    TIP_LOCKED_NOTE: (date: string) => t('tips.lockedNote', { date }),
+    TIP_NUDGE: (next: string, price: string, perk: string) => t('tips.nudge', { next, price, perk }),
+    TIP_NUDGE_BUTTON: (next: string) => t('tips.nudgeButton', { next }),
+    TIP_NUDGE_PERK: Object.fromEntries(PERKS.map((p) => [p, t(`tips.nudgePerk.${p}`)])) as Record<PlanPerk, string>,
+    PLAN_STRIP_TIP: (tip: string) => t('tips.planStripTip', { tip }),
+    TIP_CHANGE_HEADING: t('tips.changeHeading'),
+    TIP_CHANGE_NOTE: t('tips.changeNote'),
+    TIP_CHANGE_BUTTON: t('tips.changeButton'),
+    TIP_NEXT_BILL: (amount: string, date: string) => t('tips.nextBill', { amount, date }),
+    TIP_NEXT_BILL_NO_DATE: (amount: string) => t('tips.nextBillNoDate', { amount }),
+    TIP_CHANGED: (nextBill: string) => t('tips.changed', { nextBill }),
+    TIP_CHANGE_PENDING: t('tips.changePending'),
+    TIP_CHANGE_ENDING: t('tips.changeEnding'),
+    TIP_NOT_FOR_PLAN: t('tips.notForPlan'),
+    TIP_OUT_OF_RANGE: t('tips.outOfRange'),
+    TIP_CHANGE_UNAVAILABLE: t('tips.changeUnavailable'),
+    TIP_IN_PROGRESS: t('tips.inProgress'),
+    ADDONS_HEADING: t('addons.heading'),
+    ADDONS_STARTER_CAP_NOTE: t('addons.starterCapNote', { amount: dollars(ADDON_STEP_LIMITS.starter?.maxAddonCents ?? 0) }),
+    ADDON_NAMES,
+    addonPerkLine: (id: AddonId | 'visitor_snapshot', opts: { withIncludedEdit?: boolean } = {}): string => {
+      if (id === 'small_edit') return opts.withIncludedEdit ? t('addons.perk.smallEditWithIncluded') : t('addons.perk.smallEdit')
+      if (id === 'big_change') return t('addons.perk.bigChange')
+      return t('addons.perk.visitorSnapshot')
+    },
+    BIG_CHANGE_BIGGER_NOTE: t('addons.bigChangeBiggerNote'),
+    addonChargeNote: (cents: number) => t('addons.chargeNote', { price: dollars(cents) }),
+    starterSmallEditAddonLine: (show: boolean = showAiEditQuota): string => {
+      const base = t('help.chat.starterSmallEditAddon', { price: dollars(addonById('small_edit')!.monthlyCents), addonName: ADDON_NAMES.small_edit })
+      return show ? `${base} ${t('help.chat.starterSmallEditAiBuilder')}` : base
+    },
+    addonPriceLine: (cents: number) => t('common.amountPerMonth', { amount: dollars(cents) }),
+    addonTipDropQuestion: (tipDollars: number, name: string) => t('addons.tipDropQuestionCheckout', { tip: wholeDollars(tipDollars), name }),
+    ADDON_TURN_ON: t('addons.turnOn'),
+    tipAmountLine: (tipDollars: number) => (tipDollars > 0 ? t('addons.tipAmount', { tip: wholeDollars(tipDollars) }) : t('tips.endNone')),
+    ADDON_CANCEL: t('addons.cancel'),
+    addonTurnOnQuestion: (name: string) => t('addons.turnOnQuestion', { name }),
+    addonChargeNowLine: (amountDueCents: number) => t('addons.chargeToday', { amount: dollars(amountDueCents) }),
+    addonChargeAfterCreditLine: (amountDueCents: number) => t('addons.chargeAfterCredit', { amount: dollars(amountDueCents) }),
+    ADDON_CREDIT_COVERS: t('addons.creditCovers'),
+    addonThenLine: (nextCents: number, date: string | null) =>
+      date ? t('addons.thenMonthly', { price: dollars(nextCents), date }) : t('addons.thenMonthlyNoDate', { price: dollars(nextCents) }),
+    addonChargeUpToLine: (priceCents: number) => t('addons.chargeUpTo', { price: dollars(priceCents) }),
+    addonTipGoesDownQuestion: (tipDollars: number, date: string | null, name: string) =>
+      date
+        ? t('addons.tipGoesDownQuestion', { tip: wholeDollars(tipDollars), date, name })
+        : t('addons.tipGoesDownQuestionNoDate', { tip: wholeDollars(tipDollars), name }),
+    addonOffQuestion: (name: string, date: string | null) =>
+      date ? t('addons.turnOffQuestion', { name, date }) : t('addons.turnOffQuestionNoDate', { name }),
+    ADDON_TURN_OFF: t('addons.turnOff'),
+    addonEndsLine: (date: string | null) => (date ? t('addons.endsBadge', { date }) : t('addons.endsBadgeNoDate')),
+    ADDON_KEEP: t('addons.keep'),
+    addonOnDone: (name: string) => t('addons.doneOn', { name }),
+    addonOffDone: (name: string, date: string | null) => (date ? t('addons.doneOff', { name, date }) : t('addons.doneOffNoDate', { name })),
+    addonKeepDone: (name: string) => t('addons.doneKeep', { name }),
+    addonsLockedBySwitch,
+    ADDONS_LOCKED_BY_REMOVAL,
+    ADDONS_LEGACY_NOTE: t('addons.legacyNote'),
+    ADDON_ERROR: t('addons.error'),
+    addonPaymentFailed: (name: string) => t('addons.paymentFailed', { name }),
+    addonFinishing: (name: string) => t('addons.finishing', { name }),
+    addonRefunded: (name: string) => t('addons.refunded', { name }),
+    addonRefundFailed: (name: string) => t('addons.refundFailed', { name }),
+    ADDON_TURN_OFF_FIRST: t('addons.turnOffFirst'),
+    ADDON_PENDING_SWITCH: addonsLockedBySwitch(null),
+    ADDON_PENDING_REMOVAL: ADDONS_LOCKED_BY_REMOVAL,
+    GO_TO_PLANS: t('help.chat.goToPlans'),
+    /** One whole sentence; the names are an Intl list (Aria, Oct 4: no ", " joins in copy). */
+    addonsStayOnLine: (names: readonly string[] | string) => t('addons.stayOnLine', { names: formatList(([] as string[]).concat(names), locale) }),
+    addonsPendingEndLine: (names: readonly string[] | string, date: string) => {
+      const list = ([] as string[]).concat(names)
+      return t('addons.pendingEndLine', { names: formatList(list, locale), count: list.length, date })
+    },
+    /** One total (action area / sticky bar): "Starter $35 · Add-ons $10.75 · Tip $4". */
+    planTotalBreakdown: (stepName: string, stepCents: number, addonCents: number, tipCents: number): string => {
+      const parts = [t('plans.totalBreakdown.plan', { plan: stepName, amount: dollars(stepCents) })]
+      if (addonCents > 0) parts.push(t('plans.totalBreakdown.addons', { amount: dollars(addonCents) }))
+      if (tipCents > 0) parts.push(t('plans.totalBreakdown.tip', { amount: dollars(tipCents) }))
+      return parts.join(' · ')
+    },
+    planTotalLine: (totalCents: number) => t('common.amountPerMonth', { amount: dollars(totalCents) }),
+    /** "$65.00/month" for an already formatted amount. */
+    AMOUNT_PER_MONTH: (amount: string) => t('common.amountPerMonth', { amount }),
+    bigChangeLine: (used: number, of: number) => t('addons.bigChangeUsage', { used, total: of }),
+    planStripAddons: (cents: number) => t('addons.planStripAddons', { amount: dollars(cents) }),
+    ADDON_TOTAL_LINE: (plan: string, addons: string, tip: string | null, total: string) =>
+      tip ? t('cancel.addonTotalLine.withTip', { plan, addons, tip, total }) : t('cancel.addonTotalLine.noTip', { plan, addons, total }),
+  }
 }
-/** [Sable] Plan strip and claim summary: the tip as its own part ("Fast lane · $65/month + $5 tip"). */
-export const PLAN_STRIP_TIP = (tip: string) => ` + ${tip} tip`
-/** [Sable] Plans page: heading of the tip box for a live plan. */
-export const TIP_CHANGE_HEADING = 'Your monthly tip'
-/** [Sable] Plans page: grey line in the tip box. */
-export const TIP_CHANGE_NOTE = 'Changes start with your next bill. Nothing is charged today. To stop your tip, set it to No tip.'
-/** [Sable] Plans page: button that shows the next bill before saving. */
-export const TIP_CHANGE_BUTTON = 'Update tip'
-/** [Sable] Plans page: the tip-change confirmation ("Your next bill will be $X on <date>."). */
-export const TIP_NEXT_BILL = (amount: string, date: string) => `Your next bill will be ${amount} on ${date}.`
-/** [Sable] Same, when the date is unknown. */
-export const TIP_NEXT_BILL_NO_DATE = (amount: string) => `Your next bill will be ${amount}.`
-/** [Sable] Plans page: after saving; `nextBill` is the TIP_NEXT_BILL line the customer confirmed. */
-export const TIP_CHANGED = (nextBill: string) => `Your tip is updated. ${nextBill}`
-/** [Sable] Plans page: a switch is planned, so the tip can't change now. */
-export const TIP_CHANGE_PENDING =
-  "Tips can't be changed while a plan switch is planned. Once the switch starts, you can choose a new tip."
-/** [Sable] FINAL (4:32 PM CT, new): tip box only, while the plan is set to end (replaces the plan-switch line there). */
-export const TIP_CHANGE_ENDING = "Your plan is set to end, so your tip can't be changed. Choose Resume plan first."
-/** [Sable] Plans page: grandfathered plan (no slider). */
-export const TIP_NOT_FOR_PLAN = "Tips aren't available on your plan."
-/** [Sable] Server refused the amount (outside the plan's range). */
-export const TIP_OUT_OF_RANGE = 'Choose a tip within the range on the slider.'
-/** [Sable] */
-export const TIP_CHANGE_UNAVAILABLE = "We couldn't change your tip right now. Try again, or email support@freeplug-in.dev."
-/**
- * [Sable] Another tip change for this customer holds the plan-change lock (plan-change-lock-server.ts),
- * e.g. a double-click or a second tab. Shown instead of UPGRADE_IN_PROGRESS on the tip paths.
- */
-export const TIP_IN_PROGRESS = 'Your tip change is already going through. Refresh in a moment to see it.'
 
-// ------------------------------------------------------------------ add-ons (Oct 4, Lina's block)
-// Card lines + charge note: Sable, approved by Ezequiel (Oct 4 8:28 / 8:31 AM). Other lines here are
-// placeholders for Sable unless marked. Prices always come from ladder.ts ADDONS, never typed in copy.
+export type LadderCopy = ReturnType<typeof build>
+const byLocale = new Map<AppLocale, LadderCopy>()
 
-export const ADDONS_HEADING = 'Add-ons'
-/** Header right side, Starter selected only: "up to $15/month on Starter" (from ADDON_STEP_LIMITS). */
-export const ADDONS_STARTER_CAP_NOTE = `up to ${dollars(ADDON_STEP_LIMITS.starter?.maxAddonCents ?? 0)}/month on Starter`
-export const ADDON_NAMES: Record<AddonId | 'visitor_snapshot', string> = {
-  small_edit: '+1 small edit',
-  big_change: 'Big change',
-  visitor_snapshot: 'Visitor snapshot',
+/** The ladder copy in one language (English for anything unknown). */
+export function ladderCopy(locale: AppLocale = DEFAULT_LOCALE): LadderCopy {
+  const hit = byLocale.get(locale)
+  if (hit) return hit
+  const copy = build(translatorFor(locale), locale)
+  if (!process.env.VITEST) byLocale.set(locale, copy)
+  return copy
 }
-/**
- * [Sable, approved] Perk line under the price. `withIncludedEdit`: the step already includes 1 small
- * edit (Fast lane and up); Starter and Priority get the plain line.
- */
-export function addonPerkLine(id: AddonId | 'visitor_snapshot', opts: { withIncludedEdit?: boolean } = {}): string {
-  if (id === 'small_edit')
-    return opts.withIncludedEdit
-      ? "One more small edit on top of the one your plan includes. Unused edits don't roll over."
-      : "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over."
-  if (id === 'big_change')
-    return "One larger change each billing period, up to about an hour of work on your existing pages. For example, adding a section, a new service with photos, a gallery refresh, or rewriting one page. Unused changes don't roll over."
-  return 'A monthly email with how many people visited your site.'
-}
-/** [Sable, approved] Gray line under the Big change perk line. */
-export const BIG_CHANGE_BIGGER_NOTE = "Need something bigger, like a new page or feature? We'll quote it as maintenance first, and you can still use this month's change."
-/** [Sable, approved] Gray charge note on each live add-on card; {price} from ADDONS. */
-export function addonChargeNote(cents: number): string {
-  const price = dollars(cents)
-  return `Turning it on charges ${price} now for this billing period, then ${price} each month. If you turn it off, it stays on until the period ends.`
-}
-/**
- * [Sable, approved] Help chat review step: a Starter plan without the +1 small edit add-on asks for a
- * small edit. The AI-builder sentence shows only while showAiEditQuota (ladder.ts) is true.
- */
-export function starterSmallEditAddonLine(show: boolean = showAiEditQuota): string {
-  const price = dollars(addonById('small_edit')!.monthlyCents)
-  const base = `Small edits are ${price} with the ${ADDON_NAMES.small_edit} add-on. Turn it on and we'll take care of it this month. You can turn it off anytime.`
-  return show ? `${base} Or make the change yourself with the AI builder, at no extra cost.` : base
-}
-export const addonPriceLine = (cents: number) => `${dollars(cents)}/month`
-/** New checkout (no plan yet): turning one on would push Starter past its total; the tip drops right away. */
-export const addonTipDropQuestion = (tipDollars: number, name: string) => `Your tip will drop to $${tipDollars}. Turn on ${name}?`
-export const ADDON_TURN_ON = 'Turn on'
-/** Tip card next to the add-ons block: the tip amount only (the one total is in the action area). */
-export const tipAmountLine = (tipDollars: number) => (tipDollars > 0 ? `$${tipDollars} tip` : 'No tip')
-export const ADDON_CANCEL = 'Cancel'
 
-// ---- [Sable, final 9:05 AM Oct 4] add-on strings, word for word. {name} = ADDON_NAMES, prices = ADDONS.
-// Turn on (live plan only). While the preview loads: UPGRADE_CALCULATING ("Checking the amount…").
-export const addonTurnOnQuestion = (name: string) => `Turn on ${name}?`
-/** The real amount from the server-side Stripe preview (no account credit used). */
-export const addonChargeNowLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} today for this billing period.`
-/** Account credit pays part of it: the amount still charged to the card. */
-export const addonChargeAfterCreditLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} today, after your account credit.`
-/** Account credit pays all of it. */
-export const ADDON_CREDIT_COVERS = 'Nothing is charged today. Your account credit covers it.'
-export const addonThenLine = (nextCents: number, date: string | null) =>
-  date ? `Then ${dollars(nextCents)}/month starting ${date}.` : `Then ${dollars(nextCents)}/month.`
-/** The preview failed: the add-on's full price is the most it can charge (credit can only lower it). */
-export const addonChargeUpToLine = (priceCents: number) => `We'll charge up to ${dollars(priceCents)} today for this billing period.`
-/** Live plan, Starter tip drop: the tip goes down from the next renewal (this period's tip is already paid). */
-export const addonTipGoesDownQuestion = (tipDollars: number, date: string | null, name: string) =>
-  date ? `Your tip goes down to $${tipDollars} starting ${date}. Turn on ${name}?` : `Your tip goes down to $${tipDollars} starting your next bill. Turn on ${name}?`
-// Turn off and keep.
-export const addonOffQuestion = (name: string, date: string | null) =>
-  date ? `Turn off ${name}? It stays on until ${date}, then it ends.` : `Turn off ${name}? It stays on until the end of this billing period.`
-export const ADDON_TURN_OFF = 'Turn off'
-export const addonEndsLine = (date: string | null) => (date ? `Ends ${date}` : 'Ends at the end of this billing period')
-export const ADDON_KEEP = 'Keep it'
-export const addonOnDone = (name: string) => `${name} is on.`
-export const addonOffDone = (name: string, date: string | null) => (date ? `${name} ends ${date}.` : `${name} ends at the end of this billing period.`)
-export const addonKeepDone = (name: string) => `${name} stays on.`
-// Locks (the note on the card AND the server refusal).
-export const addonsLockedBySwitch = (date: string | null) =>
-  date ? `You can change add-ons after your switch on ${date}.` : 'You can change add-ons after your plan switch.'
-export const ADDONS_LOCKED_BY_REMOVAL = 'An add-on is set to end. Choose Keep it, or wait until it ends to make other changes.'
-export const ADDONS_LEGACY_NOTE = "Add-ons aren't available on your plan. To use them, switch to one of the plans above."
-// Errors.
-export const ADDON_ERROR = "We couldn't change your add-ons right now. Try again, or email support@freeplug-in.dev."
-export const addonPaymentFailed = (name: string) =>
-  `Your card wasn't charged, so ${name} is still off. Update your card in Manage billing, then try again.`
-/** Paid, the add-on not on yet: the self-heal (invoice.paid webhook) finishes it or refunds automatically. */
-export const addonFinishing = (name: string) =>
-  `Your payment went through. We're finishing turning on ${name}. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically.`
-export const addonRefunded = (name: string) =>
-  `We couldn't turn on ${name}, so we've refunded the charge to your card. It can take 5–10 business days to show.`
-export const addonRefundFailed = (name: string) =>
-  `We couldn't turn on ${name}, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge.`
-/** Server refusals (no date known): the same lock lines. */
-export const ADDON_TURN_OFF_FIRST = 'Turn off an add-on first'
-export const ADDON_PENDING_SWITCH = addonsLockedBySwitch(null)
-export const ADDON_PENDING_REMOVAL = ADDONS_LOCKED_BY_REMOVAL
-/** Help chat small-edit line (Starter without +1 small edit): the link after it. */
-export const GO_TO_PLANS = 'Go to Plans'
-/** Upgrade confirm: one gray line listing the add-ons that are on (omitted when none). */
-export const addonsStayOnLine = (names: readonly string[] | string) => `Your add-ons stay on: ${([] as string[]).concat(names).join(', ')}.`
-/** Pending switch line on the Plans page / dashboard when the plan switch keeps add-ons. */
-export const addonsPendingEndLine = (names: readonly string[] | string, date: string) => {
-  const list = ([] as string[]).concat(names)
-  return `${list.join(', ')} ${list.length === 1 ? 'ends' : 'end'} ${date}.`
-}
-/** One total (action area / sticky bar): "Starter $35 · Add-ons $10.75 · Tip $4" then "$49.75/month". */
-export function planTotalBreakdown(stepName: string, stepCents: number, addonCents: number, tipCents: number): string {
-  const parts = [`${stepName} ${dollars(stepCents)}`]
-  if (addonCents > 0) parts.push(`Add-ons ${dollars(addonCents)}`)
-  if (tipCents > 0) parts.push(`Tip ${dollars(tipCents)}`)
-  return parts.join(' · ')
-}
-export const planTotalLine = (totalCents: number) => `${dollars(totalCents)}/month`
-/** Dashboard: Big change uses this period. */
-export const bigChangeLine = (used: number, of: number) => `Big change: ${used} of ${of} used this period`
-/** Admin. */
+/** Admin stays English (card R3); not in the customer catalog. */
 export const ADMIN_MARK_BIG_CHANGE = 'Mark as big change'
-/** Plan strip / dashboard: add-ons part ("+ $10.75 add-ons"). */
-export const planStripAddons = (cents: number) => ` + ${dollars(cents)} add-ons`
-/** Cancel page price line with add-ons: "$35.00 + $10.75 add-ons + $4.00 tip = $49.75/month" (tip part only when > 0). */
-export const ADDON_TOTAL_LINE = (plan: string, addons: string, tip: string | null, total: string) =>
-  `${plan} + ${addons} add-ons${tip ? ` + ${tip} tip` : ''} = ${total}/month`
+
+// ---------------------------------------------------------------- English exports (en.json)
+const EN = build(translatorFor('en'), 'en')
+export const NEXT_BUSINESS_DAY_TARGET = EN.NEXT_BUSINESS_DAY_TARGET
+export const STEP_BLURBS = EN.STEP_BLURBS
+export const PERK_LINES = EN.PERK_LINES
+export const STARTER_BASE_LINES = EN.STARTER_BASE_LINES
+export const LADDER_HEADING = EN.LADDER_HEADING
+export const LADDER_SUBHEADING = EN.LADDER_SUBHEADING
+export const MOST_POPULAR_LABEL = EN.MOST_POPULAR_LABEL
+export const EVERYTHING_IN = EN.EVERYTHING_IN
+export const PER_MONTH = EN.PER_MONTH
+export const CONTINUE_TO_PAYMENT = EN.CONTINUE_TO_PAYMENT
+export const LEGACY_PLAN_NOTE = EN.LEGACY_PLAN_NOTE
+export const LEGACY_PLAN_LABEL = EN.LEGACY_PLAN_LABEL
+export const INCLUDED_EDIT_LINE = EN.INCLUDED_EDIT_LINE
+export const NEXT_BUSINESS_DAY_LINE = EN.NEXT_BUSINESS_DAY_LINE
+export const aiEditsLine = EN.aiEditsLine
+export const LANDING_PLANS_INTRO = EN.LANDING_PLANS_INTRO
+export const DASHBOARD_PLANS_INTRO = EN.DASHBOARD_PLANS_INTRO
+export const CLAIM_STEP3_BODY = EN.CLAIM_STEP3_BODY
+export const HELP_WHAT_DO_I_PAY = EN.HELP_WHAT_DO_I_PAY
+export const HELP_HOSTING_PLANS = EN.HELP_HOSTING_PLANS
+export const HELP_REQUEST_CHANGES = EN.HELP_REQUEST_CHANGES
+export const HELP_HIDDEN_FEES = EN.HELP_HIDDEN_FEES
+export const HELP_SECURITY = EN.HELP_SECURITY
+export const HELP_PLANS_GUIDE_TITLE_LINE = EN.HELP_PLANS_GUIDE_TITLE_LINE
+export const HELP_PLANS_GUIDE_DESCRIPTION = EN.HELP_PLANS_GUIDE_DESCRIPTION
+export const HELP_CHAT_INCLUDED_EDIT_NOTE = EN.HELP_CHAT_INCLUDED_EDIT_NOTE
+export const COMING_SOON_LABEL = EN.COMING_SOON_LABEL
+export const STEP_NOT_SELLABLE_MESSAGE = EN.STEP_NOT_SELLABLE_MESSAGE
+export const CHANGE_PLAN_BUTTON = EN.CHANGE_PLAN_BUTTON
+export const CHANGE_PLAN_CURRENT = EN.CHANGE_PLAN_CURRENT
+export const CHANGE_PLAN_HELP = EN.CHANGE_PLAN_HELP
+export const CHANGE_PLAN_UPGRADED = EN.CHANGE_PLAN_UPGRADED
+export const CHANGE_PLAN_SCHEDULED = EN.CHANGE_PLAN_SCHEDULED
+export const CHANGE_PLAN_UNCHANGED = EN.CHANGE_PLAN_UNCHANGED
+export const CHANGE_PLAN_ENDING = EN.CHANGE_PLAN_ENDING
+export const CHANGE_PLAN_PAYMENT_FAILED = EN.CHANGE_PLAN_PAYMENT_FAILED
+export const CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST = EN.CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST
+export const CHANGE_PLAN_UNAVAILABLE = EN.CHANGE_PLAN_UNAVAILABLE
+export const PENDING_CHANGE_LINE = EN.PENDING_CHANGE_LINE
+export const KEEP_PLAN_BUTTON = EN.KEEP_PLAN_BUTTON
+export const CANCEL_WITH_PENDING_NOTE = EN.CANCEL_WITH_PENDING_NOTE
+export const CANCEL_PLAN_BUTTON = EN.CANCEL_PLAN_BUTTON
+export const CANCEL_IN_APP_LINE = EN.CANCEL_IN_APP_LINE
+export const RESUME_FAILED_MESSAGE = EN.RESUME_FAILED_MESSAGE
+export const RESUME_BUSY_MESSAGE = EN.RESUME_BUSY_MESSAGE
+export const CANCEL_FAILED_MESSAGE = EN.CANCEL_FAILED_MESSAGE
+export const BILLING_PENDING_NOTICE = EN.BILLING_PENDING_NOTICE
+export const BILLING_UNAVAILABLE = EN.BILLING_UNAVAILABLE
+export const BILLING_HEADING = EN.BILLING_HEADING
+export const UPDATE_CARD_BUTTON = EN.UPDATE_CARD_BUTTON
+export const CARD_UPDATED_NOTICE = EN.CARD_UPDATED_NOTICE
+export const INVOICES_HEADING = EN.INVOICES_HEADING
+export const INVOICES_EMPTY = EN.INVOICES_EMPTY
+export const INVOICE_STATUS_LABEL = EN.INVOICE_STATUS_LABEL
+export const VIEW_INVOICE = EN.VIEW_INVOICE
+export const INVOICE_PLAN_PART = EN.INVOICE_PLAN_PART
+export const INVOICE_TIP_PART = EN.INVOICE_TIP_PART
+export const DOWNLOAD_INVOICE_PDF = EN.DOWNLOAD_INVOICE_PDF
+export const ALREADY_HAS_PLAN_SWITCH = EN.ALREADY_HAS_PLAN_SWITCH
+export const CURRENT_PLAN_LINE = EN.CURRENT_PLAN_LINE
+export const STARTS_ON_BADGE = EN.STARTS_ON_BADGE
+export const SEE_COMING_SOON = EN.SEE_COMING_SOON
+export const CHOOSE_STEP_BUTTON = EN.CHOOSE_STEP_BUTTON
+export const CLAIM_CHANGE_PLAN_LINK = EN.CLAIM_CHANGE_PLAN_LINK
+export const CHANGE_PLAN_PICK_TO_SWITCH = EN.CHANGE_PLAN_PICK_TO_SWITCH
+export const CHANGE_PLAN_BUTTON_NOW = EN.CHANGE_PLAN_BUTTON_NOW
+export const CHANGE_PLAN_BUTTON_ON = EN.CHANGE_PLAN_BUTTON_ON
+export const CHANGE_PLAN_HELP_UP = EN.CHANGE_PLAN_HELP_UP
+export const CHANGE_PLAN_HELP_DOWN = EN.CHANGE_PLAN_HELP_DOWN
+export const UPGRADE_CALCULATING = EN.UPGRADE_CALCULATING
+export const UPGRADE_CONFIRM_LINE = EN.UPGRADE_CONFIRM_LINE
+export const UPGRADE_CONFIRM_FALLBACK = EN.UPGRADE_CONFIRM_FALLBACK
+export const UPGRADE_CONFIRM_BUTTON = EN.UPGRADE_CONFIRM_BUTTON
+export const UPGRADE_CANCEL_BUTTON = EN.UPGRADE_CANCEL_BUTTON
+export const UPGRADE_PREVIEW_EXPIRED = EN.UPGRADE_PREVIEW_EXPIRED
+export const UPGRADE_IN_PROGRESS = EN.UPGRADE_IN_PROGRESS
+export const CHANGE_PLAN_LINK = EN.CHANGE_PLAN_LINK
+export const CANCEL_OPTIONS_LINK = EN.CANCEL_OPTIONS_LINK
+export const GRANDFATHERED_HOSTING_ONLY_NAME = EN.GRANDFATHERED_HOSTING_ONLY_NAME
+export const GRANDFATHERED_HOSTING_SHORT = EN.GRANDFATHERED_HOSTING_SHORT
+export const LEGACY_ADDON_NAME = EN.LEGACY_ADDON_NAME
+export const HELP_PAYMENT_METHOD = EN.HELP_PAYMENT_METHOD
+export const UPGRADE_CONFIRM_ZERO = EN.UPGRADE_CONFIRM_ZERO
+export const UPGRADE_REPLACES_PENDING = EN.UPGRADE_REPLACES_PENDING
+export const PLAN_CHANGE_TIP_ENDS = EN.PLAN_CHANGE_TIP_ENDS
+export const PLAN_CHANGE_TIP_ENDS_ON = EN.PLAN_CHANGE_TIP_ENDS_ON
+export const TIP_SLIDER_LABEL = EN.TIP_SLIDER_LABEL
+export const TIP_SLIDER_HELP = EN.TIP_SLIDER_HELP
+export const TIP_VALUETEXT = EN.TIP_VALUETEXT
+export const TIP_TOTAL_LINE = EN.TIP_TOTAL_LINE
+export const TIP_SLIDER_HINT = EN.TIP_SLIDER_HINT
+export const TIP_END_NONE = EN.TIP_END_NONE
+export const TIP_END_MAX = EN.TIP_END_MAX
+export const TIP_LOWER_LABEL = EN.TIP_LOWER_LABEL
+export const TIP_RAISE_LABEL = EN.TIP_RAISE_LABEL
+export const TIP_LOCKED_AMOUNT = EN.TIP_LOCKED_AMOUNT
+export const TIP_LOCKED_NOTE = EN.TIP_LOCKED_NOTE
+export const TIP_NUDGE = EN.TIP_NUDGE
+export const TIP_NUDGE_BUTTON = EN.TIP_NUDGE_BUTTON
+export const TIP_NUDGE_PERK = EN.TIP_NUDGE_PERK
+export const PLAN_STRIP_TIP = EN.PLAN_STRIP_TIP
+export const TIP_CHANGE_HEADING = EN.TIP_CHANGE_HEADING
+export const TIP_CHANGE_NOTE = EN.TIP_CHANGE_NOTE
+export const TIP_CHANGE_BUTTON = EN.TIP_CHANGE_BUTTON
+export const TIP_NEXT_BILL = EN.TIP_NEXT_BILL
+export const TIP_NEXT_BILL_NO_DATE = EN.TIP_NEXT_BILL_NO_DATE
+export const TIP_CHANGED = EN.TIP_CHANGED
+export const TIP_CHANGE_PENDING = EN.TIP_CHANGE_PENDING
+export const TIP_CHANGE_ENDING = EN.TIP_CHANGE_ENDING
+export const TIP_NOT_FOR_PLAN = EN.TIP_NOT_FOR_PLAN
+export const TIP_OUT_OF_RANGE = EN.TIP_OUT_OF_RANGE
+export const TIP_CHANGE_UNAVAILABLE = EN.TIP_CHANGE_UNAVAILABLE
+export const TIP_IN_PROGRESS = EN.TIP_IN_PROGRESS
+export const ADDONS_HEADING = EN.ADDONS_HEADING
+export const ADDONS_STARTER_CAP_NOTE = EN.ADDONS_STARTER_CAP_NOTE
+export const ADDON_NAMES = EN.ADDON_NAMES
+export const addonPerkLine = EN.addonPerkLine
+export const BIG_CHANGE_BIGGER_NOTE = EN.BIG_CHANGE_BIGGER_NOTE
+export const addonChargeNote = EN.addonChargeNote
+export const starterSmallEditAddonLine = EN.starterSmallEditAddonLine
+export const addonPriceLine = EN.addonPriceLine
+export const addonTipDropQuestion = EN.addonTipDropQuestion
+export const ADDON_TURN_ON = EN.ADDON_TURN_ON
+export const tipAmountLine = EN.tipAmountLine
+export const ADDON_CANCEL = EN.ADDON_CANCEL
+export const addonTurnOnQuestion = EN.addonTurnOnQuestion
+export const addonChargeNowLine = EN.addonChargeNowLine
+export const addonChargeAfterCreditLine = EN.addonChargeAfterCreditLine
+export const ADDON_CREDIT_COVERS = EN.ADDON_CREDIT_COVERS
+export const addonThenLine = EN.addonThenLine
+export const addonChargeUpToLine = EN.addonChargeUpToLine
+export const addonTipGoesDownQuestion = EN.addonTipGoesDownQuestion
+export const addonOffQuestion = EN.addonOffQuestion
+export const ADDON_TURN_OFF = EN.ADDON_TURN_OFF
+export const addonEndsLine = EN.addonEndsLine
+export const ADDON_KEEP = EN.ADDON_KEEP
+export const addonOnDone = EN.addonOnDone
+export const addonOffDone = EN.addonOffDone
+export const addonKeepDone = EN.addonKeepDone
+export const addonsLockedBySwitch = EN.addonsLockedBySwitch
+export const ADDONS_LOCKED_BY_REMOVAL = EN.ADDONS_LOCKED_BY_REMOVAL
+export const ADDONS_LEGACY_NOTE = EN.ADDONS_LEGACY_NOTE
+export const ADDON_ERROR = EN.ADDON_ERROR
+export const addonPaymentFailed = EN.addonPaymentFailed
+export const addonFinishing = EN.addonFinishing
+export const addonRefunded = EN.addonRefunded
+export const addonRefundFailed = EN.addonRefundFailed
+export const ADDON_TURN_OFF_FIRST = EN.ADDON_TURN_OFF_FIRST
+export const ADDON_PENDING_SWITCH = EN.ADDON_PENDING_SWITCH
+export const ADDON_PENDING_REMOVAL = EN.ADDON_PENDING_REMOVAL
+export const GO_TO_PLANS = EN.GO_TO_PLANS
+export const addonsStayOnLine = EN.addonsStayOnLine
+export const addonsPendingEndLine = EN.addonsPendingEndLine
+export const planTotalBreakdown = EN.planTotalBreakdown
+export const planTotalLine = EN.planTotalLine
+export const AMOUNT_PER_MONTH = EN.AMOUNT_PER_MONTH
+export const bigChangeLine = EN.bigChangeLine
+export const planStripAddons = EN.planStripAddons
+export const ADDON_TOTAL_LINE = EN.ADDON_TOTAL_LINE
