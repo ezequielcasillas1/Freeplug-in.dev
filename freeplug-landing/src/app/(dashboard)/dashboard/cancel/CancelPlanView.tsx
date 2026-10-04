@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ADDON_TOTAL_LINE } from '@/lib/plans/ladder-copy'
 import { Button } from '@/components/ui/button'
 import { cancelHostingAtPeriodEnd, resumePlan } from '../billing-actions'
 import { ResumePlanSubmit } from '../ResumePlanSubmit'
@@ -50,8 +51,12 @@ function formatCents(cents: number): string {
  * "$65.00/month", or with a tip Sable's final TIP_TOTAL_LINE: "$65.00 + $6.00 tip = $71.00/month"
  * (Vera bug 4: the cancel page showed the plan price only).
  */
-function priceLine(sub: { amount: number; tipCents?: number; interval: string }): string {
+function priceLine(sub: { amount: number; tipCents?: number; addonCents?: number; interval: string }): string {
   const tip = sub.tipCents ?? 0
+  const addons = sub.addonCents ?? 0
+  if (addons > 0 && sub.interval === 'month') {
+    return ADDON_TOTAL_LINE(formatCents(sub.amount), formatCents(addons), tip > 0 ? formatCents(tip) : null, formatCents(sub.amount + addons + tip))
+  }
   if (tip > 0 && sub.interval === 'month') return TIP_TOTAL_LINE(formatCents(sub.amount), formatCents(tip), formatCents(sub.amount + tip))
   return `${formatCents(sub.amount)}/${sub.interval}`
 }

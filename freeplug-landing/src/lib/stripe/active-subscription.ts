@@ -11,8 +11,10 @@ import {
   type Entitlements,
   type LegacyAddonTierId,
   type PlanStep,
+  withAddons,
 } from '@/lib/plans/ladder'
 import { isTipPrice, tierItems, tipDollarsOfItems, tipCentsFor } from '@/lib/plans/tips'
+import { addonCentsOfItems, addonIdsOfItems, isAddonPrice } from '@/lib/plans/addons'
 import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { planStripLine, type PlanLineItem } from './plan-line'
 
@@ -137,14 +139,14 @@ export async function describeLiveSubscriptions(customerId: string): Promise<str
     const items: PlanLineItem[] = []
     const tipDollars = tipDollarsOfItems(sub.items.data)
     for (const item of sub.items.data) {
-      if (isTipPrice(item.price)) continue
+      if (isTipPrice(item.price) || isAddonPrice(item.price)) continue
       const product =
         typeof item.price.product === 'string'
           ? await stripe.products.retrieve(item.price.product)
           : (item.price.product as Stripe.Product)
       items.push({ lookupKey: item.price.lookup_key ?? null, productName: product.name, productId: product.id ?? null, unitAmountCents: item.price.unit_amount ?? 0, quantity: item.quantity ?? 1 })
     }
-    lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars))
+    lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars, addonCentsOfItems(sub.items.data)))
   }
   return lines
 }
@@ -177,7 +179,8 @@ export async function entitlementsForSubscription(
     if (!step && isPlanStepId(md)) step = entitlementsFor({ stepId: md }).step
   }
   if (!step && isPlanStepId(sub.metadata?.plan_step)) step = entitlementsFor({ stepId: sub.metadata.plan_step }).step
-  if (step) return { ...entitlementsFor({ stepId: step.id }), tipCents }
+  // Add-ons (Oct 4): their own items, read separately (+1 small edit, Big change); ladder plans only.
+  if (step) return { ...withAddons(entitlementsFor({ stepId: step.id }), addonIdsOfItems(sub.items.data), addonCentsOfItems(sub.items.data)), tipCents }
 
   // Grandfathered: hosting amount = items that aren't an add-on; tier from metadata/id/name.
   let addonTier: LegacyAddonTierId | null = null

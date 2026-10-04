@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import { PLAN_STEPS, stepById, TIP_LOOKUP_KEY, TIP_PRODUCT_ID, TIP_UNIT_CENTS, type PlanStepId } from '@/lib/plans/ladder'
+import { ADDONS, addonById, PLAN_STEPS, stepById, TIP_LOOKUP_KEY, TIP_PRODUCT_ID, TIP_UNIT_CENTS, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
 import { getStripe } from '@/lib/stripe/server'
 
 /**
@@ -109,4 +109,51 @@ export async function getTipPriceId(stripe: Stripe = getStripe(), now = Date.now
   }
   tipCache = { id: price.id, at: now }
   return price.id
+}
+
+// ------------------------------------------------------------------ add-ons (Oct 4)
+
+let addonCache: { ids: Map<AddonId, string>; at: number } | null = null
+
+/** Test hook. */
+export function resetAddonPriceCache(): void {
+  addonCache = null
+}
+
+/**
+ * An add-on price must match ladder.ts ADDONS exactly: active, the add-on's own lookup key and fixed
+ * product id, USD, the configured monthly amount, licensed, monthly. So the amount a cap check reads
+ * from a validated price IS the Stripe amount the customer pays.
+ */
+export function validatesAddonPrice(price: Stripe.Price, id: AddonId): boolean {
+  const addon = addonById(id)
+  if (!addon) return false
+  const product = typeof price.product === 'string' ? price.product : price.product?.id
+  return (
+    price.active === true &&
+    price.lookup_key === addon.lookupKey &&
+    product === addon.productId &&
+    price.currency === 'usd' &&
+    price.unit_amount === addon.monthlyCents &&
+    price.type === 'recurring' &&
+    price.recurring?.interval === 'month' &&
+    (price.recurring?.interval_count ?? 1) === 1 &&
+    (price.recurring?.usage_type ?? 'licensed') === 'licensed'
+  )
+}
+
+/** Price id behind an add-on's lookup key, cached per isolate (10 min). Fails closed (PriceNotConfiguredError). */
+export async function getAddonPriceId(id: AddonId, stripe: Stripe = getStripe(), now = Date.now()): Promise<string> {
+  if (!addonCache || now - addonCache.at > TTL_MS || !addonCache.ids.has(id)) {
+    const res = await stripe.prices.list({ lookup_keys: ADDONS.map((a) => a.lookupKey), active: true, limit: 100 })
+    const ids = new Map<AddonId, string>()
+    for (const a of ADDONS) {
+      const price = res.data.find((p) => p.lookup_key === a.lookupKey && validatesAddonPrice(p, a.id))
+      if (price) ids.set(a.id, price.id)
+    }
+    addonCache = { ids, at: now }
+  }
+  const priceId = addonCache.ids.get(id)
+  if (!priceId) throw new PriceNotConfiguredError(`No active monthly USD price with lookup key ${addonById(id)?.lookupKey ?? id} matching the add-on amount.`)
+  return priceId
 }

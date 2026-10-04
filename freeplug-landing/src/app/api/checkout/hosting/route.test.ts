@@ -66,9 +66,21 @@ vi.mock('@/lib/stripe/checkout-context', () => ({
 
 import { POST } from './route'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import { resetStepPriceCache, resetTipPriceCache } from '@/lib/stripe/prices'
+import { resetAddonPriceCache, resetStepPriceCache, resetTipPriceCache } from '@/lib/stripe/prices'
 import { TIP_LOOKUP_KEY, TIP_PRODUCT_ID } from '@/lib/plans/ladder'
-import { TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
+import { ADDON_TURN_OFF_FIRST, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
+import { ADDONS } from '@/lib/plans/ladder'
+
+const addonPrices = ADDONS.map((a) => ({
+  id: `price_${a.id}`,
+  lookup_key: a.lookupKey,
+  product: a.productId,
+  active: true,
+  currency: 'usd',
+  unit_amount: a.monthlyCents,
+  type: 'recurring',
+  recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' },
+}))
 
 /** Test-mode prices by lookup key, amounts from ladder.ts. */
 function ladderPrices(over: (p: Record<string, unknown>) => Record<string, unknown> = (p) => p) {
@@ -125,8 +137,9 @@ describe('POST /api/checkout/hosting', () => {
       m.mockReset()
     resetStepPriceCache()
     resetTipPriceCache()
+    resetAddonPriceCache()
     pricesList.mockImplementation(async (q: { lookup_keys: string[] }) =>
-      q.lookup_keys[0] === TIP_LOOKUP_KEY ? { data: [tipPrice] } : ladderPrices()
+      q.lookup_keys[0] === TIP_LOOKUP_KEY ? { data: [tipPrice] } : q.lookup_keys[0] === ADDONS[0].lookupKey ? { data: addonPrices } : ladderPrices()
     )
     outreachWaiting.mockResolvedValue(false)
     customersList.mockResolvedValue({ data: [] })
@@ -478,6 +491,72 @@ describe('POST /api/checkout/hosting', () => {
       sessionsList.mockResolvedValue({ data: [] })
       await POST(req({ planStep: 'fast_lane', tipDollars: 7 }))
       expect(sessionsCreate.mock.calls[0][1].idempotencyKey).not.toBe(sessionsCreate.mock.calls[1][1].idempotencyKey)
+    })
+  })
+
+  describe('add-ons at checkout (Oct 4)', () => {
+    beforeEach(() => subsList.mockResolvedValue({ data: [] }))
+
+    it('Starter + both add-ons + $8 tip: step x1, each add-on x1, tip x8 ($53.75); addons metadata', async () => {
+      const res = await POST(req({ planStep: 'starter', addons: ['big_change', 'small_edit'], tipDollars: 8 }))
+      expect(res.status).toBe(200)
+      const [params] = sessionsCreate.mock.calls[0]
+      expect(params.line_items).toEqual([
+        { price: 'price_starter', quantity: 1 },
+        { price: 'price_small_edit', quantity: 1 },
+        { price: 'price_big_change', quantity: 1 },
+        { price: 'price_tip', quantity: 8 },
+      ])
+      expect(params.metadata).toMatchObject({ plan_step: 'starter', tip_dollars: '8', addons: 'small_edit,big_change' })
+      expect(params.subscription_data.metadata).toMatchObject({ addons: 'small_edit,big_change' })
+    })
+
+    it.each([
+      [['small_edit'], 15],
+      [['big_change'], 14],
+      [['small_edit', 'big_change'], 9],
+    ])('Starter with %j: a $%i tip passes $54 and is refused', async (addons, tipDollars) => {
+      const res = await POST(req({ planStep: 'starter', addons, tipDollars }))
+      expect(res.status).toBe(400)
+      expect(await res.json()).toEqual({ error: TIP_OUT_OF_RANGE, code: 'tip_out_of_range' })
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it('other steps: add-ons do not lower the tip range (Priority + both + $9)', async () => {
+      expect((await POST(req({ planStep: 'priority', addons: ['small_edit', 'big_change'], tipDollars: 9 }))).status).toBe(200)
+    })
+
+    it.each([
+      ['a repeat', ['small_edit', 'small_edit']],
+      ['coming soon', ['visitor_snapshot']],
+      ['retired quote alert', ['quote_alert']],
+      ['not a list', 'small_edit'],
+    ])('400 invalid_addons for %s; nothing reaches Stripe', async (_l, addons) => {
+      const res = await POST(req({ planStep: 'priority', addons }))
+      expect(res.status).toBe(400)
+      expect((await res.json()).code).toBe('invalid_addons')
+      expect(pricesList).not.toHaveBeenCalled()
+    })
+
+    it('503 (fails closed) when an add-on price drifted from ladder.ts', async () => {
+      pricesList.mockImplementation(async (q: { lookup_keys: string[] }) =>
+        q.lookup_keys[0] === ADDONS[0].lookupKey ? { data: addonPrices.map((p) => ({ ...p, unit_amount: p.unit_amount + 100 })) } : ladderPrices()
+      )
+      expect((await POST(req({ planStep: 'priority', addons: ['big_change'] }))).status).toBe(503)
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it('an open session is reused only with the same add-ons', async () => {
+      sessionsList.mockResolvedValue({
+        data: [{ id: 'cs_open', mode: 'subscription', url: 'https://x/open', metadata: { type: 'hosting', plan_step: 'priority', tip_dollars: '0', addons: 'small_edit' } }],
+      })
+      expect((await (await POST(req({ planStep: 'priority', addons: ['small_edit'] }))).json()).url).toBe('https://x/open')
+      await POST(req({ planStep: 'priority', addons: ['small_edit', 'big_change'] }))
+      expect(sessionsExpire).toHaveBeenCalledWith('cs_open')
+    })
+
+    it('the cap message is "Turn off an add-on first" (never reached with today\'s two add-ons)', () => {
+      expect(ADDON_TURN_OFF_FIRST).toBe('Turn off an add-on first')
     })
   })
 })

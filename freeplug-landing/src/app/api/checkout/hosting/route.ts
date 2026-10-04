@@ -5,8 +5,10 @@ import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import { resolvePlanStep } from '@/lib/plans/ladder'
-import { getStepPriceId, getTipPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
+import { getAddonPriceId, getStepPriceId, getTipPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
 import { parseTipDollars, tipLineItems } from '@/lib/plans/tips'
+import { addonCapCheck, addonConfigCents, parseAddonIds } from '@/lib/plans/addons'
+import { addonById } from '@/lib/plans/ladder'
 import {
   ALREADY_HAS_PLAN_MESSAGE,
   listLiveSubscriptions,
@@ -22,7 +24,7 @@ import {
 } from '@/lib/stripe/checkout-context'
 import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
 import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
-import { STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
+import { ADDON_TURN_OFF_FIRST, STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
 
 export const runtime = 'nodejs'
 
@@ -70,9 +72,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: STEP_NOT_SELLABLE_MESSAGE(step.name), code: 'not_sellable' }, { status: 400 })
     }
 
+    // Add-ons (Oct 4): known ids, each at most once; the step's cap (Starter $15) from the add-on
+    // prices, which getAddonPriceId below validates against the same amounts (fails closed).
+    const addons = parseAddonIds(body?.addons)
+    if (!addons) {
+      return NextResponse.json({ error: 'Invalid add-ons.', code: 'invalid_addons' }, { status: 400 })
+    }
+    if (!addonCapCheck(step.id, addons.map((id) => ({ id, cents: addonById(id)!.monthlyCents }))).ok) {
+      return NextResponse.json({ error: ADDON_TURN_OFF_FIRST, code: 'addons_over_cap' }, { status: 400 })
+    }
+    const addonCents = addonConfigCents(addons)
+
     // The tipping system: optional whole-dollar tip inside the step's range (ladder.ts). Refused here,
-    // whatever the slider sent; 0 / missing = no tip item.
-    const tip = parseTipDollars(step, body?.tipDollars)
+    // whatever the slider sent; 0 / missing = no tip item. Starter: the add-ons lower the max
+    // (plan + add-ons + tip <= $54).
+    const tip = parseTipDollars(step, body?.tipDollars, undefined, addonCents)
     if (!tip.ok) {
       return NextResponse.json({ error: TIP_OUT_OF_RANGE, code: 'tip_out_of_range' }, { status: 400 })
     }
@@ -85,9 +99,11 @@ export async function POST(request: Request) {
     // expired, and fails closed (503) if the price is missing or doesn't match the ladder amount.
     let priceId: string
     let tipPriceId: string | null = null
+    const addonPriceIds: string[] = []
     try {
       priceId = await getStepPriceId(step.id, stripe)
       if (tipDollars > 0) tipPriceId = await getTipPriceId(stripe)
+      for (const id of addons) addonPriceIds.push(await getAddonPriceId(id, stripe))
     } catch (e) {
       console.error(
         '[checkout/hosting] step price unavailable',
@@ -160,7 +176,11 @@ export async function POST(request: Request) {
         )
         // Same plan AND same tip: a session for another tip amount is expired below, never reused.
         const samePlan = hostingOpen.find(
-          (s) => s.url && s.metadata?.plan_step === step.id && (s.metadata?.tip_dollars ?? '0') === String(tipDollars)
+          (s) =>
+            s.url &&
+            s.metadata?.plan_step === step.id &&
+            (s.metadata?.tip_dollars ?? '0') === String(tipDollars) &&
+            (s.metadata?.addons ?? '') === addons.join(',')
         )
         if (samePlan?.url) {
           return NextResponse.json({ url: samePlan.url })
@@ -187,6 +207,7 @@ export async function POST(request: Request) {
             customerId ?? 'new',
             step.id,
             String(tipDollars),
+            addons.join(','),
             expiresAt,
             expiredSessionIds.join(','),
           ].join('|')
@@ -198,8 +219,13 @@ export async function POST(request: Request) {
         {
           mode: 'subscription',
           expires_at: expiresAt,
-          // The step price (quantity 1) + the tip price with quantity = tip dollars (none for $0).
-          line_items: [{ price: priceId, quantity: 1 }, ...tipLineItems(tipPriceId, tipDollars)],
+          // The step price (quantity 1) + one line per add-on (quantity 1) + the tip price with
+          // quantity = tip dollars (none for $0).
+          line_items: [
+            { price: priceId, quantity: 1 },
+            ...addonPriceIds.map((price) => ({ price, quantity: 1 })),
+            ...tipLineItems(tipPriceId, tipDollars),
+          ],
           // The subscription carries the step too (webhook + entitlements read it as a fallback
           // to the price's lookup key).
           subscription_data: {
@@ -207,6 +233,7 @@ export async function POST(request: Request) {
               type: 'hosting',
               plan_step: step.id,
               tip_dollars: String(tipDollars),
+              ...(addons.length > 0 ? { addons: addons.join(',') } : {}),
               supabase_user_id: checkoutUser.id,
             },
           },
@@ -216,6 +243,7 @@ export async function POST(request: Request) {
           type: 'hosting',
           plan_step: step.id,
           tip_dollars: String(tipDollars),
+          ...(addons.length > 0 ? { addons: addons.join(',') } : {}),
         }
       ),
       { idempotencyKey }

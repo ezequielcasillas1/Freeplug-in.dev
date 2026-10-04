@@ -1,5 +1,5 @@
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
-import { PLAN_STEPS, customerAiEditsPerMonth, showAiEditQuota, stepById, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
+import { ADDON_STEP_LIMITS, PLAN_STEPS, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
 
 /** "$35" style, from ladder.ts (never hard-code a price in copy). */
 const dollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
@@ -357,3 +357,74 @@ export const TIP_CHANGE_UNAVAILABLE = "We couldn't change your tip right now. Tr
  * e.g. a double-click or a second tab. Shown instead of UPGRADE_IN_PROGRESS on the tip paths.
  */
 export const TIP_IN_PROGRESS = 'Your tip change is already going through. Refresh in a moment to see it.'
+
+// ------------------------------------------------------------------ add-ons (Oct 4, Lina's block)
+// ALL PLACEHOLDERS for Sable (names and perk lines included). Prices come from ladder.ts ADDONS.
+
+export const ADDONS_HEADING = 'Add-ons'
+/** Header right side, Starter selected only: "up to $15/month on Starter" (from ADDON_STEP_LIMITS). */
+export const ADDONS_STARTER_CAP_NOTE = `up to ${dollars(ADDON_STEP_LIMITS.starter?.maxAddonCents ?? 0)}/month on Starter`
+export const ADDON_NAMES: Record<AddonId | 'visitor_snapshot', string> = {
+  small_edit: '+1 small edit',
+  big_change: 'Big change',
+  visitor_snapshot: 'Visitor snapshot',
+}
+/** Perk line under the price (placeholder until Sable). `withIncludedEdit`: the step already includes 1. */
+export function addonPerkLine(id: AddonId | 'visitor_snapshot', opts: { withIncludedEdit?: boolean } = {}): string {
+  if (id === 'small_edit') return opts.withIncludedEdit ? "One more small edit on top of your plan's 1." : 'One more small edit by us each billing period.'
+  if (id === 'big_change') return 'One larger edit, up to about an hour, each billing period.'
+  return 'A monthly email with how many people visited your site.'
+}
+export const addonPriceLine = (cents: number) => `${dollars(cents)}/month`
+/** Inline confirm when turning one on would push Starter past its total: never lower a tip silently. */
+export const addonTipDropQuestion = (tipDollars: number, name: string) => `Your tip will drop to $${tipDollars}. Turn on ${name}?`
+export const ADDON_TURN_ON = 'Turn on'
+export const ADDON_CANCEL = 'Cancel'
+/** Live plan: turning one on charges now (prorated), shown in the confirm. */
+export const addonChargeNowLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} today for the rest of this billing period.`
+export const ADDON_CHARGE_NOW_FALLBACK = "We'll charge the rest of this billing period today."
+export const addonThenLine = (nextCents: number, date: string | null) =>
+  date ? `Then ${dollars(nextCents)}/month from ${date}.` : `Then ${dollars(nextCents)}/month.`
+/** Live plan: turning one off is at the end of the billing period. */
+export const addonOffQuestion = (name: string, date: string | null) =>
+  date ? `Turn off ${name}? It stays on until ${date}, then it ends.` : `Turn off ${name}? It stays on until the end of this billing period.`
+export const ADDON_TURN_OFF = 'Turn off'
+export const addonEndsLine = (date: string | null) => (date ? `Ends ${date}` : 'Ends at the end of this billing period')
+export const ADDON_KEEP = 'Keep it'
+export const ADDON_ON_DONE = 'Add-on is on.'
+export const addonOffDone = (date: string | null) => (date ? `Add-on ends ${date}.` : 'Add-on ends at the end of this billing period.')
+export const ADDON_KEEP_DONE = 'Add-on stays on.'
+export const addonsLockedBySwitch = (date: string | null) =>
+  date ? `Add-ons can change after ${date}, or keep your current plan.` : 'Add-ons can change after your plan switch, or keep your current plan.'
+export const ADDONS_LOCKED_BY_REMOVAL = 'An add-on is set to end. Keep it, or turn more on after that date.'
+export const ADDONS_LEGACY_NOTE = 'Add-ons are for the current plans. Pick a plan above to add them.'
+export const ADDON_ERROR = "That didn't go through. Nothing changed. Try again."
+export const ADDON_PAYMENT_FAILED = 'The card was not charged, so the add-on is still off.'
+/** Server refusals. */
+export const ADDON_TURN_OFF_FIRST = 'Turn off an add-on first'
+export const ADDON_PENDING_SWITCH = 'A plan switch is planned. Add-ons can change after it, or keep your current plan.'
+export const ADDON_PENDING_REMOVAL = 'An add-on is set to end. Keep it first, or wait until it ends.'
+/** Upgrade confirm: one gray line listing the add-ons that are on (omitted when none). */
+export const addonsStayOnLine = (names: readonly string[] | string) => `Your add-ons stay on: ${([] as string[]).concat(names).join(', ')}.`
+/** Pending switch line on the Plans page / dashboard when the plan switch keeps add-ons. */
+export const addonsPendingEndLine = (names: readonly string[] | string, date: string) => {
+  const list = ([] as string[]).concat(names)
+  return `${list.join(', ')} ${list.length === 1 ? 'ends' : 'end'} ${date}.`
+}
+/** One total (action area / sticky bar): "Starter $35 · Add-ons $10.75 · Tip $4" then "$49.75/month". */
+export function planTotalBreakdown(stepName: string, stepCents: number, addonCents: number, tipCents: number): string {
+  const parts = [`${stepName} ${dollars(stepCents)}`]
+  if (addonCents > 0) parts.push(`Add-ons ${dollars(addonCents)}`)
+  if (tipCents > 0) parts.push(`Tip ${dollars(tipCents)}`)
+  return parts.join(' · ')
+}
+export const planTotalLine = (totalCents: number) => `${dollars(totalCents)}/month`
+/** Dashboard: Big change uses this period. */
+export const bigChangeLine = (used: number, of: number) => `Big change: ${used} of ${of} used this period`
+/** Admin. */
+export const ADMIN_MARK_BIG_CHANGE = 'Mark as big change'
+/** Plan strip / dashboard: add-ons part ("+ $10.75 add-ons"). */
+export const planStripAddons = (cents: number) => ` + ${dollars(cents)} add-ons`
+/** Cancel page price line with add-ons: "$35.00 + $10.75 add-ons + $4.00 tip = $49.75/month" (tip part only when > 0). */
+export const ADDON_TOTAL_LINE = (plan: string, addons: string, tip: string | null, total: string) =>
+  `${plan} + ${addons} add-ons${tip ? ` + ${tip} tip` : ''} = ${total}/month`

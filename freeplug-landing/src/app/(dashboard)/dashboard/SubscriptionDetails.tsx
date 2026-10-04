@@ -3,6 +3,7 @@ import { CreditCard, Calendar, ArrowRight } from 'lucide-react'
 import type { SubscriptionDetail } from './dashboard-actions'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
+import { addonsPendingEndLine, bigChangeLine } from '@/lib/plans/ladder-copy'
 import {
   CHANGE_PLAN_LINK,
   INCLUDED_EDIT_LINE,
@@ -151,6 +152,16 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                   {sub.includedEdit ? (
                     <p className="text-sm text-gray-700 mt-1" data-testid="included-edit">
                       {INCLUDED_EDIT_LINE(sub.includedEdit.used, sub.includedEdit.available)}
+                    </p>
+                  ) : null}
+                  {sub.bigChange ? (
+                    <p className="text-sm text-gray-700 mt-1" data-testid="big-change">
+                      {bigChangeLine(sub.bigChange.used, sub.bigChange.available)}
+                    </p>
+                  ) : null}
+                  {sub.addonsEnding ? (
+                    <p className="text-sm text-amber-800 mt-1" data-testid="home-addons-ending">
+                      {addonsPendingEndLine(sub.addonsEnding.names, sub.addonsEnding.date)}
                     </p>
                   ) : null}
                   {/* Lina §3c: the pending change + a Keep link (the action lives on Plans). "Change plan →" below goes to Plans. */}

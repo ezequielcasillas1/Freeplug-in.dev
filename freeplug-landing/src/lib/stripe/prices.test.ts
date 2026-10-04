@@ -56,3 +56,32 @@ describe('getStepPriceId (lookup keys, fail closed)', () => {
     await expect(getStepPriceId('starter', f.stripe)).rejects.toBeInstanceOf(PriceNotConfiguredError)
   })
 })
+
+describe('getAddonPriceId (Oct 4): validated like the step prices, fails closed', () => {
+  const load = async () => await import('./prices')
+  const addonPrice = (id: 'small_edit' | 'big_change', over: Record<string, unknown> = {}) => {
+    const a = { small_edit: ['freeplug_addon_small_edit_monthly', 'freeplug_extra_small_edit', 500], big_change: ['freeplug_addon_big_change_monthly', 'freeplug_extra_big_change', 575] }[id]
+    return { id: `price_${id}`, lookup_key: a[0], product: a[1], active: true, currency: 'usd', unit_amount: a[2], type: 'recurring', recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' }, ...over }
+  }
+  it('returns the price behind each lookup key when it matches ladder.ts', async () => {
+    const { getAddonPriceId, resetAddonPriceCache } = await load()
+    resetAddonPriceCache()
+    const list = vi.fn(async () => ({ data: [addonPrice('small_edit'), addonPrice('big_change')] }))
+    const stripe = { prices: { list } } as unknown as Stripe
+    expect(await getAddonPriceId('small_edit', stripe, 1)).toBe('price_small_edit')
+    expect(await getAddonPriceId('big_change', stripe, 2)).toBe('price_big_change')
+    expect(list).toHaveBeenCalledTimes(1)
+  })
+  it.each([
+    ['another amount', { unit_amount: 600 }],
+    ['a grandfathered product', { product: 'freeplug_addon_plus_monthly' }],
+    ['inactive', { active: false }],
+    ['yearly', { recurring: { interval: 'year', interval_count: 1 } }],
+    ['metered', { recurring: { interval: 'month', interval_count: 1, usage_type: 'metered' } }],
+  ])('refuses %s', async (_l, over) => {
+    const { getAddonPriceId, resetAddonPriceCache } = await load()
+    resetAddonPriceCache()
+    const stripe = { prices: { list: vi.fn(async () => ({ data: [addonPrice('big_change', over)] })) } } as unknown as Stripe
+    await expect(getAddonPriceId('big_change', stripe, 1)).rejects.toBeInstanceOf(PriceNotConfiguredError)
+  })
+})

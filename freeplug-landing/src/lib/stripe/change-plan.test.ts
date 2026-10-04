@@ -217,21 +217,25 @@ describe('changePlanStep (upgrades now + prorated, downgrades at period end)', (
 describe('pending downgrade (shown on the Plans page with its date)', () => {
   it('reads the next phase: step from phase metadata, date = phase start', async () => {
     const f = fakeStripe({ pendingStep: 'priority' })
-    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_0' }, NOW)).toEqual({
+    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_0', items: ladderSub('fast_lane').items }, NOW)).toEqual({
       step: 'priority',
       effectiveAt: new Date(PERIOD_END * 1000).toISOString(),
       scheduleId: 'sub_sched_0',
+      addons: [],
+      tipDollars: 0,
+      isSwitch: true,
+      removedAddons: [],
     })
     expect(f.calls).toEqual(['schedules.retrieve'])
   })
   it('falls back to the price lookup key when the phase has no metadata', async () => {
     const f = fakeStripe({ pendingStep: 'starter', phaseMetadata: false })
-    expect(await pendingPlanChange(f.stripe, { schedule: { id: 'sub_sched_0' } as unknown as Stripe.SubscriptionSchedule }, NOW)).toMatchObject({ step: 'starter' })
+    expect(await pendingPlanChange(f.stripe, { schedule: { id: 'sub_sched_0' } as unknown as Stripe.SubscriptionSchedule, items: ladderSub('priority').items }, NOW)).toMatchObject({ step: 'starter' })
   })
   it('null without a schedule or without a later phase', async () => {
     const f = fakeStripe({ pendingStep: null })
-    expect(await pendingPlanChange(f.stripe, { schedule: null }, NOW)).toBeNull()
-    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_0' }, NOW)).toBeNull()
+    expect(await pendingPlanChange(f.stripe, { schedule: null, items: ladderSub('priority').items }, NOW)).toBeNull()
+    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_0', items: ladderSub('priority').items }, NOW)).toBeNull()
   })
 })
 
@@ -242,7 +246,7 @@ describe('cancel at period end vs a pending downgrade (both orders)', () => {
     expect(await changePlanStep({ stripe: f.stripe, priceIdFor }, sub, 'priority')).toMatchObject({ ok: true, kind: 'scheduled' })
     f.calls.length = 0
     const r = await cancelPlanAtPeriodEnd(f.stripe, ladderSub('leads', { schedule: 'sub_sched_1' }), NOW)
-    expect(r).toEqual({ ok: true, kind: 'canceled', clearedPendingChange: { step: 'priority', effectiveAt: new Date(PERIOD_END * 1000).toISOString(), scheduleId: 'sub_sched_0' } })
+    expect(r).toEqual({ ok: true, kind: 'canceled', clearedPendingChange: { step: 'priority', effectiveAt: new Date(PERIOD_END * 1000).toISOString(), scheduleId: 'sub_sched_0', addons: [], tipDollars: 0, isSwitch: true, removedAddons: [] } })
     expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update(cancel)'])
     const [, params, o] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Record<string, unknown>, { idempotencyKey: string }]
     expect(params).toEqual({ cancel_at_period_end: true })
@@ -308,6 +312,8 @@ describe('upgrade confirm: preview + proration_date (Aria, Oct 3 1:34 PM)', () =
       nextAmountCents: 6500,
       nextBillingAt: new Date(PERIOD_END * 1000).toISOString(),
       tipDollars: 0,
+      addons: [],
+      addonCents: 0,
     })
     expect(f.createPreview).toHaveBeenCalledWith({
       subscription: 'sub_1',
@@ -816,7 +822,7 @@ describe('schedule lifecycle: a switch is pending only while a phase starts in t
 
   it('the Plans page read (pendingPlanChange) releases a finished schedule and shows no pending change', async () => {
     const f = sched(switchedSchedule())
-    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_old' }, NOW)).toBeNull()
+    expect(await pendingPlanChange(f.stripe, { schedule: 'sub_sched_old', items: ladderSub('priority').items }, NOW)).toBeNull()
     expect(f.calls).toEqual(['schedules.retrieve', 'schedules.release'])
   })
 

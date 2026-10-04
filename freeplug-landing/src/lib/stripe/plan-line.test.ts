@@ -90,3 +90,12 @@ describe('Plans page "Current plan" line, grandfathered short name without the t
     expect(planStripLine([ladder('priority', 5500)], 'month', 'past_due', 4)).toBe('Priority · $55/month + $4 tip (past due)')
   })
 })
+
+describe('add-ons in the strip and list names (Oct 4)', () => {
+  it('a ladder plan shows add-ons as their own part, before the tip', () => {
+    expect(planStripLine([ladder('starter', 3500)], 'month', 'active', 4, 1075)).toBe('Starter · $35/month + $10.75 add-ons + $4 tip')
+    expect(planStripLine([ladder('priority', 5500)], 'month', 'active', 0, 575)).toBe('Priority · $55/month + $5.75 add-ons')
+    expect(subscriptionListName('Fast lane', 0, 500)).toBe('Fast lane + $5 add-ons')
+    expect(subscriptionListName('Fast lane', 3, 500)).toBe('Fast lane + $5 add-ons + $3 tip')
+  })
+})

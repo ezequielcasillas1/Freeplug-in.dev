@@ -9,9 +9,11 @@ import { PortalNotConfiguredError } from '@/lib/stripe/portal'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
-import { cancelPlanAtPeriodEnd, changePlanStep, changeTip, previewPlanStepChange, previewTipChange, type TipChangeRefusal } from '@/lib/stripe/change-plan'
+import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewAddonChange, previewPlanStepChange, previewTipChange, type AddonAction, type AddonChangeRefusal, type TipChangeRefusal } from '@/lib/stripe/change-plan'
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
-import { getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
+import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
+import { addonById, type AddonId } from '@/lib/plans/ladder'
+import { ADDON_ERROR, ADDON_KEEP_DONE, ADDON_NAMES, ADDON_ON_DONE, ADDON_PAYMENT_FAILED, ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonOffDone } from '@/lib/plans/ladder-copy'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
 import { syncPlanSnapshotForCustomer } from '@/lib/stripe/sync-checkout-customer'
@@ -189,7 +191,7 @@ const lockStore = planChangeLockStore
  * still charges at the time the customer looked.
  */
 export type PlanPreviewResponse =
-  | { ok: true; prorationDate: number; amountDueCents: number; nextAmountCents: number; nextDate: string | null; tipDollars?: number }
+  | { ok: true; prorationDate: number; amountDueCents: number; nextAmountCents: number; nextDate: string | null; tipDollars?: number; addons?: AddonId[] }
   | { ok: false; reason: 'not_upgrade' | 'rate_limited' | 'preview_failed' | 'unavailable'; prorationDate: number | null }
 
 export async function previewPlanChange(planStep: string): Promise<PlanPreviewResponse> {
@@ -218,6 +220,7 @@ export async function previewPlanChange(planStep: string): Promise<PlanPreviewRe
       nextAmountCents: p.nextAmountCents,
       nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null,
       tipDollars: p.tipDollars,
+      addons: p.addons,
     }
   } catch (e) {
     console.error('[previewPlanChange] failed', e instanceof Error ? e.message : e)
@@ -279,6 +282,7 @@ async function runHostingPlanChange(
     if (r.ok) return { ok: true, message: CHANGE_PLAN_UNCHANGED }
     if (r.code === 'ending') return { ok: false, message: CHANGE_PLAN_ENDING }
     if (r.code === 'not_sellable') return { ok: false, message: STEP_NOT_SELLABLE_MESSAGE(step.name) }
+    if (r.code === 'addons_over_cap') return { ok: false, message: ADDON_TURN_OFF_FIRST }
     if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }
     if (r.code === 'in_progress') return { ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' }
     if (r.code === 'payment_failed') {
@@ -419,5 +423,126 @@ async function runTipChange(tipDollars: number, confirmId?: string): Promise<Cha
   } catch (e) {
     console.error('[changeTip] failed', e instanceof Error ? e.message : e)
     return { ok: false, message: TIP_CHANGE_UNAVAILABLE }
+  }
+}
+
+// ------------------------------------------------------------------ add-ons (Oct 4): on / off / keep
+
+export type AddonPreviewResponse =
+  | {
+      ok: true
+      action: 'on'
+      prorationDate: number
+      amountDueCents: number
+      nextAmountCents: number
+      nextDate: string | null
+      tipDollarsNow: number
+      tipDollarsAfter: number
+    }
+  | { ok: true; action: 'off' | 'keep'; endDate: string | null; nextAmountCents: number; nextDate: string | null }
+  | { ok: false; message: string; prorationDate: number | null }
+export type ChangeAddonResponse = { ok: boolean; message: string; code?: 'tip_drop_needed' | 'stale_preview' | 'in_progress'; tipDollars?: number }
+
+function addonRefusalMessage(code: AddonChangeRefusal | 'in_progress' | 'mismatch' | 'payment_failed'): string {
+  if (code === 'pending_switch') return ADDON_PENDING_SWITCH
+  if (code === 'pending_addons') return ADDON_PENDING_REMOVAL
+  if (code === 'over_cap') return ADDON_TURN_OFF_FIRST
+  if (code === 'no_addon_plan') return ADDONS_LEGACY_NOTE
+  if (code === 'ending') return CHANGE_PLAN_ENDING
+  if (code === 'stale_preview') return UPGRADE_PREVIEW_EXPIRED
+  if (code === 'in_progress') return UPGRADE_IN_PROGRESS
+  if (code === 'payment_failed') return ADDON_PAYMENT_FAILED
+  return ADDON_ERROR
+}
+
+const parseAddonAction = (v: unknown): AddonAction | null => (v === 'on' || v === 'off' || v === 'keep' ? v : null)
+
+/**
+ * Plans page add-on card: read-only preview. on = Stripe's always_invoice preview at a server
+ * proration_date (sent back with Confirm) + the tip it would drop to (Starter); off = the date it
+ * ends. Signed in, rate limited, the caller's own subscription only; nothing about the subscription
+ * comes from the browser.
+ */
+export async function previewAddonChangeAction(addonId: string, action: string): Promise<AddonPreviewResponse> {
+  const addon = addonById(addonId)
+  const act = parseAddonAction(action)
+  if (!addon || !act) return { ok: false, message: ADDON_ERROR, prorationDate: null }
+  const prorationDate = Math.floor(Date.now() / 1000)
+  try {
+    const own = await ownLiveSubscription()
+    if (!own) return { ok: false, message: ADDON_ERROR, prorationDate: null }
+    if (!(await rateCheck(PLAN_PREVIEW_LIMIT, own.userId))) return { ok: false, message: ADDON_ERROR, prorationDate }
+    const stripe = getStripe()
+    const p = await previewAddonChange({ stripe, addonPriceIdFor: (id) => getAddonPriceId(id, stripe) }, own.sub, addon.id, act, prorationDate)
+    if (!p.ok) return { ok: false, message: addonRefusalMessage(p.code), prorationDate: null }
+    const nextDate = p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null
+    if (p.action === 'on') {
+      return {
+        ok: true,
+        action: 'on',
+        prorationDate: p.prorationDate,
+        amountDueCents: p.amountDueCents,
+        nextAmountCents: p.nextAmountCents,
+        nextDate,
+        tipDollarsNow: p.tipDollarsNow,
+        tipDollarsAfter: p.tipDollarsAfter,
+      }
+    }
+    return { ok: true, action: p.action, endDate: p.effectiveAt ? formatPlanEndDate(new Date(p.effectiveAt)) : null, nextAmountCents: p.nextAmountCents, nextDate }
+  } catch (e) {
+    console.error('[previewAddonChange] failed', e instanceof Error ? e.message : e)
+    // The proration_date still goes back, so a fallback confirm charges at the time the customer looked.
+    return { ok: false, message: ADDON_ERROR, prorationDate: act === 'on' ? prorationDate : null }
+  }
+}
+
+/**
+ * Plans page add-on Confirm, under the change-plan lock (an add-on, a tip change and a plan switch
+ * never interleave). on: charged now (always_invoice); a tip drop must be the one the customer
+ * confirmed (`tipDropTo`, re-checked on the server). off: at the end of the billing period. keep:
+ * undoes a planned removal.
+ */
+export async function changeAddonAction(addonId: string, action: string, opts: { prorationDate?: number; tipDropTo?: number } = {}): Promise<ChangeAddonResponse> {
+  const addon = addonById(addonId)
+  const act = parseAddonAction(action)
+  if (!addon || !act) return { ok: false, message: ADDON_ERROR }
+  if (opts.prorationDate !== undefined && (typeof opts.prorationDate !== 'number' || !Number.isSafeInteger(opts.prorationDate))) return { ok: false, message: ADDON_ERROR }
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login?next=/dashboard/plans')
+  try {
+    const lock = await withPlanChangeLock(lockStore(), user.id, () => runAddonChange(addon.id, act, opts))
+    if (!lock.ok) return { ok: false, message: lock.code === 'in_progress' ? UPGRADE_IN_PROGRESS : ADDON_ERROR, ...(lock.code === 'in_progress' ? { code: 'in_progress' as const } : {}) }
+    return lock.value
+  } catch (e) {
+    console.error('[changeAddon] failed', e instanceof Error ? e.message : e)
+    return { ok: false, message: ADDON_ERROR }
+  }
+}
+
+async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { prorationDate?: number; tipDropTo?: number }): Promise<ChangeAddonResponse> {
+  try {
+    const own = await ownLiveSubscription()
+    if (!own) return { ok: false, message: ADDON_ERROR }
+    const stripe = getStripe()
+    const r = await changeAddon({ stripe, addonPriceIdFor: (id) => getAddonPriceId(id, stripe) }, own.sub, addonId, action, {
+      prorationDate: opts.prorationDate,
+      tipDropTo: opts.tipDropTo,
+      userId: own.userId,
+    })
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/plans')
+    if (r.ok && r.kind === 'on') return { ok: true, message: ADDON_ON_DONE }
+    if (r.ok && r.kind === 'kept') return { ok: true, message: ADDON_KEEP_DONE }
+    if (r.ok) return { ok: true, message: addonOffDone(r.effectiveAt ? formatPlanEndDate(new Date(r.effectiveAt)) : null) }
+    if (r.code === 'tip_drop_needed') return { ok: false, message: `${ADDON_NAMES[addonId]}: ${r.message}`, code: 'tip_drop_needed', tipDollars: r.tipDollars }
+    if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }
+    if (r.code === 'in_progress') return { ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' }
+    return { ok: false, message: addonRefusalMessage(r.code) }
+  } catch (e) {
+    console.error('[changeAddon] failed', e instanceof Error ? e.message : e)
+    return { ok: false, message: ADDON_ERROR }
   }
 }

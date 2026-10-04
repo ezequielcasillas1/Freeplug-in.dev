@@ -107,7 +107,7 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const store = memStore()
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
-    const snap = { stepId: 'fast_lane', legacy: false, legacyAddon: null, monthlyCents: 6500, tipCents: 0 }
+    const snap = { stepId: 'fast_lane', legacy: false, legacyAddon: null, monthlyCents: 6500, tipCents: 0, addons: [] }
     expect(store.calls).toEqual([
       ['cus_1', snap, '2026-10-03T17:00:00.000Z'],
       ['cus_1', snap, '2026-10-03T17:00:00.000Z'],
@@ -118,7 +118,7 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const { stripe } = fakeStripe([sub([ladderItem('growth')], { status: 'canceled' }), sub([ladderItem('leads')], { status: 'incomplete' })])
     const store = memStore()
     expect(await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')).toEqual({ outcome: 'synced', stepId: null })
-    expect(store.calls[0][1]).toEqual({ stepId: null, legacy: false, legacyAddon: null, monthlyCents: null, tipCents: 0 })
+    expect(store.calls[0][1]).toEqual({ stepId: null, legacy: false, legacyAddon: null, monthlyCents: null, tipCents: 0, addons: [] })
   })
 
   it('reports no_profile when no profile has the customer id', async () => {
@@ -154,10 +154,10 @@ describe('syncPlanStepForCustomer (webhook)', () => {
       }),
     }
     const store = supabasePlanStepStore(admin as unknown as Parameters<typeof supabasePlanStepStore>[0])
-    expect(await store.writePlanStep('cus_1', { stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500, tipCents: 0 }, 't')).toBe(1)
+    expect(await store.writePlanStep('cus_1', { stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500, tipCents: 0, addons: [] }, 't')).toBe(1)
     expect(seen).toEqual([
       'profiles',
-      { plan_step: 'priority', plan_legacy: true, plan_legacy_addon: 'pro', plan_monthly_cents: 5500, plan_step_synced_at: 't', plan_tip_cents: 0 },
+      { plan_step: 'priority', plan_legacy: true, plan_legacy_addon: 'pro', plan_monthly_cents: 5500, plan_step_synced_at: 't', plan_tip_cents: 0, plan_addons: [] },
       'stripe_customer_id',
       'cus_1',
     ])
@@ -167,7 +167,7 @@ describe('syncPlanStepForCustomer (webhook)', () => {
     const { stripe } = fakeStripe([sub([legacyHosting(4000), legacyAddonAdhoc(1500)])])
     const store = memStore()
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
-    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500, tipCents: 0 })
+    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: true, legacyAddon: 'pro', monthlyCents: 5500, tipCents: 0, addons: [] })
   })
 
   it('creating a downgrade schedule fires customer.subscription.updated with only `schedule` changed: the re-sync writes the SAME step', async () => {
@@ -220,7 +220,7 @@ describe('the tipping system: entitlements come from the step price only', () =>
     const { stripe } = fakeStripe([sub([ladderItem('priority'), tipItem(7)])])
     const store = memStore()
     await syncPlanStepForCustomer({ stripe, store, now: NOW }, 'cus_1')
-    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: false, legacyAddon: null, monthlyCents: 5500, tipCents: 700 })
+    expect(store.calls[0][1]).toEqual({ stepId: 'priority', legacy: false, legacyAddon: null, monthlyCents: 5500, tipCents: 700, addons: [] })
   })
 
   it('before the tipping migration: the snapshot is still written without plan_tip_cents (no webhook 500)', async () => {
@@ -240,7 +240,9 @@ describe('the tipping system: entitlements come from the step price only', () =>
       }),
     }
     const store = supabasePlanStepStore(admin as unknown as Parameters<typeof supabasePlanStepStore>[0])
-    expect(await store.writePlanStep('cus_1', { stepId: 'starter', legacy: false, legacyAddon: null, monthlyCents: 3500, tipCents: 500 }, 't')).toBe(1)
-    expect(seen.map((v) => 'plan_tip_cents' in v)).toEqual([true, false])
+    expect(await store.writePlanStep('cus_1', { stepId: 'starter', legacy: false, legacyAddon: null, monthlyCents: 3500, tipCents: 500, addons: [] }, 't')).toBe(1)
+    // plan_addons first, then plan_tip_cents without it, then the base snapshot.
+    expect(seen.map((v) => 'plan_tip_cents' in v)).toEqual([true, true, false])
+    expect(seen.map((v) => 'plan_addons' in v)).toEqual([true, false, false])
   })
 })

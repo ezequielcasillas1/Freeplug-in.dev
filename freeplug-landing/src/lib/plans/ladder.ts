@@ -125,6 +125,70 @@ export const TIP_TOTAL_RANGES: Record<PlanStepId, { minDollars: number; maxDolla
  */
 export const TIP_NUDGE_WINDOW_DOLLARS = 5
 
+// ------------------------------------------------------------------ add-ons (Oct 4, editable)
+
+/**
+ * Monthly add-ons on top of any ladder step (Oct 4 spec, Lina's add-ons block). Each is its own
+ * recurring Stripe price (lookup key + fixed product id below, created in test mode by
+ * scripts/stripe-test-setup-ladder.mjs --addons-only), bought at most once per subscription,
+ * charged now when turned on and removed at the end of the billing period.
+ *
+ * NAMES ARE PLACEHOLDERS (Sable): see ladder-copy.ts ADDON_* for every visible string.
+ * The product ids / lookup keys are new on purpose: they never match the grandfathered add-on prices
+ * (freeplug_addon_<basic|plus|pro>_monthly), and matching is exact (never by prefix).
+ */
+export const ADDON_IDS = ['small_edit', 'big_change'] as const
+export type AddonId = (typeof ADDON_IDS)[number]
+
+export type AddonDef = {
+  id: AddonId
+  monthlyCents: number
+  lookupKey: string
+  productId: string
+  /** Extra small edits per billing period on top of the step's included edit. */
+  extraSmallEdits: number
+  /** Big changes (one larger edit of up to about an hour) per billing period. */
+  bigChanges: number
+}
+
+export const ADDONS: readonly AddonDef[] = [
+  {
+    id: 'small_edit',
+    monthlyCents: 500,
+    lookupKey: 'freeplug_addon_small_edit_monthly',
+    productId: 'freeplug_extra_small_edit',
+    extraSmallEdits: 1,
+    bigChanges: 0,
+  },
+  {
+    id: 'big_change',
+    monthlyCents: 575,
+    lookupKey: 'freeplug_addon_big_change_monthly',
+    productId: 'freeplug_extra_big_change',
+    extraSmallEdits: 0,
+    bigChanges: 1,
+  },
+]
+
+/** Shown as "Coming soon" only: no price, no switch, no backend. */
+export const COMING_SOON_ADDON_IDS = ['visitor_snapshot'] as const
+
+/**
+ * THE ONE PLACE for add-on caps (Oct 4). EZEQUIEL: change a number here; nothing else hard-codes it.
+ *   maxAddonCents     server check only: the step's add-ons may not add up to more than this.
+ *   addonsInTipTotal  add-ons count toward the step's TIP_TOTAL_RANGES max, so
+ *                     tip max = floor(range max - step price - add-ons). Starter ($54 max):
+ *                     $19 with none, $14 with +1 small edit, $13 with Big change, $8 with both.
+ * A step not listed here has no add-on cap and its tip range ignores add-ons.
+ */
+export const ADDON_STEP_LIMITS: Partial<Record<PlanStepId, { maxAddonCents: number; addonsInTipTotal: boolean }>> = {
+  starter: { maxAddonCents: 1500, addonsInTipTotal: true },
+}
+
+export function addonById(id: unknown): AddonDef | null {
+  return ADDONS.find((a) => a.id === id) ?? null
+}
+
 /**
  * "Done by end of next business day (Mon-Fri, excluding holidays)" (Fast lane and up): a TARGET,
  * not a guarantee (no refund or credit is tied to it). Due at this hour, Central time, on the next
@@ -311,7 +375,14 @@ export type Entitlements = {
   legacyAddon: LegacyAddonTierId | null
   monthlyCents: number
   priorityRank: number
-  includedEditsPerMonth: 0 | 1
+  /** Included small edits per billing period: the step's (0 or 1) + the "+1 small edit" add-on. */
+  includedEditsPerMonth: number
+  /** Big changes per billing period (the Big change add-on): 0 or 1. */
+  bigChangesPerMonth: number
+  /** Add-ons on the plan (Oct 4), in ADDONS order. Never a queue rank. */
+  addons: AddonId[]
+  /** What the add-ons cost per month (live Stripe amounts). Never part of monthlyCents. */
+  addonCents: number
   nextBusinessDayEdits: boolean
   leadsReport: boolean
   quoteAlerts: boolean
@@ -335,6 +406,9 @@ export const NO_PLAN_ENTITLEMENTS: Entitlements = {
   monthlyCents: 0,
   priorityRank: -1,
   includedEditsPerMonth: 0,
+  bigChangesPerMonth: 0,
+  addons: [],
+  addonCents: 0,
   nextBusinessDayEdits: false,
   leadsReport: false,
   quoteAlerts: false,
@@ -362,6 +436,9 @@ export function entitlementsFor(input: EntitlementInput): Entitlements {
       monthlyCents: step.monthlyCents,
       priorityRank: step.rank,
       includedEditsPerMonth: perks.has('includedSmallEdit') ? 1 : 0,
+      bigChangesPerMonth: 0,
+      addons: [],
+      addonCents: 0,
       nextBusinessDayEdits: perks.has('nextBusinessDayEdits'),
       leadsReport: perks.has('leadsReport'),
       quoteAlerts: perks.has('quoteAlerts'),
@@ -392,6 +469,23 @@ export function entitlementsFor(input: EntitlementInput): Entitlements {
     includedEditsPerMonth: addon && addon.includedEditsPerPeriod > 0 ? 1 : 0,
     gbpManaged: addon?.gbpManaged ?? false,
     aiEditsPerMonth: step?.aiEditsPerMonth ?? 0,
+  }
+}
+
+/**
+ * Adds the add-on grants to a plan's entitlements (Oct 4). Add-ons go only on ladder steps (never a
+ * grandfathered plan), so a legacy plan or no plan gets nothing from them. Unknown ids are ignored.
+ */
+export function withAddons(ent: Entitlements, addons: readonly AddonId[], addonCents?: number): Entitlements {
+  if (!ent.step || ent.legacy) return ent
+  const list = ADDONS.filter((a) => addons.includes(a.id))
+  if (list.length === 0) return ent
+  return {
+    ...ent,
+    addons: list.map((a) => a.id),
+    addonCents: addonCents ?? list.reduce((n, a) => n + a.monthlyCents, 0),
+    includedEditsPerMonth: ent.includedEditsPerMonth + list.reduce((n, a) => n + a.extraSmallEdits, 0),
+    bigChangesPerMonth: Math.min(1, ent.bigChangesPerMonth + list.reduce((n, a) => n + a.bigChanges, 0)),
   }
 }
 

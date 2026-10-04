@@ -9,6 +9,7 @@ import { isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscriptio
 import { stepById } from '@/lib/plans/ladder'
 import { planDisplayName } from '@/lib/stripe/plan-line'
 import { tierItems, tipDollarsOfItems } from '@/lib/plans/tips'
+import { addonCentsOfItems } from '@/lib/plans/addons'
 
 export type SubscriptionInfo = {
   id: string
@@ -20,6 +21,8 @@ export type SubscriptionInfo = {
   amount: number
   /** The monthly tip on this subscription (0 = none); shown next to the plan price (Vera bug 4). */
   tipCents?: number
+  /** Add-ons (Oct 4): their monthly total, shown next to the plan price (never in `amount`). */
+  addonCents?: number
   interval: string
   /**
    * Null when Stripe sends no period end (shown as a fallback, never "Invalid Date"). For a plan set to
@@ -145,6 +148,7 @@ async function loadSubscriptions(
       planName: tiers.length > 0 ? planDisplayName(planItems.map((i, n) => ({ lookupKey: i.price.lookup_key ?? null, productName: planProducts[n].name, productId: planProducts[n].id ?? null }))) : product.name,
       amount: planItems.reduce((sum, i) => sum + (i.price.unit_amount ?? 0) * (i.quantity ?? 1), 0),
       tipCents: tipDollarsOfItems(sub.items.data) * 100,
+      addonCents: addonCentsOfItems(sub.items.data),
       interval: price.recurring?.interval ?? 'month',
       // Period dates live on the subscription items in current Stripe API versions.
       currentPeriodEnd: isSetToEnd(sub) ? subscriptionEndDate(sub) : subscriptionPeriodEnd(sub),
@@ -158,7 +162,8 @@ async function loadSubscriptions(
       if (sub.schedule) {
         // Stripe won't cancel a plan a schedule manages; the page cancels in the app instead.
         const pending = await pendingPlanChange(stripe, sub).catch(() => null)
-        info.pendingChange = pending ? { stepName: stepById(pending.step).name, effectiveAt: new Date(pending.effectiveAt) } : null
+        // Only a step switch reads as "your switch to X" (an add-on that ends is not a plan change).
+        info.pendingChange = pending?.isSwitch ? { stepName: stepById(pending.step).name, effectiveAt: new Date(pending.effectiveAt) } : null
       }
       subscriptions.push(info)
     }

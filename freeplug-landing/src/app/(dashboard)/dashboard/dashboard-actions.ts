@@ -12,6 +12,8 @@ import {
 import { RESUME_PLAN_ANCHOR_HREF, subscriptionEndingMessage } from '@/lib/dashboard/subscription-alerts'
 import { planDisplayName, planNameOf, subscriptionListName, type PlanDisplayItem } from '@/lib/stripe/plan-line'
 import { isTipPrice } from '@/lib/plans/tips'
+import { isAddonPrice } from '@/lib/plans/addons'
+import { ADDON_NAMES } from '@/lib/plans/ladder-copy'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
@@ -54,6 +56,10 @@ export type SubscriptionDetail = {
   entitlements?: Entitlements | null
   /** Included small edit this billing period (Fast lane+ or legacy Plus/Pro); null = not included / unknown. */
   includedEdit?: { used: number; available: number } | null
+  /** Big change add-on (Oct 4): used this period of the available one. */
+  bigChange?: { used: number; available: number } | null
+  /** Add-ons that end at the period end (turned off, or dropped by a planned switch). */
+  addonsEnding?: { names: string[]; date: string } | null
   /** A downgrade waiting for the next billing date (Lina §3c); null = none or unknown. */
   pendingChange?: { stepName: string; date: string } | null
 }
@@ -195,6 +201,7 @@ export async function getEnhancedDashboardData(
         const productNames: string[] = []
         const planItems: PlanDisplayItem[] = []
         let tipDollars = 0
+        let addonCents = 0
         let amount = 0
         for (const item of items) {
           const itemPrice = item.price
@@ -204,6 +211,8 @@ export async function getEnhancedDashboardData(
               : (itemPrice.product as Stripe.Product)
           productNames.push(itemProduct.name)
           if (isTipPrice(itemPrice)) tipDollars += Math.max(0, item.quantity ?? 0)
+          // Add-ons (Oct 4): never part of the plan's name; their total is its own part of listName.
+          else if (isAddonPrice(itemPrice)) addonCents += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
           else planItems.push({ lookupKey: itemPrice.lookup_key ?? null, productName: itemProduct.name, productId: itemProduct.id ?? null })
           amount += (itemPrice.unit_amount ?? 0) * (item.quantity ?? 1)
         }
@@ -213,10 +222,13 @@ export async function getEnhancedDashboardData(
         const entitlements: Entitlements | null =
           sub.status === 'active' || sub.status === 'trialing' ? planEntitlements : null
         let pendingChange: SubscriptionDetail['pendingChange'] = null
+        let addonsEnding: SubscriptionDetail['addonsEnding'] = null
         if ((sub.status === 'active' || sub.status === 'trialing') && sub.schedule) {
           try {
             const p = await pendingPlanChange(stripe, sub)
-            if (p) pendingChange = { stepName: stepById(p.step).name, date: formatPlanEndDate(new Date(p.effectiveAt)) }
+            const date = p ? formatPlanEndDate(new Date(p.effectiveAt)) : ''
+            if (p?.isSwitch) pendingChange = { stepName: stepById(p.step).name, date }
+            if (p && p.removedAddons.length > 0) addonsEnding = { names: p.removedAddons.map((a) => ADDON_NAMES[a]), date }
           } catch (e) {
             console.error('[dashboard] pending change lookup failed', e instanceof Error ? e.message : e)
           }
@@ -228,7 +240,7 @@ export async function getEnhancedDashboardData(
           planName,
           // Sable 6:19 PM: grandfathered list / Recent activity name "Hosting + Pro add-on" (+ tip); the
           // ending alert keeps planName (the product names, read by grandfatheredAlertName).
-          listName: subscriptionListName(planItems.length > 0 ? planDisplayName(planItems) : planName, tipDollars),
+          listName: subscriptionListName(planItems.length > 0 ? planDisplayName(planItems) : planName, tipDollars, addonCents),
           ladderStep,
           status: sub.status,
           amount,
@@ -241,7 +253,9 @@ export async function getEnhancedDashboardData(
           created: stripeTimestampToDate(sub.created) ?? new Date(0),
           entitlements,
           includedEdit: null,
+          bigChange: null,
           pendingChange,
+          addonsEnding,
         })
 
         if (sub.status === 'active' || sub.status === 'trialing') {
@@ -261,6 +275,18 @@ export async function getEnhancedDashboardData(
           .eq('user_id', user.id)
           .eq('period_start', start)
         if (!useErr) detail.includedEdit = { used: count ?? 0, available: avail }
+      }
+      // Big change add-on (Oct 4): counted in big_change_uses the same way; hidden on any error.
+      for (const detail of subscriptions) {
+        const avail = detail.entitlements?.bigChangesPerMonth ?? 0
+        const start = periodStartDate(detail.currentPeriodStart)
+        if (avail < 1 || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
+        const { count, error: useErr } = await supabase
+          .from('big_change_uses')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('period_start', start)
+        if (!useErr) detail.bigChange = { used: count ?? 0, available: avail }
       }
 
       // No ledger rows yet (e.g. the invoice.paid webhook has not landed): the earliest start of the

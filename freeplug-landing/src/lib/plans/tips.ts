@@ -11,6 +11,7 @@ import {
   type PlanStep,
   type PlanStepId,
 } from './ladder'
+import { addonCentsInTipTotal, isAddonPrice } from './addons'
 
 /**
  * The tipping system (Oct 3): helpers shared by checkout, the claim flow, the Plans page, the
@@ -18,6 +19,8 @@ import {
  *
  * Rules:
  *   - The tip is whole dollars, 0 .. (range max - step price). 0 = no tip item at all.
+ *   - Add-ons (Oct 4) count toward the range max on steps marked addonsInTipTotal (Starter):
+ *     tip max = floor(range max - step price - add-ons). THE cap rule; ADDON_STEP_LIMITS holds the knobs.
  *   - A step that isn't sellable has no slider and accepts no tip (tipRangeFor = null).
  *   - The tip never grants anything: the step comes from the step price item only (tierItems()).
  *   - Any plan change (upgrade now, downgrade at the next billing date) drops the tip item.
@@ -34,13 +37,23 @@ export type TipRange = {
 
 type Ranges = Record<PlanStepId, { minDollars: number; maxDollars: number }>
 
-/** The slider range for a step, or null for a step that isn't sold (no slider, no tip). */
-export function tipRangeFor(step: Pick<PlanStep, 'id' | 'monthlyCents' | 'sellable'>, ranges: Ranges = TIP_TOTAL_RANGES): TipRange | null {
+/**
+ * The slider range for a step, or null for a step that isn't sold (no slider, no tip). `addonCents` =
+ * what the plan's add-ons cost per month; on steps whose tip total includes add-ons (ladder.ts
+ * ADDON_STEP_LIMITS, Starter) it lowers the max tip: floor(range max - step price - add-ons).
+ */
+export function tipRangeFor(
+  step: Pick<PlanStep, 'id' | 'monthlyCents' | 'sellable'>,
+  ranges: Ranges = TIP_TOTAL_RANGES,
+  addonCents: number = 0
+): TipRange | null {
   if (!step.sellable) return null
   const price = Math.round(step.monthlyCents / 100)
   const r = ranges[step.id]
-  const maxTotal = Math.max(price, Math.floor(r?.maxDollars ?? price))
-  return { minTip: 0, maxTip: maxTotal - price, minTotal: price, maxTotal }
+  const rangeMax = Math.max(price, Math.floor(r?.maxDollars ?? price))
+  const counted = addonCentsInTipTotal(step.id, addonCents)
+  const maxTip = Math.max(0, Math.floor((rangeMax * 100 - step.monthlyCents - counted) / 100))
+  return { minTip: 0, maxTip, minTotal: price, maxTotal: price + maxTip }
 }
 
 export type TipParse = { ok: true; tipDollars: number } | { ok: false; code: 'invalid' | 'out_of_range' | 'not_sellable' }
@@ -49,10 +62,15 @@ export type TipParse = { ok: true; tipDollars: number } | { ok: false; code: 'in
  * Server-side check of an untrusted tip for a step. Missing/null = 0 (no tip). Anything that isn't a
  * whole number of dollars inside the step's range is refused; a step that isn't sold accepts only 0.
  */
-export function parseTipDollars(step: Pick<PlanStep, 'id' | 'monthlyCents' | 'sellable'>, value: unknown, ranges: Ranges = TIP_TOTAL_RANGES): TipParse {
+export function parseTipDollars(
+  step: Pick<PlanStep, 'id' | 'monthlyCents' | 'sellable'>,
+  value: unknown,
+  ranges: Ranges = TIP_TOTAL_RANGES,
+  addonCents: number = 0
+): TipParse {
   if (value === undefined || value === null) return { ok: true, tipDollars: 0 }
   if (typeof value !== 'number' || !Number.isSafeInteger(value)) return { ok: false, code: 'invalid' }
-  const range = tipRangeFor(step, ranges)
+  const range = tipRangeFor(step, ranges, addonCents)
   if (!range) return value === 0 ? { ok: true, tipDollars: 0 } : { ok: false, code: 'not_sellable' }
   if (value < range.minTip || value > range.maxTip) return { ok: false, code: 'out_of_range' }
   return { ok: true, tipDollars: value }
@@ -68,9 +86,12 @@ export function isTipPrice(price: PriceLike | null | undefined): boolean {
   return product === TIP_PRODUCT_ID
 }
 
-/** Items that make up the plan itself (step price, or a legacy plan's hosting + add-on): everything but the tip. */
+/**
+ * Items that make up the plan itself (step price, or a legacy plan's hosting + grandfathered add-on):
+ * everything but the tip and the Oct 4 add-ons (addons.ts). The step is read from these only.
+ */
 export function tierItems<T extends { price: PriceLike }>(items: readonly T[]): T[] {
-  return items.filter((i) => !isTipPrice(i.price))
+  return items.filter((i) => !isTipPrice(i.price) && !isAddonPrice(i.price))
 }
 
 /** The subscription's tip item, if any. */
@@ -103,9 +124,21 @@ export type TipNudge = { next: PlanStep; perk: PlanPerk }
  * Nudge: with a tip, when the monthly total is within TIP_NUDGE_WINDOW_DOLLARS of the next step's
  * price and the next step is sellable, suggest switching to it. Never from the top step, never for a
  * $0 tip, never toward a step that isn't sold.
+ *
+ * Add-ons (Oct 4): they stay on when switching steps, so they are on both sides of the comparison
+ * and cancel out; the gap is still next step price - (step price + tip). What `addonCents` changes
+ * is the reachable tip: a tip above the add-on-lowered max (tipRangeFor) never nudges, so on
+ * Starter with both add-ons ($8 max) the $50+ nudge can't show.
  */
-export function tipNudge(step: Pick<PlanStep, 'rank' | 'monthlyCents'>, tipDollars: number, within: number = TIP_NUDGE_WINDOW_DOLLARS): TipNudge | null {
+export function tipNudge(
+  step: Pick<PlanStep, 'id' | 'rank' | 'monthlyCents' | 'sellable'>,
+  tipDollars: number,
+  within: number = TIP_NUDGE_WINDOW_DOLLARS,
+  addonCents: number = 0
+): TipNudge | null {
   if (tipDollars <= 0) return null
+  const range = tipRangeFor(step, TIP_TOTAL_RANGES, addonCents)
+  if (range && tipDollars > range.maxTip) return null
   const next = nextStepUp(step)
   if (!next || !next.sellable || next.adds.length === 0) return null
   const total = Math.round(step.monthlyCents / 100) + tipDollars

@@ -49,15 +49,19 @@ export function supabasePlanStepStore(admin: {
         plan_monthly_cents: snapshot.monthlyCents,
         plan_step_synced_at: syncedAt,
       }
-      let { data, error } = await admin
-        .from('profiles')
-        .update({ ...base, plan_tip_cents: snapshot.tipCents })
-        .eq('stripe_customer_id', customerId)
-        .select('id')
-      // Before migration 20261003200000 (plan_tip_cents): still write the perks snapshot, so the
-      // webhook doesn't fail (and get redelivered) over a display-only column.
-      if (error && isMissingColumnError(error)) {
-        ;({ data, error } = await admin.from('profiles').update(base).eq('stripe_customer_id', customerId).select('id'))
+      // Newest columns first; each fallback drops the column a not-yet-applied migration adds, so the
+      // webhook never fails (and gets redelivered) over a missing column: plan_addons (20261004090000,
+      // add-ons), then plan_tip_cents (20261003200000, tipping, display only).
+      const attempts: Record<string, unknown>[] = [
+        { ...base, plan_tip_cents: snapshot.tipCents, plan_addons: snapshot.addons },
+        { ...base, plan_tip_cents: snapshot.tipCents },
+        base,
+      ]
+      let data: unknown[] | null = null
+      let error: { message: string; code?: string } | null = null
+      for (const values of attempts) {
+        ;({ data, error } = await admin.from('profiles').update(values).eq('stripe_customer_id', customerId).select('id'))
+        if (!error || !isMissingColumnError(error)) break
       }
       if (error) throw new Error(`profiles plan_step update: ${error.message}`)
       return data?.length ?? 0

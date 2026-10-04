@@ -1,5 +1,5 @@
 import { LEGACY_ADDON_TIERS, stepByLookupKey } from '../plans/ladder'
-import { GRANDFATHERED_HOSTING_ONLY_NAME, GRANDFATHERED_HOSTING_SHORT, LEGACY_ADDON_NAME, PLAN_STRIP_TIP } from '../plans/ladder-copy'
+import { GRANDFATHERED_HOSTING_ONLY_NAME, GRANDFATHERED_HOSTING_SHORT, LEGACY_ADDON_NAME, PLAN_STRIP_TIP, planStripAddons } from '../plans/ladder-copy'
 import { legacyAddonProductId } from './config'
 
 /** Whole dollars like the step rows ("$65"); cents only when they are not zero ("$65.50"). */
@@ -17,15 +17,18 @@ export type PlanLineItem = { lookupKey: string | null; productName: string; unit
  * WITHOUT a tip part. The status is added when it is not "active".
  * The tipping system: `items` are the plan's items only (never the tip item); a tip is added as its
  * own part ("Fast lane · $65/month + $5 tip"), so the step price and the tip never blur together.
+ * Add-ons (Oct 4) are never in `items` either: their monthly total is its own part, before the tip
+ * ("Starter · $35/month + $10.75 add-ons + $4 tip"). Ladder plans only.
  */
-export function planStripLine(items: ReadonlyArray<PlanLineItem>, interval: string, status: string, tipDollars = 0): string {
+export function planStripLine(items: ReadonlyArray<PlanLineItem>, interval: string, status: string, tipDollars = 0, addonCents = 0): string {
   const name = planDisplayName(items)
   const ladderStep = items.length === 1 && stepByLookupKey(items[0].lookupKey) != null
   const amount = items.reduce((sum, i) => sum + i.unitAmountCents * i.quantity, 0)
   const suffix = status === 'active' ? '' : ` (${status.replace(/_/g, ' ')})`
   // Ladder plans keep their tip part; a grandfathered line never shows one (Sable 6:28 PM).
   const tip = ladderStep && tipDollars > 0 ? PLAN_STRIP_TIP(formatPlanDollars(tipDollars * 100)) : ''
-  return `${name} · ${formatPlanDollars(amount)}/${interval}${tip}${suffix}`
+  const addons = ladderStep && addonCents > 0 ? planStripAddons(addonCents) : ''
+  return `${name} · ${formatPlanDollars(amount)}/${interval}${addons}${tip}${suffix}`
 }
 
 /**
@@ -64,6 +67,7 @@ export function planDisplayName(items: ReadonlyArray<PlanDisplayItem>): string {
  * Dashboard "Active Subscriptions" list name (Sable, Oct 3 5:11 PM): "Fast lane + $4 tip", the plan
  * strip's tip pattern (PLAN_STRIP_TIP); plan name only without a tip.
  */
-export function subscriptionListName(planName: string, tipDollars: number): string {
-  return tipDollars > 0 ? `${planName}${PLAN_STRIP_TIP(formatPlanDollars(tipDollars * 100))}` : planName
+export function subscriptionListName(planName: string, tipDollars: number, addonCents = 0): string {
+  const addons = addonCents > 0 ? planStripAddons(addonCents) : ''
+  return tipDollars > 0 ? `${planName}${addons}${PLAN_STRIP_TIP(formatPlanDollars(tipDollars * 100))}` : `${planName}${addons}`
 }
