@@ -33,3 +33,26 @@ export type WebsiteRequestRow = {
   created_at: string
   updated_at: string
 }
+
+/** Help-chat change request (migration 20261004150000). Customers read only some columns. */
+export type ChangeRequestRow = {
+  id: string
+  user_id: string
+  website_request_id: string | null
+  change_type: string
+  page: string
+  description: string
+  photo_name: string | null
+  /** Server-set (service role): the plan step when the request came in. */
+  plan_step: string | null
+  billing: 'included' | 'paid_addon' | 'quote' | 'unknown'
+  status: 'pending_review' | 'approved' | 'declined'
+  decision_note: string | null
+  /** Admin only: the GitHub PR whose review recorded the decision. */
+  pr_url: string | null
+  decided_at: string | null
+  notified_at: string | null
+  notify_error: string | null
+  created_at: string
+  updated_at: string
+}

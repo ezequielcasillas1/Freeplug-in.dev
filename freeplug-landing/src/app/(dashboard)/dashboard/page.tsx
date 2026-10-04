@@ -24,6 +24,12 @@ import { QuickActions } from './QuickActions'
 import { getClaimedSiteForUser, getSiteDetails } from '@/lib/outreach/server'
 import { organicTracker, outreachTracker } from '@/lib/outreach/tracker'
 import { TRACKER_LIVE_WAITING } from '@/lib/outreach/copy'
+import { ChangeRequestsCard } from './ChangeRequestsCard'
+import {
+  CUSTOMER_CHANGE_REQUEST_COLUMNS,
+  CUSTOMER_CHANGE_REQUEST_LIMIT,
+  type CustomerChangeRequest,
+} from '@/lib/change-requests/customer'
 
 type Props = {
   searchParams: Promise<{
@@ -105,6 +111,17 @@ export default async function DashboardPage({ searchParams }: Props) {
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+
+  // Help-chat change requests (own rows, RLS). A read error (e.g. before migration 20261004150000)
+  // hides the card instead of showing a wrong empty list.
+  const { data: changeRows, error: changeErr } = await supabase
+    .from('change_requests')
+    .select(CUSTOMER_CHANGE_REQUEST_COLUMNS)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(CUSTOMER_CHANGE_REQUEST_LIMIT)
+  if (changeErr) console.error('[dashboard] change requests lookup failed', changeErr.message)
+  const changeRequests = changeErr ? null : ((changeRows ?? []) as CustomerChangeRequest[])
 
   // "Your website" card (Lina): outreach steps for claimed outreach sites, organic steps otherwise.
   const outreachDetails = outreachSite ? await getSiteDetails(outreachSite.id) : null
@@ -300,6 +317,12 @@ export default async function DashboardPage({ searchParams }: Props) {
           }
         />
       </div>
+
+      {changeRequests ? (
+        <div className="mt-8">
+          <ChangeRequestsCard requests={changeRequests} />
+        </div>
+      ) : null}
 
       {/* Recent Activity and Support */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-8">

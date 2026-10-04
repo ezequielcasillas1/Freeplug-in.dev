@@ -1,4 +1,5 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { after } from 'next/server'
 
 /**
  * Run `task` after the response (Aria, round 5: forgot-password answers before the lookup and send). On
@@ -24,4 +25,24 @@ export function runAfterResponse(label: string, task: () => Promise<void>): Prom
   }
   if (waitUntil) waitUntil(p)
   return p
+}
+
+/**
+ * Next's `after()` (change requests, Aria Oct 4): the task runs once the response is sent; on
+ * Cloudflare OpenNext hands it to ctx.waitUntil. Outside a request scope (tests, scripts) `after`
+ * throws, so the task falls back to runAfterResponse. Errors never escape: they are logged.
+ */
+export function scheduleAfterResponse(label: string, task: () => Promise<void>): void {
+  const guarded = async () => {
+    try {
+      await task()
+    } catch (e) {
+      console.error(`[${label}] background task failed:`, e instanceof Error ? e.message : e)
+    }
+  }
+  try {
+    after(guarded)
+  } catch {
+    void runAfterResponse(label, task)
+  }
 }

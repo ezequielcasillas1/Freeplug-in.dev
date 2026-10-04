@@ -14,6 +14,8 @@ import {
 } from '@/lib/stripe/active-subscription'
 import { HELP_CHAT_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { ERROR_TOO_MANY_TRIES } from '@/lib/outreach/copy'
+import { scheduleAfterResponse } from '@/lib/background'
+import { notifyNewChangeRequest } from '@/lib/change-requests/notify'
 
 const requestSchema = z.object({
   business_name: z.string().min(1, 'Business name is required').max(200),
@@ -39,6 +41,8 @@ export type RequestWebsiteState = {
 
 type RequestValues = z.infer<typeof requestSchema>
 type ServerSupabase = Awaited<ReturnType<typeof createClient>>
+/** Internal result of saveWebsiteRequest: the saved request's id when known. */
+type SavedRequest = RequestWebsiteState & { requestId?: string | null }
 
 /**
  * Saves the signed-in user's website request: updates their open (submitted) request or inserts a
@@ -49,7 +53,7 @@ async function saveWebsiteRequest(
   supabase: ServerSupabase,
   userId: string,
   v: RequestValues
-): Promise<RequestWebsiteState> {
+): Promise<SavedRequest> {
   const phone = v.contact_phone?.trim() || null
   const gUrl = v.google_business_url.trim() || null
   const notes = v.notes?.trim() || null
@@ -70,7 +74,9 @@ async function saveWebsiteRequest(
     }
   }
 
+  let requestId: string | null = null
   if (openRow?.id && openRow.status === 'submitted') {
+    requestId = openRow.id as string
     const { error } = await supabase
       .from('website_requests')
       .update({
@@ -87,14 +93,19 @@ async function saveWebsiteRequest(
       return { error: error.message }
     }
   } else {
-    const { error } = await supabase.from('website_requests').insert({
-      user_id: userId,
-      business_name: v.business_name.trim(),
-      contact_phone: phone,
-      google_business_url: gUrl,
-      notes,
-      status: 'submitted',
-    })
+    const { data: inserted, error } = await supabase
+      .from('website_requests')
+      .insert({
+        user_id: userId,
+        business_name: v.business_name.trim(),
+        contact_phone: phone,
+        google_business_url: gUrl,
+        notes,
+        status: 'submitted',
+      })
+      .select('id')
+      .maybeSingle()
+    requestId = (inserted?.id as string | undefined) ?? null
 
     if (error) {
       if (error.code === '23505') {
@@ -138,7 +149,7 @@ async function saveWebsiteRequest(
     return { error: updErr.message }
   }
 
-  return { success: true }
+  return { success: true, requestId }
 }
 
 export async function submitWebsiteRequest(
@@ -167,7 +178,7 @@ export async function submitWebsiteRequest(
 
   const saved = await saveWebsiteRequest(supabase, user.id, parsed.data)
   if (saved.error) {
-    return saved
+    return { error: saved.error }
   }
 
   revalidatePath('/dashboard')
@@ -190,7 +201,10 @@ export type HelpChangeRequestResult = { ok: true; email: string } | { ok: false;
 /**
  * Help chat "Send request": stores the change on the same website request the Plans page
  * "Request maintenance" form uses (appended to the open request's notes, or a new request that
- * reuses the business details of the latest one). No email is sent and nothing is charged.
+ * reuses the business details of the latest one), AND inserts a change_requests row (status
+ * pending_review, customer's own client, RLS). After the response, the server classifies billing
+ * and POSTs the change-approval webhook once (best effort): the submit never waits for it and
+ * succeeds even if the row or the webhook fails. No email is sent and nothing is charged.
  */
 export async function sendHelpChangeRequest(
   input: HelpChangeRequestInput
@@ -259,6 +273,36 @@ export async function sendHelpChangeRequest(
   })
   if (saved.error) {
     return { ok: false, error: saved.error }
+  }
+
+  // The change is already saved in the request notes, so a failed row only logs (e.g. before
+  // migration 20261004150000 is applied): the customer's submit still succeeds.
+  const { data: row, error: rowErr } = await supabase
+    .from('change_requests')
+    .insert({
+      website_request_id: saved.requestId ?? null,
+      change_type: c.changeType,
+      page: c.page,
+      description: c.description,
+      photo_name: c.photoName || null,
+    })
+    .select('id')
+    .maybeSingle()
+  if (rowErr || !row?.id) {
+    console.error('[change-requests] row not saved; the change is in the request notes only', rowErr?.message ?? 'no id')
+  } else {
+    const requestId = row.id as string
+    const userId = user.id
+    scheduleAfterResponse('change-requests', async () => {
+      let admin
+      try {
+        admin = createAdminClient()
+      } catch {
+        console.error('[change-requests] no service role; billing and webhook skipped', requestId)
+        return
+      }
+      await notifyNewChangeRequest(admin, { requestId, userId, changeType: c.changeType })
+    })
   }
 
   revalidatePath('/dashboard')

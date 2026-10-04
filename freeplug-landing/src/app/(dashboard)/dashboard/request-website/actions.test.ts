@@ -7,6 +7,7 @@ const state = vi.hoisted(() => ({
   updates: [] as Record<string, unknown>[],
   inserts: [] as Record<string, unknown>[],
   profileUpdates: [] as Record<string, unknown>[],
+  insertErrors: {} as Record<string, { message: string; code?: string } | null>,
 }))
 
 function query(table: string) {
@@ -28,9 +29,11 @@ function query(table: string) {
       state.updates.push({ table, ...v })
       return q
     },
-    insert: async (v: Record<string, unknown>) => {
+    insert: (v: Record<string, unknown>) => {
       state.inserts.push({ table, ...v })
-      return { error: null }
+      const err = state.insertErrors[table] ?? null
+      const res = { error: err, data: err ? null : { id: table === 'change_requests' ? 'cr-1' : 'req-new' } }
+      return { select: () => ({ maybeSingle: async () => res }), then: (resolve: (v: unknown) => void) => resolve(res) }
     },
     then: (resolve: (v: unknown) => void) => resolve({ error: null }),
   })
@@ -72,6 +75,16 @@ vi.mock('@/lib/rate-limit', () => ({
 }))
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
 vi.mock('next/navigation', () => ({ redirect: () => {} }))
+// after(): capture the callbacks so a test decides when (if ever) the background work runs.
+const afterCalls = vi.hoisted(() => ({ fns: [] as (() => Promise<void> | void)[] }))
+vi.mock('next/server', () => ({ after: (fn: () => Promise<void>) => afterCalls.fns.push(fn) }))
+const notify = vi.hoisted(() => ({ calls: [] as unknown[], impl: async () => null as unknown }))
+vi.mock('@/lib/change-requests/notify', () => ({
+  notifyNewChangeRequest: async (_admin: unknown, input: unknown) => {
+    notify.calls.push(input)
+    return notify.impl()
+  },
+}))
 
 import { sendHelpChangeRequest } from './actions'
 
@@ -87,6 +100,10 @@ describe('sendHelpChangeRequest', () => {
     state.profileUpdates = []
     rateAllowed.value = true
     rateAllowed.calls = []
+    state.insertErrors = {}
+    afterCalls.fns = []
+    notify.calls = []
+    notify.impl = async () => null
   })
 
   it('is rate limited per user by the shared limiter (nothing saved when over)', async () => {
@@ -133,7 +150,7 @@ describe('sendHelpChangeRequest', () => {
     state.open = { id: 'req-1', status: 'submitted' }
     const r = await sendHelpChangeRequest({ ...input, photoName: 'hero.jpg' })
     expect(r).toEqual({ ok: true, email: 'owner@example.com' })
-    expect(state.inserts).toHaveLength(0)
+    expect(state.inserts.filter((i) => i.table === 'website_requests')).toHaveLength(0)
     expect(state.updates[0]).toMatchObject({
       table: 'website_requests',
       business_name: 'Gracia Lawn',
@@ -160,5 +177,59 @@ describe('sendHelpChangeRequest', () => {
       status: 'submitted',
       notes: 'Change request (Help chat):\nType: Photos\nPage: Home\nChange: Swap the hero photo',
     })
+  })
+
+  it('also inserts a change_requests row with only the customer fields (status, billing and decision come from the server)', async () => {
+    state.latest = { id: 'req-1', status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'submitted' }
+    const r = await sendHelpChangeRequest({ ...input, photoName: 'hero.jpg' })
+    expect(r).toEqual({ ok: true, email: 'owner@example.com' })
+    const rows = state.inserts.filter((i) => i.table === 'change_requests')
+    expect(rows).toEqual([
+      { table: 'change_requests', website_request_id: 'req-1', change_type: 'Photos', page: 'Home', description: 'Swap the hero photo', photo_name: 'hero.jpg' },
+    ])
+  })
+
+  it('links the row to a newly opened request', async () => {
+    state.latest = { status: 'closed', business_name: 'Gracia Lawn', notes: '' }
+    await sendHelpChangeRequest(input)
+    expect(state.inserts.find((i) => i.table === 'change_requests')).toMatchObject({ website_request_id: 'req-new', photo_name: null })
+  })
+
+  it('answers before the webhook: the work is handed to after() and has not run when the submit returns', async () => {
+    state.latest = { status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'submitted' }
+    const r = await sendHelpChangeRequest(input)
+    expect(r.ok).toBe(true)
+    expect(afterCalls.fns).toHaveLength(1)
+    expect(notify.calls).toEqual([])
+    await afterCalls.fns[0]()
+    expect(notify.calls).toEqual([{ requestId: 'cr-1', userId: 'user-1', changeType: 'Photos' }])
+  })
+
+  it('a failing background task never reaches the customer (error is logged, not thrown)', async () => {
+    state.latest = { status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'submitted' }
+    notify.impl = async () => {
+      throw new Error('webhook exploded')
+    }
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const r = await sendHelpChangeRequest(input)
+    expect(r.ok).toBe(true)
+    await expect(afterCalls.fns[0]()).resolves.toBeUndefined()
+    expect(err.mock.calls.some((c) => String(c[0]).includes('[change-requests] background task failed'))).toBe(true)
+    err.mockRestore()
+  })
+
+  it('still succeeds when the change_requests row cannot be saved (e.g. migration not applied): notes only, no webhook', async () => {
+    state.latest = { status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'submitted' }
+    state.insertErrors.change_requests = { message: 'relation "public.change_requests" does not exist', code: '42P01' }
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const r = await sendHelpChangeRequest(input)
+    expect(r).toEqual({ ok: true, email: 'owner@example.com' })
+    expect(state.updates[0]).toMatchObject({ table: 'website_requests' })
+    expect(afterCalls.fns).toHaveLength(0)
+    err.mockRestore()
   })
 })
