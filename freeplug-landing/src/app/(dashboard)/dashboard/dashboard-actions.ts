@@ -264,8 +264,8 @@ export async function getEnhancedDashboardData(
       }
 
       // No ledger rows yet (e.g. the invoice.paid webhook has not landed): the earliest start of the
-      // subscriptions listed above that took a payment (incomplete, incomplete_expired and trialing are
-      // skipped). No invoices.list call (it returned the NEWEST paid invoice).
+      // subscriptions listed above that took a payment (incomplete, incomplete_expired, trialing and
+      // paused are skipped). No invoices.list call (it returned the NEWEST paid invoice).
       if (!ledgerFirstPayment) {
         const fallback = firstPaymentDate(null, subs.data)
         daysSinceFirstPayment = fallback ? daysSince(fallback) : null

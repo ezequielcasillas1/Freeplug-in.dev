@@ -342,14 +342,21 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     const again = await screen.findByRole('button', { name: 'Switch to Fast lane now' })
     await waitFor(() => expect(document.activeElement).toBe(again))
     fireEvent.click(again)
-    await screen.findByRole('button', { name: 'Confirm' })
+    // De-flake (Vera, 349fa4a report finding 1): the Esc listener is attached by the same effect that
+    // focuses Confirm, and under load that effect can run after Confirm is already in the DOM. An Esc
+    // sent before it was lost, so the confirm never closed and the old 5 s waits timed out. Wait for
+    // Confirm to have focus (listener attached), then Esc, then wait for Confirm to be gone. (waitFor
+    // on null, not waitForElementToBeRemoved: fireEvent runs in act, so it is usually gone already.)
+    const confirmBtn = await screen.findByRole('button', { name: 'Confirm' })
+    await waitFor(() => expect(document.activeElement).toBe(confirmBtn))
     fireEvent.keyDown(document, { key: 'Escape' })
-    // generous timeouts: this flaked once under a loaded box (Arkitect run, Oct 3 4:07 PM)
-    const third = await screen.findByRole('button', { name: 'Switch to Fast lane now' }, { timeout: 5000 })
-    await waitFor(() => expect(document.activeElement).toBe(third), { timeout: 5000 })
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull())
+    const third = screen.getByRole('button', { name: 'Switch to Fast lane now' })
+    await waitFor(() => expect(document.activeElement).toBe(third))
+    expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
     expect(screen.queryByTestId('confirm-expired')).toBeNull()
     expect(onChangePlan).not.toHaveBeenCalled()
-  }, 20_000) // the whole test needs room too: under a parallel full run it hit vitest's 5 s default (Oct 3 4:2x PM)
+  })
 
   it('expiry: after CONFIRM_OPEN_MS the confirm closes to the button with one grey line; a tap previews again', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })

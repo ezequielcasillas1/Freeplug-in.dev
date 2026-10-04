@@ -236,8 +236,14 @@ describe('Customer Since fallback: zero ledger rows -> earliest subscription sta
     expect((await shown()).days).toBe(32)
   })
 
+  it('skips paused subscriptions (Stripe: a trial ended without a payment method, never paid)', async () => {
+    fx.subs = [sub({ id: 'sub_paused', status: 'paused', created: T('2026-09-01T00:00:00Z'), start_date: T('2026-09-01T00:00:00Z') }), sub()]
+    vi.setSystemTime(new Date('2026-11-04T20:00:00Z'))
+    expect((await shown()).days).toBe(32)
+  })
+
   it('only never-paid subscriptions and no ledger rows: "—"', async () => {
-    fx.subs = [sub({ status: 'trialing' }), sub({ id: 'sub_inc', status: 'incomplete' })]
+    fx.subs = [sub({ status: 'trialing' }), sub({ id: 'sub_inc', status: 'incomplete' }), sub({ id: 'sub_p', status: 'paused' })]
     vi.setSystemTime(new Date('2026-11-04T20:00:00Z'))
     expect(await shown()).toEqual({ days: null, text: '—' })
   })

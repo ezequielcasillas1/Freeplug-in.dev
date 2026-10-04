@@ -16,12 +16,15 @@ const DAY_MS = 24 * 60 * 60 * 1000
 export type SubscriptionStartLike = { start_date?: number | null; created?: number | null; status?: string | null }
 
 /**
- * Subscriptions the fallback skips because they never took a payment (Vera, Oct 4, 31d2736 Info 2):
- * incomplete / incomplete_expired (first invoice never paid) and trialing. Customer Since means the
- * first PAYMENT, and a trial has not paid yet; the app has no trial flow today, so this is defensive.
- * Canceled, past_due, unpaid and paused ones did pay at some point and still count.
+ * Subscriptions the fallback skips because they never took a payment (Vera, Oct 4, 31d2736 Info 2 and
+ * 349fa4a Info 2): incomplete / incomplete_expired (first invoice never paid), trialing (a trial has
+ * not paid yet) and paused (in Stripe, a trial that ended without a payment method, so never paid).
+ * Customer Since means the first PAYMENT; the app has no trial flow today, so this is defensive.
+ * Canceled, past_due and unpaid ones count: with charge_automatically a failed first invoice leaves
+ * the subscription incomplete, so those reached a paid invoice first. (A trial canceled before its
+ * first payment would also be canceled; if trials ever ship, revisit.)
  */
-export const NEVER_PAID_STATUSES: ReadonlySet<string> = new Set(['incomplete', 'incomplete_expired', 'trialing'])
+export const NEVER_PAID_STATUSES: ReadonlySet<string> = new Set(['incomplete', 'incomplete_expired', 'trialing', 'paused'])
 
 /** When the first payment happened: the oldest ledger row, else the earliest subscription start; null if neither. */
 export function firstPaymentDate(
