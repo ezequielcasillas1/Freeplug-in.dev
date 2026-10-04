@@ -306,6 +306,10 @@ export function HostingCheckoutCard({
   }
 
   function pick(id: PlanStepId) {
+    // Ignored while Confirm is charging (Jace; Vera, 5282e5e report): the checked radio stays on the
+    // plan being charged, so the success line matches it. The radios look the same (no disabled);
+    // React puts a controlled radio back when its change isn't applied.
+    if (confirm.phase === 'submitting') return
     setPlanStep(id)
     // The slider starts at the new step's price (no tip) after every pick.
     setTipDollars(0)

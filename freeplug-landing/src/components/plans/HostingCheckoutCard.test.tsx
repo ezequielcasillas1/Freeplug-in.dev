@@ -660,6 +660,90 @@ describe('Vera d0624bb: picking another plan or unmounting while "Checking the a
   })
 })
 
+/** The step whose radio is checked, and its name. */
+const checkedStep = (c: HTMLElement) => {
+  const checked = [...c.querySelectorAll<HTMLInputElement>('input[type="radio"][name="plan-step"]')].filter((r) => r.checked)
+  expect(checked).toHaveLength(1)
+  return PLAN_STEPS.find((s) => s.id === checked[0].value)!
+}
+
+/**
+ * A keyboard arrow pick in a radio group. jsdom has no arrow navigation; a browser moves focus to the
+ * next radio and fires a trusted click on it, which is what React's onChange listens to (Vera,
+ * 5282e5e report: checked in headless Chrome).
+ */
+function arrowPick(from: HTMLInputElement, to: HTMLInputElement, key: 'ArrowUp' | 'ArrowDown') {
+  from.focus()
+  fireEvent.keyDown(from, { key })
+  to.focus()
+  fireEvent.click(to)
+}
+
+/** Fast lane confirmed; the charge is in flight until resolveCharge(). */
+async function submittingFastLane() {
+  let resolveCharge!: (v: { ok: boolean; message: string }) => void
+  const onChangePlan = vi.fn<ChangeFn>(() => new Promise((r) => (resolveCharge = r)))
+  const utils = switching({ onChangePlan })
+  pickStep(utils.container, 'fast_lane')
+  fireEvent.click(screen.getByRole('button', { name: 'Switch to Fast lane now' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Confirm' }))
+  expect(onChangePlan).toHaveBeenCalledTimes(1)
+  expect(within(screen.getByTestId('upgrade-confirm')).getByRole('button', { name: 'Confirm' })).toBeDisabled() // submitting
+  return { ...utils, onChangePlan, resolveCharge }
+}
+
+/** While the charge is in flight and after it returns: the checked radio is the plan being charged. */
+async function expectPickIgnored(c: HTMLElement, t: Awaited<ReturnType<typeof submittingFastLane>>) {
+  expect(checkedStep(c).id).toBe('fast_lane')
+  expect(row(c, 'fast_lane')).toHaveAttribute('data-selected', 'true')
+  expect(row(c, 'priority')).toHaveAttribute('data-selected', 'false')
+  expect(screen.getByTestId('upgrade-confirm')).toHaveTextContent(lineFor('$19.53'))
+  expect(t.onPreviewChange).toHaveBeenCalledTimes(1) // no new preview request
+  await act(async () => {
+    t.resolveCharge({ ok: true, message: 'Switched to Fast lane.' })
+    await new Promise((r) => setTimeout(r, 0))
+  })
+  const notice = await screen.findByText('Switched to Fast lane.')
+  expect(notice).toHaveAttribute('role', 'status')
+  expect(checkedStep(c).id).toBe('fast_lane')
+  expect(notice).toHaveTextContent(`Switched to ${checkedStep(c).name}.`) // the message matches the checked radio
+  expect(screen.queryByTestId('upgrade-confirm')).toBeNull()
+  expect(t.onChangePlan).toHaveBeenCalledTimes(1) // exactly one charge request
+  expect(t.onChangePlan).toHaveBeenCalledWith('fast_lane', 1_790_000_000)
+  expect(t.onPreviewChange).toHaveBeenCalledTimes(1)
+}
+
+describe("Jace: plan picks are ignored while Confirm is charging (Vera, 5282e5e report finding 1)", () => {
+  it('a pick during submit is ignored: the checked radio stays on the plan being charged, no new preview, the success text matches it, one charge', async () => {
+    const t = await submittingFastLane()
+    pickStep(t.container, 'priority')
+    await expectPickIgnored(t.container, t)
+    // Once the charge is back, picks work again.
+    pickStep(t.container, 'priority')
+    expect(checkedStep(t.container).id).toBe('priority')
+  })
+
+  it('a keyboard arrow pick during submit is ignored the same way', async () => {
+    const t = await submittingFastLane()
+    arrowPick(radioOf(t.container, 'fast_lane'), radioOf(t.container, 'priority'), 'ArrowUp')
+    await expectPickIgnored(t.container, t)
+  })
+
+  it('the radios look the same while charging: not disabled, same classes', async () => {
+    const t = await submittingFastLane()
+    for (const id of ['starter', 'priority', 'fast_lane'] as const) {
+      expect(radioOf(t.container, id)).toBeEnabled()
+      expect(radioOf(t.container, id).className).toBe('mt-1 shrink-0 accent-[#ba3d3d] text-[#ba3d3d] focus:ring-[#ba3d3d]')
+      expect(row(t.container, id).className).toMatch(/cursor-pointer/)
+    }
+    expect(t.container.querySelector('fieldset')).not.toHaveAttribute('disabled')
+    await act(async () => {
+      t.resolveCharge({ ok: true, message: 'Switched to Fast lane.' })
+      await new Promise((r) => setTimeout(r, 0))
+    })
+  })
+})
+
 describe('the tipping system: slider before checkout and in the claim flow', () => {
   const slider = () => screen.getByRole('slider', { name: TIP_SLIDER_LABEL }) as HTMLInputElement
 
