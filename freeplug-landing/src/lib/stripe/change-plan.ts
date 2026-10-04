@@ -56,7 +56,9 @@ export { planMove, type PlanMove }
  * step / add-ons / tip:
  *   - an upgrade keeps the add-on items (only the step price changes; the tip and any other item go);
  *   - a downgrade's next phase = the new step price + the add-ons still on (no tip);
- *   - turning one ON is immediate (always_invoice, charged now, like an upgrade);
+ *   - turning one ON charges its FULL monthly price now (Aria, Oct 4 8:28 AM: no partial-month
+ *     amount), as a one-off invoice paid before the item is added; the item is then added with
+ *     proration_behavior=none, so the next renewal bills the normal monthly amount;
  *   - turning one OFF is at period end, through the same schedule: its next phase = the live step +
  *     the add-ons left + the live tip (phase metadata kind=addons). It counts as a pending change
  *     (tip changes and turning add-ons ON wait; "Keep it" undoes it).
@@ -139,6 +141,9 @@ export type PlanChangePreview =
 
 type Sub = Pick<Stripe.Subscription, 'id' | 'status' | 'cancel_at_period_end' | 'cancel_at' | 'schedule' | 'items'> & {
   latest_invoice?: string | { id: string } | null
+  /** Add-on first-period charge (changeAddon on): the customer to invoice and the card the plan uses. */
+  customer?: string | { id: string } | null
+  default_payment_method?: string | { id: string } | null
 }
 
 /** What the PLAN costs a month (tier items only; a tip or an add-on never counts). */
@@ -858,8 +863,9 @@ export type AddonChangePreview =
       ok: true
       action: 'on'
       addon: AddonId
+      /** When the preview was made (server time); Confirm sends it back and it expires like an upgrade preview. */
       prorationDate: number
-      /** What turning it on charges today (always_invoice proration, after any customer credit). */
+      /** What turning it on charges today: the add-on's full monthly price (never prorated). */
       amountDueCents: number
       currency: string
       /** The regular monthly bill after the change (plan + add-ons + tip). */
@@ -882,9 +888,11 @@ export type AddonChangePreview =
   | { ok: false; code: AddonChangeRefusal; message: string; tipDollars?: number }
 
 export type AddonChangeResult =
-  | { ok: true; kind: 'on'; addon: AddonId; tipDollars: number; invoiceStatus: string | null }
+  | { ok: true; kind: 'on'; addon: AddonId; tipDollars: number; invoiceStatus: string | null; invoiceId: string }
   | { ok: true; kind: 'removal_scheduled' | 'kept' | 'unchanged'; addon: AddonId; effectiveAt: string | null }
   | { ok: false; code: 'payment_failed'; message: string }
+  /** Charged, but Stripe did not add the item: the charge is refunded (refunded=false: the refund failed too, logged). */
+  | { ok: false; code: 'not_applied'; message: string; refunded: boolean }
   | { ok: false; code: AddonChangeRefusal | 'in_progress' | 'mismatch'; message: string; tipDollars?: number }
 
 type AddonDeps = { stripe: Stripe; addonPriceIdFor: (id: AddonId) => Promise<string>; now?: () => Date; log?: (msg: string) => void }
@@ -963,9 +971,108 @@ export function addonIdempotencyKey(sub: Pick<Sub, 'id' | 'items' | 'latest_invo
   return `addon-on:${opts.userId ?? 'na'}:${addonId}:${opts.prorationDate ?? 'now'}:${opts.tipAfter ?? 'same'}:${sub.id}:${prices}:${idOf(sub.latest_invoice) ?? 'none'}`
 }
 
+/** Metadata kind on the one-off invoice for an add-on's first period (admin / reconciliation). */
+export const ADDON_FIRST_PERIOD_KIND = 'addon_first_period'
+
+type AddonCharge =
+  | { ok: true; invoiceId: string; amountPaidCents: number }
+  | { ok: false; code: 'payment_failed' | 'in_progress' | 'stale' | 'price' }
+
 /**
- * Read-only preview. on: Stripe's always_invoice proration preview at `prorationDate` (Confirm sends
- * it back), with the tip lowered to the new max when Starter's total needs it. off/keep: no charge;
+ * Turning an add-on on: charge its full monthly price NOW as its own invoice (Aria, Oct 4), paid
+ * before the subscription changes. The invoice excludes pending invoice items (nothing else rides
+ * along) and has no subscription, so the webhook books it once in billing_ledger / Total Paid (by
+ * invoice id, like every paid invoice) and the outreach "first invoice" hook ignores it. Paid with
+ * the plan's card (subscription default, else the customer's default), off session. A declined,
+ * unpaid or wrong-total invoice is voided (a draft is deleted) and nothing changes.
+ */
+async function chargeAddonFirstPeriod(stripe: Stripe, sub: Sub, addonId: AddonId, cents: number, key: string, log: (m: string) => void): Promise<AddonCharge> {
+  const customer = idOf(sub.customer ?? null)
+  if (!customer) {
+    log(`[change-addon] ${sub.id} has no customer to charge`)
+    return { ok: false, code: 'payment_failed' }
+  }
+  const pm = idOf(sub.default_payment_method ?? null)
+  const metadata = { freeplug_kind: ADDON_FIRST_PERIOD_KIND, addon: addonId, subscription: sub.id }
+  const description = `Add-on: ${addonId} (this billing period)`
+  let invId: string | null = null
+  let finalized = false
+  const undo = async () => {
+    if (!invId) return
+    const id = invId
+    const p = finalized ? stripe.invoices.voidInvoice(id) : stripe.invoices.del(id)
+    await p.catch((e: unknown) => log(`[change-addon] could not ${finalized ? 'void' : 'delete'} ${id}: ${e instanceof Error ? e.message : String(e)}`))
+  }
+  try {
+    const inv = await stripe.invoices.create(
+      {
+        customer,
+        collection_method: 'charge_automatically',
+        auto_advance: false,
+        pending_invoice_items_behavior: 'exclude',
+        currency: 'usd',
+        description,
+        metadata,
+        ...(pm ? { default_payment_method: pm } : {}),
+      },
+      { idempotencyKey: `${key}:invoice` }
+    )
+    invId = inv.id
+    // A replay of a key that already ran: paid = done; void/uncollectible = that try failed (re-preview).
+    if (inv.status === 'paid') return { ok: true, invoiceId: inv.id, amountPaidCents: inv.amount_paid ?? cents }
+    if (inv.status === 'void' || inv.status === 'uncollectible') return { ok: false, code: 'stale' }
+    let open = inv
+    if (inv.status === 'draft') {
+      await stripe.invoiceItems.create({ customer, invoice: inv.id, amount: cents, currency: 'usd', description, metadata }, { idempotencyKey: `${key}:item` })
+      open = await stripe.invoices.finalizeInvoice(inv.id, { auto_advance: false }, { idempotencyKey: `${key}:finalize` })
+    }
+    finalized = true
+    // Exactly the add-on price, nothing else (no tax lines, no other items): else don't charge.
+    if (open.total !== cents) {
+      log(`[change-addon] ${inv.id} total ${open.total} != ${cents}; voiding`)
+      await undo()
+      return { ok: false, code: 'price' }
+    }
+    const paid = open.status === 'paid' ? open : await stripe.invoices.pay(inv.id, { off_session: true }, { idempotencyKey: `${key}:pay` })
+    if (paid.status !== 'paid') {
+      await undo()
+      return { ok: false, code: 'payment_failed' }
+    }
+    return { ok: true, invoiceId: inv.id, amountPaidCents: paid.amount_paid ?? cents }
+  } catch (e) {
+    if (isKeyInUse(e)) return { ok: false, code: 'in_progress' }
+    await undo()
+    if (isCardError(e)) return { ok: false, code: 'payment_failed' }
+    throw e
+  }
+}
+
+/** Refund an add-on charge whose item Stripe did not add (credit note: card part refunded, any balance part credited back). */
+async function refundAddonCharge(stripe: Stripe, invoiceId: string, amountPaidCents: number, cents: number, log: (m: string) => void): Promise<boolean> {
+  try {
+    const refund = Math.min(amountPaidCents, cents)
+    await stripe.creditNotes.create(
+      {
+        invoice: invoiceId,
+        amount: cents,
+        ...(refund > 0 ? { refund_amount: refund } : {}),
+        ...(cents - refund > 0 ? { credit_amount: cents - refund } : {}),
+        reason: 'order_change',
+        memo: 'Add-on could not be turned on; refunded.',
+      },
+      { idempotencyKey: `addon-refund:${invoiceId}` }
+    )
+    return true
+  } catch (e) {
+    log(`[change-addon] REFUND FAILED for ${invoiceId}: ${e instanceof Error ? e.message : String(e)}`)
+    return false
+  }
+}
+
+/**
+ * Read-only preview. on: the add-on's full monthly price today (no Stripe preview needed: it is
+ * never prorated) and the tip it would drop to when Starter's total needs it; `prorationDate` is the
+ * preview time Confirm sends back. off/keep: no charge;
  * the date it ends and the next bill (computed).
  */
 export async function previewAddonChange(deps: AddonDeps, sub: Sub, addonId: unknown, action: AddonAction, prorationDate: number): Promise<AddonChangePreview> {
@@ -983,21 +1090,15 @@ export async function previewAddonChange(deps: AddonDeps, sub: Sub, addonId: unk
     } catch {
       return { ok: false, code: 'price', message: 'This add-on is not available right now.' }
     }
-    const preview = await deps.stripe.invoices.createPreview({
-      subscription: sub.id,
-      subscription_details: {
-        items: addonOnItems(sub, priceId, check.tipNow, check.tipMaxAfter),
-        proration_behavior: 'always_invoice',
-        proration_date: prorationDate,
-      },
-    })
+    void priceId // fails closed above when the add-on price is missing or drifted
     return {
       ok: true,
       action: 'on',
       addon: addon.id,
       prorationDate,
-      amountDueCents: preview.amount_due,
-      currency: preview.currency,
+      // The full monthly price, whatever day of the period it is (Aria, Oct 4): never a partial amount.
+      amountDueCents: addon.monthlyCents,
+      currency: 'usd',
       nextAmountCents: stepCents + addonCentsOfItems(sub.items.data) + addon.monthlyCents + check.tipMaxAfter * 100,
       nextBillingAt,
       tipDollarsNow: check.tipNow,
@@ -1020,8 +1121,9 @@ export async function previewAddonChange(deps: AddonDeps, sub: Sub, addonId: unk
 
 /**
  * Turn an add-on on (now, charged), off (at period end) or keep it (undo a planned removal).
- *   on:   items + the add-on price, always_invoice + pending_if_incomplete (a failed card applies
- *         nothing; the open invoice is voided), proration_date from the preview. When Starter's $54
+ *   on:   the full monthly price as a one-off invoice, paid first (a declined or unpaid charge is
+ *         voided and nothing changes), then the add-on item with proration none (refunded with a
+ *         credit note if Stripe doesn't apply it). When Starter's $54
  *         total needs a lower tip, `tipDropTo` must equal the new max (the customer confirmed it),
  *         else it is refused with code tip_drop_needed + the tip it would drop to. Never silent.
  *         Verified after: the live subscription must hold the add-on and that tip.
@@ -1057,42 +1159,43 @@ export async function changeAddon(
     } catch {
       return { ok: false, code: 'price', message: 'This add-on is not available right now.' }
     }
-    let updated: Stripe.Subscription
-    try {
-      updated = await stripe.subscriptions.update(
-        sub.id,
-        {
-          items: addonOnItems(sub, priceId, check.tipNow, check.tipMaxAfter),
-          proration_behavior: 'always_invoice',
-          payment_behavior: 'pending_if_incomplete',
-          ...(opts.prorationDate !== undefined ? { proration_date: opts.prorationDate } : {}),
-          expand: ['latest_invoice'],
-        },
-        { idempotencyKey: addonIdempotencyKey(sub, addon.id, { ...opts, tipAfter: check.tipMaxAfter }) }
-      )
-    } catch (e) {
-      if (isKeyInUse(e)) return { ok: false, code: 'in_progress', message: 'This change is already going through.' }
-      if (!isCardError(e)) throw e
+    const key = addonIdempotencyKey(sub, addon.id, {
+      ...opts,
+      // No preview time (a direct call): one key per minute, so a later retry is a new charge attempt.
+      prorationDate: opts.prorationDate ?? Math.floor(now.getTime() / 60_000) * 60,
+      tipAfter: check.tipMaxAfter,
+    })
+    // 1. The full price, charged and PAID before anything changes on the subscription.
+    const charge = await chargeAddonFirstPeriod(stripe, sub, addon.id, addon.monthlyCents, key, log)
+    if (!charge.ok) {
+      if (charge.code === 'in_progress') return { ok: false, code: 'in_progress', message: 'This change is already going through.' }
+      if (charge.code === 'stale') return { ok: false, code: 'stale_preview', message: 'This charge was already tried. Check it again.' }
+      if (charge.code === 'price') return { ok: false, code: 'price', message: 'This add-on is not available right now.' }
       return { ok: false, code: 'payment_failed', message: 'The card was not charged, so the add-on is still off.' }
     }
-    if (updated.pending_update) {
-      const inv = updated.latest_invoice
-      const invId = idOf(inv as string | { id: string } | null)
-      const invStatus = inv && typeof inv !== 'string' ? inv.status : null
-      if (invId && (invStatus === 'open' || invStatus === null)) {
-        await stripe.invoices.voidInvoice(invId).catch((e) => log(`[change-addon] could not void ${invId}: ${e instanceof Error ? e.message : String(e)}`))
-      }
-      return { ok: false, code: 'payment_failed', message: 'The card was not charged, so the add-on is still off.' }
+    // 2. Then the item, with no proration (this period is paid by the charge above); the next
+    // renewal bills it at the normal monthly price. A tip drop applies from that renewal too.
+    const notApplied = async (why: string) => {
+      log(`[change-addon] ${why} on ${sub.id} after charging ${charge.invoiceId}; refunding`)
+      const refunded = await refundAddonCharge(stripe, charge.invoiceId, charge.amountPaidCents, addon.monthlyCents, log)
+      return { ok: false as const, code: 'not_applied' as const, message: 'Stripe did not add the add-on.', refunded }
+    }
+    try {
+      await stripe.subscriptions.update(
+        sub.id,
+        { items: addonOnItems(sub, priceId, check.tipNow, check.tipMaxAfter), proration_behavior: 'none' },
+        { idempotencyKey: `${key}:sub` }
+      )
+    } catch (e) {
+      return notApplied(`subscription update failed (${e instanceof Error ? e.message : String(e)})`)
     }
     // Same guard as changeTip (Vera B2): read the LIVE subscription; a replayed response looks right.
     const fresh = await stripe.subscriptions.retrieve(sub.id)
     const items = fresh?.items?.data ?? []
     if (!addonIdsOfItems(items).includes(addon.id) || tipDollarsOfItems(items) !== check.tipMaxAfter) {
-      log(`[change-addon] MISMATCH after Stripe update on ${sub.id}: wanted ${addon.id} + tip ${check.tipMaxAfter}`)
-      return { ok: false, code: 'mismatch', message: 'Stripe did not apply the change.' }
+      return notApplied(`MISMATCH (wanted ${addon.id} + tip ${check.tipMaxAfter})`)
     }
-    const inv = updated.latest_invoice
-    return { ok: true, kind: 'on', addon: addon.id, tipDollars: check.tipMaxAfter, invoiceStatus: inv && typeof inv !== 'string' ? (inv.status ?? null) : null }
+    return { ok: true, kind: 'on', addon: addon.id, tipDollars: check.tipMaxAfter, invoiceStatus: 'paid', invoiceId: charge.invoiceId }
   }
 
   if (check.unchanged) return { ok: true, kind: 'unchanged', addon: addon.id, effectiveAt: check.phase?.effectiveAt ?? null }

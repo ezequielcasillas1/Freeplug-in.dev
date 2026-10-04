@@ -279,16 +279,16 @@ export function CancelPlanView({
       {hasActiveSubscriptions && (
         <section className="mb-10">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            What You Get with Your Plan
+            What your plan includes
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-zinc-200 bg-white p-5">
               <div className="flex items-start gap-3">
                 <Globe className="text-[#ba3d3d] mt-0.5 flex-shrink-0" size={20} />
                 <div>
-                  <h3 className="font-medium text-gray-900">Professional Website Hosting</h3>
+                  <h3 className="font-medium text-gray-900">Website hosting</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Fast, secure hosting optimized for business websites.
+                    Keeps your website online at your own web address.
                   </p>
                 </div>
               </div>
@@ -298,9 +298,9 @@ export function CancelPlanView({
               <div className="flex items-start gap-3">
                 <Shield className="text-[#ba3d3d] mt-0.5 flex-shrink-0" size={20} />
                 <div>
-                  <h3 className="font-medium text-gray-900">SSL & Security</h3>
+                  <h3 className="font-medium text-gray-900">Secure connection (SSL)</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Free SSL certificate and security monitoring to protect your site and visitors.
+                    Your website loads over a secure HTTPS connection.
                   </p>
                 </div>
               </div>
@@ -310,9 +310,9 @@ export function CancelPlanView({
               <div className="flex items-start gap-3">
                 <Wrench className="text-[#ba3d3d] mt-0.5 flex-shrink-0" size={20} />
                 <div>
-                  <h3 className="font-medium text-gray-900">Ongoing Support</h3>
+                  <h3 className="font-medium text-gray-900">Questions about your site</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Direct access to our team for questions, updates, and technical assistance.
+                    Ask us from your dashboard. Our team is available Mon–Wed 1–2 PM and Thu–Fri 1–3 PM Central.
                   </p>
                 </div>
               </div>
@@ -335,12 +335,12 @@ export function CancelPlanView({
             <div className="flex items-start gap-3">
               <AlertTriangle className="text-amber-600 mt-0.5 flex-shrink-0" size={20} />
               <div>
-                <h3 className="font-semibold text-amber-900">What Happens if You Cancel</h3>
+                <h3 className="font-semibold text-amber-900">What happens if you cancel</h3>
                 <ul className="text-sm text-amber-800 mt-2 space-y-1.5 list-disc list-inside">
-                  <li>Your website will go offline at the end of your billing period</li>
-                  <li>Search engine rankings may be affected if your site is down for extended periods</li>
-                  <li>Your customers won&apos;t be able to find you online</li>
-                  <li>You&apos;ll lose access to ongoing support and maintenance</li>
+                  <li>Your website goes offline at the end of your paid period.</li>
+                  <li>Search engines may drop your website if it stays offline for a long time.</li>
+                  <li>While it&apos;s offline, customers can&apos;t find you there.</li>
+                  <li>Your website is saved, and you can bring it back by signing up for hosting again.</li>
                 </ul>
               </div>
             </div>

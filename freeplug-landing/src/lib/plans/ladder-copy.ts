@@ -1,5 +1,5 @@
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
-import { ADDON_STEP_LIMITS, PLAN_STEPS, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
+import { ADDON_STEP_LIMITS, PLAN_STEPS, addonById, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
 
 /** "$35" style, from ladder.ts (never hard-code a price in copy). */
 const dollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
@@ -363,7 +363,8 @@ export const TIP_CHANGE_UNAVAILABLE = "We couldn't change your tip right now. Tr
 export const TIP_IN_PROGRESS = 'Your tip change is already going through. Refresh in a moment to see it.'
 
 // ------------------------------------------------------------------ add-ons (Oct 4, Lina's block)
-// ALL PLACEHOLDERS for Sable (names and perk lines included). Prices come from ladder.ts ADDONS.
+// Card lines + charge note: Sable, approved by Ezequiel (Oct 4 8:28 / 8:31 AM). Other lines here are
+// placeholders for Sable unless marked. Prices always come from ladder.ts ADDONS, never typed in copy.
 
 export const ADDONS_HEADING = 'Add-ons'
 /** Header right side, Starter selected only: "up to $15/month on Starter" (from ADDON_STEP_LIMITS). */
@@ -373,20 +374,47 @@ export const ADDON_NAMES: Record<AddonId | 'visitor_snapshot', string> = {
   big_change: 'Big change',
   visitor_snapshot: 'Visitor snapshot',
 }
-/** Perk line under the price (placeholder until Sable). `withIncludedEdit`: the step already includes 1. */
+/**
+ * [Sable, approved] Perk line under the price. `withIncludedEdit`: the step already includes 1 small
+ * edit (Fast lane and up); Starter and Priority get the plain line.
+ */
 export function addonPerkLine(id: AddonId | 'visitor_snapshot', opts: { withIncludedEdit?: boolean } = {}): string {
-  if (id === 'small_edit') return opts.withIncludedEdit ? "One more small edit on top of your plan's 1." : 'One more small edit by us each billing period.'
-  if (id === 'big_change') return 'One larger edit, up to about an hour, each billing period.'
+  if (id === 'small_edit')
+    return opts.withIncludedEdit
+      ? "One more small edit on top of the one your plan includes. Unused edits don't roll over."
+      : "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over."
+  if (id === 'big_change')
+    return "One larger change each billing period, up to about an hour of work on your existing pages. For example, adding a section, a new service with photos, a gallery refresh, or rewriting one page. Unused changes don't roll over."
   return 'A monthly email with how many people visited your site.'
+}
+/** [Sable, approved] Gray line under the Big change perk line. */
+export const BIG_CHANGE_BIGGER_NOTE = "Need something bigger, like a new page or feature? We'll quote it as maintenance first, and you can still use this month's change."
+/** [Sable, approved] Gray charge note on each live add-on card; {price} from ADDONS. */
+export function addonChargeNote(cents: number): string {
+  const price = dollars(cents)
+  return `Turning it on charges ${price} now for this billing period, then ${price} each month. If you turn it off, it stays on until the period ends.`
+}
+/**
+ * [Sable, approved] Help chat review step: a Starter plan without the +1 small edit add-on asks for a
+ * small edit. The AI-builder sentence shows only while showAiEditQuota (ladder.ts) is true.
+ */
+export function starterSmallEditAddonLine(show: boolean = showAiEditQuota): string {
+  const price = dollars(addonById('small_edit')!.monthlyCents)
+  const base = `Small edits are ${price} with the ${ADDON_NAMES.small_edit} add-on. Turn it on and we'll take care of it this month. You can turn it off anytime.`
+  return show ? `${base} Or make the change yourself with the AI builder, at no extra cost.` : base
 }
 export const addonPriceLine = (cents: number) => `${dollars(cents)}/month`
 /** Inline confirm when turning one on would push Starter past its total: never lower a tip silently. */
 export const addonTipDropQuestion = (tipDollars: number, name: string) => `Your tip will drop to $${tipDollars}. Turn on ${name}?`
 export const ADDON_TURN_ON = 'Turn on'
+/** Live plan, no tip change: the inline confirm's question. */
+export const addonTurnOnQuestion = (name: string) => `Turn on ${name}?`
+/** Tip card next to the add-ons block: the tip amount only (the one total is in the action area). */
+export const tipAmountLine = (tipDollars: number) => (tipDollars > 0 ? `$${tipDollars} tip` : 'No tip')
 export const ADDON_CANCEL = 'Cancel'
-/** Live plan: turning one on charges now (prorated), shown in the confirm. */
-export const addonChargeNowLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} today for the rest of this billing period.`
-export const ADDON_CHARGE_NOW_FALLBACK = "We'll charge the rest of this billing period today."
+/** [Sable] Live plan confirm: turning one on charges its full monthly price now (never prorated, Aria Oct 4). */
+export const addonChargeNowLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} now for this billing period.`
+export const ADDON_CHARGE_NOW_FALLBACK = "We'll charge the full monthly price now for this billing period."
 export const addonThenLine = (nextCents: number, date: string | null) =>
   date ? `Then ${dollars(nextCents)}/month from ${date}.` : `Then ${dollars(nextCents)}/month.`
 /** Live plan: turning one off is at the end of the billing period. */
@@ -404,6 +432,10 @@ export const ADDONS_LOCKED_BY_REMOVAL = 'An add-on is set to end. Keep it, or tu
 export const ADDONS_LEGACY_NOTE = 'Add-ons are for the current plans. Pick a plan above to add them.'
 export const ADDON_ERROR = "That didn't go through. Nothing changed. Try again."
 export const ADDON_PAYMENT_FAILED = 'The card was not charged, so the add-on is still off.'
+/** [Sable] Charged, but Stripe did not add the add-on; the charge was reversed automatically (credit note refund). */
+export const ADDON_NOT_APPLIED_REFUNDED = "That didn't go through, so the add-on is still off. The charge has been reversed to your card."
+/** [Sable] Charged, Stripe did not add it, and the automatic reversal failed too (logged for admin). */
+export const ADDON_NOT_APPLIED_CHARGED = "That didn't go through, so the add-on is still off. Email support@freeplug-in.dev and we'll sort out the charge."
 /** Server refusals. */
 export const ADDON_TURN_OFF_FIRST = 'Turn off an add-on first'
 export const ADDON_PENDING_SWITCH = 'A plan switch is planned. Add-ons can change after it, or keep your current plan.'

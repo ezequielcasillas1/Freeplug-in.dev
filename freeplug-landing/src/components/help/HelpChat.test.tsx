@@ -2,11 +2,12 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { HelpChat } from './HelpChat'
 import { HELP_QUICK_QUESTIONS } from '@/lib/help/help-chat-content'
-import { HELP_CHAT_INCLUDED_EDIT_NOTE } from '@/lib/plans/ladder-copy'
+import { HELP_CHAT_INCLUDED_EDIT_NOTE, starterSmallEditAddonLine } from '@/lib/plans/ladder-copy'
 
 function setup(
   opts: {
     hasIncludedEdit?: boolean
+    smallEditAddonNote?: string | null
     result?: { ok: true; email: string } | { ok: false; error: string }
   } = {}
 ) {
@@ -17,6 +18,7 @@ function setup(
     <HelpChat
       email="owner@example.com"
       hasIncludedEdit={opts.hasIncludedEdit ?? false}
+      smallEditAddonNote={opts.smallEditAddonNote ?? null}
       sendRequest={sendRequest}
     />
   )
@@ -91,5 +93,34 @@ describe('HelpChat', () => {
       expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.')
     )
     expect(screen.getByRole('button', { name: 'Send request' })).toBeInTheDocument()
+  })
+
+  describe('Starter without +1 small edit (Sable, Oct 4 8:31 AM)', () => {
+    const LINE = "Small edits are $5 with the +1 small edit add-on. Turn it on and we'll take care of it this month. You can turn it off anytime."
+    const AI = 'Or make the change yourself with the AI builder, at no extra cost.'
+    it('showAiEditQuota false (today): the add-on line only, no AI-builder sentence', () => {
+      setup({ smallEditAddonNote: starterSmallEditAddonLine(false) })
+      walkToReview()
+      expect(screen.getByTestId('small-edit-addon-note')).toHaveTextContent(LINE)
+      expect(screen.getByTestId('small-edit-addon-note')).not.toHaveTextContent(AI)
+    })
+    it('showAiEditQuota true: the AI-builder sentence follows', () => {
+      setup({ smallEditAddonNote: starterSmallEditAddonLine(true) })
+      walkToReview()
+      expect(screen.getByTestId('small-edit-addon-note')).toHaveTextContent(`${LINE} ${AI}`)
+    })
+    it('the default follows the flag in ladder.ts (false on a5806f0)', () => {
+      expect(starterSmallEditAddonLine()).toBe(LINE)
+    })
+    it('a plan with the included edit shows that note instead', () => {
+      setup({ hasIncludedEdit: true, smallEditAddonNote: starterSmallEditAddonLine(false) })
+      walkToReview()
+      expect(screen.queryByTestId('small-edit-addon-note')).toBeNull()
+    })
+    it('no line without the prop (other plans)', () => {
+      setup()
+      walkToReview()
+      expect(screen.queryByTestId('small-edit-addon-note')).toBeNull()
+    })
   })
 })

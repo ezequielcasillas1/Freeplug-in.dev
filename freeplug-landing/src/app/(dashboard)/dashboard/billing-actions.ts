@@ -13,7 +13,7 @@ import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewA
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
 import { addonById, type AddonId } from '@/lib/plans/ladder'
-import { ADDON_ERROR, ADDON_KEEP_DONE, ADDON_NAMES, ADDON_ON_DONE, ADDON_PAYMENT_FAILED, ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonOffDone } from '@/lib/plans/ladder-copy'
+import { ADDON_ERROR, ADDON_KEEP_DONE, ADDON_NAMES, ADDON_ON_DONE, ADDON_PAYMENT_FAILED, ADDON_NOT_APPLIED_CHARGED, ADDON_NOT_APPLIED_REFUNDED, ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonOffDone } from '@/lib/plans/ladder-copy'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
 import { syncPlanSnapshotForCustomer } from '@/lib/stripe/sync-checkout-customer'
@@ -458,8 +458,9 @@ function addonRefusalMessage(code: AddonChangeRefusal | 'in_progress' | 'mismatc
 const parseAddonAction = (v: unknown): AddonAction | null => (v === 'on' || v === 'off' || v === 'keep' ? v : null)
 
 /**
- * Plans page add-on card: read-only preview. on = Stripe's always_invoice preview at a server
- * proration_date (sent back with Confirm) + the tip it would drop to (Starter); off = the date it
+ * Plans page add-on card: read-only preview. on = the add-on's full monthly price (charged now,
+ * never prorated; Aria Oct 4) + the tip it would drop to (Starter), stamped with a server time sent
+ * back with Confirm; off = the date it
  * ends. Signed in, rate limited, the caller's own subscription only; nothing about the subscription
  * comes from the browser.
  */
@@ -540,6 +541,7 @@ async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { pro
     if (r.code === 'tip_drop_needed') return { ok: false, message: `${ADDON_NAMES[addonId]}: ${r.message}`, code: 'tip_drop_needed', tipDollars: r.tipDollars }
     if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }
     if (r.code === 'in_progress') return { ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' }
+    if (r.code === 'not_applied') return { ok: false, message: r.refunded ? ADDON_NOT_APPLIED_REFUNDED : ADDON_NOT_APPLIED_CHARGED }
     return { ok: false, message: addonRefusalMessage(r.code) }
   } catch (e) {
     console.error('[changeAddon] failed', e instanceof Error ? e.message : e)

@@ -33,14 +33,20 @@ const PRICES: Record<string, unknown> = {
   price_tip: TIP_PRICE,
 }
 
-function sub(stepId: PlanStepId, opts: { addons?: AddonId[]; tip?: number; schedule?: string | null; addonAmount?: Partial<Record<AddonId, number>> } = {}) {
-  const items: unknown[] = [{ id: 'si_step', quantity: 1, price: stepPrice(stepId), current_period_start: PERIOD_START, current_period_end: PERIOD_END }]
+function sub(
+  stepId: PlanStepId,
+  opts: { addons?: AddonId[]; tip?: number; schedule?: string | null; addonAmount?: Partial<Record<AddonId, number>>; periodEnd?: number } = {}
+) {
+  const end = opts.periodEnd ?? PERIOD_END
+  const items: unknown[] = [{ id: 'si_step', quantity: 1, price: stepPrice(stepId), current_period_start: PERIOD_START, current_period_end: end }]
   for (const a of opts.addons ?? []) {
-    items.push({ id: `si_${a}`, quantity: 1, price: { ...ADDON_PRICE[a], unit_amount: opts.addonAmount?.[a] ?? ADDON_PRICE[a].unit_amount }, current_period_start: PERIOD_START, current_period_end: PERIOD_END })
+    items.push({ id: `si_${a}`, quantity: 1, price: { ...ADDON_PRICE[a], unit_amount: opts.addonAmount?.[a] ?? ADDON_PRICE[a].unit_amount }, current_period_start: PERIOD_START, current_period_end: end })
   }
-  if (opts.tip) items.push({ id: 'si_tip', quantity: opts.tip, price: TIP_PRICE, current_period_start: PERIOD_START, current_period_end: PERIOD_END })
+  if (opts.tip) items.push({ id: 'si_tip', quantity: opts.tip, price: TIP_PRICE, current_period_start: PERIOD_START, current_period_end: end })
   return {
     id: 'sub_1',
+    customer: 'cus_1',
+    default_payment_method: 'pm_1',
     status: 'active',
     cancel_at_period_end: false,
     cancel_at: null,
@@ -53,7 +59,20 @@ function sub(stepId: PlanStepId, opts: { addons?: AddonId[]; tip?: number; sched
 type Phase = { items: { price: string; quantity: number }[]; metadata?: Record<string, string> }
 
 /** Fake Stripe: one optional schedule whose next phase is `next`; `after` = what retrieve returns after an update. */
-function fake(opts: { next?: Phase | null; after?: Stripe.Subscription; cardError?: boolean; amountDue?: number } = {}) {
+type ChargeOpts = {
+  /** invoices.pay throws a card error. */
+  payDeclined?: boolean
+  /** invoices.pay returns this status (e.g. 'open' when the bank wants 3D Secure). */
+  payStatus?: string
+  /** finalizeInvoice returns this total (e.g. a tax line slipped in). */
+  finalTotal?: number
+  /** invoices.create returns an invoice already in this status (a replayed key). */
+  replayStatus?: string
+  /** subscriptions.update throws after the charge. */
+  updateFails?: boolean
+}
+function fake(opts: { next?: Phase | null; after?: Stripe.Subscription; cardError?: boolean; amountDue?: number } & ChargeOpts = {}) {
+  let itemCents = 0
   const calls: string[] = []
   const schedule = {
     id: 'sub_sched_0',
@@ -69,14 +88,31 @@ function fake(opts: { next?: Phase | null; after?: Stripe.Subscription; cardErro
       update: vi.fn(async (id: string) => {
         calls.push('subscriptions.update')
         if (opts.cardError) throw Object.assign(new Error('declined'), { type: 'StripeCardError', code: 'card_declined' })
+        if (opts.updateFails) throw Object.assign(new Error('boom'), { type: 'StripeAPIError' })
         return { ...(opts.after ?? {}), id, pending_update: null, latest_invoice: { id: 'in_new', status: 'paid' } }
       }),
       retrieve: vi.fn(async () => (calls.push('subscriptions.retrieve'), opts.after)),
     },
     invoices: {
       createPreview: vi.fn(async () => (calls.push('invoices.createPreview'), { amount_due: opts.amountDue ?? 451, currency: 'usd' })),
-      voidInvoice: vi.fn(async () => ({})),
+      voidInvoice: vi.fn(async () => (calls.push('invoices.void'), {})),
+      del: vi.fn(async () => (calls.push('invoices.del'), {})),
+      create: vi.fn(async () => (calls.push('invoices.create'), { id: 'in_addon', status: opts.replayStatus ?? 'draft', total: 0, amount_paid: opts.replayStatus === 'paid' ? 575 : 0 })),
+      finalizeInvoice: vi.fn(async () => (calls.push('invoices.finalize'), { id: 'in_addon', status: 'open', total: opts.finalTotal ?? itemCents })),
+      pay: vi.fn(async () => {
+        calls.push('invoices.pay')
+        if (opts.payDeclined) throw Object.assign(new Error('declined'), { type: 'StripeCardError', code: 'card_declined' })
+        return { id: 'in_addon', status: opts.payStatus ?? 'paid', total: itemCents, amount_paid: opts.payStatus && opts.payStatus !== 'paid' ? 0 : itemCents }
+      }),
     },
+    invoiceItems: {
+      create: vi.fn(async (p: { amount: number }) => {
+        calls.push('invoiceItems.create')
+        itemCents = p.amount
+        return { id: 'ii_1' }
+      }),
+    },
+    creditNotes: { create: vi.fn(async () => (calls.push('creditNotes.create'), { id: 'cn_1' })) },
     prices: { retrieve: vi.fn(async (id: string) => (calls.push(`prices.retrieve:${id}`), PRICES[id])) },
     subscriptionSchedules: {
       create: vi.fn(async () => (calls.push('schedules.create'), { id: 'sub_sched_new', status: 'active', current_phase: { start_date: PERIOD_START, end_date: PERIOD_END }, phases: [{ start_date: PERIOD_START, end_date: PERIOD_END, items: [] }] })),
@@ -166,15 +202,15 @@ describe('pendingFromSchedule with several items (change-plan.ts used to need ex
 })
 
 describe('turning an add-on ON: charged now, once each, never a silent tip drop', () => {
-  it('Priority + Big change: always_invoice + pending_if_incomplete, verified on the live subscription', async () => {
+  it('Priority + Big change: full price paid first, then the item with proration none, verified on the live subscription', async () => {
     const after = sub('priority', { addons: ['big_change'] })
     const f = fake({ after })
     const r = await changeAddon(deps(f), sub('priority'), 'big_change', 'on', { prorationDate: NOW_S - 10, userId: 'u1' })
-    expect(r).toEqual({ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: 'paid' })
+    expect(r).toEqual({ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: 'paid', invoiceId: 'in_addon' })
+    expect(f.calls).toEqual(['invoices.create', 'invoiceItems.create', 'invoices.finalize', 'invoices.pay', 'subscriptions.update', 'subscriptions.retrieve'])
     const [, params, o] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
-    expect(params).toMatchObject({ items: [{ price: 'price_big', quantity: 1 }], proration_behavior: 'always_invoice', payment_behavior: 'pending_if_incomplete', proration_date: NOW_S - 10 })
-    expect(o.idempotencyKey).toMatch(/^addon-on:u1:big_change:/)
-    expect(f.calls).toEqual(['subscriptions.update', 'subscriptions.retrieve'])
+    expect(params).toEqual({ items: [{ price: 'price_big', quantity: 1 }], proration_behavior: 'none' })
+    expect(o.idempotencyKey).toMatch(/^addon-on:u1:big_change:.*:sub$/)
   })
   it('each add-on at most once', async () => {
     const f = fake()
@@ -194,7 +230,7 @@ describe('turning an add-on ON: charged now, once each, never a silent tip drop'
   it('Starter with both on: tip max $8 (a $13 tip drops to $8 when Big change is added to +1 small edit)', async () => {
     const f = fake()
     const p = await previewAddonChange(deps(f), sub('starter', { addons: ['small_edit'], tip: 13 }), 'big_change', 'on', NOW_S)
-    expect(p).toMatchObject({ ok: true, action: 'on', tipDollarsNow: 13, tipDollarsAfter: 8, nextAmountCents: 3500 + 1075 + 800, amountDueCents: 451 })
+    expect(p).toMatchObject({ ok: true, action: 'on', tipDollarsNow: 13, tipDollarsAfter: 8, nextAmountCents: 3500 + 1075 + 800, amountDueCents: 575 })
   })
   it('a tip that already fits is left alone', async () => {
     const f = fake()
@@ -206,17 +242,108 @@ describe('turning an add-on ON: charged now, once each, never a silent tip drop'
     const r = await changeAddon(deps(f), sub('starter', { addons: ['small_edit'], addonAmount: { small_edit: 1000 } }), 'big_change', 'on')
     expect(r).toEqual({ ok: false, code: 'over_cap', message: 'Turn off an add-on first' })
   })
-  it('a declined card: nothing applied, a clean payment_failed', async () => {
-    const f = fake({ cardError: true })
-    expect(await changeAddon(deps(f), sub('priority'), 'small_edit', 'on')).toMatchObject({ ok: false, code: 'payment_failed' })
-  })
-  it('Stripe answered but the live subscription lacks the add-on: mismatch, never "on"', async () => {
+  it('Stripe answered but the live subscription lacks the add-on: never "on", and the charge is refunded', async () => {
     const f = fake({ after: sub('priority') })
-    expect(await changeAddon(deps(f), sub('priority'), 'small_edit', 'on')).toMatchObject({ ok: false, code: 'mismatch' })
+    expect(await changeAddon(deps(f), sub('priority'), 'small_edit', 'on')).toEqual({ ok: false, code: 'not_applied', message: 'Stripe did not add the add-on.', refunded: true })
+    expect(f.raw.creditNotes.create).toHaveBeenCalledWith(
+      { invoice: 'in_addon', amount: 500, refund_amount: 500, reason: 'order_change', memo: 'Add-on could not be turned on; refunded.' },
+      { idempotencyKey: 'addon-refund:in_addon' }
+    )
   })
   it('grandfathered plans get no add-ons', async () => {
     const legacy = { ...sub('starter'), items: { data: [{ id: 'si_h', quantity: 1, price: { id: 'p_h', lookup_key: null, product: 'prod_h', unit_amount: 4000, recurring: { interval: 'month' } } }] } } as unknown as Stripe.Subscription
     expect(await changeAddon(deps(fake()), legacy, 'small_edit', 'on')).toMatchObject({ ok: false, code: 'no_addon_plan' })
+  })
+})
+
+/** What the next renewal bills: every recurring item at its monthly price (proration none = nothing else carried over). */
+const renewalCents = (s: Stripe.Subscription) => s.items.data.reduce((n, i) => n + (i.price.unit_amount ?? 0) * (i.quantity ?? 1), 0)
+
+describe('Aria, Oct 4 8:28 AM: turning on charges the FULL price now, never a partial month', () => {
+  const twoDaysLeft = NOW_S + 2 * 86_400
+  it.each([
+    ['small_edit', 500],
+    ['big_change', 575],
+  ] as const)('%s turned on with 2 days left: exactly %i cents now as its own invoice; the next renewal is the normal monthly amount', async (id, cents) => {
+    const after = sub('priority', { addons: [id], periodEnd: twoDaysLeft })
+    const f = fake({ after })
+    const r = await changeAddon(deps(f), sub('priority', { periodEnd: twoDaysLeft }), id, 'on', { prorationDate: NOW_S })
+    expect(r).toMatchObject({ ok: true, kind: 'on', addon: id })
+    // the one-off invoice: only this charge (pending items excluded), the plan's card, no subscription link
+    const [invParams] = f.raw.invoices.create.mock.calls[0] as unknown as [Record<string, unknown>]
+    expect(invParams).toMatchObject({ customer: 'cus_1', pending_invoice_items_behavior: 'exclude', collection_method: 'charge_automatically', auto_advance: false, default_payment_method: 'pm_1', currency: 'usd' })
+    expect(invParams).toMatchObject({ metadata: { freeplug_kind: 'addon_first_period', addon: id, subscription: 'sub_1' } })
+    expect(invParams).not.toHaveProperty('subscription')
+    const [itemParams] = f.raw.invoiceItems.create.mock.calls[0] as unknown as [Record<string, unknown>]
+    expect(itemParams).toMatchObject({ customer: 'cus_1', invoice: 'in_addon', amount: cents, currency: 'usd' })
+    expect(f.raw.invoices.pay).toHaveBeenCalledWith('in_addon', { off_session: true }, expect.anything())
+    // no proration anywhere: the subscription change itself bills nothing now
+    const [, params] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams]
+    expect(params.proration_behavior).toBe('none')
+    expect(params).not.toHaveProperty('proration_date')
+    expect(f.raw.invoices.createPreview).not.toHaveBeenCalled()
+    expect(renewalCents(after)).toBe(5500 + cents)
+  })
+  it('the confirm amount is the full price on any day (no Stripe proration preview)', async () => {
+    const f = fake()
+    const late = await previewAddonChange(deps(f), sub('priority', { periodEnd: twoDaysLeft }), 'big_change', 'on', NOW_S)
+    const early = await previewAddonChange(deps(f), sub('priority'), 'small_edit', 'on', NOW_S)
+    expect(late).toMatchObject({ ok: true, action: 'on', amountDueCents: 575, nextAmountCents: 5500 + 575 })
+    expect(early).toMatchObject({ ok: true, action: 'on', amountDueCents: 500, nextAmountCents: 5500 + 500 })
+    expect(f.raw.invoices.createPreview).not.toHaveBeenCalled()
+  })
+  it('a declined card: the invoice is voided and the add-on stays off (the subscription is never touched)', async () => {
+    const f = fake({ payDeclined: true })
+    expect(await changeAddon(deps(f), sub('priority'), 'small_edit', 'on')).toMatchObject({ ok: false, code: 'payment_failed' })
+    expect(f.calls).toEqual(['invoices.create', 'invoiceItems.create', 'invoices.finalize', 'invoices.pay', 'invoices.void'])
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+  it('a charge left unpaid (bank wants 3D Secure): voided, add-on stays off', async () => {
+    const f = fake({ payStatus: 'open' })
+    expect(await changeAddon(deps(f), sub('priority'), 'big_change', 'on')).toMatchObject({ ok: false, code: 'payment_failed' })
+    expect(f.calls.slice(-1)).toEqual(['invoices.void'])
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+  it('an invoice whose total is not exactly the add-on price is voided before any charge', async () => {
+    const f = fake({ finalTotal: 621 })
+    expect(await changeAddon(deps(f), sub('priority'), 'big_change', 'on')).toMatchObject({ ok: false, code: 'price' })
+    expect(f.raw.invoices.pay).not.toHaveBeenCalled()
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+  it('charged but the subscription update fails: refunded with a credit note, never left charged-and-off silently', async () => {
+    const f = fake({ updateFails: true })
+    expect(await changeAddon(deps(f), sub('priority'), 'big_change', 'on')).toMatchObject({ ok: false, code: 'not_applied', refunded: true })
+    expect(f.raw.creditNotes.create).toHaveBeenCalledWith(expect.objectContaining({ invoice: 'in_addon', amount: 575, refund_amount: 575 }), expect.anything())
+  })
+  it('a replayed key whose invoice is already paid does not charge again; a voided one asks for a new preview', async () => {
+    const paid = fake({ replayStatus: 'paid', after: sub('priority', { addons: ['big_change'] }) })
+    expect(await changeAddon(deps(paid), sub('priority'), 'big_change', 'on')).toMatchObject({ ok: true, kind: 'on' })
+    expect(paid.raw.invoiceItems.create).not.toHaveBeenCalled()
+    expect(paid.raw.invoices.pay).not.toHaveBeenCalled()
+    const voided = fake({ replayStatus: 'void' })
+    expect(await changeAddon(deps(voided), sub('priority'), 'big_change', 'on')).toMatchObject({ ok: false, code: 'stale_preview' })
+    expect(voided.raw.subscriptions.update).not.toHaveBeenCalled()
+  })
+  it('the Starter tip drop rides on the same no-proration update (applies from the next renewal)', async () => {
+    const after = sub('starter', { addons: ['small_edit'], tip: 14 })
+    const f = fake({ after })
+    expect(await changeAddon(deps(f), sub('starter', { tip: 19 }), 'small_edit', 'on', { tipDropTo: 14 })).toMatchObject({ ok: true, tipDollars: 14 })
+    const [, params] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams]
+    expect(params).toEqual({ items: [{ price: 'price_small', quantity: 1 }, { id: 'si_tip', quantity: 14 }], proration_behavior: 'none' })
+    expect(renewalCents(after)).toBe(3500 + 500 + 1400) // = $54, Starter's cap
+  })
+  it('a removal stays on until the period ends and is not on the next renewal', async () => {
+    const f = fake()
+    const live = sub('priority', { addons: ['small_edit', 'big_change'] })
+    expect(await changeAddon(deps(f), live, 'big_change', 'off')).toMatchObject({ ok: true, kind: 'removal_scheduled', effectiveAt: new Date(PERIOD_END * 1000).toISOString() })
+    expect(f.raw.subscriptions.update).not.toHaveBeenCalled() // nothing changes now: still on, no credit
+    expect(f.raw.invoices.create).not.toHaveBeenCalled()
+    const [current, next] = phase2(f)
+    expect(current.end_date).toBe(PERIOD_END)
+    expect(current.items).toEqual(expect.arrayContaining([expect.objectContaining({ price: 'price_big' })]))
+    expect(next.items).toEqual([{ price: 'price_priority', quantity: 1 }, { price: 'price_small', quantity: 1 }])
+    const nextRenewal = (next.items as { price: string; quantity: number }[]).reduce((n, i) => n + ((PRICES[i.price] as { unit_amount: number }).unit_amount * i.quantity), 0)
+    expect(nextRenewal).toBe(5500 + 500)
   })
 })
 

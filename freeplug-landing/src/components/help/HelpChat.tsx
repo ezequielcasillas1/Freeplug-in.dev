@@ -22,6 +22,8 @@ type Props = {
   /** Plan includes a small edit (Fast lane and up, or a grandfathered Plus/Pro add-on): shows the included-edit note. */
   /** Plan includes the small edit this period (getEntitlements().includedEditsPerMonth > 0). */
   hasIncludedEdit: boolean
+  /** Starter without the +1 small edit add-on: Sable's line pointing to the add-on (starterSmallEditAddonLine). */
+  smallEditAddonNote?: string | null
   sendRequest: (input: HelpChangeRequestInput) => Promise<HelpChangeRequestResult>
 }
 
@@ -55,7 +57,7 @@ function UserBubble({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function HelpChat({ email, hasIncludedEdit, sendRequest }: Props) {
+export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, sendRequest }: Props) {
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null)
   const [step, setStep] = useState<Step>('menu')
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT)
@@ -238,7 +240,13 @@ export function HelpChat({ email, hasIncludedEdit, sendRequest }: Props) {
           <>
             <BotBubble>
               <p>{C.review}</p>
-              {hasIncludedEdit ? <p className="mt-2">{C.includedEditNote}</p> : null}
+              {hasIncludedEdit ? (
+                <p className="mt-2">{C.includedEditNote}</p>
+              ) : smallEditAddonNote ? (
+                <p className="mt-2" data-testid="small-edit-addon-note">
+                  {smallEditAddonNote}
+                </p>
+              ) : null}
             </BotBubble>
             <dl className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm space-y-2">
               <div>
