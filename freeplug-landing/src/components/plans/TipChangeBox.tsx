@@ -39,6 +39,10 @@ type Props = {
   onPreviewTip: (tipDollars: number) => Promise<TipPreviewResponse>
   /** confirmId: from the preview this Confirm belongs to (one Stripe idempotency key per Confirm). */
   onChangeTip: (tipDollars: number, confirmId?: string) => Promise<ChangeTipResponse>
+  /** Add-ons on the plan (cents): Starter's tip max counts them. */
+  addonCents?: number
+  /** With the add-ons block: the slider shows the tip amount only (the total is in the action area). */
+  amountOnly?: boolean
 }
 
 /**
@@ -48,7 +52,7 @@ type Props = {
  * charged today. Esc closes the confirm and focus returns to the button; Esc while "Checking the amount…"
  * cancels the same way and the late preview is dropped.
  */
-export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = null, onPreviewTip, onChangeTip }: Props) {
+export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = null, onPreviewTip, onChangeTip, addonCents = 0, amountOnly = false }: Props) {
   const [tip, setTip] = useState(currentTipDollars)
   const [state, setState] = useState<Phase>({ phase: 'idle' })
   const [notice, setNotice] = useState<string | null>(null)
@@ -157,6 +161,8 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
             disabled={busy}
             help={TIP_CHANGE_NOTE}
             testId="tip-change-slider"
+            addonCents={addonCents}
+            amountOnly={amountOnly}
           />
         </div>
       )}

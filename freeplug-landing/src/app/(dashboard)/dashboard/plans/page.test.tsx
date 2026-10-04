@@ -7,6 +7,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 
 let schedule: string | null = null
+/** What the schedule holds: a step switch (default) or only add-ons that end (Oct 4). */
+let pendingKind: 'switch' | 'addons' = 'switch'
+let liveAddonIds: string[] = []
 let invoicesFail = false
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
@@ -27,8 +30,13 @@ vi.mock('@/lib/plans/user-entitlements', async () => {
 vi.mock('@/lib/stripe/change-plan', () => ({
   subscriptionMonthlyCents: () => 6500,
   subscriptionTipDollars: (sub: { tip?: number }) => sub.tip ?? 0,
+  subscriptionAddons: () => ({ ids: liveAddonIds, cents: 0 }),
   pendingPlanChange: async (_s: unknown, sub: { schedule: string | null }) =>
-    sub.schedule ? { step: 'starter', effectiveAt: '2026-11-03T17:48:16.000Z', scheduleId: sub.schedule } : null,
+    sub.schedule
+      ? pendingKind === 'switch'
+        ? { step: 'starter', effectiveAt: '2026-11-03T17:48:16.000Z', scheduleId: sub.schedule, isSwitch: true, removedAddons: [] }
+        : { step: 'fast_lane', effectiveAt: '2026-11-03T17:48:16.000Z', scheduleId: sub.schedule, isSwitch: false, removedAddons: ['big_change'] }
+      : null,
 }))
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => ({
@@ -47,6 +55,8 @@ vi.mock('../billing-actions', () => ({
   openBillingPortal: vi.fn(),
   previewTipChangeAction: vi.fn(),
   changeTipAction: vi.fn(),
+  previewAddonChangeAction: vi.fn(),
+  changeAddonAction: vi.fn(),
 }))
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({
   changeHostingPlan: vi.fn(),
@@ -55,6 +65,8 @@ vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({
   openBillingPortal: vi.fn(),
   previewTipChangeAction: vi.fn(),
   changeTipAction: vi.fn(),
+  previewAddonChangeAction: vi.fn(),
+  changeAddonAction: vi.fn(),
 }))
 
 import DashboardPlansPage from './page'
@@ -66,6 +78,8 @@ const renderPage = async (params: Record<string, string> = {}) =>
 describe('Plans page billing', () => {
   beforeEach(() => {
     schedule = null
+    pendingKind = 'switch'
+    liveAddonIds = []
     invoicesFail = false
   })
 
@@ -124,5 +138,17 @@ describe('Plans page billing', () => {
     const short = formatShortPlanDate(new Date('2026-11-03T00:00:00Z'))
     expect(short).toBe(new Date().getUTCFullYear() === 2026 ? 'Nov 3' : 'Nov 3, 2026')
     expect(await screen.findByRole('button', { name: `Switch to Starter on ${short}` })).toBeEnabled()
+  })
+
+  it('add-ons (Oct 4): a schedule that only ends an add-on is not a plan change; the card says when it ends', async () => {
+    schedule = 'sub_sched_1'
+    pendingKind = 'addons'
+    liveAddonIds = ['small_edit', 'big_change']
+    render(await DashboardPlansPage({ searchParams: Promise.resolve({}) }))
+    expect(screen.queryByTestId('pending-change')).toBeNull()
+    expect(screen.getByTestId('addons-block')).toBeInTheDocument()
+    expect(screen.getByTestId('addon-switch-small_edit')).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByTestId('addon-ending')).toHaveTextContent('Ends November 3, 2026')
+    expect(screen.getByTestId('addon-keep-big_change')).toBeInTheDocument()
   })
 })

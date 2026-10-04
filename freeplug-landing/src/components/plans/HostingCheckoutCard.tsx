@@ -6,10 +6,20 @@ import { Loader2 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { openBillingPortal } from '@/app/(dashboard)/dashboard/billing-actions'
-import type { ChangeHostingPlanResult, ChangeTipResponse, PlanPreviewResponse, TipPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
+import type {
+  AddonPreviewResponse,
+  ChangeAddonResponse,
+  ChangeHostingPlanResult,
+  ChangeTipResponse,
+  PlanPreviewResponse,
+  TipPreviewResponse,
+} from '@/app/(dashboard)/dashboard/billing-actions'
 import { TipSlider, tipTotalText } from './TipSlider'
 import { TipChangeBox } from './TipChangeBox'
-import { PLAN_STEPS, type PlanStep, type PlanStepId } from '@/lib/plans/ladder'
+import { AddonsBlock } from './AddonsBlock'
+import { PLAN_STEPS, type AddonId, type PlanStep, type PlanStepId } from '@/lib/plans/ladder'
+import { addonConfigCents } from '@/lib/plans/addons'
+import { tipRangeFor } from '@/lib/plans/tips'
 import { PRORATION_DATE_MAX_AGE_SECONDS, planMove, type PlanMove } from '@/lib/plans/plan-direction'
 import {
   CHANGE_PLAN_BUTTON_NOW,
@@ -45,6 +55,10 @@ import {
   UPGRADE_REPLACES_PENDING,
   PLAN_CHANGE_TIP_ENDS,
   PLAN_CHANGE_TIP_ENDS_ON,
+  ADDON_NAMES,
+  addonsStayOnLine,
+  planTotalBreakdown,
+  planTotalLine,
 } from '@/lib/plans/ladder-copy'
 
 function formatDollars(cents: number): string {
@@ -119,6 +133,19 @@ type Props = {
   /** With a live ladder plan: tip box actions (server actions previewTipChangeAction / changeTipAction). */
   onPreviewTip?: (tipDollars: number) => Promise<TipPreviewResponse>
   onChangeTip?: (tipDollars: number, confirmId?: string) => Promise<ChangeTipResponse>
+  /**
+   * The add-ons block (Lina's approved spec, Oct 4): under the step list on every step, before the
+   * tip. New checkout sends the picks with the plan; a live ladder plan switches them through these
+   * server actions. Default true; the claim flow (onChoosePlan) never shows it.
+   */
+  showAddons?: boolean
+  /** With a live plan: the add-ons on it now (including ones set to end). */
+  currentAddons?: AddonId[]
+  /** With a live plan: add-ons set to end at `endingAddonsDate` (a planned removal). */
+  endingAddons?: AddonId[]
+  endingAddonsDate?: string | null
+  onPreviewAddon?: (addonId: AddonId, action: 'on' | 'off') => Promise<AddonPreviewResponse>
+  onChangeAddon?: (addonId: AddonId, action: 'on' | 'off' | 'keep', opts?: { prorationDate?: number; tipDropTo?: number }) => Promise<ChangeAddonResponse>
 }
 
 /** Upgrade confirm states (Lina §3a). Downgrades and checkout never enter it. */
@@ -150,6 +177,12 @@ export function HostingCheckoutCard({
   currentTipDollars = 0,
   onPreviewTip,
   onChangeTip,
+  showAddons = true,
+  currentAddons = [],
+  endingAddons = [],
+  endingAddonsDate = null,
+  onPreviewAddon,
+  onChangeAddon,
 }: Props) {
   // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
   // customer is already on. The server refuses them too (checkout, claim, publish, switching).
@@ -159,6 +192,8 @@ export function HostingCheckoutCard({
   )
   // The tipping system: whole dollars on top of the selected step (0 = no tip). Resets on every pick.
   const [tipDollars, setTipDollars] = useState(0)
+  // New checkout: the add-ons picked (they stay through step picks; the server re-checks them).
+  const [addonPicks, setAddonPicks] = useState<AddonId[]>([])
   const [loading, setLoading] = useState(false)
   const [keeping, setKeeping] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -262,6 +297,7 @@ export function HostingCheckoutCard({
     setConfirm({ phase: 'loading', step })
     let text = UPGRADE_CONFIRM_FALLBACK(name)
     let prorationDate: number | undefined
+    let stayOn: AddonId[] = currentAddons
     try {
       const p = await onPreviewChange(step)
       if (p.ok && p.nextDate) {
@@ -273,12 +309,15 @@ export function HostingCheckoutCard({
             : UPGRADE_CONFIRM_LINE(name, formatCharge(p.amountDueCents), formatDollars(p.nextAmountCents), p.nextDate)
       }
       prorationDate = p.prorationDate ?? undefined
+      if (p.ok && p.addons) stayOn = p.addons
     } catch {
       // network: the fallback line, and the server charges at the time of Confirm
     }
     // Esc (or unmount) during the preview: drop the late result, no confirm and no focus move.
     if (seq !== previewSeq.current) return
-    setConfirm({ phase: 'confirm', step, text, extra: upgradeExtras, prorationDate })
+    // Lina/Aria: one gray line naming the add-ons that stay on (omitted when none).
+    const extra = stayOn.length > 0 ? [...upgradeExtras, addonsStayOnLine(stayOn.map((a) => ADDON_NAMES[a]))] : upgradeExtras
+    setConfirm({ phase: 'confirm', step, text, extra, prorationDate })
     timer.current = setTimeout(() => closeConfirm(true), CONFIRM_OPEN_MS)
   }
 
@@ -340,7 +379,7 @@ export function HostingCheckoutCard({
       const res = await fetch('/api/checkout/hosting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planStep, tipDollars }),
+        body: JSON.stringify(checkoutAddons && addonPicks.length > 0 ? { planStep, tipDollars, addons: addonPicks } : { planStep, tipDollars }),
       })
       const data = (await res.json()) as { url?: string; error?: string }
       if (!res.ok) {
@@ -517,6 +556,29 @@ export function HostingCheckoutCard({
     </div>
   )
   const tipping = showTip && canPay
+  // ------------------------------------------------------------------ add-ons (Lina, Oct 4)
+  const checkoutAddons = showAddons && canPay && !onChoosePlan
+  const liveAddons = showAddons && canSwitch && Boolean(onPreviewAddon && onChangeAddon)
+  const pickedAddonCents = checkoutAddons ? addonConfigCents(addonPicks) : 0
+  const liveAddonCents = addonConfigCents(currentAddons)
+  /** The ONE cap rule (tips.ts tipRangeFor): Starter's total counts the add-ons. */
+  const maxTipFor = (ids: AddonId[]) => tipRangeFor(selected, undefined, addonConfigCents(ids))?.maxTip ?? null
+  const totalParts = checkoutAddons
+    ? { addons: pickedAddonCents, tip: tipping ? tipDollars * 100 : 0 }
+    : liveAddons
+      ? { addons: liveAddonCents, tip: currentStepId === selected.id ? currentTipDollars * 100 : 0 }
+      : null
+  /** One total only (Lina): "Starter $35 · Add-ons $10.75 · Tip $4", then "$49.75/month" bold. */
+  const totalBlock = totalParts ? (
+    <div className="mb-3" data-testid="plan-total">
+      <p className="text-sm text-gray-600" data-testid="plan-total-breakdown">
+        {planTotalBreakdown(selected.name, selected.monthlyCents, totalParts.addons, totalParts.tip)}
+      </p>
+      <p className="text-base font-bold text-gray-900" data-testid="plan-total-amount">
+        {planTotalLine(selected.monthlyCents + totalParts.addons + totalParts.tip)}
+      </p>
+    </div>
+  ) : null
   const phoneSummary = stickyOnPhone ? (
     <p className="mb-2 text-xs text-gray-600 sm:hidden" data-testid="sticky-summary">
       {selected.name} ·{' '}
@@ -544,7 +606,7 @@ export function HostingCheckoutCard({
       </p>
       {confirm.phase === 'loading' ? (
         <div data-testid="upgrade-calculating">
-          {phoneSummary}
+          {totalBlock ?? phoneSummary}
           <Button className="w-full" size="lg" disabled aria-disabled="true">
             <Loader2 className="mr-2 animate-spin" size={20} aria-hidden="true" />
             {UPGRADE_CALCULATING}
@@ -571,7 +633,7 @@ export function HostingCheckoutCard({
         </div>
       ) : (
         <div>
-          {phoneSummary}
+          {totalBlock ?? phoneSummary}
           <Button ref={switchRef} className="w-full" size="lg" onClick={onSwitch} disabled={switchDisabled}>
             {loading ? <Loader2 className="animate-spin" size={22} /> : switchLabel}
           </Button>
@@ -601,7 +663,7 @@ export function HostingCheckoutCard({
       {messages}
       <div>
         {/* Phone bar (Lina §0/§2): "<Name> · $<price>/month", then the grey note directly above the button. */}
-        {phoneSummary}
+        {totalBlock ?? phoneSummary}
         {onChoosePlan && noteAboveButton ? <p className="mb-3 text-sm text-gray-500">{noteAboveButton}</p> : null}
         <Button className="w-full" size="lg" onClick={startHostingCheckout} disabled={loading || !pickable(planStep)}>
           {loading ? <Loader2 className="animate-spin" size={22} /> : chooseText}
@@ -640,6 +702,8 @@ export function HostingCheckoutCard({
               lockedDate={pendingChange?.date ?? null}
               onPreviewTip={onPreviewTip}
               onChangeTip={onChangeTip}
+              addonCents={liveAddonCents}
+              amountOnly={liveAddons}
             />
           ) : null}
         </div>
@@ -682,9 +746,44 @@ export function HostingCheckoutCard({
           </div>
         ) : null}
       </fieldset>
+      {checkoutAddons ? (
+        <AddonsBlock
+          mode="checkout"
+          stepId={selected.id}
+          selected={addonPicks}
+          tipDollars={tipDollars}
+          maxTipFor={maxTipFor}
+          onChange={(ids, tip) => {
+            setAddonPicks(ids)
+            setTipDollars(tip)
+          }}
+          disabled={loading}
+        />
+      ) : liveAddons ? (
+        <AddonsBlock
+          mode="live"
+          stepId={selected.id}
+          current={currentAddons}
+          ending={endingAddons}
+          endDate={endingAddonsDate}
+          lockedBySwitch={Boolean(pendingChange)}
+          lockedBySwitchDate={pendingChange?.date ?? null}
+          legacy={!currentStepId}
+          onPreview={onPreviewAddon!}
+          onChange={onChangeAddon!}
+        />
+      ) : null}
       {tipping ? (
         <div className="mb-6" data-testid="tip-area">
-          <TipSlider step={selected} tipDollars={tipDollars} onChange={setTipDollars} onPickStep={pick} disabled={loading} />
+          <TipSlider
+            step={selected}
+            tipDollars={tipDollars}
+            onChange={setTipDollars}
+            onPickStep={pick}
+            disabled={loading}
+            addonCents={pickedAddonCents}
+            amountOnly={checkoutAddons}
+          />
         </div>
       ) : null}
       {hasLivePlan ? (

@@ -17,6 +17,7 @@ import {
   TIP_SLIDER_LABEL,
   TIP_TOTAL_LINE,
   TIP_VALUETEXT,
+  tipAmountLine,
 } from '@/lib/plans/ladder-copy'
 
 const usd = (dollars: number) => `$${dollars}`
@@ -37,6 +38,10 @@ type Props = {
   /** Lines under the slider (e.g. the tip box's note); defaults to the help line. */
   help?: string
   testId?: string
+  /** Add-ons on (cents): Starter counts them toward its total, so the tip max comes down (tips.ts). */
+  addonCents?: number
+  /** With the add-ons block: show the tip amount only; the one total sits in the action area (Lina, Oct 4). */
+  amountOnly?: boolean
 }
 
 /**
@@ -51,15 +56,17 @@ type Props = {
 const stepBtn =
   'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d] disabled:cursor-not-allowed disabled:opacity-40'
 
-export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, help = TIP_SLIDER_HELP, testId = 'tip-slider' }: Props) {
+const fmt = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
+
+export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, help = TIP_SLIDER_HELP, testId = 'tip-slider', addonCents = 0, amountOnly = false }: Props) {
   const id = useId()
   const helpId = `${id}-help`
   const hintId = `${id}-hint`
-  const range = tipRangeFor(step)
+  const range = tipRangeFor(step, undefined, addonCents)
   if (!range || range.maxTip <= 0) return null
   const tip = Math.min(Math.max(0, tipDollars), range.maxTip)
   const total = range.minTotal + tip
-  const nudge = onPickStep ? tipNudge(step, tip) : null
+  const nudge = onPickStep ? tipNudge(step, tip, undefined, addonCents) : null
   const set = (t: number) => onChange(Math.min(Math.max(0, t), range.maxTip))
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4" data-testid={testId} data-step={step.id}>
@@ -69,7 +76,7 @@ export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, he
         </label>
         {/* Visible total; screen readers get the same through aria-valuetext, so it isn't announced twice. */}
         <output htmlFor={id} aria-live="off" className="text-sm font-semibold text-gray-900" data-testid="tip-total">
-          {tipTotalText(step, tip)}
+          {amountOnly ? tipAmountLine(tip) : tipTotalText(step, tip)}
         </output>
       </div>
       <p id={hintId} className="mt-1 text-xs text-gray-600" data-testid="tip-hint">
@@ -94,7 +101,7 @@ export function TipSlider({ step, tipDollars, onChange, onPickStep, disabled, he
           step={1}
           value={total}
           disabled={disabled}
-          aria-valuetext={TIP_VALUETEXT(usd(total), tip > 0 ? usd(tip) : null)}
+          aria-valuetext={TIP_VALUETEXT(fmt(step.monthlyCents + addonCents + tip * 100), tip > 0 ? usd(tip) : null)}
           aria-describedby={`${hintId} ${helpId}`}
           onChange={(e) => set(Number(e.currentTarget.value) - range.minTotal)}
           className="h-11 min-w-0 flex-1 cursor-pointer accent-[#ba3d3d] disabled:cursor-not-allowed"

@@ -58,7 +58,10 @@ describe('HostingCheckoutCard rows (Lina §0)', () => {
     expect(ranges).toHaveLength(1)
     expect(screen.getByTestId('tip-area').contains(ranges[0])).toBe(true)
     expect(container).not.toHaveTextContent(/\bBasic\b|\bPlus\b|\bPro\b/)
-    expect(container).not.toHaveTextContent(/add-on|backup|downtime|uptime|99\.9/i)
+    // The step list never shows grandfathered add-ons or uptime claims; the Oct 4 add-ons have their own block.
+    const list = container.querySelector('fieldset')!
+    expect(list).not.toHaveTextContent(/add-on|backup|downtime|uptime|99\.9/i)
+    expect(container).not.toHaveTextContent(/backup|downtime|uptime|99\.9/i)
   })
 
   it('Coming soon steps: no radio, not a label, grey text instead of opacity, amber badge, under the divider', () => {
@@ -756,10 +759,15 @@ describe('the tipping system: slider before checkout and in the claim flow', () 
     expect(r).toHaveAttribute('step', '1')
     expect(r.value).toBe('65')
     expect(r).toHaveAttribute('aria-valuetext', '$65 a month, no tip')
-    expect(screen.getByTestId('tip-total')).toHaveTextContent('$65/month, no tip')
+    // With the add-ons block (Lina, Oct 4) the tip card shows the tip only; the one total is in the action area.
+    expect(screen.getByTestId('tip-total')).toHaveTextContent('No tip')
+    expect(screen.getByTestId('plan-total-breakdown')).toHaveTextContent('Fast lane $65')
+    expect(screen.getByTestId('plan-total-amount')).toHaveTextContent('$65/month')
     fireEvent.change(r, { target: { value: '70' } })
     expect(r).toHaveAttribute('aria-valuetext', '$70 a month, including a $5 tip')
-    expect(screen.getByTestId('tip-total')).toHaveTextContent('$65 + $5 tip = $70/month')
+    expect(screen.getByTestId('tip-total')).toHaveTextContent('$5 tip')
+    expect(screen.getByTestId('plan-total-breakdown')).toHaveTextContent('Fast lane $65 · Tip $5')
+    expect(screen.getByTestId('plan-total-amount')).toHaveTextContent('$70/month')
   })
 
   it('checkout passes the tip dollars (quantity) with the step; a new pick resets the slider to the step price', async () => {

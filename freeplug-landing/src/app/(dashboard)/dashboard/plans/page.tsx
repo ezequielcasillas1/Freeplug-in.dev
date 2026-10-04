@@ -4,12 +4,12 @@ import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
 import { describeLiveSubscriptions, formatPlanEndDate, formatShortPlanDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
-import type { PlanStepId } from '@/lib/plans/ladder'
+import type { AddonId, PlanStepId } from '@/lib/plans/ladder'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
-import { pendingPlanChange, subscriptionMonthlyCents, subscriptionTipDollars } from '@/lib/stripe/change-plan'
+import { pendingPlanChange, subscriptionAddons, subscriptionMonthlyCents, subscriptionTipDollars } from '@/lib/stripe/change-plan'
 import { subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
 import { getStripe } from '@/lib/stripe/server'
-import { changeHostingPlan, changeTipAction, previewPlanChange, previewTipChangeAction, updatePaymentMethod } from '../billing-actions'
+import { changeAddonAction, changeHostingPlan, changeTipAction, previewAddonChangeAction, previewPlanChange, previewTipChangeAction, updatePaymentMethod } from '../billing-actions'
 import { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE, DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 import { stepById } from '@/lib/plans/ladder'
 import { BillingTools } from '@/components/plans/BillingTools'
@@ -97,6 +97,10 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
   let renewalDate: string | null = null
   let renewalDateShort: string | null = null
   let currentTipDollars = 0
+  // Add-ons (Oct 4): on the live plan now, and the ones a planned removal ends (with its date).
+  let currentAddons: AddonId[] = []
+  let endingAddons: AddonId[] = []
+  let endingAddonsDate: string | null = null
   const { data: prof } = await supabase
     .from('profiles')
     .select('stripe_customer_id')
@@ -118,12 +122,21 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
           currentMonthlyCents = subscriptionMonthlyCents(live[0])
           // The tipping system: the tip item on the live subscription (never part of the plan price).
           currentTipDollars = subscriptionTipDollars(live[0])
+          currentAddons = subscriptionAddons(live[0]).ids
           const end = subscriptionPeriodEnd(live[0])
           renewalDate = end ? formatPlanEndDate(end) : null
           renewalDateShort = end ? formatShortPlanDate(end) : null
           if (live[0].schedule) {
             const p = await pendingPlanChange(getStripe(), live[0])
-            if (p) pendingChange = { stepId: p.step, date: formatPlanEndDate(new Date(p.effectiveAt)) }
+            if (p) {
+              const date = formatPlanEndDate(new Date(p.effectiveAt))
+              // Only a STEP switch is a "plan change" here; add-ons that end show on their cards.
+              if (p.isSwitch) pendingChange = { stepId: p.step, date }
+              if (p.removedAddons.length > 0) {
+                endingAddons = p.removedAddons
+                endingAddonsDate = date
+              }
+            }
           }
         }
       }
@@ -159,6 +172,11 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
           currentTipDollars={currentTipDollars}
           onPreviewTip={previewTipChangeAction}
           onChangeTip={changeTipAction}
+          currentAddons={currentAddons}
+          endingAddons={endingAddons}
+          endingAddonsDate={endingAddonsDate}
+          onPreviewAddon={previewAddonChangeAction}
+          onChangeAddon={changeAddonAction}
         />
         <MaintenancePlanCard
           embedded
