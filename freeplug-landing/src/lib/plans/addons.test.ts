@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ADDONS, ADDON_STEP_LIMITS, entitlementsFor, PLAN_STEPS, withAddons, type PlanStepId } from './ladder'
+import { ADDONS, ADDON_STEP_LIMITS, entitlementsFor, PLAN_STEPS, TIP_TOTAL_RANGES, withAddons, type PlanStepId } from './ladder'
 import { addonCapCheck, addonCentsOfItems, addonIdsOfItems, addonOfPrice, isAddonPrice, parseAddonIds } from './addons'
 import { parseTipDollars, tierItems, tipNudge, tipRangeFor } from './tips'
 import { entitlementsFromSnapshot, snapshotOf } from './plan-snapshot'
@@ -96,8 +96,36 @@ describe('Starter $54 total: tip max = floor($54 - $35 - add-ons)', () => {
   it('the nudge never shows for a tip above the add-on-lowered max', () => {
     expect(tipNudge(step('starter'), 15)?.next.id).toBe('priority')
     expect(tipNudge(step('starter'), 15, undefined, 500)).toBeNull()
-    expect(tipNudge(step('starter'), 13, undefined, 575)).toBeNull() // $35 + $13 is $7 from Priority
+    expect(tipNudge(step('starter'), 14, undefined, 575)).toBeNull() // above the $13 max with Big change
     expect(tipNudge(step('priority'), 5, undefined, 1075)?.next.id).toBe('fast_lane')
+  })
+})
+
+describe('Vera Q2 / Aria 9:28: the nudge counts plan + add-ons + tip against the next step', () => {
+  it('Starter + both add-ons + $8 tip = $53.75, $1.25 from Priority: nudges Priority', () => {
+    expect(tipNudge(step('starter'), 8, undefined, 1075)?.next.id).toBe('priority')
+    expect(tipNudge(step('starter'), 8)).toBeNull() // $43 alone is $12 away
+  })
+  it('Starter + Big change + $13 = $53.75: nudges (it did not before add-ons counted)', () => {
+    expect(tipNudge(step('starter'), 13, undefined, 575)?.next.id).toBe('priority')
+    expect(tipNudge(step('starter'), 13)).toBeNull() // $48 alone is $7 away
+  })
+  it('the $5 window is exact in cents: $50.00 nudges, $49.75 does not', () => {
+    expect(tipNudge(step('starter'), 10, undefined, 500)?.next.id).toBe('priority') // 35 + 5 + 10 = 50
+    expect(tipNudge(step('starter'), 9, undefined, 575)).toBeNull() // 35 + 5.75 + 9 = 49.75
+  })
+  it('Priority: add-ons alone can bring the nudge to Fast lane ($55 + $5.75 + $5); without add-ons unchanged', () => {
+    expect(tipNudge(step('priority'), 5, undefined, 575)?.next.id).toBe('fast_lane')
+    expect(tipNudge(step('priority'), 4)).toBeNull() // $59, $6 away (unchanged)
+    expect(tipNudge(step('priority'), 5)?.next.id).toBe('fast_lane') // $60 (unchanged)
+    expect(tipNudge(step('priority'), 0, undefined, 1075)).toBeNull() // never for a $0 tip
+  })
+  it('Vera Q1: Priority caps stay unchanged (add-ons do not lower the Priority tip max)', () => {
+    expect(tipRangeFor(step('priority'), TIP_TOTAL_RANGES, 1075)?.maxTip).toBe(tipRangeFor(step('priority'))?.maxTip)
+    expect(tipRangeFor(step('priority'))?.maxTip).toBe(9)
+  })
+  it('never from the top sellable step toward an unsold one', () => {
+    expect(tipNudge(step('fast_lane'), 9, undefined, 1075)).toBeNull()
   })
 })
 

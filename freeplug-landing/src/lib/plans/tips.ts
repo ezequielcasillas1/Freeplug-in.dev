@@ -125,10 +125,9 @@ export type TipNudge = { next: PlanStep; perk: PlanPerk }
  * price and the next step is sellable, suggest switching to it. Never from the top step, never for a
  * $0 tip, never toward a step that isn't sold.
  *
- * Add-ons (Oct 4): they stay on when switching steps, so they are on both sides of the comparison
- * and cancel out; the gap is still next step price - (step price + tip). What `addonCents` changes
- * is the reachable tip: a tip above the add-on-lowered max (tipRangeFor) never nudges, so on
- * Starter with both add-ons ($8 max) the $50+ nudge can't show.
+ * Add-ons (Lina's doc lines 29 and 80, Aria Oct 4 9:28): the nudge counts the FULL monthly total, plan +
+ * add-ons + tip, against the next step's price. It is only a nudge (no charge changes). `addonCents`
+ * also lowers the reachable tip: a tip above the add-on-lowered max (tipRangeFor) never nudges.
  */
 export function tipNudge(
   step: Pick<PlanStep, 'id' | 'rank' | 'monthlyCents' | 'sellable'>,
@@ -141,9 +140,8 @@ export function tipNudge(
   if (range && tipDollars > range.maxTip) return null
   const next = nextStepUp(step)
   if (!next || !next.sellable || next.adds.length === 0) return null
-  const total = Math.round(step.monthlyCents / 100) + tipDollars
-  const gap = Math.round(next.monthlyCents / 100) - total
-  if (gap > within) return null
+  const totalCents = step.monthlyCents + Math.max(0, addonCents) + tipDollars * 100
+  if (next.monthlyCents - totalCents > within * 100) return null
   return { next, perk: next.adds[0] }
 }
 

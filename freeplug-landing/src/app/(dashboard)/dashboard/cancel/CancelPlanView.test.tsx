@@ -106,6 +106,23 @@ describe('CancelPlanView', () => {
     ).toBeInTheDocument()
   })
 
+  it('Vera M-1 (Aria 9:28): add-ons the customer turned off are listed with their end date (reused line, the page date format), above the cancel button', () => {
+    const { unmount } = render(
+      <CancelPlanView data={data({ subscriptions: [sub({ endingAddons: { names: ['Big change'], effectiveAt: new Date('2026-11-03T15:00:00Z') } })] })} />
+    )
+    const line = screen.getByTestId('cancel-ending-addons')
+    expect(line).toHaveTextContent('Big change ends Nov 3, 2026.')
+    expect(line.compareDocumentPosition(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    unmount()
+    render(<CancelPlanView data={data({ subscriptions: [sub({ endingAddons: { names: ['+1 small edit', 'Big change'], effectiveAt: new Date('2026-11-03T15:00:00Z') } })] })} />)
+    expect(screen.getByTestId('cancel-ending-addons')).toHaveTextContent('+1 small edit, Big change end Nov 3, 2026.')
+  })
+
+  it('no add-on set to end: no line', () => {
+    render(<CancelPlanView data={data({ subscriptions: [sub({ endingAddons: null })] })} />)
+    expect(screen.queryByTestId('cancel-ending-addons')).toBeNull()
+  })
+
   it('Vera bug 4: a tipped plan shows plan + tip = total (Sable TIP_TOTAL_LINE); no tip keeps "$35.00/month"', () => {
     const { unmount } = render(
       <CancelPlanView

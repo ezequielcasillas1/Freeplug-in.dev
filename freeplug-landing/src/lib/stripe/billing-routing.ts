@@ -3,6 +3,9 @@ import { isLiveSubscriptionStatus } from './subscription-status'
 import { billingPortalSessionParams } from './portal'
 import { invoiceTipCents } from '../plans/tips'
 import { hasPendingSwitch } from './change-plan'
+import { addonRefundOf } from './addon-refund-info'
+
+type AddonRefundInfo = NonNullable<ReturnType<typeof addonRefundOf>>
 
 /**
  * Billing while a plan switch is planned (Aria, Oct 3 12:56).
@@ -72,6 +75,8 @@ export type InvoiceRow = {
   status: 'paid' | 'open' | 'uncollectible'
   hostedUrl: string | null
   pdfUrl: string | null
+  /** Aria, Oct 4 9:27: an add-on charge the self-heal refunded (the Plans page explains why). */
+  addonRefund?: AddonRefundInfo | null
 }
 
 /**
@@ -100,6 +105,7 @@ export async function listInvoicesForCustomer(
       status: inv.status,
       hostedUrl: inv.hosted_invoice_url ?? null,
       pdfUrl: inv.invoice_pdf ?? null,
+      addonRefund: addonRefundOf(inv as Parameters<typeof addonRefundOf>[0]),
     })
   }
   return rows

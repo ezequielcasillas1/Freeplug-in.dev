@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
+import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
 import { resumeEndingSubscriptions, resumeOutcomeFromLive, type ResumeOutcome } from '@/lib/stripe/resume-hosting'
 import { PortalNotConfiguredError } from '@/lib/stripe/portal'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH } from '@/lib/stripe/billing-routing'
@@ -13,7 +14,7 @@ import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewA
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
 import { addonById, type AddonId } from '@/lib/plans/ladder'
-import { ADDON_ERROR, ADDON_NAMES, ADDON_PENDING_REMOVAL, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonFinishing, addonKeepDone, addonOffDone, addonOnDone, addonPaymentFailed, addonRefunded, addonRefundFailed, addonsLockedBySwitch } from '@/lib/plans/ladder-copy'
+import { ADDON_ERROR, ADDON_NAMES, ADDON_PRICE_UNCONFIRMED, ADDON_PENDING_REMOVAL, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonFinishing, addonKeepDone, addonOffDone, addonOnDone, addonPaymentFailed, addonRefunded, addonRefundFailed, addonsLockedBySwitch } from '@/lib/plans/ladder-copy'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
 import { syncPlanSnapshotForCustomer } from '@/lib/stripe/sync-checkout-customer'
@@ -458,6 +459,7 @@ function addonRefusalMessage(
   if (code === 'pending_switch') return addonsLockedBySwitch(switchAt ? formatPlanEndDate(new Date(switchAt)) : null)
   if (code === 'pending_addons') return ADDON_PENDING_REMOVAL
   if (code === 'over_cap') return ADDON_TURN_OFF_FIRST
+  if (code === 'price_mismatch') return ADDON_PRICE_UNCONFIRMED
   if (code === 'no_addon_plan') return ADDONS_LEGACY_NOTE
   if (code === 'ending') return CHANGE_PLAN_ENDING
   if (code === 'stale_preview') return UPGRADE_PREVIEW_EXPIRED
@@ -557,7 +559,14 @@ async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { pro
     if (r.code === 'tip_drop_needed') return { ok: false, message: `${ADDON_NAMES[addonId]}: ${r.message}`, code: 'tip_drop_needed', tipDollars: r.tipDollars }
     if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }
     if (r.code === 'in_progress') return { ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' }
-    if (r.code === 'not_applied') return { ok: false, message: r.refunded ? addonRefunded(name) : addonRefundFailed(name) }
+    if (r.code === 'not_applied') {
+      if (!r.refunded) return { ok: false, message: addonRefundFailed(name) }
+      // Aria 9:27: the email too (once per invoice; the invoice.paid webhook may also try, the ledger sends once).
+      if (r.invoiceId) {
+        await sendAddonRefundNoticeOnce(stripe, r.invoiceId).catch((e: unknown) => console.error('[changeAddon] refund notice failed', e instanceof Error ? e.message : e))
+      }
+      return { ok: false, message: addonRefunded(name, r.refundCardCents ?? 0, r.refundCreditCents ?? 0) }
+    }
     // Paid, not on yet: the invoice.paid self-heal adds it (or refunds automatically).
     if (r.code === 'finishing') return { ok: false, message: addonFinishing(name), code: 'finishing' }
     return { ok: false, message: addonRefusalMessage(r.code, addonId, 'switchAt' in r ? r.switchAt : null) }

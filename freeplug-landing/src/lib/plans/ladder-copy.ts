@@ -392,7 +392,8 @@ export const BIG_CHANGE_BIGGER_NOTE = "Need something bigger, like a new page or
 /** [Sable, approved] Gray charge note on each live add-on card; {price} from ADDONS. */
 export function addonChargeNote(cents: number): string {
   const price = dollars(cents)
-  return `Turning it on charges ${price} now for this billing period, then ${price} each month. If you turn it off, it stays on until the period ends.`
+  // Sable, Oct 4 9:29: "today" (same verb as the confirm) + the credit sentence; the confirm shows the exact amount.
+  return `Turning it on charges ${price} today for this billing period, then ${price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.`
 }
 /**
  * [Sable, approved] Help chat review step: a Starter plan without the +1 small edit add-on asks for a
@@ -404,8 +405,8 @@ export function starterSmallEditAddonLine(show: boolean = showAiEditQuota): stri
   return show ? `${base} Or make the change yourself with the AI builder, at no extra cost.` : base
 }
 export const addonPriceLine = (cents: number) => `${dollars(cents)}/month`
-/** New checkout (no plan yet): turning one on would push Starter past its total; the tip drops right away. */
-export const addonTipDropQuestion = (tipDollars: number, name: string) => `Your tip will drop to $${tipDollars}. Turn on ${name}?`
+/** New checkout (no plan yet): turning one on would push Starter past its total; the tip goes down right away (Sable 9:29: same verb). */
+export const addonTipDropQuestion = (tipDollars: number, name: string) => `Your tip goes down to $${tipDollars}. Turn on ${name}?`
 export const ADDON_TURN_ON = 'Turn on'
 /** Tip card next to the add-ons block: the tip amount only (the one total is in the action area). */
 export const tipAmountLine = (tipDollars: number) => (tipDollars > 0 ? `$${tipDollars} tip` : 'No tip')
@@ -422,11 +423,18 @@ export const addonChargeAfterCreditLine = (amountDueCents: number) => `We'll cha
 export const ADDON_CREDIT_COVERS = 'Nothing is charged today. Your account credit covers it.'
 export const addonThenLine = (nextCents: number, date: string | null) =>
   date ? `Then ${dollars(nextCents)}/month starting ${date}.` : `Then ${dollars(nextCents)}/month.`
+/**
+ * Aria, Oct 4 9:27: a charge above $0 and below Stripe's $0.50 minimum (account credit pays the rest)
+ * is not charged now; it goes on the next monthly bill.
+ */
+export const addonAddedToNextBill = (cents: number) => `${dollars(cents)} will be added to your next bill.`
+/** Aria 9:27: the charge total isn't exactly the add-on price (a discount or tax on the account): refused. */
+export const ADDON_PRICE_UNCONFIRMED = "We couldn't confirm this price. Please contact us."
 /** The preview failed: the add-on's full price is the most it can charge (credit can only lower it). */
 export const addonChargeUpToLine = (priceCents: number) => `We'll charge up to ${dollars(priceCents)} today for this billing period.`
 /** Live plan, Starter tip drop: the tip goes down from the next renewal (this period's tip is already paid). */
 export const addonTipGoesDownQuestion = (tipDollars: number, date: string | null, name: string) =>
-  date ? `Your tip goes down to $${tipDollars} starting ${date}. Turn on ${name}?` : `Your tip goes down to $${tipDollars} starting your next bill. Turn on ${name}?`
+  date ? `Your tip goes down to $${tipDollars} starting ${date}. Turn on ${name}?` : `Your tip goes down to $${tipDollars} starting with your next bill. Turn on ${name}?`
 // Turn off and keep.
 export const addonOffQuestion = (name: string, date: string | null) =>
   date ? `Turn off ${name}? It stays on until ${date}, then it ends.` : `Turn off ${name}? It stays on until the end of this billing period.`
@@ -448,8 +456,39 @@ export const addonPaymentFailed = (name: string) =>
 /** Paid, the add-on not on yet: the self-heal (invoice.paid webhook) finishes it or refunds automatically. */
 export const addonFinishing = (name: string) =>
   `Your payment went through. We're finishing turning on ${name}. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically.`
-export const addonRefunded = (name: string) =>
-  `We couldn't turn on ${name}, so we've refunded the charge to your card. It can take 5–10 business days to show.`
+/**
+ * Sable, Oct 4 9:29: the refund line split by where the money went (card part = what the card paid,
+ * credit part = what account credit paid; refundAddonCharge returns both).
+ */
+export function addonRefundSplitLine(cardCents: number, creditCents: number): string {
+  if (cardCents > 0 && creditCents > 0) return `We refunded ${dollars(cardCents)} to your card and added ${dollars(creditCents)} back to your account credit.`
+  if (creditCents > 0) return `We added ${dollars(creditCents)} back to your account credit.`
+  return `We refunded ${dollars(cardCents)} to your card.`
+}
+/** "5–10 business days" only when money went back to a card. */
+const cardRefundDelay = (cardCents: number) => (cardCents > 0 ? ' It can take 5–10 business days to show.' : '')
+export const addonRefunded = (name: string, cardCents: number, creditCents: number) =>
+  `We couldn't turn on ${name}. ${addonRefundSplitLine(cardCents, creditCents)}${cardRefundDelay(cardCents)}`
+/**
+ * Aria, Oct 4 9:27: why an add-on charge was refunded automatically (self-heal), in plain words, so the
+ * money never just looks like it vanished. Shown on the Plans page and in the refund email.
+ */
+export type AddonRefundReason = 'switch_pending' | 'removal_pending' | 'period_ended' | 'tip_unconfirmed' | 'plan_ended' | 'not_added'
+export const ADDON_REFUND_REASONS: Record<AddonRefundReason, (name: string) => string> = {
+  switch_pending: (name) => `We couldn't turn on ${name} because a plan switch was already scheduled. Add-ons can't change until the switch happens.`,
+  removal_pending: (name) => `We couldn't turn on ${name} because another add-on was already set to end. Add-ons can't change until it ends.`,
+  period_ended: (name) => `We couldn't turn on ${name} because the billing period you paid for ended before we could add it.`,
+  tip_unconfirmed: (name) => `We couldn't turn on ${name} because it would have lowered your tip, and you hadn't agreed to that.`,
+  plan_ended: (name) => `We couldn't turn on ${name} because your hosting plan has ended or is set to end.`,
+  not_added: (name) => `We couldn't turn on ${name} because of a problem adding it to your plan.`,
+}
+export const isAddonRefundReason = (v: unknown): v is AddonRefundReason => typeof v === 'string' && Object.hasOwn(ADDON_REFUND_REASONS, v)
+/** Plans page note and the email line: the reason, then where the money went. */
+export const addonRefundNote = (name: string, reason: AddonRefundReason, cardCents: number, creditCents: number) =>
+  `${ADDON_REFUND_REASONS[isAddonRefundReason(reason) ? reason : 'not_added'](name)} ${addonRefundSplitLine(cardCents, creditCents)}${cardRefundDelay(cardCents)}`
+/** Refund email (self-heal): subject and the closing line. */
+export const addonRefundEmailSubject = (name: string) => `We couldn't turn on ${name}`
+export const ADDON_REFUND_EMAIL_HELP = 'Questions? Email support@freeplug-in.dev.'
 export const addonRefundFailed = (name: string) =>
   `We couldn't turn on ${name}, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge.`
 /** Server refusals (no date known): the same lock lines. */

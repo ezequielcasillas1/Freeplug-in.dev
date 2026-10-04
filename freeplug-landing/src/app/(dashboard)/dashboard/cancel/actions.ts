@@ -7,6 +7,7 @@ import { stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subsc
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
 import { stepById } from '@/lib/plans/ladder'
+import { ADDON_NAMES } from '@/lib/plans/ladder-copy'
 import { planDisplayName } from '@/lib/stripe/plan-line'
 import { tierItems, tipDollarsOfItems } from '@/lib/plans/tips'
 import { addonCentsOfItems } from '@/lib/plans/addons'
@@ -34,6 +35,8 @@ export type SubscriptionInfo = {
   canceledAt: Date | null
   /** A ladder downgrade waiting for the next billing date (subscription schedule), else null. */
   pendingChange?: { stepName: string; effectiveAt: Date } | null
+  /** Add-ons the customer turned off that end at period end (Vera M-1, Aria Oct 4 9:28), else null. */
+  endingAddons?: { names: string[]; effectiveAt: Date } | null
 }
 
 export type CancelPageData = {
@@ -164,6 +167,8 @@ async function loadSubscriptions(
         const pending = await pendingPlanChange(stripe, sub).catch(() => null)
         // Only a step switch reads as "your switch to X" (an add-on that ends is not a plan change).
         info.pendingChange = pending?.isSwitch ? { stepName: stepById(pending.step).name, effectiveAt: new Date(pending.effectiveAt) } : null
+        // Vera M-1: turned-off add-ons are listed with their end date (a resume keeps them ending).
+        info.endingAddons = pending && pending.removedAddons.length > 0 ? { names: pending.removedAddons.map((a) => ADDON_NAMES[a]), effectiveAt: new Date(pending.effectiveAt) } : null
       }
       subscriptions.push(info)
     }

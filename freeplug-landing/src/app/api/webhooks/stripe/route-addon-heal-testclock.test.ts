@@ -17,6 +17,17 @@ const h = vi.hoisted(() => ({
   event: null as unknown,
   ledger: [] as { stripe_invoice_id: string; amount_cents: number }[],
   total: 0,
+  /** email_sends rows (the real claim / finish RPC shape): `${stripe_event_id}|${template}`. */
+  emailRows: new Map<string, { id: string; status: string }>(),
+  emails: [] as { to: string; addonName: string; note: string; key?: string }[],
+}))
+// No real email (tests only): the Resend send is a spy; the email_sends ledger is the real code below.
+vi.mock('@/lib/email/send', async (orig) => ({
+  ...(await orig<typeof import('@/lib/email/send')>()),
+  sendAddonRefundedEmail: async (to: string, p: { addonName: string; note: string }, o?: { idempotencyKey?: string }) => {
+    h.emails.push({ to, ...p, key: o?.idempotencyKey })
+    return { success: true as const, id: `re_${h.emails.length}` }
+  },
 }))
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => ({ ...h.sim!.client(), webhooks: { constructEventAsync: async () => h.event } }),
@@ -38,9 +49,28 @@ vi.mock('@/lib/supabase/admin', () => ({
     rpc: async (fn: string, args: { p_user_id: string; p_ttl_seconds?: number; p_claim_id?: string }) => {
       if (fn === 'plan_change_lock_claim') return { data: await h.sim!.lockStore.claim(args.p_user_id, args.p_ttl_seconds ?? 60), error: null }
       if (fn === 'plan_change_lock_release') return { data: (await h.sim!.lockStore.release(args.p_user_id, args.p_claim_id!), true), error: null }
+      if (fn === 'email_send_claim') {
+        const a = args as unknown as { p_stripe_event_id: string; p_template: string }
+        const k = `${a.p_stripe_event_id}|${a.p_template}`
+        if (h.emailRows.has(k)) return { data: [], error: null }
+        const id = `es_${h.emailRows.size + 1}`
+        h.emailRows.set(k, { id, status: 'pending' })
+        return { data: [{ id, attempts: 1 }], error: null }
+      }
+      if (fn === 'email_send_finish') {
+        const a = args as unknown as { p_id: string; p_status: string }
+        for (const r of h.emailRows.values()) if (r.id === a.p_id) r.status = a.p_status
+        return { data: true, error: null }
+      }
       throw new Error(`unexpected rpc ${fn}`)
     },
     from: (table: string) => {
+      if (table === 'outreach_sites' || table === 'outreach_events') {
+        const q: Record<string, unknown> = {}
+        for (const m of ['select', 'eq', 'is', 'in', 'order', 'limit']) q[m] = () => q
+        q.maybeSingle = async () => ({ data: null, error: null })
+        return q
+      }
       if (table === 'profiles') {
         const q = {
           select: () => q,
@@ -68,7 +98,10 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import { POST } from './route'
-import { changeAddon } from '@/lib/stripe/change-plan'
+import { changeAddon, previewAddonChange } from '@/lib/stripe/change-plan'
+import { listInvoicesForCustomer } from '@/lib/stripe/billing-routing'
+import { recentAddonRefundNotes } from '@/components/plans/AddonRefundNotes'
+import { ADDON_NAMES, ADDON_REFUND_REASONS, addonAddedToNextBill, addonRefundNote, type AddonRefundReason } from '@/lib/plans/ladder-copy'
 
 const USER = '11111111-2222-4333-8444-555555555555'
 const T0 = Math.floor(new Date('2026-10-04T14:00:00Z').getTime() / 1000)
@@ -101,6 +134,8 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'x'
     h.ledger.length = 0
     h.total = 0
+    h.emailRows.clear()
+    h.emails.length = 0
     vi.spyOn(console, 'info').mockImplementation(() => undefined)
     vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
@@ -156,5 +191,189 @@ describe('simulated test clock: crash between paying and adding, healed by invoi
     expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: paid.data.object.id, amount: 575, refund_amount: 575 })])
     expect(sim.invoice(paid.data.object.id).metadata.addon_refunded).toBe('true')
     expect(h.total).toBe(575) // refunds stay counted for now (src/pending-later.txt)
+  })
+
+  // ---------------------------------------------------------------- Aria, Oct 4 9:27 AM CT
+
+  it('ruling 4: the SAME event id delivered again after a success is a no-op: no second add, no second refund, no second ledger row', async () => {
+    const sim = (h.sim = createStripeSim({ nowSec: T0 }))
+    sim.addCustomer('cus_1')
+    sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', periodStart: T0 - 10 * 86_400 })
+    const paid = await crashAfterPay(sim, 'big_change')
+    sim.advance(61)
+    expect(await deliver(paid)).toBe(200)
+    expect(addonItems(sim, 'big_change')).toHaveLength(1)
+    const writes = () => sim.log.filter((c) => /subscriptions\.update|creditNotes\.create|invoices\.create/.test(c)).length
+    const before = writes()
+    for (let i = 0; i < 3; i++) expect(await deliver(paid)).toBe(200) // same event object, same evt_ id
+    expect(paid.id).toMatch(/^evt_/)
+    expect(addonItems(sim, 'big_change')).toHaveLength(1)
+    expect(sim.creditNotes).toHaveLength(0)
+    expect(writes()).toBe(before)
+    expect(h.ledger).toEqual([expect.objectContaining({ stripe_invoice_id: paid.data.object.id, amount_cents: 575 })])
+    expect(h.total).toBe(575)
+    expect(h.emails).toHaveLength(0)
+  })
+
+  it('ruling 4, refund side: the same event id after a refund: still one credit note, one email, one ledger row', async () => {
+    const sim = (h.sim = createStripeSim({ nowSec: T0 }))
+    sim.addCustomer('cus_1')
+    sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', periodStart: T0 - 10 * 86_400 })
+    const paid = await crashAfterPay(sim, 'big_change')
+    sim.cancel('sub_1')
+    sim.advance(61)
+    for (let i = 0; i < 3; i++) expect(await deliver(paid)).toBe(200)
+    expect(sim.creditNotes).toHaveLength(1)
+    expect(h.emails).toHaveLength(1)
+    expect(h.emails[0]).toMatchObject({ to: 'cus_1@sim.invalid', key: `addon-refund:${paid.data.object.id}:addon-refunded` })
+    expect(h.ledger).toHaveLength(1)
+  })
+
+  // ruling 1: refunds in the three extra cases, logged, with a plain-English reason on the Plans page and in the email
+  const reasonCases: { name: string; reason: AddonRefundReason; sentence: string; setup: (sim: StripeSim) => Promise<void> | void; step: 'priority' | 'starter'; addon: AddonId; tip?: number; addons?: AddonId[] }[] = [
+    {
+      name: 'a plan switch was scheduled before the retry',
+      reason: 'switch_pending',
+      sentence: "We couldn't turn on Big change because a plan switch was already scheduled. Add-ons can't change until the switch happens.",
+      step: 'priority',
+      addon: 'big_change',
+      setup: async (sim) => {
+        const c = sim.client()
+        const sc = await c.subscriptionSchedules.create({ from_subscription: 'sub_1' })
+        const ph = sc.phases[0]
+        await c.subscriptionSchedules.update(sc.id, {
+          phases: [
+            { items: ph.items, start_date: ph.start_date, end_date: ph.end_date },
+            { items: [{ price: SIM_PRICE_ID.step('starter'), quantity: 1 }], metadata: { plan_step: 'starter', addons: '', tip_dollars: '0', kind: 'switch' } },
+          ],
+        })
+      },
+    },
+    {
+      name: 'an add-on removal was scheduled before the retry',
+      reason: 'removal_pending',
+      sentence: "We couldn't turn on Big change because another add-on was already set to end. Add-ons can't change until it ends.",
+      step: 'priority',
+      addon: 'big_change',
+      addons: ['small_edit'],
+      setup: async (sim) => {
+        const c = sim.client()
+        const sc = await c.subscriptionSchedules.create({ from_subscription: 'sub_1' })
+        const ph = sc.phases[0]
+        await c.subscriptionSchedules.update(sc.id, {
+          phases: [
+            { items: ph.items, start_date: ph.start_date, end_date: ph.end_date },
+            { items: [{ price: SIM_PRICE_ID.step('priority'), quantity: 1 }], metadata: { plan_step: 'priority', addons: '', tip_dollars: '0', kind: 'addons' } },
+          ],
+        })
+      },
+    },
+    {
+      name: 'the billing period ended before the retry',
+      reason: 'period_ended',
+      sentence: "We couldn't turn on Big change because the billing period you paid for ended before we could add it.",
+      step: 'priority',
+      addon: 'big_change',
+      setup: (sim) => sim.advance(21 * 86_400),
+    },
+    {
+      name: 'a tip drop the customer never confirmed would now be needed',
+      reason: 'tip_unconfirmed',
+      sentence: "We couldn't turn on +1 small edit because it would have lowered your tip, and you hadn't agreed to that.",
+      step: 'starter',
+      addon: 'small_edit',
+      tip: 9,
+      setup: async (sim) => {
+        // the tip went up to $19 after the charge: now Starter's $54 needs it at $14, which wasn't confirmed
+        const tipItem = sim.sub('sub_1').items.data.find((i) => i.price.id === SIM_PRICE_ID.tip)!
+        await sim.client().subscriptions.update('sub_1', { items: [{ id: tipItem.id, quantity: 19 }], proration_behavior: 'none' })
+      },
+    },
+  ]
+  it.each(reasonCases)('ruling 1: $reason ($name): refunded once, logged, the reason on the Plans page and in the email', async (c) => {
+    const sim = (h.sim = createStripeSim({ nowSec: T0 }))
+    sim.addCustomer('cus_1')
+    sim.addSub({ id: 'sub_1', customer: 'cus_1', step: c.step, addons: c.addons, tip: c.tip, periodStart: T0 - 10 * 86_400 })
+    const paid = await crashAfterPay(sim, c.addon)
+    await c.setup(sim)
+    sim.advance(61)
+    const logs: string[] = []
+    ;(console.error as unknown as { mockImplementation: (f: (...a: unknown[]) => void) => void }).mockImplementation((...a) => logs.push(a.join(' ')))
+    ;(console.info as unknown as { mockImplementation: (f: (...a: unknown[]) => void) => void }).mockImplementation((...a) => logs.push(a.join(' ')))
+    expect(await deliver(paid)).toBe(200)
+    expect(await deliver(paid)).toBe(200)
+    const cents = c.addon === 'big_change' ? 575 : 500
+    expect(sim.creditNotes).toEqual([expect.objectContaining({ invoice: paid.data.object.id, amount: cents, refund_amount: cents })])
+    expect(sim.invoice(paid.data.object.id).metadata).toMatchObject({ addon_refunded: 'true', addon_refund_reason: c.reason, addon_refund_card_cents: String(cents), addon_refund_credit_cents: '0' })
+    expect(logs.join('\n')).toContain(`add-on charge ${paid.data.object.id} refunded`)
+    // the reason, in plain words, then where the money went
+    const name = ADDON_NAMES[c.addon]
+    expect(ADDON_REFUND_REASONS[c.reason](name)).toBe(c.sentence)
+    const note = `${c.sentence} We refunded ${cents === 575 ? '$5.75' : '$5'} to your card. It can take 5–10 business days to show.`
+    expect(addonRefundNote(name, c.reason, cents, 0)).toBe(note)
+    expect(h.emails).toEqual([expect.objectContaining({ addonName: name, note })])
+    const rows = await listInvoicesForCustomer(sim.client() as unknown as Stripe, 'cus_1')
+    expect(recentAddonRefundNotes(rows, sim.now())).toEqual([{ id: paid.data.object.id, text: note }])
+  })
+
+  it('ruling 1, credit paid part of it: the note and email split card and account credit (Sable 9:29)', async () => {
+    const sim = (h.sim = createStripeSim({ nowSec: T0 }))
+    sim.addCustomer('cus_1', 200)
+    sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', periodStart: T0 - 10 * 86_400 })
+    const paid = await crashAfterPay(sim, 'big_change')
+    expect(paid.data.object).toMatchObject({ total: 575, amount_paid: 375 })
+    sim.cancel('sub_1')
+    sim.advance(61)
+    expect(await deliver(paid)).toBe(200)
+    expect(sim.creditNotes).toEqual([expect.objectContaining({ amount: 575, refund_amount: 375, credit_amount: 200 })])
+    expect(sim.customer('cus_1').balance).toBe(-200) // the $2 of credit is back
+    const note = "We couldn't turn on Big change because your hosting plan has ended or is set to end. We refunded $3.75 to your card and added $2 back to your account credit. It can take 5–10 business days to show."
+    expect(h.emails.map((e) => e.note)).toEqual([note])
+  })
+
+  it('ruling 3: under $0.50 after credit: no charge now, the add-on is on, the amount rides on the next bill and reaches Total Paid only when that invoice is paid', async () => {
+    const sim = (h.sim = createStripeSim({ nowSec: T0 }))
+    sim.addCustomer('cus_1', 540) // $5.40 credit: Big change ($5.75) would charge $0.35 today
+    sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', periodStart: T0 - 10 * 86_400 })
+    const deps = { stripe: sim.client() as unknown as Stripe, addonPriceIdFor: async (id: AddonId) => SIM_PRICE_ID.addon(id), now: sim.now, log: () => {} }
+    const preview = await previewAddonChange(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', sim.nowSec())
+    expect(preview).toMatchObject({ ok: true, amountDueCents: 35, fullCents: 575, nextAmountCents: 6075 })
+    expect(addonAddedToNextBill(35)).toBe('$0.35 will be added to your next bill.')
+    const r = await changeAddon(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', { userId: USER, prorationDate: sim.nowSec() })
+    expect(r).toEqual({ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: null, invoiceId: null, deferredCents: 35 })
+    // no immediate charge: no invoice, no invoice.paid, credit untouched, nothing in Total Paid
+    expect(sim.invoices()).toHaveLength(0)
+    expect(sim.events).toHaveLength(0)
+    expect(sim.customer('cus_1').balance).toBe(-540)
+    expect(addonItems(sim, 'big_change')).toHaveLength(1)
+    expect(sim.pendingLines('sub_1')).toEqual([expect.objectContaining({ amount: 575 })])
+    expect(h.ledger).toHaveLength(0)
+    expect(h.total).toBe(0)
+    // the renewal: $55 + $5.75 + the $5.75 first period - $5.40 credit = $60.75 + $0.35
+    sim.advance(21 * 86_400)
+    const renewal = sim.events.find((e) => e.data.object.billing_reason === 'subscription_cycle')!
+    expect(renewal.data.object).toMatchObject({ total: 6650, amount_paid: 6110 })
+    expect(h.total).toBe(0) // still not counted until the paid invoice is booked
+    expect(await deliver(renewal)).toBe(200)
+    expect(h.ledger).toEqual([expect.objectContaining({ stripe_invoice_id: renewal.data.object.id, amount_cents: 6075 + 35 })])
+    expect(h.total).toBe(6110)
+    // a retry of the same request is a replay: still one item, nothing on the bill twice
+    await changeAddon(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', { userId: USER, prorationDate: sim.nowSec() })
+    expect(addonItems(sim, 'big_change')).toHaveLength(1)
+  })
+
+  it('ruling 3, the edges: exactly $0.50 is charged now; $0 (credit covers all) is a paid $0 invoice, nothing on the next bill', async () => {
+    for (const [credit, expectInvoice] of [[525, true], [575, true]] as const) {
+      const sim = (h.sim = createStripeSim({ nowSec: T0 }))
+      sim.addCustomer('cus_1', credit)
+      sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', periodStart: T0 - 10 * 86_400 })
+      const deps = { stripe: sim.client() as unknown as Stripe, addonPriceIdFor: async (id: AddonId) => SIM_PRICE_ID.addon(id), now: sim.now, log: () => {} }
+      const r = await changeAddon(deps, sim.sub('sub_1') as unknown as SubArg, 'big_change', 'on', { userId: USER, prorationDate: sim.nowSec() })
+      expect(r).toMatchObject({ ok: true, kind: 'on' })
+      expect(r).not.toHaveProperty('deferredCents')
+      expect(sim.invoices().length > 0).toBe(expectInvoice)
+      expect(sim.pendingLines('sub_1')).toEqual([])
+      expect(sim.invoices()[0]).toMatchObject({ status: 'paid', amount_paid: 575 - credit })
+    }
   })
 })

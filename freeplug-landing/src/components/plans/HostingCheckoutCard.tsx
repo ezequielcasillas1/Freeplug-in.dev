@@ -762,7 +762,9 @@ export function HostingCheckoutCard({
       ) : liveAddons ? (
         <AddonsBlock
           mode="live"
-          stepId={selected.id}
+          // Sable (L-2, Oct 4 9:29): the live block follows the plan the customer is ON, not the row
+          // they're looking at (the switch acts on the current subscription).
+          stepId={currentStepId ?? selected.id}
           current={currentAddons}
           ending={endingAddons}
           endDate={endingAddonsDate}

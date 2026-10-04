@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { ADDONS, COMING_SOON_ADDONS, entitlementsFor, type AddonDef, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
+import { ADDON_MIN_CHARGE_CENTS } from '@/lib/plans/addons'
 import type { AddonPreviewResponse, ChangeAddonResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 import {
   ADDON_CANCEL,
@@ -23,6 +24,7 @@ import {
   ADDON_CREDIT_COVERS,
   addonChargeAfterCreditLine,
   addonChargeNote,
+  addonAddedToNextBill,
   addonChargeNowLine,
   addonChargeUpToLine,
   addonEndsLine,
@@ -39,6 +41,8 @@ import {
 /** [Sable 9:05] What turning it on charges today, from the server's Stripe preview (credit applied). */
 export function addonChargeTodayLine(amountDueCents: number, fullCents: number): string {
   if (amountDueCents <= 0) return ADDON_CREDIT_COVERS
+  // Aria 9:27: under Stripe's $0.50 minimum it isn't charged today; it goes on the next bill.
+  if (amountDueCents < ADDON_MIN_CHARGE_CENTS) return addonAddedToNextBill(amountDueCents)
   return amountDueCents < fullCents ? addonChargeAfterCreditLine(amountDueCents) : addonChargeNowLine(amountDueCents)
 }
 
@@ -498,7 +502,11 @@ export function AddonsBlock(props: Props) {
           {notice}
         </p>
       ) : null}
-      {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p className="mt-2 text-sm text-red-600" data-testid="addons-error">
+          {error}
+        </p>
+      ) : null}
     </section>
   )
 }

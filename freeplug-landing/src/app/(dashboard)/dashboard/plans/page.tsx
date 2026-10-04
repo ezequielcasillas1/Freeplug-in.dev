@@ -13,6 +13,7 @@ import { changeAddonAction, changeHostingPlan, changeTipAction, previewAddonChan
 import { BILLING_PENDING_NOTICE, BILLING_UNAVAILABLE, CARD_UPDATED_NOTICE, DASHBOARD_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 import { stepById } from '@/lib/plans/ladder'
 import { BillingTools } from '@/components/plans/BillingTools'
+import { AddonRefundNotes } from '@/components/plans/AddonRefundNotes'
 import { listInvoicesForCustomer, type InvoiceRow } from '@/lib/stripe/billing-routing'
 
 type Props = { searchParams: Promise<{ billing?: string; card?: string }> }
@@ -155,6 +156,8 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
         {DASHBOARD_PLANS_INTRO}
       </p>
       <BillingNotices billing={billing} card={card} pendingChange={pendingChange} />
+      {/* Aria 9:27: why an add-on charge was refunded automatically (never money that just vanished). */}
+      <AddonRefundNotes invoices={invoices} />
       {/* Lina §1: the ladder full width (columns from lg), Maintenance below it, then Billing. */}
       <div className="space-y-8 max-w-4xl">
         <HostingCheckoutCard

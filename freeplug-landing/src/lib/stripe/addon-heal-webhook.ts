@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
 import type { AddonId } from '../plans/ladder'
 import { withPlanChangeLock, type PlanChangeLockStore } from '../plans/plan-change-lock'
-import { ADDON_APPLIED_META, ADDON_FIRST_PERIOD_KIND, ADDON_REFUNDED_META, healAddonCharge, type AddonHealResult } from './change-plan'
+import { ADDON_APPLIED_META, ADDON_FIRST_PERIOD_KIND, ADDON_REFUNDED_META, addonRefundOf, healAddonCharge, type AddonHealResult } from './change-plan'
 
 /**
  * invoice.paid self-heal for the add-on first-period charge (Aria, Oct 4 8:59 AM CT).
@@ -23,6 +23,12 @@ export type AddonHealWebhookDeps = {
   /** How long to wait for a held lock (default 8 s, polled every 500 ms). */
   lockWaitMs?: number
   sleep?: (ms: number) => Promise<void>
+  /**
+   * Aria, Oct 4 9:27: tell the customer why (email, once per invoice through the email_sends ledger).
+   * Called for every refunded charge, also a redelivery that finds it already refunded (the ledger sends
+   * once). Never fails the webhook: an error is logged.
+   */
+  notifyRefund?: (invoiceId: string) => Promise<unknown>
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -32,12 +38,28 @@ export const isAddonChargeInvoice = (inv: Pick<Stripe.Invoice, 'metadata'>) => i
 export async function healAddonChargeFromWebhook(deps: AddonHealWebhookDeps, inv: Pick<Stripe.Invoice, 'id' | 'metadata'>): Promise<AddonHealResult> {
   if (!isAddonChargeInvoice(inv) || !inv.id) return { outcome: 'not_addon' }
   const log = deps.log ?? ((m: string) => console.error(m))
+  const r = await healUnderLock(deps, inv as Pick<Stripe.Invoice, 'metadata'> & { id: string }, log)
+  if ((r.outcome === 'refunded' || r.outcome === 'already_refunded') && deps.notifyRefund) {
+    try {
+      const sent = await deps.notifyRefund(inv.id)
+      log(`[addon-heal] ${inv.id}: refund notice ${String(sent)}`)
+    } catch (e) {
+      log(`[addon-heal] ${inv.id}: refund notice failed (${e instanceof Error ? e.message : String(e)})`)
+    }
+  }
+  return r
+}
+
+async function healUnderLock(deps: AddonHealWebhookDeps, inv: Pick<Stripe.Invoice, 'metadata'> & { id: string }, log: (m: string) => void): Promise<AddonHealResult> {
   const run = () => healAddonCharge({ stripe: deps.stripe, addonPriceIdFor: deps.addonPriceIdFor, log, now: deps.now }, inv.id as string)
   // Already finished (the usual case for a retry or duplicate): answer from the fresh invoice, no lock.
   const fresh = await deps.stripe.invoices.retrieve(inv.id)
   const marks = (fresh.metadata ?? {}) as Record<string, string | undefined>
   if (marks[ADDON_APPLIED_META]) return { outcome: 'already_applied' }
-  if (marks[ADDON_REFUNDED_META]) return { outcome: 'already_refunded' }
+  if (marks[ADDON_REFUNDED_META]) {
+    const r = addonRefundOf(fresh as Parameters<typeof addonRefundOf>[0])
+    return { outcome: 'already_refunded', refundReason: r?.reason, cardCents: r?.cardCents, creditCents: r?.creditCents }
+  }
   const userId = fresh.metadata?.user_id ?? inv.metadata?.user_id ?? ''
   if (!deps.lockStore || !UUID.test(userId)) return run()
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)))

@@ -84,3 +84,9 @@ export function addonCapCheck(stepId: PlanStepId, addons: readonly { id: AddonId
 export function addonCentsInTipTotal(stepId: PlanStepId, addonCents: number): number {
   return ADDON_STEP_LIMITS[stepId]?.addonsInTipTotal ? Math.max(0, addonCents) : 0
 }
+
+/**
+ * Stripe's minimum charge in USD (Aria, Oct 4 9:27): turning an add-on on when what it would charge today
+ * is above $0 and below this is not charged now; the amount goes on the next monthly bill.
+ */
+export const ADDON_MIN_CHARGE_CENTS = 50

@@ -244,7 +244,8 @@ describe('turning an add-on ON: charged now, once each, never a silent tip drop'
     const f = fake({ after })
     const r = await changeAddon(deps(f), sub('priority'), 'big_change', 'on', { prorationDate: NOW_S - 10, userId: 'u1' })
     expect(r).toEqual({ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: 'paid', invoiceId: 'in_addon' })
-    expect(f.calls).toEqual(['invoices.create', 'invoiceItems.create', 'invoices.finalize', 'invoices.pay', 'subscriptions.update', 'subscriptions.retrieve', 'invoices.update'])
+    // a read first (Aria 9:27: the price and the amount after credit), then the charge
+    expect(f.calls).toEqual(['invoices.createPreview', 'invoices.create', 'invoiceItems.create', 'invoices.finalize', 'invoices.pay', 'subscriptions.update', 'subscriptions.retrieve', 'invoices.update'])
     // marked applied on the invoice (the self-heal then never adds it again)
     expect(f.inv.metadata.addon_applied).toBe('si_big_change')
     const [, params, o] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams, { idempotencyKey: string }]
@@ -283,7 +284,7 @@ describe('turning an add-on ON: charged now, once each, never a silent tip drop'
   })
   it('Stripe answered but the live subscription lacks the add-on: never "on"; the self-heal tries once more, then refunds', async () => {
     const f = fake({ after: sub('priority') })
-    expect(await changeAddon(deps(f), sub('priority'), 'small_edit', 'on')).toEqual({ ok: false, code: 'not_applied', message: 'Stripe did not add the add-on.', refunded: true })
+    expect(await changeAddon(deps(f), sub('priority'), 'small_edit', 'on')).toEqual({ ok: false, code: 'not_applied', message: 'Stripe did not add the add-on.', refunded: true, refundCardCents: 500, refundCreditCents: 0, invoiceId: 'in_addon' })
     expect(f.raw.subscriptions.update).toHaveBeenCalledTimes(2)
     expect((f.raw.subscriptions.update.mock.calls[1] as unknown as [string, unknown, { idempotencyKey: string }])[2].idempotencyKey).toMatch(/:heal$/)
     expect(f.inv.metadata.addon_refunded).toBe('true')
@@ -323,7 +324,8 @@ describe('Aria, Oct 4 8:28 AM: turning on charges the FULL price now, never a pa
     const [, params] = f.raw.subscriptions.update.mock.calls[0] as unknown as [string, Stripe.SubscriptionUpdateParams]
     expect(params.proration_behavior).toBe('none')
     expect(params).not.toHaveProperty('proration_date')
-    expect(f.raw.invoices.createPreview).not.toHaveBeenCalled()
+    // only the add-on read preview (never a proration preview of the subscription)
+    for (const [p] of f.raw.invoices.createPreview.mock.calls as unknown as [Record<string, unknown>][]) expect(p).not.toHaveProperty('subscription')
     expect(renewalCents(after)).toBe(5500 + cents)
   })
   it('the confirm amount is the full price on any day (never a proration preview of the subscription)', async () => {
@@ -340,7 +342,7 @@ describe('Aria, Oct 4 8:28 AM: turning on charges the FULL price now, never a pa
   it('a declined card: the invoice is voided and the add-on stays off (the subscription is never touched)', async () => {
     const f = fake({ payDeclined: true })
     expect(await changeAddon(deps(f), sub('priority'), 'small_edit', 'on')).toMatchObject({ ok: false, code: 'payment_failed' })
-    expect(f.calls).toEqual(['invoices.create', 'invoiceItems.create', 'invoices.finalize', 'invoices.pay', 'invoices.void'])
+    expect(f.calls).toEqual(['invoices.createPreview', 'invoices.create', 'invoiceItems.create', 'invoices.finalize', 'invoices.pay', 'invoices.void'])
     expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
   })
   it('a charge left unpaid (bank wants 3D Secure): voided, add-on stays off', async () => {
@@ -349,11 +351,35 @@ describe('Aria, Oct 4 8:28 AM: turning on charges the FULL price now, never a pa
     expect(f.calls.slice(-1)).toEqual(['invoices.void'])
     expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
   })
-  it('an invoice whose total is not exactly the add-on price is voided before any charge', async () => {
+  it('an invoice whose total is not exactly the add-on price is voided before any charge (Aria 9:27 line, logged)', async () => {
     const f = fake({ finalTotal: 621 })
-    expect(await changeAddon(deps(f), sub('priority'), 'big_change', 'on')).toMatchObject({ ok: false, code: 'price' })
+    const logs: string[] = []
+    expect(await changeAddon({ ...deps(f), log: (m) => logs.push(m) }, sub('priority'), 'big_change', 'on')).toEqual({
+      ok: false,
+      code: 'price_mismatch',
+      message: "We couldn't confirm this price. Please contact us.",
+    })
     expect(f.raw.invoices.pay).not.toHaveBeenCalled()
     expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
+    expect(logs.some((m) => m.includes('PRICE NOT CONFIRMED'))).toBe(true)
+  })
+  it.each([
+    ['a discount on the account', 475],
+    ['tax on the account', 621],
+  ])('Aria 9:27, %s (the preview total is not the add-on price): refused before anything is created, logged', async (_why, total) => {
+    const f = fake({ previewTotal: total })
+    const logs: string[] = []
+    expect(await changeAddon({ ...deps(f), log: (m) => logs.push(m) }, sub('priority'), 'big_change', 'on', { prorationDate: NOW_S })).toEqual({
+      ok: false,
+      code: 'price_mismatch',
+      message: "We couldn't confirm this price. Please contact us.",
+    })
+    expect(f.calls).toEqual(['invoices.createPreview'])
+    expect(logs.join('\n')).toMatch(new RegExp(`PRICE NOT CONFIRMED .*total ${total} != 575`))
+    // the confirm keeps "up to" (the preview action throws; billing-actions falls back): see billing-actions-addons.test.ts
+    const logs2: string[] = []
+    await expect(previewAddonChange({ ...deps(f), log: (m) => logs2.push(m) }, sub('priority'), 'big_change', 'on', NOW_S)).rejects.toThrow(/preview total/)
+    expect(logs2.join('\n')).toMatch(/PRICE NOT CONFIRMED \(preview\)/)
   })
   it('charged, then Stripe refuses the item (a 400): refunded with a credit note, never left charged-and-off silently', async () => {
     const f = fake({ updateFails: 'refused', after: sub('priority') })

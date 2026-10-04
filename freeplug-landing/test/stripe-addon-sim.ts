@@ -6,6 +6,10 @@
  * invoice items, subscriptions (item add / quantity / delete, renewals when the clock passes the period
  * end), credit notes (capped at the invoice total; credit back to the balance), Stripe idempotency keys
  * (same key + same params = same result; other params = error) and invoice.paid events.
+ * Aria 9:27/9:28 round: add_invoice_items (one-off lines on the NEXT renewal invoice), subscription
+ * schedules (create from_subscription / update phases / release; the next phase's items apply at the
+ * renewal where it starts), cancel_at_period_end (refused while a schedule is attached, like Stripe; the
+ * subscription ends instead of renewing), subscription metadata (merge; '' unsets) and customers.retrieve.
  * A client can "crash" after a named call: every later call from that client throws, nothing runs.
  */
 import { ADDONS, PLAN_STEPS, TIP_LOOKUP_KEY, TIP_PRODUCT_ID, type AddonId, type PlanStepId } from '../src/lib/plans/ladder'
@@ -24,6 +28,19 @@ export type SimSub = {
   latest_invoice: string | null
   default_payment_method: string
   items: { object: 'list'; data: Item[] }
+  metadata: Record<string, string>
+}
+type SimPhase = { start_date: number; end_date: number; items: { price: string; quantity?: number }[]; metadata: Record<string, string> }
+export type SimSchedule = {
+  id: string
+  object: 'subscription_schedule'
+  status: 'active' | 'released'
+  subscription: string
+  customer: string
+  test_clock: null
+  end_behavior: string
+  current_phase: { start_date: number; end_date: number } | null
+  phases: SimPhase[]
 }
 export type SimInvoice = {
   id: string
@@ -72,7 +89,10 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
   for (const a of ADDONS) prices.set(SIM_PRICE_ID.addon(a.id), price(SIM_PRICE_ID.addon(a.id), a.lookupKey, a.productId, a.monthlyCents))
   prices.set(SIM_PRICE_ID.tip, price(SIM_PRICE_ID.tip, TIP_LOOKUP_KEY, TIP_PRODUCT_ID, 100))
 
-  const customers = new Map<string, { id: string; balance: number }>()
+  const customers = new Map<string, { id: string; balance: number; email: string | null }>()
+  const schedules = new Map<string, SimSchedule>()
+  /** add_invoice_items waiting for each subscription's next invoice. */
+  const pendingLines = new Map<string, { amount: number; description: string }[]>()
   const subs = new Map<string, SimSub>()
   const invoices = new Map<string, SimInvoice>()
   const creditNotes: { id: string; invoice: string; amount: number; refund_amount: number; credit_amount: number }[] = []
@@ -80,6 +100,7 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
   const idem = new Map<string, { params: string; result: unknown }>()
   const log: string[] = []
   const periodDays = 30 * 86_400
+  const previewAdjust = { cents: 0 }
 
   function emitPaid(inv: SimInvoice) {
     events.push({ id: nextId('evt'), type: 'invoice.paid', created: clock, data: { object: clone(inv) } })
@@ -150,11 +171,34 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
     return {
       subscriptions: {
         retrieve: (id: string) => call('subscriptions.retrieve', () => getSub(id)),
-        update: (id: string, p: { items?: { id?: string; price?: string; quantity?: number; deleted?: boolean }[]; proration_behavior?: string }, o: O = {}) =>
+        update: (
+          id: string,
+          p: {
+            items?: { id?: string; price?: string; quantity?: number; deleted?: boolean }[]
+            proration_behavior?: string
+            add_invoice_items?: { price_data: { currency: string; product: string; unit_amount: number }; quantity?: number }[]
+            cancel_at_period_end?: boolean
+            cancel_at?: number | ''
+            metadata?: Record<string, string>
+          },
+          o: O = {}
+        ) =>
           call('subscriptions.update', () =>
             idempotent(o.idempotencyKey, { id, p }, () => {
               const s = getSub(id)
               if (s.status !== 'active' && s.status !== 'trialing') throw err('StripeInvalidRequestError', `subscription ${id} is ${s.status}`, { statusCode: 400 })
+              if (p.cancel_at_period_end === true && s.schedule) throw err('StripeInvalidRequestError', 'subscription is managed by a schedule', { statusCode: 400 })
+              if (p.cancel_at_period_end !== undefined) Object.assign(s, { cancel_at_period_end: p.cancel_at_period_end, cancel_at: p.cancel_at_period_end ? s.items.data[0].current_period_end : null })
+              if (p.cancel_at === '') Object.assign(s, { cancel_at: null, cancel_at_period_end: false })
+              for (const [k, v] of Object.entries(p.metadata ?? {})) {
+                if (v === '') delete s.metadata[k]
+                else s.metadata[k] = v
+              }
+              for (const a of p.add_invoice_items ?? []) {
+                const list = pendingLines.get(id) ?? []
+                list.push({ amount: a.price_data.unit_amount * (a.quantity ?? 1), description: `one-off ${a.price_data.product}` })
+                pendingLines.set(id, list)
+              }
               for (const it of p.items ?? []) {
                 if (it.id && it.deleted) s.items.data = s.items.data.filter((x) => x.id !== it.id)
                 else if (it.id) s.items.data.find((x) => x.id === it.id)!.quantity = it.quantity ?? 1
@@ -171,9 +215,53 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
           ),
       },
       subscriptionSchedules: {
-        retrieve: (id: string) => call('subscriptionSchedules.retrieve', () => {
-          throw err('StripeInvalidRequestError', `No such schedule ${id}`, { code: 'resource_missing', statusCode: 404 })
-        }),
+        retrieve: (id: string) =>
+          call('subscriptionSchedules.retrieve', () => {
+            const sc = schedules.get(id)
+            if (!sc) throw err('StripeInvalidRequestError', `No such schedule ${id}`, { code: 'resource_missing', statusCode: 404 })
+            return sc
+          }),
+        create: (p: { from_subscription: string }) =>
+          call('subscriptionSchedules.create', () => {
+            const s = getSub(p.from_subscription)
+            if (s.schedule) throw err('StripeInvalidRequestError', 'subscription already has a schedule', { statusCode: 400 })
+            if (s.cancel_at_period_end) throw err('StripeInvalidRequestError', 'subscription is set to cancel', { statusCode: 400 })
+            const { current_period_start: start, current_period_end: end } = s.items.data[0]
+            const sc: SimSchedule = {
+              id: nextId('sub_sched'), object: 'subscription_schedule', status: 'active', subscription: s.id, customer: s.customer, test_clock: null, end_behavior: 'release',
+              current_phase: { start_date: start, end_date: end },
+              phases: [{ start_date: start, end_date: end, items: s.items.data.map((i) => ({ price: i.price.id, quantity: i.quantity })), metadata: {} }],
+            }
+            schedules.set(sc.id, sc)
+            s.schedule = sc.id
+            return sc
+          }),
+        update: (id: string, p: { phases: { items: { price: string; quantity?: number }[]; start_date?: number; end_date?: number; duration?: unknown; metadata?: Record<string, string> }[]; end_behavior?: string }) =>
+          call('subscriptionSchedules.update', () => {
+            const sc = schedules.get(id)
+            if (!sc || sc.status !== 'active') throw err('StripeInvalidRequestError', `schedule ${id} is not active`, { statusCode: 400 })
+            let prevEnd = 0
+            sc.phases = p.phases.map((ph) => {
+              const start = ph.start_date ?? prevEnd
+              const end = ph.end_date ?? start + periodDays
+              prevEnd = end
+              return { start_date: start, end_date: end, items: ph.items.map((i) => ({ price: i.price, quantity: i.quantity ?? 1 })), metadata: { ...(ph.metadata ?? {}) } }
+            })
+            if (p.end_behavior) sc.end_behavior = p.end_behavior
+            return sc
+          }),
+        release: (id: string) =>
+          call('subscriptionSchedules.release', () => {
+            const sc = schedules.get(id)
+            if (!sc || sc.status !== 'active') throw err('StripeInvalidRequestError', `schedule ${id} is not active`, { statusCode: 400 })
+            sc.status = 'released'
+            const s = subs.get(sc.subscription)
+            if (s && s.schedule === id) s.schedule = null
+            return sc
+          }),
+      },
+      customers: {
+        retrieve: (id: string) => call('customers.retrieve', () => ({ object: 'customer', ...customers.get(id)! })),
       },
       prices: { retrieve: (id: string) => call('prices.retrieve', () => prices.get(id)!) },
       invoices: {
@@ -196,6 +284,12 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
             })
           ),
         retrieve: (id: string) => call('invoices.retrieve', () => getInv(id)),
+        list: (p: { customer: string; limit?: number }) =>
+          call('invoices.list', () => ({
+            object: 'list',
+            has_more: false,
+            data: [...invoices.values()].filter((i) => i.customer === p.customer).sort((x, y) => y.created - x.created || (y.id > x.id ? 1 : -1)).slice(0, p.limit ?? 10),
+          })),
         update: (id: string, p: { metadata?: Record<string, string> }) =>
           call('invoices.update', () => {
             const inv = getInv(id)
@@ -206,7 +300,7 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
         del: (id: string) => call('invoices.del', () => (invoices.delete(id), { id, deleted: true })),
         createPreview: (p: { customer: string; subscription_details?: { items?: { price: string }[] } }) =>
           call('invoices.createPreview', () => {
-            const total = (p.subscription_details?.items ?? []).reduce((n, i) => n + prices.get(i.price)!.unit_amount, 0)
+            const total = (p.subscription_details?.items ?? []).reduce((n, i) => n + prices.get(i.price)!.unit_amount, 0) + previewAdjust.cents
             const bal = customers.get(p.customer)!.balance
             const credit = bal < 0 ? Math.min(-bal, total) : 0
             return { object: 'invoice', total, amount_due: total - credit, starting_balance: -credit, currency: 'usd' }
@@ -241,8 +335,8 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
     }
   }
 
-  function addCustomer(id: string, credit = 0) {
-    customers.set(id, { id, balance: -credit })
+  function addCustomer(id: string, credit = 0, email: string | null = `${id}@sim.invalid`) {
+    customers.set(id, { id, balance: -credit, email })
   }
   function addSub(o: { id: string; customer: string; step: PlanStepId; addons?: AddonId[]; tip?: number; periodStart: number }) {
     const end = o.periodStart + periodDays
@@ -251,7 +345,7 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
     if (o.tip) items.push(mk(SIM_PRICE_ID.tip, o.tip))
     const s: SimSub = {
       id: o.id, object: 'subscription', customer: o.customer, status: 'active', cancel_at_period_end: false, cancel_at: null, schedule: null,
-      latest_invoice: null, default_payment_method: 'pm_sim', items: { object: 'list', data: items },
+      latest_invoice: null, default_payment_method: 'pm_sim', items: { object: 'list', data: items }, metadata: {},
     }
     subs.set(s.id, s)
     return s
@@ -261,11 +355,32 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
     clock += seconds
     for (const s of subs.values()) {
       if (s.status !== 'active') continue
-      while (s.items.data[0].current_period_end <= clock) {
+      while (s.status === 'active' && s.items.data[0].current_period_end <= clock) {
         const start = s.items.data[0].current_period_end
+        // Set to end: the subscription ends at the period end; nothing renews, nothing is invoiced.
+        if (s.cancel_at_period_end) {
+          s.status = 'canceled'
+          break
+        }
+        // A schedule phase starting now: its items replace the subscription's (like Stripe's phase change).
+        const sc = s.schedule ? schedules.get(s.schedule) : undefined
+        const phase = sc?.status === 'active' ? sc.phases.find((ph) => ph.start_date === start) : undefined
+        if (sc && phase) {
+          const old = s.items.data
+          s.items.data = phase.items.map((pi) => {
+            const pr = prices.get(pi.price)!
+            const keep = old.find((x) => x.price.id === pr.id)
+            return { id: keep?.id ?? nextId('si'), object: 'subscription_item', price: clone(pr), quantity: pi.quantity ?? 1, current_period_start: start, current_period_end: start + periodDays }
+          })
+          sc.current_phase = { start_date: phase.start_date, end_date: phase.end_date }
+          Object.assign(s.metadata, phase.metadata)
+        }
         for (const it of s.items.data) Object.assign(it, { current_period_start: start, current_period_end: start + periodDays })
         const inv = newInvoice(s.customer, { billing_reason: 'subscription_cycle', subscription: s.id, parent: { subscription_details: { subscription: s.id } }, created: start })
         inv.lines.data = s.items.data.map((it) => ({ amount: it.price.unit_amount * it.quantity, description: it.price.lookup_key, price: clone(it.price), quantity: it.quantity }))
+        // add_invoice_items from the last period ride on this invoice (then they're gone).
+        for (const l of pendingLines.get(s.id) ?? []) inv.lines.data.push({ amount: l.amount, description: l.description, price: null, quantity: 1 })
+        pendingLines.delete(s.id)
         s.latest_invoice = inv.id
         finalize(inv)
         if (inv.status === 'open') markPaid(inv)
@@ -304,6 +419,10 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
     cancel: (id: string) => Object.assign(getSub(id), { status: 'canceled' }),
     archivePrice: (id: string) => Object.assign(prices.get(id)!, { active: false }),
     setSchedule: (id: string, schedule: string) => Object.assign(getSub(id), { schedule }),
+    schedule: (id: string) => clone(schedules.get(id) ?? null),
+    pendingLines: (subId: string) => clone(pendingLines.get(subId) ?? []),
+    /** A coupon or tax on the account: every add-on preview total moves by `cents` (Aria 9:27 refusal). */
+    setPreviewAdjustment: (cents: number) => void (previewAdjust.cents = cents),
   }
 }
 export type StripeSim = ReturnType<typeof createStripeSim>

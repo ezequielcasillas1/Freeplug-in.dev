@@ -30,8 +30,9 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
   it('no refund, credit or guarantee wording anywhere in ladder copy or the help chat', () => {
     const all = [...strings(copy), ...strings(help as unknown as Record<string, unknown>)]
     expect(all.length).toBeGreaterThan(20)
-    // Exempt: exactly Sable's final add-on strings (Oct 4 9:05 AM CT) that must say refund / account credit
-    // (Aria 8:59: the real amount after credit, and the self-heal's automatic refund). Same sample args as walk().
+    // Exempt: exactly Sable's add-on strings that must say refund / account credit (Sable Oct 4 9:05 and
+    // 9:29 AM CT: the card note, the real amount after credit, the self-heal refund and its split). Same
+    // sample args as walk(). Nothing else may match, and every exempt string must still need it.
     const sample = (f: (...a: unknown[]) => unknown) => {
       try {
         return String(f('Priority', 'November 3, 2026'))
@@ -39,14 +40,20 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
         return null
       }
     }
+    const fn = (f: unknown) => sample(f as (...a: unknown[]) => unknown)
     const exempt = new Set<string | null>([
+      fn(copy.addonChargeNote),
+      fn(copy.addonChargeAfterCreditLine),
       copy.ADDON_CREDIT_COVERS,
-      sample(copy.addonChargeAfterCreditLine as (...a: unknown[]) => unknown),
-      sample(copy.addonFinishing as (...a: unknown[]) => unknown),
-      sample(copy.addonRefunded as (...a: unknown[]) => unknown),
-      sample(copy.addonRefundFailed as (...a: unknown[]) => unknown),
+      fn(copy.addonFinishing),
+      fn(copy.addonRefundSplitLine),
+      fn(copy.addonRefunded),
+      fn(copy.addonRefundNote),
+      fn(copy.addonRefundFailed),
     ])
-    expect(exempt.size).toBe(5)
+    expect(exempt.size).toBe(8)
+    const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i
+    expect(new Set(all.filter((s) => banned.test(s)))).toEqual(exempt)
     for (const s of all) if (!exempt.has(s)) expect(s).not.toMatch(/refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i)
   })
 })
@@ -110,7 +117,7 @@ describe("Sable's final add-on strings, Oct 4 9:05 AM CT, word for word", () => 
     expect(copy.addonFinishing(n)).toBe(
       "Your payment went through. We're finishing turning on +1 small edit. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically."
     )
-    expect(copy.addonRefunded(n)).toBe("We couldn't turn on +1 small edit, so we've refunded the charge to your card. It can take 5–10 business days to show.")
+    expect(copy.addonRefunded(n, 500, 0)).toBe("We couldn't turn on +1 small edit. We refunded $5 to your card. It can take 5–10 business days to show.")
     expect(copy.addonRefundFailed(n)).toBe(
       "We couldn't turn on +1 small edit, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge."
     )
@@ -121,5 +128,66 @@ describe("Sable's final add-on strings, Oct 4 9:05 AM CT, word for word", () => 
   it('names and prices come from ADDON_NAMES / ADDONS', () => {
     expect(copy.ADDON_NAMES.small_edit).toBe('+1 small edit')
     expect(copy.ADDON_NAMES.big_change).toBe('Big change')
+  })
+})
+
+describe("Sable, Oct 4 9:29 AM CT: the five lines, word for word", () => {
+  const n = '+1 small edit'
+  it('1. no-date tip line (the plan switch date is unknown)', () => {
+    expect(copy.addonTipGoesDownQuestion(13, null, n)).toBe('Your tip goes down to $13 starting with your next bill. Turn on +1 small edit?')
+  })
+  it('2. no-date lock line, as written', () => {
+    expect(copy.addonsLockedBySwitch(null)).toBe('You can change add-ons after your plan switch.')
+  })
+  it('3. checkout tip line, same verb', () => {
+    expect(copy.addonTipDropQuestion(8, 'Big change')).toBe('Your tip goes down to $8. Turn on Big change?')
+  })
+  it('4. card note (the confirm screen still shows the exact amount)', () => {
+    expect(copy.addonChargeNote(500)).toBe(
+      'Turning it on charges $5 today for this billing period, then $5 each month. Any account credit is used first. If you turn it off, it stays on until the period ends.'
+    )
+    expect(copy.addonChargeNote(575)).toBe(
+      'Turning it on charges $5.75 today for this billing period, then $5.75 each month. Any account credit is used first. If you turn it off, it stays on until the period ends.'
+    )
+  })
+  it('5. the refund line, split by where the money went', () => {
+    expect(copy.addonRefundSplitLine(575, 0)).toBe('We refunded $5.75 to your card.')
+    expect(copy.addonRefundSplitLine(0, 575)).toBe('We added $5.75 back to your account credit.')
+    expect(copy.addonRefundSplitLine(35, 540)).toBe('We refunded $0.35 to your card and added $5.40 back to your account credit.')
+    // composed on Confirm (new composition, for Sable): the 5–10 days only when a card got money back
+    expect(copy.addonRefunded('Big change', 0, 575)).toBe("We couldn't turn on Big change. We added $5.75 back to your account credit.")
+    expect(copy.addonRefunded('Big change', 35, 540)).toBe(
+      "We couldn't turn on Big change. We refunded $0.35 to your card and added $5.40 back to your account credit. It can take 5–10 business days to show."
+    )
+  })
+})
+
+describe('Aria 9:27 / 9:28: new strings (listed for Sable), word for word', () => {
+  it('small charge under $0.50: the confirm line', () => {
+    expect(copy.addonAddedToNextBill(35)).toBe('$0.35 will be added to your next bill.')
+    expect(copy.addonAddedToNextBill(5)).toBe('$0.05 will be added to your next bill.')
+  })
+  it('discount or tax: the refusal', () => {
+    expect(copy.ADDON_PRICE_UNCONFIRMED).toBe("We couldn't confirm this price. Please contact us.")
+  })
+  it('refund reasons (dashboard note + email), each followed by the split line', () => {
+    const r = (reason: copy.AddonRefundReason) => copy.addonRefundNote('Big change', reason, 575, 0)
+    const tail = ' We refunded $5.75 to your card. It can take 5–10 business days to show.'
+    expect(r('switch_pending')).toBe("We couldn't turn on Big change because a plan switch was already scheduled. Add-ons can't change until the switch happens." + tail)
+    expect(r('removal_pending')).toBe("We couldn't turn on Big change because another add-on was already set to end. Add-ons can't change until it ends." + tail)
+    expect(r('period_ended')).toBe("We couldn't turn on Big change because the billing period you paid for ended before we could add it." + tail)
+    expect(r('tip_unconfirmed')).toBe("We couldn't turn on Big change because it would have lowered your tip, and you hadn't agreed to that." + tail)
+    expect(r('plan_ended')).toBe("We couldn't turn on Big change because your hosting plan has ended or is set to end." + tail)
+    expect(r('not_added')).toBe("We couldn't turn on Big change because of a problem adding it to your plan." + tail)
+    expect(copy.addonRefundNote('Big change', 'period_ended', 0, 575)).toBe(
+      "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We added $5.75 back to your account credit."
+    )
+    expect(Object.keys(copy.ADDON_REFUND_REASONS).sort()).toEqual(['not_added', 'period_ended', 'plan_ended', 'removal_pending', 'switch_pending', 'tip_unconfirmed'])
+    expect(copy.isAddonRefundReason('period_ended')).toBe(true)
+    expect(copy.isAddonRefundReason('nope')).toBe(false)
+  })
+  it('refund email: subject and help line', () => {
+    expect(copy.addonRefundEmailSubject('Big change')).toBe("We couldn't turn on Big change")
+    expect(copy.ADDON_REFUND_EMAIL_HELP).toBe('Questions? Email support@freeplug-in.dev.')
   })
 })

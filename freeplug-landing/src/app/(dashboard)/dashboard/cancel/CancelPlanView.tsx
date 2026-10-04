@@ -8,6 +8,7 @@ import {
   CANCEL_IN_APP_LINE,
   CANCEL_PLAN_BUTTON,
   CANCEL_WITH_PENDING_NOTE,
+  addonsPendingEndLine,
   TIP_TOTAL_LINE,
 } from '@/lib/plans/ladder-copy'
 import type { CancelPageData } from './actions'
@@ -105,6 +106,7 @@ export function CancelPlanView({
 
   const hasActiveSubscriptions = data.subscriptions.length > 0
   const pendingChange = data.subscriptions.find((s) => s.pendingChange)?.pendingChange ?? null
+  const endingAddons = data.subscriptions.find((s) => s.endingAddons)?.endingAddons ?? null
   const hasCanceledSubscriptions = data.canceledSubscriptions.length > 0
   // Canceled but still running: resume the existing plan instead of buying a second one.
   const hasEndingSubscription = data.canceledSubscriptions.some(
@@ -380,6 +382,12 @@ export function CancelPlanView({
                   // first, inside the change-plan lock).
                   <p className="text-sm text-red-800 mb-3" data-testid="cancel-pending-note">
                     {CANCEL_WITH_PENDING_NOTE(pendingChange.stepName, formatBillingDate(pendingChange.effectiveAt))}
+                  </p>
+                ) : null}
+                {endingAddons ? (
+                  // Vera M-1 (Aria, Oct 4 9:28): add-ons the customer turned off, with their end date.
+                  <p className="text-sm text-gray-700 mb-3" data-testid="cancel-ending-addons">
+                    {addonsPendingEndLine(endingAddons.names, formatBillingDate(endingAddons.effectiveAt))}
                   </p>
                 ) : null}
                 {cancelError ? (

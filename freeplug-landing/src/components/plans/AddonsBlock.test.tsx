@@ -98,7 +98,7 @@ describe('add-ons block, new checkout (Lina approved + Aria updates, Oct 4)', ()
     fireEvent.click(sw('small_edit'))
     const box = screen.getByTestId('addon-confirm')
     expect(box).toHaveAttribute('data-addon', 'small_edit')
-    expect(box).toHaveTextContent('Your tip will drop to $14. Turn on +1 small edit?')
+    expect(box).toHaveTextContent('Your tip goes down to $14. Turn on +1 small edit?')
     expect(sw('small_edit')).toHaveAttribute('aria-checked', 'false')
     expect(document.activeElement).toBe(screen.getByTestId('addon-confirm-button'))
     expect(screen.getByTestId('addon-confirm-button')).toHaveTextContent('Turn on')
@@ -117,7 +117,7 @@ describe('add-ons block, new checkout (Lina approved + Aria updates, Oct 4)', ()
     fireEvent.click(screen.getByTestId('addon-cancel'))
     expect(sw('big_change')).toHaveAttribute('aria-checked', 'false')
     fireEvent.click(sw('big_change'))
-    expect(screen.getByTestId('addon-confirm')).toHaveTextContent('Your tip will drop to $13. Turn on Big change?')
+    expect(screen.getByTestId('addon-confirm')).toHaveTextContent('Your tip goes down to $13. Turn on Big change?')
     fireEvent.click(screen.getByTestId('addon-confirm-button'))
     expect(sw('big_change')).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByTestId('tip-total')).toHaveTextContent('$13 tip')
@@ -181,8 +181,8 @@ describe('add-ons block, live plan', () => {
       expect(note.className).toMatch(/text-gray-500/)
       expect(perk.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     }
-    expect(sw('small_edit')).toHaveTextContent('Turning it on charges $5 now for this billing period, then $5 each month. If you turn it off, it stays on until the period ends.')
-    expect(sw('big_change')).toHaveTextContent('Turning it on charges $5.75 now for this billing period, then $5.75 each month. If you turn it off, it stays on until the period ends.')
+    expect(sw('small_edit')).toHaveTextContent('Turning it on charges $5 today for this billing period, then $5 each month. Any account credit is used first. If you turn it off, it stays on until the period ends.')
+    expect(sw('big_change')).toHaveTextContent('Turning it on charges $5.75 today for this billing period, then $5.75 each month. Any account credit is used first. If you turn it off, it stays on until the period ends.')
     expect(within(screen.getByTestId('addon-coming-soon')).queryByTestId('addon-charge-note')).toBeNull()
   })
 
@@ -316,6 +316,37 @@ describe('add-ons block, live plan', () => {
     expect(screen.getByTestId('addons-lock-note')).toHaveTextContent('You can change add-ons after your plan switch.')
   })
 
+  it('small charge under $0.50 (Aria 9:27, ruling 3): "$0.35 will be added to your next bill.", no "charge" line; Confirm still sends', async () => {
+    const { onChange } = live({}, async () => ({ ok: true, action: 'on', prorationDate: 1_790_000_000, amountDueCents: 35, fullCents: 575, nextAmountCents: 6075, nextDate: 'November 3, 2026', tipDollarsNow: 0, tipDollarsAfter: 0 }))
+    fireEvent.click(sw('big_change'))
+    const box = await screen.findByTestId('addon-confirm')
+    expect(box).toHaveTextContent('Turn on Big change?')
+    expect(box).toHaveTextContent('$0.35 will be added to your next bill.')
+    expect(box).not.toHaveTextContent(/We'll charge|Nothing is charged/)
+    fireEvent.click(screen.getByTestId('addon-confirm-button'))
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith('big_change', 'on', { prorationDate: 1_790_000_000, tipDropTo: undefined }))
+  })
+
+  it.each([
+    [49, '$0.49 will be added to your next bill.'],
+    [50, "We'll charge $0.50 today, after your account credit."],
+    [1, '$0.01 will be added to your next bill.'],
+  ])('the $0.50 edge: %i cents -> %s', async (cents, line) => {
+    live({}, async () => ({ ok: true, action: 'on', prorationDate: 1_790_000_000, amountDueCents: cents, fullCents: 575, nextAmountCents: 6075, nextDate: null, tipDollarsNow: 0, tipDollarsAfter: 0 }))
+    fireEvent.click(sw('big_change'))
+    expect(await screen.findByTestId('addon-confirm')).toHaveTextContent(line)
+  })
+
+  it('discount or tax (Aria 9:27, ruling 2): Confirm is refused with exactly the price line, the switch stays off', async () => {
+    const { onChange } = live({}, async () => ({ ok: false, message: 'x', prorationDate: 1_790_000_123, fallback: { priceCents: 575, nextAmountCents: null, nextDate: null } }))
+    onChange.mockResolvedValueOnce({ ok: false, message: "We couldn't confirm this price. Please contact us." })
+    fireEvent.click(sw('big_change'))
+    expect(await screen.findByTestId('addon-confirm')).toHaveTextContent("We'll charge up to $5.75 today for this billing period.")
+    fireEvent.click(screen.getByTestId('addon-confirm-button'))
+    expect(await screen.findByTestId('addons-error')).toHaveTextContent("We couldn't confirm this price. Please contact us.")
+    expect(sw('big_change')).toHaveAttribute('aria-checked', 'false')
+  })
+
   it('a refused preview shows the server message', async () => {
     live({}, async () => ({ ok: false, message: 'Turn off an add-on first', prorationDate: null }))
     fireEvent.click(sw('small_edit'))
@@ -342,6 +373,31 @@ describe('Plans card with a live plan and add-ons', () => {
     )
     return { ...utils, onPreviewChange }
   }
+
+  it("L-2 (Sable 9:29): the add-on lines follow the CURRENT plan, not the row: a Starter customer on the Fast lane row sees the Starter lines", () => {
+    const { container } = card({ currentAddons: [] })
+    const plain = addonPerkLine('small_edit')
+    const onTop = addonPerkLine('small_edit', { withIncludedEdit: true })
+    expect(plain).toBe("One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over.")
+    expect(within(sw('small_edit')).getByTestId('addon-perk')).toHaveTextContent(plain)
+    expect(screen.getByTestId('addons-cap-note')).toBeInTheDocument()
+    for (const id of ['fast_lane', 'priority'] as const) {
+      pickStep(container, id)
+      expect(within(sw('small_edit')).getByTestId('addon-perk')).toHaveTextContent(plain)
+      expect(within(sw('small_edit')).getByTestId('addon-perk')).not.toHaveTextContent(onTop)
+      expect(screen.getByTestId('addons-cap-note')).toBeInTheDocument() // still on Starter: the Starter cap applies
+    }
+  })
+
+  it('L-2: "on top of the one your plan includes" only once the customer is actually on Fast lane (any row)', () => {
+    const { container } = card({ currentStepId: 'fast_lane', currentPlanLines: ['Fast lane · $65/month'], currentAddons: [] })
+    const onTop = addonPerkLine('small_edit', { withIncludedEdit: true })
+    expect(within(sw('small_edit')).getByTestId('addon-perk')).toHaveTextContent(onTop)
+    expect(screen.queryByTestId('addons-cap-note')).toBeNull()
+    pickStep(container, 'starter')
+    expect(within(sw('small_edit')).getByTestId('addon-perk')).toHaveTextContent(onTop)
+    expect(screen.queryByTestId('addons-cap-note')).toBeNull()
+  })
 
   it('the one total counts the live add-ons (and the tip only on the current step)', () => {
     const { container } = card({ currentTipDollars: 4 })

@@ -279,3 +279,24 @@ describe('direct healAddonCharge (the request path uses it inline under its own 
     expect(addonItems(sim, 'small_edit')).toHaveLength(1)
   })
 })
+
+describe('Aria 9:27, ruling 1: every refund is logged with its reason, and the reason is on the invoice', () => {
+  it.each([
+    ['plan canceled', 'plan_ended', (sim: StripeSim): void => void sim.cancel('sub_1')],
+    ['period over', 'period_ended', (sim: StripeSim): void => void sim.advance(21 * 86_400)],
+    ['price archived', 'not_added', (sim: StripeSim): void => void sim.archivePrice(SIM_PRICE_ID.addon('big_change'))],
+  ] as const)('%s -> %s', async (_n, reason, mutate) => {
+    const sim = setup({ step: 'priority' })
+    const { inv } = await crashAfterPay(sim, 'big_change')
+    mutate(sim)
+    const logs: string[] = []
+    const r = await healAddonCharge({ ...deps(sim), log: (m: string) => logs.push(m) }, inv.id)
+    expect(r).toMatchObject({ outcome: 'refunded', refundReason: reason, cardCents: 575, creditCents: 0 })
+    expect(logs.some((m) => m.includes(`refunding (reason ${reason})`))).toBe(true)
+    expect(logs.some((m) => m.includes(`REFUNDED ${inv.id} (reason ${reason}): 575 to the card, 0 as account credit`))).toBe(true)
+    expect(sim.invoice(inv.id).metadata).toMatchObject({ addon_refunded: 'true', addon_refund_reason: reason })
+    // a second run: already refunded, same reason and split, no second credit note
+    expect(await healAddonCharge(deps(sim), inv.id)).toMatchObject({ outcome: 'already_refunded', refundReason: reason, cardCents: 575, creditCents: 0 })
+    expect(sim.creditNotes).toHaveLength(1)
+  })
+})

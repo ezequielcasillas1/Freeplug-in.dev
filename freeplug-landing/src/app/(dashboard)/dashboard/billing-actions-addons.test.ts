@@ -11,6 +11,7 @@ const h = vi.hoisted(() => ({
   preview: null as unknown,
   previewThrows: false,
   change: null as unknown,
+  notice: (async () => 'sent') as (...a: unknown[]) => Promise<unknown>,
 }))
 vi.mock('next/cache', () => ({ revalidatePath: () => undefined }))
 vi.mock('next/navigation', () => ({ redirect: (url: string) => Promise.reject(Object.assign(new Error('NEXT_REDIRECT'), { url })) }))
@@ -30,6 +31,7 @@ vi.mock('@/lib/stripe/prices', () => ({ getAddonPriceId: async (id: string) => `
 vi.mock('@/lib/plans/plan-change-lock-server', () => ({
   planChangeLockStore: () => ({ claim: async () => 'claim-1', release: async () => undefined }),
 }))
+vi.mock('@/lib/email/addon-refund-notice', () => ({ sendAddonRefundNoticeOnce: (...a: unknown[]) => h.notice(...a) }))
 vi.mock('@/lib/stripe/change-plan', async (orig) => ({
   ...(await orig<typeof import('@/lib/stripe/change-plan')>()),
   previewAddonChange: async () => {
@@ -40,6 +42,23 @@ vi.mock('@/lib/stripe/change-plan', async (orig) => ({
 }))
 
 import { changeAddonAction, previewAddonChangeAction } from './billing-actions'
+
+describe('Aria 9:27: a refund on Confirm also sends the email (once per invoice, through the ledger)', () => {
+  it('not_applied + refunded: the notice is sent for that invoice; a notice failure never changes the message', async () => {
+    h.notice = vi.fn<(...a: unknown[]) => Promise<unknown>>(async () => 'sent')
+    h.change = { ok: false, code: 'not_applied', message: 'x', refunded: true, refundCardCents: 500, refundCreditCents: 0, invoiceId: 'in_7' }
+    expect(await changeAddonAction('small_edit', 'on')).toMatchObject({ ok: false, message: expect.stringContaining('We refunded $5 to your card.') })
+    expect(h.notice).toHaveBeenCalledWith(expect.anything(), 'in_7')
+    h.notice = vi.fn<(...a: unknown[]) => Promise<unknown>>(async () => Promise.reject(new Error('resend down')))
+    expect(await changeAddonAction('small_edit', 'on')).toMatchObject({ ok: false, message: expect.stringContaining('We refunded $5 to your card.') })
+  })
+  it('no refund (it failed): no "we refunded" email', async () => {
+    h.notice = vi.fn<(...a: unknown[]) => Promise<unknown>>(async () => 'sent')
+    h.change = { ok: false, code: 'not_applied', message: 'x', refunded: false, invoiceId: 'in_7' }
+    await changeAddonAction('small_edit', 'on')
+    expect(h.notice).not.toHaveBeenCalled()
+  })
+})
 
 const SWITCH_AT = '2026-11-03T15:00:00.000Z'
 beforeEach(() => {
@@ -82,7 +101,11 @@ describe("Confirm: Sable's final result lines, word for word", () => {
     [{ ok: true, kind: 'kept', addon: 'big_change', effectiveAt: null }, 'big_change', { ok: true, message: 'Big change stays on.' }],
     [{ ok: false, code: 'payment_failed', message: 'x' }, 'small_edit', { ok: false, message: "Your card wasn't charged, so +1 small edit is still off. Update your card in Manage billing, then try again." }],
     [{ ok: false, code: 'finishing', message: 'x', invoiceId: 'in_1' }, 'big_change', { ok: false, code: 'finishing', message: "Your payment went through. We're finishing turning on Big change. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically." }],
-    [{ ok: false, code: 'not_applied', message: 'x', refunded: true }, 'small_edit', { ok: false, message: "We couldn't turn on +1 small edit, so we've refunded the charge to your card. It can take 5–10 business days to show." }],
+    [{ ok: false, code: 'not_applied', message: 'x', refunded: true, refundCardCents: 500, refundCreditCents: 0, invoiceId: 'in_9' }, 'small_edit', { ok: false, message: "We couldn't turn on +1 small edit. We refunded $5 to your card. It can take 5–10 business days to show." }],
+    [{ ok: false, code: 'not_applied', message: 'x', refunded: true, refundCardCents: 0, refundCreditCents: 575, invoiceId: 'in_9' }, 'big_change', { ok: false, message: "We couldn't turn on Big change. We added $5.75 back to your account credit." }],
+    [{ ok: false, code: 'not_applied', message: 'x', refunded: true, refundCardCents: 35, refundCreditCents: 540, invoiceId: 'in_9' }, 'big_change', { ok: false, message: "We couldn't turn on Big change. We refunded $0.35 to your card and added $5.40 back to your account credit. It can take 5–10 business days to show." }],
+    [{ ok: false, code: 'price_mismatch', message: 'x' }, 'big_change', { ok: false, message: "We couldn't confirm this price. Please contact us." }],
+    [{ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: null, invoiceId: null, deferredCents: 35 }, 'big_change', { ok: true, message: 'Big change is on.' }],
     [{ ok: false, code: 'not_applied', message: 'x', refunded: false }, 'small_edit', { ok: false, message: "We couldn't turn on +1 small edit, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge." }],
     [{ ok: false, code: 'pending_switch', message: 'x', switchAt: SWITCH_AT }, 'small_edit', { ok: false, message: 'You can change add-ons after your switch on November 3, 2026.' }],
     [{ ok: false, code: 'not_on', message: 'x' }, 'small_edit', { ok: false, message: "We couldn't change your add-ons right now. Try again, or email support@freeplug-in.dev." }],

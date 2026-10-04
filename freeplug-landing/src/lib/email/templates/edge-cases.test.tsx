@@ -5,6 +5,7 @@ import type { ReactElement } from 'react'
 import { render, toPlainText } from '@react-email/components'
 import { describe, expect, it } from 'vitest'
 import { EMAIL_LOCALES } from '../locales'
+import { AddonRefundedEmail } from './addon-refunded'
 import { BillingReminderEmail } from './billing-reminder'
 import { GoogleSignInEmail } from './google-sign-in'
 import { PasswordResetEmail } from './password-reset'
@@ -91,12 +92,20 @@ function cases(): Case[] {
       })
     }
   }
+  for (const [variant, name] of Object.entries(TEXTS)) {
+    out.push({
+      template: 'addon-refunded',
+      variant,
+      el: () => AddonRefundedEmail({ userName: name, addonName: name ?? 'Big change', note: name ?? 'We refunded $5.75 to your card.' }),
+      expectText: "couldn't turn on",
+    })
+  }
   out.push({ template: 'google-sign-in', variant: 'default', el: () => GoogleSignInEmail({}) })
   out.push({ template: 'google-sign-in', variant: 'baseUrl', el: () => GoogleSignInEmail({ baseUrl: 'http://localhost:3000' }) })
   return out
 }
 
-const COVERED = ['welcome', 'payment-received', 'request-status-update', 'subscription-cancelled', 'billing-reminder', 'password-reset', 'google-sign-in']
+const COVERED = ['addon-refunded', 'welcome', 'payment-received', 'request-status-update', 'subscription-cancelled', 'billing-reminder', 'password-reset', 'google-sign-in']
 
 describe.each(EMAIL_LOCALES)('every email template renders with edge-case inputs (locale %s)', () => {
   it.each(cases().map((c) => [`${c.template} [${c.variant}]`, c] as const))('%s', async (_label, c) => {
@@ -119,6 +128,17 @@ describe('template coverage', () => {
     const files = readdirSync(dir).filter((f) => f.endsWith('.tsx') && !f.includes('.test.') && f !== 'base-layout.tsx')
     const withEmailExport = files.filter((f) => /export function \w+Email\(/.test(readFileSync(path.join(dir, f), 'utf8')))
     expect(withEmailExport.map((f) => f.replace(/\.tsx$/, '')).sort()).toEqual([...COVERED].sort())
+  })
+
+  it("addon-refunded (Aria 9:27): Sable's subject as the heading, the reason + split line, the help line, Go to Plans", async () => {
+    const note = "We couldn't turn on Big change because the billing period you paid for ended before we could add it. We refunded $0.35 to your card and added $5.40 back to your account credit. It can take 5–10 business days to show."
+    const text = toPlainText(await render(AddonRefundedEmail({ userName: 'Dana', addonName: 'Big change', note, baseUrl: 'http://localhost:3000' })))
+    expect(text).toContain("We couldn't turn on Big change")
+    expect(text).toContain('Hi Dana,')
+    expect(text).toContain(note)
+    expect(text).toContain('Questions? Email support@freeplug-in.dev.')
+    expect(text).toContain('Go to Plans')
+    expect(await render(AddonRefundedEmail({ addonName: 'Big change', note, baseUrl: 'http://localhost:3000' }))).toContain('http://localhost:3000/dashboard/plans')
   })
 
   it('the password-reset template keeps the link intact (escaped only as HTML requires)', async () => {

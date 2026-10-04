@@ -12,6 +12,8 @@ import {
 } from './templates/subscription-cancelled'
 import { BillingReminderEmail } from './templates/billing-reminder'
 import { PasswordResetEmail } from './templates/password-reset'
+import { AddonRefundedEmail } from './templates/addon-refunded'
+import { addonRefundEmailSubject } from '@/lib/plans/ladder-copy'
 
 type SendResult = MailResult
 
@@ -94,6 +96,23 @@ export async function sendSubscriptionCancelledEmail(
     subject: SUBSCRIPTION_CANCELLED_SUBJECT,
     template: 'subscription-cancelled',
     react: SubscriptionCancelledEmail(params),
+    replyTo: options?.replyTo,
+    idempotencyKey: options?.idempotencyKey,
+    timeoutMs: options?.timeoutMs,
+  })
+}
+
+/** Aria, Oct 4 9:27: an add-on charge was refunded automatically (why + where the money went). */
+export async function sendAddonRefundedEmail(
+  to: string,
+  params: { userName?: string; addonName: string; note: string },
+  options?: SendOptions
+): Promise<SendResult> {
+  return sendMail({
+    to,
+    subject: addonRefundEmailSubject(params.addonName),
+    template: 'addon-refunded',
+    react: AddonRefundedEmail(params),
     replyTo: options?.replyTo,
     idempotencyKey: options?.idempotencyKey,
     timeoutMs: options?.timeoutMs,

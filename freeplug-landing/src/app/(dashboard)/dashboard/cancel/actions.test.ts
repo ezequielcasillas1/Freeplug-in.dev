@@ -18,9 +18,15 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' | 'starter11' | 'cancel-at-only' | 'grandfathered', tip: null as number | null }
+const stripe = { mode: 'ok' as 'ok' | 'error' | 'tip' | 'starter11' | 'cancel-at-only' | 'grandfathered' | 'sim', tip: null as number | null, sim: null as unknown }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
+    if (stripe.mode === 'sim') {
+      // the add-on stand-in (test/stripe-addon-sim.ts): a real schedule with an add-on removal on it
+      const sim = stripe.sim as { client: () => Record<string, Record<string, unknown>>; sub: (id: string) => unknown }
+      const c = sim.client()
+      return { ...c, products: { retrieve: async (id: string) => ({ id, name: 'Freeplug Hosting: Priority' }) }, subscriptions: { ...c.subscriptions, list: async () => ({ data: [sim.sub('sub_1')] }) } }
+    }
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('local mock: simulated Stripe outage') } } }
     if (stripe.mode === 'grandfathered') {
       // Vera's k: "Hosting plan (monthly)" $40 + "Pro add-on (monthly)" $10 (+ an optional tip item)
@@ -64,6 +70,32 @@ vi.mock('@/lib/stripe/server', () => ({
 }))
 
 import { getCancelPageData } from './actions'
+import type Stripe from 'stripe'
+import { changeAddon } from '@/lib/stripe/change-plan'
+import { createStripeSim, SIM_PRICE_ID } from '../../../../../test/stripe-addon-sim'
+
+describe('Vera M-1 (Aria 9:28): the cancel page lists add-ons set to end, with the date', () => {
+  it('Priority + both, Big change turned off: endingAddons = Big change at the period end; no "switch" line', async () => {
+    const T0 = Math.floor(new Date('2026-10-04T14:00:00Z').getTime() / 1000)
+    const sim = createStripeSim({ nowSec: T0 })
+    sim.addCustomer('cus_1')
+    sim.addSub({ id: 'sub_1', customer: 'cus_1', step: 'priority', addons: ['small_edit', 'big_change'], periodStart: T0 - 10 * 86_400 })
+    const r = await changeAddon(
+      { stripe: sim.client() as unknown as Stripe, addonPriceIdFor: async (id) => SIM_PRICE_ID.addon(id), now: sim.now, log: () => {} },
+      sim.sub('sub_1') as unknown as Parameters<typeof changeAddon>[1],
+      'big_change',
+      'off'
+    )
+    expect(r).toMatchObject({ ok: true, kind: 'removal_scheduled' })
+    stripe.mode = 'sim'
+    stripe.sim = sim
+    const d = (await getCancelPageData())!
+    expect(d.subscriptions).toHaveLength(1)
+    expect(d.subscriptions[0].endingAddons).toEqual({ names: ['Big change'], effectiveAt: new Date((T0 + 20 * 86_400) * 1000) })
+    expect(d.subscriptions[0].pendingChange).toBeNull()
+    stripe.mode = 'ok'
+  })
+})
 
 describe('getCancelPageData and Stripe errors (round 12, Vera r9 bug 2)', () => {
   beforeEach(() => {

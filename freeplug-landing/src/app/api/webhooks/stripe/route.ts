@@ -10,6 +10,7 @@ import { handleOutreachInvoicePaid, handleOutreachSetupSession } from '@/lib/out
 import { supabasePlanStepStore, syncPlanStepForCustomer } from '@/lib/plans/plan-step-sync'
 import { flagUnsoldPurchase, supabaseUnsoldPurchaseStore } from '@/lib/plans/unsold-purchase'
 import { releaseScheduleIfSwitched } from '@/lib/stripe/change-plan'
+import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
 import { healAddonChargeFromWebhook, healNeedsRedelivery, isAddonChargeInvoice } from '@/lib/stripe/addon-heal-webhook'
 import { getAddonPriceId } from '@/lib/stripe/prices'
 import { supabasePlanChangeLockStore } from '@/lib/plans/plan-change-lock'
@@ -190,6 +191,8 @@ export async function POST(request: Request) {
               stripe,
               addonPriceIdFor: (id) => getAddonPriceId(id, stripe),
               lockStore: supabasePlanChangeLockStore(admin as unknown as Parameters<typeof supabasePlanChangeLockStore>[0]),
+              // Aria 9:27: every refund is explained to the customer (email once per invoice, ledger-guarded).
+              notifyRefund: (invoiceId) => sendAddonRefundNoticeOnce(stripe, invoiceId),
             },
             inv
           )

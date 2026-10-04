@@ -1,5 +1,6 @@
 import type Stripe from 'stripe'
 import { listLiveSubscriptions } from '@/lib/stripe/active-subscription'
+import { resumeSubscription } from '@/lib/stripe/change-plan'
 
 /**
  * "Restart hosting" while the plan is canceled but still running ('ending'): undo the scheduled
@@ -8,17 +9,14 @@ import { listLiveSubscriptions } from '@/lib/stripe/active-subscription'
  * Returns how many subscriptions were resumed. Throws if Stripe can't be reached. The caller holds the
  * change-plan lock (billing-actions.ts resumePlan, Aria Oct 3 4:05 PM).
  */
-export async function resumeEndingSubscriptions(stripe: Stripe, customerId: string): Promise<number> {
+export async function resumeEndingSubscriptions(stripe: Stripe, customerId: string, now: Date = new Date()): Promise<number> {
   const live = await listLiveSubscriptions(customerId)
   let resumed = 0
   for (const sub of live) {
-    if (sub.cancel_at_period_end !== true && sub.cancel_at == null) continue
-    // Stripe returns BOTH cancel_at_period_end=true and cancel_at (the period end) after a cancel at
-    // period end, and refuses an update that sends both fields ("Received both cancel_at_period_end and
-    // cancel_at parameters", Vera 5b R1). Clear only cancel_at_period_end, which also clears cancel_at;
-    // a cancel_at set on its own (no period-end flag) is cleared with cancel_at ''.
-    await stripe.subscriptions.update(sub.id, sub.cancel_at_period_end === true ? { cancel_at_period_end: false } : { cancel_at: '' })
-    resumed++
+    // Clears the scheduled cancellation (only cancel_at_period_end, or cancel_at '' on its own: Vera 5b
+    // R1) and puts back an add-on removal the cancel dropped (Vera M-1, Aria Oct 4 9:28); throws, set
+    // to end again, if that removal can't be put back.
+    if ((await resumeSubscription(stripe, sub as Parameters<typeof resumeSubscription>[1], now)).resumed) resumed++
   }
   return resumed
 }
