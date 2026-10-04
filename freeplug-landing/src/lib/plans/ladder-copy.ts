@@ -49,6 +49,12 @@ function build(t: Translate, locale: AppLocale) {
     /** The language this copy is in (for dates/amounts formatted next to it). */
     LOCALE: locale,
     NEXT_BUSINESS_DAY_TARGET,
+    /**
+     * Aria ruling 2 / Sable §3: cards keep the English plan and add-on NAME, with a one-line
+     * Spanish gloss under it. Spanish only (the English name already says it): null in English.
+     */
+    PLAN_GLOSS: Object.fromEntries(STEP_IDS.map((id) => [id, locale === 'es' ? t(`plans.gloss.${PLAN_GLOSS_KEY[id]}`) : null])) as Record<PlanStepId, string | null>,
+    ADDON_GLOSS: Object.fromEntries((['small_edit', 'big_change', 'visitor_snapshot'] as const).map((id) => [id, locale === 'es' ? t(`addons.gloss.${id}`) : null])) as Record<AddonId | 'visitor_snapshot', string | null>,
     STEP_BLURBS: Object.fromEntries(STEP_IDS.map((id) => [id, t(`plans.stepBlurbs.${id}`)])) as Record<PlanStepId, string>,
     PERK_LINES: Object.fromEntries(PERKS.map((p) => [p, perkLine(p)])) as Record<PlanPerk, string>,
     STARTER_BASE_LINES: [t('plans.starterBaseLines.hostingSslSecureHttps'), t('plans.starterBaseLines.emailSupportDuringSupport')] as readonly string[],
@@ -251,6 +257,16 @@ function build(t: Translate, locale: AppLocale) {
     ADDON_TOTAL_LINE: (plan: string, addons: string, tip: string | null, total: string) =>
       tip ? t('cancel.addonTotalLine.withTip', { plan, addons, tip, total }) : t('cancel.addonTotalLine.noTip', { plan, addons, total }),
   }
+}
+
+/** Sable's gloss keys (plans.gloss.*) per ladder step id. */
+const PLAN_GLOSS_KEY: Record<PlanStepId, string> = {
+  starter: 'starter',
+  priority: 'priority',
+  fast_lane: 'fastLane',
+  leads: 'leads',
+  get_found: 'getFound',
+  growth: 'growthPartner',
 }
 
 export type LadderCopy = ReturnType<typeof build>

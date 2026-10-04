@@ -85,6 +85,15 @@ describe('upload guard (scripts/cf-upload-guard.mjs)', () => {
     expect(checks(runGuard({ root, env: { ...DUMMY_ENV, STRIPE_WEBHOOK_SECRET: FAKE.whsec } }))).toEqual([])
   })
 
+  it('refuses the local-QA Spanish switches (draft Spanish) in the env or any env file, any value', () => {
+    const root = project({ '.env.local': 'FREEPLUG_I18N_ES_PENDING_MARK=0\n' })
+    expect(checks(runGuard({ root, env: { ...DUMMY_ENV, FREEPLUG_I18N_ES_ALLOW_PENDING: '1' } }))).toEqual([
+      'i18n-local-qa-switch-set (draft Spanish: local QA only, unset it) @ env:FREEPLUG_I18N_ES_ALLOW_PENDING',
+      'i18n-local-qa-switch-set (draft Spanish: local QA only, unset it) @ .env.local:FREEPLUG_I18N_ES_PENDING_MARK',
+    ])
+    expect(checks(runGuard({ root: project({}), env: { ...DUMMY_ENV, NEXT_PUBLIC_FREEPLUG_I18N_ES: 'off' } }))).toEqual([])
+  })
+
   it('trips on .dev.vars and .env.local', () => {
     const root = project({ '.dev.vars': `STRIPE_SECRET_KEY=${FAKE.sk}\n`, '.env.local': `SUPABASE_SERVICE_ROLE_KEY="${FAKE.serviceJwt}"\n` })
     expect(checks(runGuard({ root, env: DUMMY_ENV }))).toEqual([

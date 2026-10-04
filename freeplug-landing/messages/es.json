@@ -637,6 +637,14 @@
       "basic": "Basic",
       "plus": "Plus",
       "pro": "Pro"
+    },
+    "gloss": {
+      "starter": "Tu sitio web en línea, con conexión segura https",
+      "priority": "Tus solicitudes de cambio van antes que las de planes más bajos",
+      "fastLane": "Incluye un cambio pequeño al mes, hecho por nosotros",
+      "leads": "Reporte mensual de visitas y avisos de cotización",
+      "getFound": "Mantenemos al día tu perfil de Google Business",
+      "growthPartner": "Actualización de temporada y llamada trimestral"
     }
   },
   "claim": {
@@ -1257,6 +1265,11 @@
     "tipGoesDownQuestion": "Tu propina baja a {tip} a partir del {date}. ¿Activar {name}?",
     "tipGoesDownQuestionNoDate": "Tu propina baja a {tip} a partir de tu próximo cobro. ¿Activar {name}?",
     "finishing": "Tu pago se realizó. Estamos terminando de activar {name}. Recarga en un momento para verlo. Si no se puede agregar, te reembolsaremos el cargo automáticamente.",
-    "pendingEndLine": "{names} {count, plural, one {termina} other {terminan}} el {date}."
+    "pendingEndLine": "{names} {count, plural, one {termina} other {terminan}} el {date}.",
+    "gloss": {
+      "small_edit": "Un cambio pequeño extra al mes",
+      "big_change": "Un cambio más grande al mes, de hasta una hora de trabajo aproximadamente",
+      "visitor_snapshot": "Un correo al mes con tus visitas"
+    }
   }
 }

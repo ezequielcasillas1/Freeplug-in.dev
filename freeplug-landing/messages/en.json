@@ -638,7 +638,15 @@
       "plus": "Plus",
       "pro": "Pro"
     },
-    "perMonth": "/month"
+    "perMonth": "/month",
+    "gloss": {
+      "starter": "Your website online, with a secure https connection",
+      "priority": "Your change requests go ahead of lower plans",
+      "fastLane": "One small edit by us included each month",
+      "leads": "A monthly visitor report and quote alerts",
+      "getFound": "We keep your Google Business Profile up to date",
+      "growthPartner": "A seasonal refresh and a quarterly planning call"
+    }
   },
   "claim": {
     "thisPlanFallback": "This plan",
@@ -1266,7 +1274,12 @@
     "tipGoesDownQuestion": "Your tip goes down to {tip} starting {date}. Turn on {name}?",
     "tipGoesDownQuestionNoDate": "Your tip goes down to {tip} starting your next bill. Turn on {name}?",
     "finishing": "Your payment went through. We're finishing turning on {name}. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically.",
-    "pendingEndLine": "{names} {count, plural, one {ends} other {end}} {date}."
+    "pendingEndLine": "{names} {count, plural, one {ends} other {end}} {date}.",
+    "gloss": {
+      "small_edit": "One extra small edit a month",
+      "big_change": "One larger change a month, up to about an hour of work",
+      "visitor_snapshot": "A monthly email with your visitor count"
+    }
   },
   "i18n": {
     "picker": {

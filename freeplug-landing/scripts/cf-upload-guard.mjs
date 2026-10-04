@@ -50,6 +50,11 @@ export const SECRET_VAR_NAMES = [
   'TURNSTILE_SECRET_KEY',
 ]
 const ENV_FILES = ['.env', '.env.local', '.env.production', '.env.production.local']
+/**
+ * Spanish build (Owen, Oct 4): local-QA-only switches. With either set, a build can serve Sable's
+ * DRAFT Spanish (missing keys in English); no uploaded build may carry them, whatever the value.
+ */
+export const I18N_LOCAL_ONLY_VARS = ['FREEPLUG_I18N_ES_ALLOW_PENDING', 'FREEPLUG_I18N_ES_PENDING_MARK']
 
 const RE = {
   stripeSecret: /\b(?:sk|rk)_live_[A-Za-z0-9]{8,}/,
@@ -196,7 +201,13 @@ export function runGuard({
     fileVars.push(['wrangler.jsonc:vars', cfg.vars ?? {}, true])
     for (const [name, e] of Object.entries(cfg.env ?? {})) fileVars.push([`wrangler.jsonc:env.${name}.vars`, e?.vars ?? {}, true])
   }
+  for (const k of I18N_LOCAL_ONLY_VARS) {
+    if (env[k] !== undefined) findings.push({ check: 'i18n-local-qa-switch-set (draft Spanish: local QA only, unset it)', where: `env:${k}` })
+  }
   for (const [source, vars, plainVars] of fileVars) {
+    for (const k of I18N_LOCAL_ONLY_VARS) {
+      if (k in vars) findings.push({ check: 'i18n-local-qa-switch-set (draft Spanish: local QA only, unset it)', where: `${source}:${k}` })
+    }
     if (OVERRIDE_FLAG in vars) findings.push({ check: `override-flag-in-file (${ON_COMMAND_ONLY})`, where: `${source}:${OVERRIDE_FLAG}` })
     push(scanVars(vars, source, { ...opts, plainVars: Boolean(plainVars) }))
   }
