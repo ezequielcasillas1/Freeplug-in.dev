@@ -6,10 +6,16 @@ const h = vi.hoisted(() => ({
   inserts: [] as Record<string, unknown>[],
   insertErrors: [] as (null | { code: string })[],
   profileUpdates: [] as Record<string, unknown>[],
+  healOutcome: 'applied' as string,
 }))
 const constructEventAsync = vi.fn()
 
 vi.mock('@/lib/stripe/server', () => ({ getStripe: () => ({ webhooks: { constructEventAsync } }) }))
+// The self-heal itself is tested in route-addon-heal-testclock.test.ts / addon-heal.test.ts.
+vi.mock('@/lib/stripe/addon-heal-webhook', async (orig) => ({
+  ...(await orig<typeof import('@/lib/stripe/addon-heal-webhook')>()),
+  healAddonChargeFromWebhook: async () => ({ outcome: h.healOutcome }),
+}))
 vi.mock('@/lib/outreach/server', () => ({ handleOutreachInvoicePaid: async () => false, handleOutreachSetupSession: async () => false }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
@@ -65,6 +71,7 @@ describe('webhook invoice.paid: the add-on first-period charge', () => {
     h.inserts.length = 0
     h.insertErrors.length = 0
     h.profileUpdates.length = 0
+    h.healOutcome = 'applied'
     vi.spyOn(console, 'warn').mockImplementation(() => undefined)
   })
 
@@ -72,6 +79,17 @@ describe('webhook invoice.paid: the add-on first-period charge', () => {
     expect(await deliver(addonCharge)).toBe(200)
     expect(h.inserts).toEqual([{ profile_id: 'p1', stripe_invoice_id: 'in_addon', amount_cents: 575, tip_cents: 0 }])
     expect(h.profileUpdates).toEqual([expect.objectContaining({ cumulative_website_value_paid_cents: 1000 + 575 })])
+  })
+
+  it('self-heal needs another try (retry / refund_failed): non-2xx so Stripe redelivers, but the payment is booked once now', async () => {
+    for (const outcome of ['retry', 'refund_failed']) {
+      h.inserts.length = 0
+      h.healOutcome = outcome
+      expect(await deliver(addonCharge)).toBe(500)
+      expect(h.inserts).toHaveLength(1)
+    }
+    h.healOutcome = 'refunded'
+    expect(await deliver(addonCharge)).toBe(200)
   })
 
   it('a retried or replayed delivery (unique stripe_invoice_id, 23505) adds nothing', async () => {

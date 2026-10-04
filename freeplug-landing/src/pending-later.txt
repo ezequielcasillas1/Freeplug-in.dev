@@ -1,0 +1,2 @@
+# Pending later (Freeplug app, branch ladder-fix-2026-10-03). Items Aria tracks for a later round; nothing here runs.
+pending-later (Aria, Oct 4 2026 8:59 AM CT, ruling 2c): refunds and reversed charges (e.g. an add-on first-period charge refunded by the self-heal, a credit note, a dispute) stay counted in Total Paid (profiles.cumulative_website_value_paid_cents / billing_ledger) for now; refunds are handled with the pay-to-own ledger (built from invoice lines and credit notes), not this counter.

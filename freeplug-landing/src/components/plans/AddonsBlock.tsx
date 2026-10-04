@@ -20,8 +20,11 @@ import {
   BIG_CHANGE_BIGGER_NOTE,
   COMING_SOON_LABEL,
   UPGRADE_CALCULATING,
+  ADDON_CREDIT_COVERS,
+  addonChargeAfterCreditLine,
   addonChargeNote,
   addonChargeNowLine,
+  addonChargeUpToLine,
   addonEndsLine,
   addonOffQuestion,
   addonPerkLine,
@@ -29,8 +32,15 @@ import {
   addonsLockedBySwitch,
   addonThenLine,
   addonTipDropQuestion,
+  addonTipGoesDownQuestion,
   addonTurnOnQuestion,
 } from '@/lib/plans/ladder-copy'
+
+/** [Sable 9:05] What turning it on charges today, from the server's Stripe preview (credit applied). */
+export function addonChargeTodayLine(amountDueCents: number, fullCents: number): string {
+  if (amountDueCents <= 0) return ADDON_CREDIT_COVERS
+  return amountDueCents < fullCents ? addonChargeAfterCreditLine(amountDueCents) : addonChargeNowLine(amountDueCents)
+}
 
 /** New checkout: the picks live in the card's state; the server re-checks every one (cap, tip max). */
 type CheckoutProps = {
@@ -73,6 +83,8 @@ type Pending =
       button: string
       prorationDate?: number
       tipDropTo?: number
+      /** live: the renewal date the tip goes down from (for a re-ask after tip_drop_needed) */
+      nextDate?: string | null
       /** checkout: the picks and tip to apply on confirm */
       apply?: { ids: AddonId[]; tip: number }
     }
@@ -178,22 +190,38 @@ export function AddonsBlock(props: Props) {
       return
     }
     if (seq !== previewSeq.current) return
+    const name = ADDON_NAMES[addon.id]
+    if (!r.ok && r.fallback && action === 'on' && r.prorationDate !== null) {
+      // The Stripe preview failed (not a refusal): "up to" the full price; the server re-checks at Confirm.
+      setPending({
+        id: addon.id,
+        kind: 'confirm',
+        action: 'on',
+        question: addonTurnOnQuestion(name),
+        lines: [addonChargeUpToLine(r.fallback.priceCents)],
+        button: ADDON_TURN_ON,
+        prorationDate: r.prorationDate,
+        nextDate: r.fallback.nextDate,
+      })
+      return
+    }
     if (!r.ok) {
       setPending(null)
       setError(r.message)
       return
     }
-    const name = ADDON_NAMES[addon.id]
     if (r.action === 'on') {
+      // A Starter tip drop on a live plan starts at the renewal (this period's tip is already paid).
       const drop = r.tipDollarsAfter < r.tipDollarsNow
       setPending({
         id: addon.id,
         kind: 'confirm',
         action: 'on',
-        question: drop ? addonTipDropQuestion(r.tipDollarsAfter, name) : addonTurnOnQuestion(name),
-        lines: [addonChargeNowLine(r.amountDueCents), addonThenLine(r.nextAmountCents, r.nextDate)],
+        question: drop ? addonTipGoesDownQuestion(r.tipDollarsAfter, r.nextDate, name) : addonTurnOnQuestion(name),
+        lines: [addonChargeTodayLine(r.amountDueCents, r.fullCents), addonThenLine(r.nextAmountCents, r.nextDate)],
         button: ADDON_TURN_ON,
         prorationDate: r.prorationDate,
+        nextDate: r.nextDate,
         ...(drop ? { tipDropTo: r.tipDollarsAfter } : {}),
       })
       return
@@ -214,7 +242,13 @@ export function AddonsBlock(props: Props) {
       }
       if (r.code === 'tip_drop_needed' && typeof r.tipDollars === 'number') {
         // The tip changed since the preview: ask again with the server's number (never silent).
-        setPending({ ...cur, kind: 'confirm', question: addonTipDropQuestion(r.tipDollars, ADDON_NAMES[cur.id]), tipDropTo: r.tipDollars })
+        setPending({ ...cur, kind: 'confirm', question: addonTipGoesDownQuestion(r.tipDollars, cur.nextDate ?? null, ADDON_NAMES[cur.id]), tipDropTo: r.tipDollars })
+        return
+      }
+      // Paid, being added by the self-heal: not an error (the card was charged on purpose).
+      if (r.code === 'finishing') {
+        setNotice(r.message)
+        close(cur.id)
         return
       }
       setError(r.message)

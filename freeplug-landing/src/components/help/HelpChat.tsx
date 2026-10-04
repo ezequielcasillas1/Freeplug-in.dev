@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { GO_TO_PLANS } from '@/lib/plans/ladder-copy'
 import {
   CHANGE_REQUEST_COPY as C,
   CHANGE_TYPES,
@@ -244,7 +246,11 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
                 <p className="mt-2">{C.includedEditNote}</p>
               ) : smallEditAddonNote ? (
                 <p className="mt-2" data-testid="small-edit-addon-note">
-                  {smallEditAddonNote}
+                  {smallEditAddonNote}{' '}
+                  {/* Sable, Oct 4 9:05: a "Go to Plans" link after the small-edit line. */}
+                  <Link href="/dashboard/plans" className="font-medium text-[#ba3d3d] underline underline-offset-2" data-testid="small-edit-addon-plans-link">
+                    {GO_TO_PLANS}
+                  </Link>
                 </p>
               ) : null}
             </BotBubble>

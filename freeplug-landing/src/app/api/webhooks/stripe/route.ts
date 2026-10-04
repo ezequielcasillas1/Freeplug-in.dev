@@ -10,6 +10,9 @@ import { handleOutreachInvoicePaid, handleOutreachSetupSession } from '@/lib/out
 import { supabasePlanStepStore, syncPlanStepForCustomer } from '@/lib/plans/plan-step-sync'
 import { flagUnsoldPurchase, supabaseUnsoldPurchaseStore } from '@/lib/plans/unsold-purchase'
 import { releaseScheduleIfSwitched } from '@/lib/stripe/change-plan'
+import { healAddonChargeFromWebhook, healNeedsRedelivery, isAddonChargeInvoice } from '@/lib/stripe/addon-heal-webhook'
+import { getAddonPriceId } from '@/lib/stripe/prices'
+import { supabasePlanChangeLockStore } from '@/lib/plans/plan-change-lock'
 
 export const runtime = 'nodejs'
 
@@ -75,6 +78,8 @@ export async function POST(request: Request) {
   }
 
   let websiteAccess: WebsiteAccessStatus | undefined
+  /** Set when the add-on self-heal must run again: answered non-2xx AFTER the ledger (replays add no row). */
+  let redeliver: string | null = null
 
   switch (event.type) {
     case 'checkout.session.completed': {
@@ -174,6 +179,27 @@ export async function POST(request: Request) {
     }
     case 'invoice.paid': {
       const inv = event.data.object as Stripe.Invoice
+      // Add-on self-heal (Aria, Oct 4 8:59): the add-on's first-period charge is paid; make sure the
+      // add-on item is on the subscription, or refund automatically when it can't be added. Idempotent
+      // (fresh Stripe reads, invoice markers, the user's change-plan lock, Stripe idempotency keys).
+      if (isAddonChargeInvoice(inv)) {
+        try {
+          const stripe = getStripe()
+          const healed = await healAddonChargeFromWebhook(
+            {
+              stripe,
+              addonPriceIdFor: (id) => getAddonPriceId(id, stripe),
+              lockStore: supabasePlanChangeLockStore(admin as unknown as Parameters<typeof supabasePlanChangeLockStore>[0]),
+            },
+            inv
+          )
+          console.info('[webhook] add-on charge', inv.id, healed.outcome, healed.reason ?? '')
+          if (healNeedsRedelivery(healed)) redeliver = `add-on ${healed.outcome}`
+        } catch (e) {
+          console.error('[webhook] add-on self-heal failed', inv.id, e instanceof Error ? e.message : e)
+          redeliver = 'add-on self-heal error'
+        }
+      }
       // The renewal invoice at the switch date: the schedule's switch phase is now current.
       if (inv.billing_reason === 'subscription_cycle') {
         const subId = invoiceSubscriptionId(inv)
@@ -264,5 +290,6 @@ export async function POST(request: Request) {
       break
   }
 
+  if (redeliver) return NextResponse.json({ error: redeliver }, { status: 500 })
   return NextResponse.json(websiteAccess ? { received: true, websiteAccess } : { received: true })
 }

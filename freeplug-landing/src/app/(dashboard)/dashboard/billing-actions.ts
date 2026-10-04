@@ -13,7 +13,7 @@ import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewA
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
 import { addonById, type AddonId } from '@/lib/plans/ladder'
-import { ADDON_ERROR, ADDON_KEEP_DONE, ADDON_NAMES, ADDON_ON_DONE, ADDON_PAYMENT_FAILED, ADDON_NOT_APPLIED_CHARGED, ADDON_NOT_APPLIED_REFUNDED, ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonOffDone } from '@/lib/plans/ladder-copy'
+import { ADDON_ERROR, ADDON_NAMES, ADDON_PENDING_REMOVAL, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonFinishing, addonKeepDone, addonOffDone, addonOnDone, addonPaymentFailed, addonRefunded, addonRefundFailed, addonsLockedBySwitch } from '@/lib/plans/ladder-copy'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
 import { syncPlanSnapshotForCustomer } from '@/lib/stripe/sync-checkout-customer'
@@ -433,25 +433,36 @@ export type AddonPreviewResponse =
       ok: true
       action: 'on'
       prorationDate: number
+      /** The real amount today (Stripe preview, account credit applied); 0 = credit covers it. */
       amountDueCents: number
+      /** The add-on's full monthly price. */
+      fullCents: number
       nextAmountCents: number
       nextDate: string | null
       tipDollarsNow: number
       tipDollarsAfter: number
     }
   | { ok: true; action: 'off' | 'keep'; endDate: string | null; nextAmountCents: number; nextDate: string | null }
-  | { ok: false; message: string; prorationDate: number | null }
-export type ChangeAddonResponse = { ok: boolean; message: string; code?: 'tip_drop_needed' | 'stale_preview' | 'in_progress'; tipDollars?: number }
+  /**
+   * fallback: turning on, the Stripe preview failed (not a refusal): the confirm still opens with "We'll
+   * charge up to {price} today…" and Confirm sends this prorationDate (as the upgrade confirm does).
+   */
+  | { ok: false; message: string; prorationDate: number | null; fallback?: { priceCents: number; nextAmountCents: number | null; nextDate: string | null } }
+export type ChangeAddonResponse = { ok: boolean; message: string; code?: 'tip_drop_needed' | 'stale_preview' | 'in_progress' | 'finishing'; tipDollars?: number }
 
-function addonRefusalMessage(code: AddonChangeRefusal | 'in_progress' | 'mismatch' | 'payment_failed'): string {
-  if (code === 'pending_switch') return ADDON_PENDING_SWITCH
+function addonRefusalMessage(
+  code: AddonChangeRefusal | 'in_progress' | 'mismatch' | 'payment_failed',
+  addonId: AddonId,
+  switchAt?: string | null
+): string {
+  if (code === 'pending_switch') return addonsLockedBySwitch(switchAt ? formatPlanEndDate(new Date(switchAt)) : null)
   if (code === 'pending_addons') return ADDON_PENDING_REMOVAL
   if (code === 'over_cap') return ADDON_TURN_OFF_FIRST
   if (code === 'no_addon_plan') return ADDONS_LEGACY_NOTE
   if (code === 'ending') return CHANGE_PLAN_ENDING
   if (code === 'stale_preview') return UPGRADE_PREVIEW_EXPIRED
   if (code === 'in_progress') return UPGRADE_IN_PROGRESS
-  if (code === 'payment_failed') return ADDON_PAYMENT_FAILED
+  if (code === 'payment_failed') return addonPaymentFailed(ADDON_NAMES[addonId])
   return ADDON_ERROR
 }
 
@@ -475,7 +486,7 @@ export async function previewAddonChangeAction(addonId: string, action: string):
     if (!(await rateCheck(PLAN_PREVIEW_LIMIT, own.userId))) return { ok: false, message: ADDON_ERROR, prorationDate }
     const stripe = getStripe()
     const p = await previewAddonChange({ stripe, addonPriceIdFor: (id) => getAddonPriceId(id, stripe) }, own.sub, addon.id, act, prorationDate)
-    if (!p.ok) return { ok: false, message: addonRefusalMessage(p.code), prorationDate: null }
+    if (!p.ok) return { ok: false, message: addonRefusalMessage(p.code, addon.id, p.switchAt), prorationDate: null }
     const nextDate = p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null
     if (p.action === 'on') {
       return {
@@ -483,6 +494,7 @@ export async function previewAddonChangeAction(addonId: string, action: string):
         action: 'on',
         prorationDate: p.prorationDate,
         amountDueCents: p.amountDueCents,
+        fullCents: p.fullCents,
         nextAmountCents: p.nextAmountCents,
         nextDate,
         tipDollarsNow: p.tipDollarsNow,
@@ -492,8 +504,11 @@ export async function previewAddonChangeAction(addonId: string, action: string):
     return { ok: true, action: p.action, endDate: p.effectiveAt ? formatPlanEndDate(new Date(p.effectiveAt)) : null, nextAmountCents: p.nextAmountCents, nextDate }
   } catch (e) {
     console.error('[previewAddonChange] failed', e instanceof Error ? e.message : e)
-    // The proration_date still goes back, so a fallback confirm charges at the time the customer looked.
-    return { ok: false, message: ADDON_ERROR, prorationDate: act === 'on' ? prorationDate : null }
+    // Turning on: the confirm still opens with "up to" the full price (credit can only lower it); the
+    // proration_date goes back so Confirm charges at the time the customer looked. The server re-checks
+    // everything at Confirm (a tip drop it needs comes back as tip_drop_needed and is asked first).
+    if (act === 'on') return { ok: false, message: ADDON_ERROR, prorationDate, fallback: { priceCents: addon.monthlyCents, nextAmountCents: null, nextDate: null } }
+    return { ok: false, message: ADDON_ERROR, prorationDate: null }
   }
 }
 
@@ -535,14 +550,17 @@ async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { pro
     })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
-    if (r.ok && r.kind === 'on') return { ok: true, message: ADDON_ON_DONE }
-    if (r.ok && r.kind === 'kept') return { ok: true, message: ADDON_KEEP_DONE }
-    if (r.ok) return { ok: true, message: addonOffDone(r.effectiveAt ? formatPlanEndDate(new Date(r.effectiveAt)) : null) }
+    const name = ADDON_NAMES[addonId]
+    if (r.ok && r.kind === 'on') return { ok: true, message: addonOnDone(name) }
+    if (r.ok && r.kind === 'kept') return { ok: true, message: addonKeepDone(name) }
+    if (r.ok) return { ok: true, message: addonOffDone(name, r.effectiveAt ? formatPlanEndDate(new Date(r.effectiveAt)) : null) }
     if (r.code === 'tip_drop_needed') return { ok: false, message: `${ADDON_NAMES[addonId]}: ${r.message}`, code: 'tip_drop_needed', tipDollars: r.tipDollars }
     if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }
     if (r.code === 'in_progress') return { ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' }
-    if (r.code === 'not_applied') return { ok: false, message: r.refunded ? ADDON_NOT_APPLIED_REFUNDED : ADDON_NOT_APPLIED_CHARGED }
-    return { ok: false, message: addonRefusalMessage(r.code) }
+    if (r.code === 'not_applied') return { ok: false, message: r.refunded ? addonRefunded(name) : addonRefundFailed(name) }
+    // Paid, not on yet: the invoice.paid self-heal adds it (or refunds automatically).
+    if (r.code === 'finishing') return { ok: false, message: addonFinishing(name), code: 'finishing' }
+    return { ok: false, message: addonRefusalMessage(r.code, addonId, 'switchAt' in r ? r.switchAt : null) }
   } catch (e) {
     console.error('[changeAddon] failed', e instanceof Error ? e.message : e)
     return { ok: false, message: ADDON_ERROR }

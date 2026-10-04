@@ -404,42 +404,60 @@ export function starterSmallEditAddonLine(show: boolean = showAiEditQuota): stri
   return show ? `${base} Or make the change yourself with the AI builder, at no extra cost.` : base
 }
 export const addonPriceLine = (cents: number) => `${dollars(cents)}/month`
-/** Inline confirm when turning one on would push Starter past its total: never lower a tip silently. */
+/** New checkout (no plan yet): turning one on would push Starter past its total; the tip drops right away. */
 export const addonTipDropQuestion = (tipDollars: number, name: string) => `Your tip will drop to $${tipDollars}. Turn on ${name}?`
 export const ADDON_TURN_ON = 'Turn on'
-/** Live plan, no tip change: the inline confirm's question. */
-export const addonTurnOnQuestion = (name: string) => `Turn on ${name}?`
 /** Tip card next to the add-ons block: the tip amount only (the one total is in the action area). */
 export const tipAmountLine = (tipDollars: number) => (tipDollars > 0 ? `$${tipDollars} tip` : 'No tip')
 export const ADDON_CANCEL = 'Cancel'
-/** [Sable] Live plan confirm: turning one on charges its full monthly price now (never prorated, Aria Oct 4). */
-export const addonChargeNowLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} now for this billing period.`
-export const ADDON_CHARGE_NOW_FALLBACK = "We'll charge the full monthly price now for this billing period."
+
+// ---- [Sable, final 9:05 AM Oct 4] add-on strings, word for word. {name} = ADDON_NAMES, prices = ADDONS.
+// Turn on (live plan only). While the preview loads: UPGRADE_CALCULATING ("Checking the amount…").
+export const addonTurnOnQuestion = (name: string) => `Turn on ${name}?`
+/** The real amount from the server-side Stripe preview (no account credit used). */
+export const addonChargeNowLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} today for this billing period.`
+/** Account credit pays part of it: the amount still charged to the card. */
+export const addonChargeAfterCreditLine = (amountDueCents: number) => `We'll charge ${dollars(amountDueCents)} today, after your account credit.`
+/** Account credit pays all of it. */
+export const ADDON_CREDIT_COVERS = 'Nothing is charged today. Your account credit covers it.'
 export const addonThenLine = (nextCents: number, date: string | null) =>
-  date ? `Then ${dollars(nextCents)}/month from ${date}.` : `Then ${dollars(nextCents)}/month.`
-/** Live plan: turning one off is at the end of the billing period. */
+  date ? `Then ${dollars(nextCents)}/month starting ${date}.` : `Then ${dollars(nextCents)}/month.`
+/** The preview failed: the add-on's full price is the most it can charge (credit can only lower it). */
+export const addonChargeUpToLine = (priceCents: number) => `We'll charge up to ${dollars(priceCents)} today for this billing period.`
+/** Live plan, Starter tip drop: the tip goes down from the next renewal (this period's tip is already paid). */
+export const addonTipGoesDownQuestion = (tipDollars: number, date: string | null, name: string) =>
+  date ? `Your tip goes down to $${tipDollars} starting ${date}. Turn on ${name}?` : `Your tip goes down to $${tipDollars} starting your next bill. Turn on ${name}?`
+// Turn off and keep.
 export const addonOffQuestion = (name: string, date: string | null) =>
   date ? `Turn off ${name}? It stays on until ${date}, then it ends.` : `Turn off ${name}? It stays on until the end of this billing period.`
 export const ADDON_TURN_OFF = 'Turn off'
 export const addonEndsLine = (date: string | null) => (date ? `Ends ${date}` : 'Ends at the end of this billing period')
 export const ADDON_KEEP = 'Keep it'
-export const ADDON_ON_DONE = 'Add-on is on.'
-export const addonOffDone = (date: string | null) => (date ? `Add-on ends ${date}.` : 'Add-on ends at the end of this billing period.')
-export const ADDON_KEEP_DONE = 'Add-on stays on.'
+export const addonOnDone = (name: string) => `${name} is on.`
+export const addonOffDone = (name: string, date: string | null) => (date ? `${name} ends ${date}.` : `${name} ends at the end of this billing period.`)
+export const addonKeepDone = (name: string) => `${name} stays on.`
+// Locks (the note on the card AND the server refusal).
 export const addonsLockedBySwitch = (date: string | null) =>
-  date ? `Add-ons can change after ${date}, or keep your current plan.` : 'Add-ons can change after your plan switch, or keep your current plan.'
-export const ADDONS_LOCKED_BY_REMOVAL = 'An add-on is set to end. Keep it, or turn more on after that date.'
-export const ADDONS_LEGACY_NOTE = 'Add-ons are for the current plans. Pick a plan above to add them.'
-export const ADDON_ERROR = "That didn't go through. Nothing changed. Try again."
-export const ADDON_PAYMENT_FAILED = 'The card was not charged, so the add-on is still off.'
-/** [Sable] Charged, but Stripe did not add the add-on; the charge was reversed automatically (credit note refund). */
-export const ADDON_NOT_APPLIED_REFUNDED = "That didn't go through, so the add-on is still off. The charge has been reversed to your card."
-/** [Sable] Charged, Stripe did not add it, and the automatic reversal failed too (logged for admin). */
-export const ADDON_NOT_APPLIED_CHARGED = "That didn't go through, so the add-on is still off. Email support@freeplug-in.dev and we'll sort out the charge."
-/** Server refusals. */
+  date ? `You can change add-ons after your switch on ${date}.` : 'You can change add-ons after your plan switch.'
+export const ADDONS_LOCKED_BY_REMOVAL = 'An add-on is set to end. Choose Keep it, or wait until it ends to make other changes.'
+export const ADDONS_LEGACY_NOTE = "Add-ons aren't available on your plan. To use them, switch to one of the plans above."
+// Errors.
+export const ADDON_ERROR = "We couldn't change your add-ons right now. Try again, or email support@freeplug-in.dev."
+export const addonPaymentFailed = (name: string) =>
+  `Your card wasn't charged, so ${name} is still off. Update your card in Manage billing, then try again.`
+/** Paid, the add-on not on yet: the self-heal (invoice.paid webhook) finishes it or refunds automatically. */
+export const addonFinishing = (name: string) =>
+  `Your payment went through. We're finishing turning on ${name}. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically.`
+export const addonRefunded = (name: string) =>
+  `We couldn't turn on ${name}, so we've refunded the charge to your card. It can take 5–10 business days to show.`
+export const addonRefundFailed = (name: string) =>
+  `We couldn't turn on ${name}, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge.`
+/** Server refusals (no date known): the same lock lines. */
 export const ADDON_TURN_OFF_FIRST = 'Turn off an add-on first'
-export const ADDON_PENDING_SWITCH = 'A plan switch is planned. Add-ons can change after it, or keep your current plan.'
-export const ADDON_PENDING_REMOVAL = 'An add-on is set to end. Keep it first, or wait until it ends.'
+export const ADDON_PENDING_SWITCH = addonsLockedBySwitch(null)
+export const ADDON_PENDING_REMOVAL = ADDONS_LOCKED_BY_REMOVAL
+/** Help chat small-edit line (Starter without +1 small edit): the link after it. */
+export const GO_TO_PLANS = 'Go to Plans'
 /** Upgrade confirm: one gray line listing the add-ons that are on (omitted when none). */
 export const addonsStayOnLine = (names: readonly string[] | string) => `Your add-ons stay on: ${([] as string[]).concat(names).join(', ')}.`
 /** Pending switch line on the Plans page / dashboard when the plan switch keeps add-ons. */

@@ -109,6 +109,15 @@ describe('HelpChat', () => {
       walkToReview()
       expect(screen.getByTestId('small-edit-addon-note')).toHaveTextContent(`${LINE} ${AI}`)
     })
+    it('Sable 9:05: a "Go to Plans" link right after the line, to the Plans page', () => {
+      setup({ smallEditAddonNote: starterSmallEditAddonLine(false) })
+      walkToReview()
+      const note = screen.getByTestId('small-edit-addon-note')
+      const link = screen.getByRole('link', { name: 'Go to Plans' })
+      expect(link).toHaveAttribute('href', '/dashboard/plans')
+      expect(note).toContainElement(link)
+      expect(note).toHaveTextContent(`${LINE} Go to Plans`)
+    })
     it('the default follows the flag in ladder.ts (false on a5806f0)', () => {
       expect(starterSmallEditAddonLine()).toBe(LINE)
     })
