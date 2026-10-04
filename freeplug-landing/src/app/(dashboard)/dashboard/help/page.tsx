@@ -221,7 +221,7 @@ const guides = [
       'Business description and tagline',
       'Contact information',
       'Photos of your business, products, or team',
-      'Examples of websites you like',
+      'Examples of websites you like: you can pick a few yourself, or let us pick for you. We recommend letting us pick.',
     ],
   },
 ]
