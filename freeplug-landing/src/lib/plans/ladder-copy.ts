@@ -70,9 +70,13 @@ export const LEGACY_PLAN_NOTE =
   'Already have an add-on? You keep it at the same price. You can switch to one of these plans on the Plans page at any time.'
 export const LEGACY_PLAN_LABEL = 'Your current plan (no longer sold)'
 export const INCLUDED_EDIT_LINE = (used: number, available: number) =>
-  used >= available
-    ? 'Your included edit: used this billing period.'
-    : `Your included edit: ${available - used} available this billing period.`
+  available > 1
+    ? used >= available
+      ? 'Your included edits: all used this billing period.'
+      : `Your included edits: ${available - used} of ${available} available this billing period.`
+    : used >= available
+      ? 'Your included edit: used this billing period.'
+      : `Your included edit: ${available - used} available this billing period.`
 export const NEXT_BUSINESS_DAY_LINE = `Small edits: ${NEXT_BUSINESS_DAY_TARGET}.`
 /**
  * AI-edit line for a step card. null while showAiEditQuota (ladder.ts) is false, which it stays until

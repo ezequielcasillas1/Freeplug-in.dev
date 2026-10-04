@@ -171,14 +171,17 @@ describe('next business day due time (5 PM Central, Mon-Fri; holidays: due-by.te
 })
 
 describe('included small edit (one per billing period, no rollover)', () => {
-  function memStore(): IncludedEditStore & { rows: { user_id: string; period_start: string; request_id: string }[] } {
-    const rows: { user_id: string; period_start: string; request_id: string }[] = []
+  function memStore(): IncludedEditStore & { rows: { user_id: string; period_start: string; request_id: string; slot?: number }[] } {
+    const rows: { user_id: string; period_start: string; request_id: string; slot?: number }[] = []
     return {
       rows,
       async insertUse(row) {
-        // Mirrors UNIQUE (user_id, period_start) and UNIQUE (request_id) in the migration.
-        if (rows.some((r) => (r.user_id === row.user_id && r.period_start === row.period_start) || r.request_id === row.request_id)) {
-          return { code: '23505', message: 'duplicate key value violates unique constraint' }
+        // Mirrors UNIQUE (user_id, period_start, slot) and UNIQUE (request_id) (migration 20261004091000).
+        if (rows.some((r) => r.user_id === row.user_id && r.period_start === row.period_start && r.slot === row.slot)) {
+          return { code: '23505', message: 'duplicate key value violates unique constraint "included_edit_uses_user_period_slot_key"' }
+        }
+        if (rows.some((r) => r.request_id === row.request_id)) {
+          return { code: '23505', message: 'duplicate key value violates unique constraint "included_edit_uses_request_id_key"' }
         }
         rows.push(row)
         return null
@@ -189,14 +192,14 @@ describe('included small edit (one per billing period, no rollover)', () => {
 
   it('records one use, refuses a second in the same period, allows the next period', async () => {
     const s = memStore()
-    expect(await recordIncludedEdit(s, { userId: 'u1', requestId: 'r1', includedEditsPerMonth: 1, periodStart: period })).toEqual({ ok: true })
+    expect(await recordIncludedEdit(s, { userId: 'u1', requestId: 'r1', includedEditsPerMonth: 1, periodStart: period })).toEqual({ ok: true, slot: 1 })
     expect(await recordIncludedEdit(s, { userId: 'u1', requestId: 'r2', includedEditsPerMonth: 1, periodStart: period })).toMatchObject({
       ok: false,
       reason: 'already_used',
     })
     expect(
       await recordIncludedEdit(s, { userId: 'u1', requestId: 'r3', includedEditsPerMonth: 1, periodStart: new Date('2026-11-01T05:00:00Z') })
-    ).toEqual({ ok: true })
+    ).toEqual({ ok: true, slot: 1 })
     expect(s.rows).toHaveLength(2)
   })
 

@@ -10,7 +10,7 @@ import { parseBuyoutPriceInput } from '@/lib/buyout/buyout'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { getStripe } from '@/lib/stripe/server'
 import { subscriptionPeriodStart } from '@/lib/stripe/subscription-dates'
-import { recordIncludedEdit } from '@/lib/plans/included-edits'
+import { recordBigChange, recordIncludedEdit } from '@/lib/plans/included-edits'
 import { nextBusinessDayDue } from '@/lib/plans/due-by'
 import { redirect } from 'next/navigation'
 import { expireUnsellableCheckoutSessions, type ExpireUnsellableReport } from '@/lib/stripe/expire-unsellable-checkouts'
@@ -216,8 +216,8 @@ export async function adminSetBuyoutPrice(
 /**
  * Hosting ladder (admin only): mark a request as a small edit.
  *   * Fast lane and up: sets website_requests.due_by to the end of the next business day.
- *   * useIncludedEdit: also records the plan's one included edit for the current billing period in
- *     included_edit_uses; the UNIQUE (user_id, period_start) constraint refuses a second one.
+ *   * useIncludedEdit: also records one of the plan's included edits for the current billing period in
+ *     included_edit_uses (the step's 1 + the "+1 small edit" add-on; slots refuse a third).
  * Entitlements are read from Stripe (lookup key / metadata, or the grandfathered add-on).
  */
 export async function adminMarkSmallEdit(
@@ -275,6 +275,50 @@ export async function adminMarkSmallEdit(
   } else if (!opts.useIncludedEdit) {
     return { ok: false, error: "This customer's plan doesn't include next-business-day edits." }
   }
+  revalidatePath('/admin', 'layout')
+  revalidatePath('/dashboard')
+  return { ok: true }
+}
+
+/**
+ * Add-ons (Oct 4, admin only): mark a request as the customer's Big change for the current billing
+ * period (big_change_uses; one per period, and never a request already counted as a small edit).
+ * Needs the Big change add-on (entitlements: webhook snapshot, Stripe for a never-synced profile).
+ * Like adminMarkSmallEdit, the billing period comes from the ACTIVE subscription only.
+ */
+export async function adminMarkBigChange(requestId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdminAccess()
+  if (!uuidSchema.safeParse(requestId).success) return { ok: false, error: 'Invalid request id' }
+  let admin
+  try {
+    admin = createAdminClient()
+  } catch {
+    return { ok: false, error: 'Admin client unavailable' }
+  }
+  const { data: req, error: reqErr } = await admin.from('website_requests').select('id, user_id, status').eq('id', requestId).maybeSingle()
+  if (reqErr || !req) return { ok: false, error: reqErr?.message ?? 'Request not found' }
+  const { data: prof } = await admin.from('profiles').select('stripe_customer_id').eq('id', req.user_id).maybeSingle()
+  const customerId = (prof?.stripe_customer_id as string | null) ?? null
+  if (!customerId) return { ok: false, error: 'This customer has no hosting plan.' }
+  let ent, periodStart: Date | null = null
+  try {
+    const stripe = getStripe()
+    ent = (await getUserEntitlements(admin, req.user_id as string, customerId, stripe)).entitlements
+    const subs = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 10 })
+    periodStart = subs.data[0] ? subscriptionPeriodStart(subs.data[0]) : null
+  } catch (e) {
+    return { ok: false, error: `Stripe lookup failed: ${e instanceof Error ? e.message : String(e)}` }
+  }
+  const res = await recordBigChange(
+    {
+      async insertUse(row) {
+        const { error } = await admin.from('big_change_uses').insert(row)
+        return error ? { code: error.code, message: error.message } : null
+      },
+    },
+    { userId: req.user_id as string, requestId, bigChangesPerMonth: ent.bigChangesPerMonth, periodStart }
+  )
+  if (!res.ok) return { ok: false, error: res.message }
   revalidatePath('/admin', 'layout')
   revalidatePath('/dashboard')
   return { ok: true }

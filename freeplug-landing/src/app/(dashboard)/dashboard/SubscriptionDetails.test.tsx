@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { SubscriptionDetails } from './SubscriptionDetails'
 import type { SubscriptionDetail } from './dashboard-actions'
-import { cumulativePerks, entitlementsFor } from '@/lib/plans/ladder'
+import { cumulativePerks, entitlementsFor, withAddons } from '@/lib/plans/ladder'
 import { CHANGE_PLAN_LINK, INCLUDED_EDIT_LINE, LEGACY_PLAN_LABEL, PERK_LINES } from '@/lib/plans/ladder-copy'
 
 function plan(amount: number): SubscriptionDetail {
@@ -218,5 +218,32 @@ describe('Active Subscriptions list name (Sable 5:11 PM)', () => {
     render(<SubscriptionDetails subscriptions={[{ ...plan(6900), productName: 'Freeplug Hosting: Fast lane + Optional monthly tip', planName: 'Fast lane', listName: 'Fast lane + $4 tip', entitlements: entitlementsFor({ stepId: 'fast_lane' }) }]} />)
     expect(screen.getByRole('heading', { name: 'Fast lane + $4 tip' })).toBeInTheDocument()
     expect(document.body).not.toHaveTextContent(/Optional monthly tip|Freeplug Hosting:/)
+  })
+})
+
+describe('add-on lines (Oct 4)', () => {
+  it('Big change used count, 2 included edits with the add-on, and add-ons that end', () => {
+    const ent = withAddons(entitlementsFor({ stepId: 'fast_lane' }), ['small_edit', 'big_change'])
+    render(
+      <SubscriptionDetails
+        subscriptions={[
+          {
+            ...plan(6500),
+            entitlements: ent,
+            includedEdit: { used: 1, available: 2 },
+            bigChange: { used: 0, available: 1 },
+            addonsEnding: { names: ['Big change'], date: 'November 3, 2026' },
+          },
+        ]}
+      />
+    )
+    expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(1, 2))
+    expect(screen.getByTestId('big-change')).toHaveTextContent('Big change: 0 of 1 used this period')
+    expect(screen.getByTestId('home-addons-ending')).toHaveTextContent('Big change ends November 3, 2026.')
+  })
+  it('no add-ons: no Big change line, no ending line', () => {
+    render(<SubscriptionDetails subscriptions={[{ ...plan(3500), entitlements: entitlementsFor({ stepId: 'starter' }) }]} />)
+    expect(screen.queryByTestId('big-change')).toBeNull()
+    expect(screen.queryByTestId('home-addons-ending')).toBeNull()
   })
 })
