@@ -13,6 +13,17 @@ describe('firstPaymentDate', () => {
     const d = firstPaymentDate(null, [{ start_date: T('2026-10-20T00:00:00Z') }, { start_date: null, created: T(FIRST) }])
     expect(d?.toISOString()).toBe('2026-10-03T19:03:30.000Z')
   })
+  it('the fallback skips incomplete, incomplete_expired and trialing subscriptions', () => {
+    const early = T('2026-09-01T00:00:00Z')
+    const d = firstPaymentDate(null, [
+      { status: 'incomplete', start_date: early },
+      { status: 'incomplete_expired', start_date: early },
+      { status: 'trialing', start_date: early },
+      { status: 'canceled', start_date: T(FIRST) },
+    ])
+    expect(d?.toISOString()).toBe('2026-10-03T19:03:30.000Z')
+    expect(firstPaymentDate(null, [{ status: 'trialing', start_date: early }])).toBeNull()
+  })
   it('ignores an unparseable ledger date and empty or zero starts', () => {
     expect(firstPaymentDate('not a date', [{ start_date: 0 }, {}])).toBeNull()
     expect(firstPaymentDate(undefined)).toBeNull()

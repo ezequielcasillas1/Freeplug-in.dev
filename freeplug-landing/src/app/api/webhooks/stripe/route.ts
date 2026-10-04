@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { invoiceTipCents } from '@/lib/plans/tips'
+import { invoicePaidAtIso } from '@/lib/stripe/invoice-paid-at'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -214,10 +215,14 @@ export async function POST(request: Request) {
         break
       }
 
+      // created_at = when Stripe says it was paid, not when this delivery landed (Vera, Oct 4): a retried
+      // or replayed invoice.paid must not move Customer Since or the Recent activity date forward.
+      const paidAt = invoicePaidAtIso(inv)
       const ledgerRow = {
         profile_id: profile.id,
         stripe_invoice_id: inv.id,
         amount_cents: inv.amount_paid,
+        ...(paidAt ? { created_at: paidAt } : {}),
       }
       // The tipping system: the tip part of this payment, shown on its own (admin, ledger). The
       // total stays amount_paid, so every existing total is unchanged.
