@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
+import { carriedPendingCents, upcomingBill, type UpcomingBill } from '@/lib/stripe/next-bill'
 import type Stripe from 'stripe'
 import {
   daysUntil,
@@ -13,7 +14,7 @@ import { RESUME_PLAN_ANCHOR_HREF, subscriptionEndingMessage } from '@/lib/dashbo
 import { planDisplayName, planNameOf, subscriptionListName, type PlanDisplayItem } from '@/lib/stripe/plan-line'
 import { isTipPrice } from '@/lib/plans/tips'
 import { isAddonPrice } from '@/lib/plans/addons'
-import { ADDON_NAMES } from '@/lib/plans/ladder-copy'
+import { ADDON_NAMES, renewalCarriedLine } from '@/lib/plans/ladder-copy'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
@@ -78,6 +79,8 @@ export type DashboardAlert = {
   type: 'info' | 'warning' | 'success' | 'action'
   title: string
   message: string
+  /** A gray small line under the message (Sable: the carried amount under the next-payment line). */
+  detail?: string
   actionLabel?: string
   actionHref?: string
 }
@@ -102,6 +105,19 @@ function logActivityQueryError(source: string, error: { code?: string; message?:
     code: error.code ?? null,
     message: error.message ?? null,
   })
+}
+
+/** Aria 2:40 PM: the upcoming invoice when a carried small amount is pending (else, or on an error, null). */
+async function upcomingWithCarried(customerId: string, subscriptionId: string): Promise<UpcomingBill | null> {
+  try {
+    const stripe = getStripe()
+    if ((await carriedPendingCents(stripe, customerId)) <= 0) return null
+    const bill = await upcomingBill(stripe, subscriptionId)
+    return bill.carriedCents > 0 ? bill : null
+  } catch (e) {
+    console.error('[dashboard] upcoming invoice preview failed', e instanceof Error ? e.message : e)
+    return null
+  }
 }
 
 /**
@@ -368,11 +384,16 @@ export async function getEnhancedDashboardData(
     const daysUntilBilling = daysUntil(activeSubscription.currentPeriodEnd)
     // No period end from Stripe: skip the reminder rather than show "NaN days".
     if (daysUntilBilling != null && daysUntilBilling <= 7 && daysUntilBilling > 0) {
+      // Aria 2:40 PM / Sable: a small amount carried from the last change still unbilled = the amount is
+      // Stripe's upcoming-invoice total, with the carried part on a gray line under it. Else unchanged.
+      const carried = profile?.stripe_customer_id ? await upcomingWithCarried(profile.stripe_customer_id, activeSubscription.id) : null
+      const amount = carried?.totalCents ?? activeSubscription.amount
       alerts.push({
         id: 'upcoming-billing',
         type: 'info',
         title: 'Upcoming billing',
-        message: `Your next payment of $${(activeSubscription.amount / 100).toFixed(2)} is due in ${daysUntilBilling} day${daysUntilBilling === 1 ? '' : 's'}.`,
+        message: `Your next payment of $${(amount / 100).toFixed(2)} is due in ${daysUntilBilling} day${daysUntilBilling === 1 ? '' : 's'}.`,
+        ...(carried ? { detail: renewalCarriedLine(carried.carriedCents) } : {}),
       })
     }
   }

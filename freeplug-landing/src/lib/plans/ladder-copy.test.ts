@@ -184,6 +184,10 @@ describe('Aria 9:27 / 9:28: new strings (listed for Sable), word for word', () =
     expect(copy.addonRefundSplitLine(0, 575)).toBe('We added $5.75 back to your account credit.')
     expect(copy.addonRefundSplitLine(75, 500, 35)).toBe('We refunded $0.75 to your card and added $5 back to your account credit.')
   })
+  it('Sable (final, Aria 2:40 PM): the renewal gray line while a carried small amount is pending; the main line is unchanged', () => {
+    expect(copy.renewalCarriedLine(35)).toBe('Includes $0.35 left from your last change.')
+    expect(copy.TIP_NEXT_BILL('$71.35', 'Nov 3')).toBe('Your next bill will be $71.35 on Nov 3.')
+  })
   it('discount or tax: the refusal', () => {
     expect(copy.ADDON_PRICE_UNCONFIRMED).toBe("We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help.")
   })

@@ -38,6 +38,7 @@ import {
   TIP_IN_PROGRESS,
   TIP_NEXT_BILL,
   TIP_NEXT_BILL_NO_DATE,
+  renewalCarriedLine,
   TIP_NOT_FOR_PLAN,
   TIP_OUT_OF_RANGE,
   TIP_CHANGE_ENDING,
@@ -353,9 +354,10 @@ export async function cancelHostingAtPeriodEnd(): Promise<void> {
 
 export type TipPreviewResponse =
   /** confirmId: one per preview, sent back with that Confirm (idempotency per Confirm, Vera B2). */
-  | { ok: true; tipDollars: number; nextAmountCents: number; nextDate: string | null; confirmId: string }
+  | { ok: true; tipDollars: number; nextAmountCents: number; nextDate: string | null; confirmId: string; carriedCents?: number }
   | { ok: false; message: string }
-export type ChangeTipResponse = { ok: boolean; message: string }
+/** carriedNote: Sable's gray line under the next-bill line while a carried small amount is pending (Aria 2:40 PM). */
+export type ChangeTipResponse = { ok: boolean; message: string; carriedNote?: string }
 
 function tipRefusalMessage(code: TipChangeRefusal | 'mismatch' | 'rate_limited'): string {
   if (code === 'pending_change') return TIP_CHANGE_PENDING
@@ -397,6 +399,7 @@ export async function previewTipChangeAction(tipDollars: number): Promise<TipPre
       nextAmountCents: p.nextAmountCents,
       nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null,
       confirmId: crypto.randomUUID(),
+      carriedCents: p.carriedCents,
     }
   } catch (e) {
     console.error('[previewTipChange] failed', e instanceof Error ? e.message : e)
@@ -439,7 +442,11 @@ async function runTipChange(tipDollars: number, confirmId?: string): Promise<Cha
     const amount = `$${(r.nextAmountCents / 100).toFixed(r.nextAmountCents % 100 === 0 ? 0 : 2)}`
     const date = r.nextBillingAt ? formatPlanEndDate(new Date(r.nextBillingAt)) : null
     // The tip box shows "Saved." + the next-bill line the customer confirmed; this is the fallback.
-    return { ok: true, message: TIP_CHANGED(date ? TIP_NEXT_BILL(amount, date) : TIP_NEXT_BILL_NO_DATE(amount)) }
+    return {
+      ok: true,
+      message: TIP_CHANGED(date ? TIP_NEXT_BILL(amount, date) : TIP_NEXT_BILL_NO_DATE(amount)),
+      ...(r.carriedCents && r.carriedCents > 0 ? { carriedNote: renewalCarriedLine(r.carriedCents) } : {}),
+    }
   } catch (e) {
     console.error('[changeTip] failed', e instanceof Error ? e.message : e)
     return { ok: false, message: TIP_CHANGE_UNAVAILABLE }

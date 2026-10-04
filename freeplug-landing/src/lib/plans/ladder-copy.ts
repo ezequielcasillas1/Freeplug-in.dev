@@ -349,6 +349,13 @@ export const TIP_CHANGE_BUTTON = 'Update tip'
 export const TIP_NEXT_BILL = (amount: string, date: string) => `Your next bill will be ${amount} on ${date}.`
 /** [Sable] Same, when the date is unknown. */
 export const TIP_NEXT_BILL_NO_DATE = (amount: string) => `Your next bill will be ${amount}.`
+/**
+ * [Final, Sable Oct 4 ~2:43 PM CT; Aria 2:40 ruling] Renewal lines while a small amount carried from the last
+ * change is still unbilled: the main line stays the existing one ("Your next bill will be {total} on
+ * {date}.", the dashboard reminder) with {total} = Stripe's upcoming-invoice total, and this gray small line
+ * goes under it (styled like addonCarriedBreakdown). Nothing carried = no gray line.
+ */
+export const renewalCarriedLine = (carriedCents: number) => `Includes ${dollars(carriedCents)} left from your last change.`
 /** [Sable] Plans page: after saving; `nextBill` is the TIP_NEXT_BILL line the customer confirmed. */
 export const TIP_CHANGED = (nextBill: string) => `Your tip is updated. ${nextBill}`
 /** [Sable] Plans page: a switch is planned, so the tip can't change now. */

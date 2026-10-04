@@ -18,6 +18,7 @@ import {
   addonRefundSplit,
 } from './addon-refund-info'
 import { REMOVAL_RESCHEDULE_TRIES, withRetries } from './retry'
+import { carriedPendingCents, upcomingBill } from './next-bill'
 import type { RemovalOwedInput, RemovalOwedUnrecorded } from './addon-removal-owed'
 import { ADDON_MIN_CHARGE_CENTS, addonCapCheck, addonCentsInTipTotal, addonCentsOfItems, addonIdsOfItems, addonItemsOf, addonOfPrice, parseAddonIds } from '../plans/addons'
 import { ADDON_NAMES, ADDON_PENDING_REMOVAL, ADDON_PENDING_SWITCH, ADDON_PRICE_UNCONFIRMED, ADDON_REFUND_REASONS, ADDON_TURN_OFF_FIRST, type AddonRefundReason } from '../plans/ladder-copy'
@@ -912,6 +913,8 @@ export type TipChangePreview =
       tipDollars: number
       /** The next regular invoice after the change (step price + new tip, after any customer credit). */
       nextAmountCents: number
+      /** Aria 2:40 PM: a small amount carried from the last change, included in nextAmountCents (0 = none). */
+      carriedCents: number
       currency: string
       nextBillingAt: string | null
       unchanged: boolean
@@ -919,7 +922,7 @@ export type TipChangePreview =
   | { ok: false; code: TipChangeRefusal; message: string }
 
 export type TipChangeResult =
-  | { ok: true; kind: 'changed' | 'unchanged'; step: PlanStepId; tipDollars: number; nextAmountCents: number; nextBillingAt: string | null }
+  | { ok: true; kind: 'changed' | 'unchanged'; step: PlanStepId; tipDollars: number; nextAmountCents: number; nextBillingAt: string | null; carriedCents?: number }
   | { ok: false; code: TipChangeRefusal | TipChangeFailure; message: string }
 
 /** A per-Confirm id from the tip preview (or the client); anything else gets a fresh random id. */
@@ -1001,7 +1004,8 @@ export async function previewTipChange(
   const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
   const computed = check.step.monthlyCents + addonCentsOfItems(sub.items.data) + next * 100
   if (check.items.length === 0) {
-    return { ok: true, step: check.step.id, tipDollars: next, nextAmountCents: computed, currency: 'usd', nextBillingAt: end ? end.toISOString() : null, unchanged: true }
+    const bill = await carriedRenewal(deps.stripe, sub)
+    return { ok: true, step: check.step.id, tipDollars: next, nextAmountCents: bill?.totalCents ?? computed, carriedCents: bill?.carriedCents ?? 0, currency: 'usd', nextBillingAt: end ? end.toISOString() : null, unchanged: true }
   }
   const preview = await deps.stripe.invoices.createPreview({
     subscription: sub.id,
@@ -1012,9 +1016,28 @@ export async function previewTipChange(
     step: check.step.id,
     tipDollars: next,
     nextAmountCents: preview.amount_due,
+    // Aria 2:40 PM: Stripe adds a carried small amount (debit balance) to this invoice; amount_due has it.
+    carriedCents: Math.max(0, preview.starting_balance ?? 0),
     currency: preview.currency,
     nextBillingAt: end ? end.toISOString() : null,
     unchanged: false,
+  }
+}
+
+/**
+ * Aria 2:40 PM: with a small amount carried from the last change still unbilled, the renewal line is
+ * Stripe's upcoming-invoice total (with the carried part); null = nothing carried (or the preview failed:
+ * the caller keeps its existing line, logged).
+ */
+async function carriedRenewal(stripe: Stripe, sub: Sub): Promise<{ nextAmountCents: number; totalCents: number; carriedCents: number } | null> {
+  const carried = await carriedPendingCents(stripe, sub.customer as string | { id: string } | null)
+  if (carried <= 0) return null
+  try {
+    const bill = await upcomingBill(stripe, sub.id)
+    return bill.carriedCents > 0 ? { nextAmountCents: bill.totalCents, ...bill } : null
+  } catch (e) {
+    console.error(`[tip] upcoming invoice preview failed on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`)
+    return null
   }
 }
 
@@ -1035,7 +1058,7 @@ export async function changeTip(
   const end = subscriptionPeriodEnd(sub as Stripe.Subscription)
   const nextBillingAt = end ? end.toISOString() : null
   const nextAmountCents = check.step.monthlyCents + addonCentsOfItems(sub.items.data) + next * 100
-  if (check.items.length === 0) return { ok: true, kind: 'unchanged', step: check.step.id, tipDollars: next, nextAmountCents, nextBillingAt }
+  if (check.items.length === 0) return { ok: true, kind: 'unchanged', step: check.step.id, tipDollars: next, nextBillingAt, ...((await carriedRenewal(deps.stripe, sub)) ?? { nextAmountCents }) }
   const updated = await deps.stripe.subscriptions.update(
     sub.id,
     { items: check.items, proration_behavior: 'none' },
@@ -1053,7 +1076,8 @@ export async function changeTip(
     console.error('[changeTip] MISMATCH after Stripe update', { sub: sub.id, requestedTip: next, stripeTip: gotTip, requestedStep: check.step.id, stripeStep: gotStep })
     return { ok: false, code: 'mismatch', message: 'Stripe did not apply the requested tip.' }
   }
-  return { ok: true, kind: 'changed', step: check.step.id, tipDollars: next, nextAmountCents, nextBillingAt }
+  // Aria 2:40 PM: a carried small amount pending = the renewal line is Stripe's upcoming invoice (read after the change).
+  return { ok: true, kind: 'changed', step: check.step.id, tipDollars: next, nextBillingAt, ...((await carriedRenewal(deps.stripe, sub)) ?? { nextAmountCents }) }
 }
 
 // ------------------------------------------------------------------ add-ons (Oct 4): on / off / keep

@@ -317,10 +317,31 @@ export function createStripeSim(init: { nowSec: number; credit?: number }) {
           }),
         voidInvoice: (id: string) => call('invoices.void', () => Object.assign(getInv(id), { status: 'void' as const })),
         del: (id: string) => call('invoices.del', () => (invoices.delete(id), { id, deleted: true })),
-        createPreview: (p: { customer: string; subscription_details?: { items?: { price: string }[] } }) =>
+        createPreview: (p: {
+          customer?: string
+          subscription?: string
+          subscription_details?: { items?: { id?: string; price?: string; quantity?: number; deleted?: boolean }[]; proration_behavior?: string }
+        }) =>
           call('invoices.createPreview', () => {
-            const total = (p.subscription_details?.items ?? []).reduce((n, i) => n + prices.get(i.price)!.unit_amount, 0) + previewAdjust.cents
-            const bal = customers.get(p.customer)!.balance
+            if (p.subscription) {
+              // The subscription's upcoming invoice (its next renewal), like Stripe's: the items after the given
+              // changes (proration none), the add_invoice_items waiting for it, and the customer balance applied
+              // as at finalize (a debit, e.g. an invoice_too_small amount, is added; credit is used first).
+              const s = subs.get(p.subscription)!
+              let items = s.items.data.map((i) => ({ id: i.id as string | undefined, price: i.price.id, quantity: i.quantity ?? 1 }))
+              for (const ch of p.subscription_details?.items ?? []) {
+                if (ch.id && ch.deleted) items = items.filter((i) => i.id !== ch.id)
+                else if (ch.id) items = items.map((i) => (i.id === ch.id ? { ...i, price: ch.price ?? i.price, quantity: ch.quantity ?? i.quantity } : i))
+                else items.push({ id: undefined, price: ch.price!, quantity: ch.quantity ?? 1 })
+              }
+              const total =
+                items.reduce((n, i) => n + prices.get(i.price)!.unit_amount * i.quantity, 0) + (pendingLines.get(s.id) ?? []).reduce((n, l) => n + l.amount, 0)
+              const bal = customers.get(s.customer)!.balance
+              const applied = bal < 0 ? -Math.min(-bal, total) : bal
+              return { object: 'invoice', total, amount_due: total + applied, starting_balance: applied, currency: 'usd' }
+            }
+            const total = (p.subscription_details?.items ?? []).reduce((n, i) => n + prices.get(i.price!)!.unit_amount, 0) + previewAdjust.cents
+            const bal = customers.get(p.customer!)!.balance
             const applied = bal < 0 ? -Math.min(-bal, total) : bal
             return { object: 'invoice', total, amount_due: total + applied, starting_balance: applied, currency: 'usd' }
           }),

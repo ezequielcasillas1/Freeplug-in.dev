@@ -625,7 +625,7 @@ describe('the tipping system: tip item vs plan changes', () => {
     const createPreview = vi.fn(async () => ({ amount_due: 7400, currency: 'usd' }))
     ;(f.raw as unknown as { invoices: Record<string, unknown> }).invoices.createPreview = createPreview
     const p = await previewTipChange(tipDeps(f), tipped('fast_lane', 3), 9)
-    expect(p).toEqual({ ok: true, step: 'fast_lane', tipDollars: 9, nextAmountCents: 7400, currency: 'usd', nextBillingAt: new Date(PERIOD_END * 1000).toISOString(), unchanged: false })
+    expect(p).toEqual({ ok: true, step: 'fast_lane', tipDollars: 9, nextAmountCents: 7400, carriedCents: 0, currency: 'usd', nextBillingAt: new Date(PERIOD_END * 1000).toISOString(), unchanged: false })
     expect(createPreview).toHaveBeenCalledWith({ subscription: 'sub_1', subscription_details: { items: [{ id: 'si_tip', quantity: 9 }], proration_behavior: 'none' } })
     expect(f.calls).toEqual([])
   })

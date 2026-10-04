@@ -16,6 +16,7 @@ import {
   TIP_LOCKED_NOTE,
   TIP_NEXT_BILL,
   TIP_NEXT_BILL_NO_DATE,
+  renewalCarriedLine,
   UPGRADE_CALCULATING,
   UPGRADE_CANCEL_BUTTON,
   UPGRADE_CONFIRM_BUTTON,
@@ -27,7 +28,7 @@ const charge = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 
 type Phase =
   | { phase: 'idle' }
   | { phase: 'loading' }
-  | { phase: 'confirm' | 'submitting'; text: string; tipDollars: number; confirmId?: string }
+  | { phase: 'confirm' | 'submitting'; text: string; tipDollars: number; confirmId?: string; carried?: string }
 
 type Props = {
   step: PlanStep
@@ -56,6 +57,8 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
   const [tip, setTip] = useState(currentTipDollars)
   const [state, setState] = useState<Phase>({ phase: 'idle' })
   const [notice, setNotice] = useState<string | null>(null)
+  /** Sable: the gray line under the next-bill line while a carried small amount is pending (Aria 2:40 PM). */
+  const [noticeCarried, setNoticeCarried] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
@@ -98,6 +101,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
   async function onUpdate() {
     setError(null)
     setNotice(null)
+    setNoticeCarried(null)
     const seq = ++previewSeq.current
     setState({ phase: 'loading' })
     try {
@@ -110,7 +114,8 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
         return
       }
       const text = p.nextDate ? TIP_NEXT_BILL(charge(p.nextAmountCents), p.nextDate) : TIP_NEXT_BILL_NO_DATE(charge(p.nextAmountCents))
-      setState({ phase: 'confirm', text, tipDollars: tip, confirmId: p.confirmId })
+      const carried = p.carriedCents && p.carriedCents > 0 ? renewalCarriedLine(p.carriedCents) : undefined
+      setState({ phase: 'confirm', text, tipDollars: tip, confirmId: p.confirmId, ...(carried ? { carried } : {}) })
     } catch {
       if (seq !== previewSeq.current) return
       setError('Network error. Try again.')
@@ -123,7 +128,10 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
     setState({ ...state, phase: 'submitting' })
     try {
       const r = await onChangeTip(state.tipDollars, state.confirmId)
-      if (r.ok) setNotice(TIP_CHANGED(state.text))
+      if (r.ok) {
+        setNotice(TIP_CHANGED(state.text))
+        setNoticeCarried(state.carried ?? null)
+      }
       else setError(r.message)
     } catch {
       setError('Network error. Try again.')
@@ -157,6 +165,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
             onChange={(t) => {
               setTip(t)
               setNotice(null)
+              setNoticeCarried(null)
             }}
             disabled={busy}
             help={TIP_CHANGE_NOTE}
@@ -167,19 +176,36 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
         </div>
       )}
       <p role="status" aria-live="polite" className="sr-only" data-testid="tip-change-live">
-        {state.phase === 'loading' ? UPGRADE_CALCULATING : state.phase === 'confirm' || state.phase === 'submitting' ? state.text : (notice ?? '')}
+        {state.phase === 'loading'
+          ? UPGRADE_CALCULATING
+          : state.phase === 'confirm' || state.phase === 'submitting'
+            ? [state.text, state.carried].filter(Boolean).join(' ')
+            : [notice, noticeCarried].filter(Boolean).join(' ')}
       </p>
       {notice ? (
-        <p className="mt-3 text-sm text-green-700" data-testid="tip-change-notice">
-          {notice}
-        </p>
+        <>
+          <p className="mt-3 text-sm text-green-700" data-testid="tip-change-notice">
+            {notice}
+          </p>
+          {noticeCarried ? (
+            <p className="text-xs text-gray-500" data-testid="tip-change-notice-carried">
+              {noticeCarried}
+            </p>
+          ) : null}
+        </>
       ) : null}
       {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
       {state.phase === 'confirm' || state.phase === 'submitting' ? (
         <div className="mt-3" data-testid="tip-change-confirm">
-          <p className="mb-3 text-sm text-gray-900" aria-hidden="true">
+          <p className={state.carried ? 'text-sm text-gray-900' : 'mb-3 text-sm text-gray-900'} aria-hidden="true">
             {state.text}
           </p>
+          {state.carried ? (
+            // Sable: the carried part of the next bill, gray small (like the add-on confirm's split line).
+            <p className="mb-3 text-xs text-gray-500" aria-hidden="true" data-testid="tip-change-carried">
+              {state.carried}
+            </p>
+          ) : null}
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button ref={confirmRef} onClick={onConfirm} disabled={state.phase === 'submitting'} className="sm:w-auto">
               {state.phase === 'submitting' ? <Loader2 className="animate-spin" size={20} aria-label={UPGRADE_CONFIRM_BUTTON} /> : UPGRADE_CONFIRM_BUTTON}

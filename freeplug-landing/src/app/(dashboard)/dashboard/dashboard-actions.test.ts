@@ -34,7 +34,13 @@ vi.mock('@/lib/supabase/server', () => ({
   },
 }))
 
-const stripe = { mode: 'ok' as 'ok' | 'error' | 'ladder' | 'grandfathered-ending' | 'cancel-at-only' | 'trial-ending', tip: null as number | null }
+const stripe = {
+  mode: 'ok' as 'ok' | 'error' | 'ladder' | 'grandfathered-ending' | 'cancel-at-only' | 'trial-ending' | 'renewal',
+  tip: null as number | null,
+  /** renewal mode: the customer balance (positive = a carried small amount owed) and the upcoming invoice. */
+  balance: 0,
+  previews: [] as unknown[],
+}
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
     if (stripe.mode === 'error') return { subscriptions: { list: async () => { throw new Error('Stripe is down') } } }
@@ -68,6 +74,20 @@ vi.mock('@/lib/stripe/server', () => ({
       return {
         subscriptions: { list: async () => ({ data: [{ id: 'sub_c', created: 1790000000, ...sub, items: { data: [item] } }] }) },
         invoices: { list: async () => ({ data: [] }) },
+      }
+    }
+    if (stripe.mode === 'renewal') {
+      // Priority + Big change, renewing in 5 days (the Upcoming billing reminder shows)
+      const periodEnd = Math.floor(Date.now() / 1000) + 5 * 86400 - 600
+      const item = (lookup_key: string, name: string, unit_amount: number) => ({ price: { lookup_key, product: { id: `prod_${lookup_key}`, name }, unit_amount, recurring: { interval: 'month' } }, quantity: 1, current_period_end: periodEnd, current_period_start: periodEnd - 30 * 86400 })
+      return {
+        subscriptions: { list: async () => ({ data: [{ id: 'sub_r', status: 'active', created: 1790000000, cancel_at_period_end: false, items: { data: [item('freeplug_step_priority_monthly', 'Freeplug Hosting: Priority', 5500), item('freeplug_addon_big_change_monthly', 'Big change', 575)] } }] }) },
+        invoices: {
+          list: async () => ({ data: [] }),
+          // Stripe's upcoming invoice: the customer balance applied (a debit is added); deliberately NOT price + carried
+          createPreview: async (p: unknown) => (stripe.previews.push(p), { object: 'invoice', amount_due: 7135, starting_balance: stripe.balance, total: 7135 - stripe.balance, currency: 'usd' }),
+        },
+        customers: { retrieve: async () => ({ id: 'cus_1', object: 'customer', balance: stripe.balance }) },
       }
     }
     if (stripe.mode === 'grandfathered-ending') {
@@ -242,3 +262,31 @@ describe('Recent activity payments from billing_ledger (description column fix)'
     expect(d?.subscriptionsLoaded).toBe(true)
   })
 })
+
+describe('Upcoming billing reminder with a carried small amount (Aria 2:40 PM, Sable two lines)', () => {
+  beforeEach(() => {
+    stripe.mode = 'renewal'
+    stripe.previews = []
+  })
+  it('carried pending: the amount is Stripe\'s upcoming-invoice total, and the gray line says what is included', async () => {
+    stripe.balance = 35
+    const a = (await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')!
+    expect(a.message).toBe('Your next payment of $71.35 is due in 5 days.')
+    expect(a.detail).toBe('Includes $0.35 left from your last change.')
+    expect(stripe.previews).toEqual([{ subscription: 'sub_r' }])
+  })
+  it('nothing carried: the line is unchanged (the plan price), no gray line, no preview call', async () => {
+    stripe.balance = 0
+    const a = (await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')!
+    expect(a.message).toBe('Your next payment of $60.75 is due in 5 days.')
+    expect(a).not.toHaveProperty('detail')
+    expect(stripe.previews).toEqual([])
+  })
+  it('account credit (balance below 0, nothing carried): unchanged too', async () => {
+    stripe.balance = -200
+    const a = (await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')!
+    expect(a.message).toBe('Your next payment of $60.75 is due in 5 days.')
+    expect(a).not.toHaveProperty('detail')
+  })
+})
+

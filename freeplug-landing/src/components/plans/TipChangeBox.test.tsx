@@ -250,3 +250,40 @@ describe('TipChangeBox: unmount while "Checking the amount…" (Vera d0624bb, op
     }
   })
 })
+
+describe('Aria 2:40 PM / Sable: a carried small amount pending on the next bill', () => {
+  function box(preview: TipPreviewResponse) {
+    const onChangeTip = vi.fn(async () => ({ ok: true, message: 'server' }))
+    render(<TipChangeBox step={fastLane} currentTipDollars={2} locked={false} onPreviewTip={vi.fn(async () => preview)} onChangeTip={onChangeTip} />)
+    const b = screen.getByTestId('tip-change-box')
+    fireEvent.change(within(b).getByRole('slider'), { target: { value: '71' } })
+    fireEvent.click(within(b).getByTestId('tip-change-button'))
+    return { b, onChangeTip }
+  }
+  it('main line unchanged in form with the upcoming-invoice total, the gray line under it (no parentheses), kept after Confirm', async () => {
+    const { b } = box({ ok: true, tipDollars: 6, nextAmountCents: 7135, nextDate: 'November 3, 2026', confirmId: 'confirm-1', carriedCents: 35 })
+    const confirm = await within(b).findByTestId('tip-change-confirm')
+    expect(confirm).toHaveTextContent('Your next bill will be $71.35 on November 3, 2026.')
+    const gray = within(confirm).getByTestId('tip-change-carried')
+    expect(gray.textContent).toBe('Includes $0.35 left from your last change.')
+    expect(gray.className).toMatch(/text-xs/)
+    expect(gray.className).toMatch(/text-gray-500/)
+    expect(confirm.textContent).not.toMatch(/[()]/)
+    expect(screen.getByTestId('tip-change-live')).toHaveTextContent('Your next bill will be $71.35 on November 3, 2026. Includes $0.35 left from your last change.')
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Confirm' }))
+    expect(await within(b).findByTestId('tip-change-notice')).toHaveTextContent('Your next bill will be $71.35 on November 3, 2026.')
+    expect(within(b).getByTestId('tip-change-notice-carried').textContent).toBe('Includes $0.35 left from your last change.')
+  })
+  it('nothing carried (0 or absent): the existing line only, no gray line', async () => {
+    for (const carriedCents of [0, undefined]) {
+      const { b } = box({ ok: true, tipDollars: 6, nextAmountCents: 7100, nextDate: 'November 3, 2026', confirmId: 'c', ...(carriedCents === undefined ? {} : { carriedCents }) })
+      const confirm = await within(b).findByTestId('tip-change-confirm')
+      expect(confirm).toHaveTextContent('Your next bill will be $71 on November 3, 2026.')
+      expect(within(confirm).queryByTestId('tip-change-carried')).toBeNull()
+      fireEvent.click(within(confirm).getByRole('button', { name: 'Confirm' }))
+      await within(b).findByTestId('tip-change-notice')
+      expect(within(b).queryByTestId('tip-change-notice-carried')).toBeNull()
+      document.body.innerHTML = ''
+    }
+  })
+})
