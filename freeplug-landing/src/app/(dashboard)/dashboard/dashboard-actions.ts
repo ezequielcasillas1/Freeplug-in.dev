@@ -19,6 +19,7 @@ import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { formatPlanEndDate, isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
 import { stepById, stepByLookupKey } from '@/lib/plans/ladder'
 import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel } from '@/lib/dashboard/billing-activity'
+import { daysSince, firstPaymentDate } from '@/lib/dashboard/customer-since'
 
 export type DashboardStats = {
   totalPaidCents: number
@@ -143,9 +144,27 @@ export async function getEnhancedDashboardData(
 
   const recentActivityLoaded = !billingError && !requestsError
 
+  // Customer Since (Vera, Oct 4): the first payment is the oldest billing_ledger row (same source as
+  // Total Paid), so renewals and prorations never reset it. A failed read falls back like no rows.
+  const { data: firstLedgerRows, error: firstLedgerError } = await supabase
+    .from('billing_ledger')
+    .select('created_at')
+    .eq('profile_id', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+  if (firstLedgerError) {
+    console.error('[dashboard] first payment query failed', {
+      code: firstLedgerError.code ?? null,
+      message: firstLedgerError.message ?? null,
+    })
+  }
+  const ledgerFirstPayment = firstPaymentDate(
+    (firstLedgerRows as { created_at?: string | null }[] | null)?.[0]?.created_at ?? null
+  )
+
   const subscriptions: SubscriptionDetail[] = []
   let activeSubscriptionCount = 0
-  let daysSinceFirstPayment: number | null = null
+  let daysSinceFirstPayment: number | null = ledgerFirstPayment ? daysSince(ledgerFirstPayment) : null
   let websiteStatus: 'live' | 'pending' | 'offline' | 'none' = 'none'
   let subscriptionsLoaded = true
 
@@ -244,25 +263,19 @@ export async function getEnhancedDashboardData(
         if (!useErr) detail.includedEdit = { used: count ?? 0, available: avail }
       }
 
-      const invoices = await stripe.invoices.list({
-        customer: profile.stripe_customer_id,
-        status: 'paid',
-        limit: 1,
-      })
-
-      if (invoices.data.length > 0 && invoices.data[0].created) {
-        const firstPaymentDate = new Date(invoices.data[0].created * 1000)
-        const now = new Date()
-        daysSinceFirstPayment = Math.floor(
-          (now.getTime() - firstPaymentDate.getTime()) / (1000 * 60 * 60 * 24)
-        )
+      // No ledger rows yet (e.g. the invoice.paid webhook has not landed): the earliest start of the
+      // subscriptions listed above. No invoices.list call (it returned the NEWEST paid invoice).
+      if (!ledgerFirstPayment) {
+        const fallback = firstPaymentDate(null, subs.data)
+        daysSinceFirstPayment = fallback ? daysSince(fallback) : null
       }
     } catch (e) {
       if (!opts.tolerateStripeErrors) throw e
       console.error('[dashboard] Stripe lookup failed', e instanceof Error ? e.message : e)
       subscriptions.length = 0
       activeSubscriptionCount = 0
-      daysSinceFirstPayment = null
+      // The ledger date does not depend on Stripe, so it still shows; only the fallback is dropped.
+      daysSinceFirstPayment = ledgerFirstPayment ? daysSince(ledgerFirstPayment) : null
       subscriptionsLoaded = false
     }
   }
