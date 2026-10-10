@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/app/(auth)/actions', () => ({ signOut: vi.fn() }))
-vi.mock('next/navigation', () => ({ usePathname: () => '/dashboard/cancel' }))
+vi.mock('next/navigation', () => ({ usePathname: () => '/dashboard/cancel', useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }))
 vi.mock('next/link', () => ({
   default: ({ children, href, ...rest }: { children: React.ReactNode; href: string }) => (
     <a href={href} {...rest}>

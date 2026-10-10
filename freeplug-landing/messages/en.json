@@ -74,7 +74,8 @@
         "plans": "Plans",
         "requestWebsite": "Request website",
         "help": "Help",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "settings": "Settings"
       },
       "ariaLabel": {
         "dashboard": "Dashboard"
@@ -217,6 +218,13 @@
       "accessOfflineMessage": "Your website is offline because your hosting was canceled. Sign up for hosting again to bring it back.",
       "restartHostingLabel": "Restart hosting",
       "resumePlanLabel": "Resume plan"
+    },
+    "settings": {
+      "title": "Settings",
+      "language": {
+        "label": "Language",
+        "saved": "Saved"
+      }
     }
   },
   "errors": {
