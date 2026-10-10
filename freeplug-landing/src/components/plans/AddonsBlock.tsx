@@ -95,7 +95,8 @@ type LiveProps = {
   onPreview: (addonId: AddonId, action: 'on' | 'off') => Promise<AddonPreviewResponse>
   onChange: (addonId: AddonId, action: 'on' | 'off' | 'keep', opts?: { prorationDate?: number; tipDropTo?: number }) => Promise<ChangeAddonResponse>
   /** Vera M-1: the carried-split confirm's total ("$5.35 today") while it is open, for the phone sticky bar; null when closed. */
-  onTodayTotal?: (totalCents: number | null) => void
+  /** Lina (Oct 4): the after-change totals while a confirm is open; null when it closes (Cancel restores). */
+  onConfirmTotals?: (totals: ConfirmTotals | null) => void
 }
 
 type Props = { stepId: PlanStepId; className?: string } & (CheckoutProps | LiveProps)
@@ -117,7 +118,15 @@ type Pending =
       apply?: { ids: AddonId[]; tip: number }
       /** Vera M-1 (Aria a, Lina/Sable): a small amount carried onto this charge: bold total + gray split. */
       today?: { totalCents: number; breakdown: string }
+      /** Lina (Oct 4): the after-change totals the phone bar shows while this confirm is open. */
+      totals?: ConfirmTotals
     }
+
+/**
+ * After-change totals, from the server's preview: todayCents null = nothing charged today; tipCents = the
+ * tip after the change (omitted = unchanged), so the bar's breakdown adds up to monthlyCents.
+ */
+export type ConfirmTotals = { todayCents: number | null; monthlyCents: number; tipCents?: number }
 
 const ON_CARD = 'border-[#ba3d3d] ring-1 ring-[#ba3d3d] bg-[#ba3d3d]/5'
 const OFF_CARD = 'border-gray-200 bg-white'
@@ -148,13 +157,17 @@ export function AddonsBlock(props: Props) {
     []
   )
 
-  // Vera M-1: the phone sticky bar shows the same "{total} today" as the open carried-split confirm.
-  const onTodayTotal = props.mode === 'live' ? props.onTodayTotal : undefined
-  const todayCents = pending && pending.kind !== 'loading' ? (pending.today?.totalCents ?? null) : null
+  // Vera M-1 + Lina (Oct 4): the phone sticky bar shows the open confirm's after-change totals ("{total}
+  // today" bold + the new monthly total); closing the confirm (Cancel, Esc, done) restores the current ones.
+  const onConfirmTotals = props.mode === 'live' ? props.onConfirmTotals : undefined
+  const totals = pending && pending.kind !== 'loading' ? (pending.totals ?? null) : null
+  const todayCents = totals ? totals.todayCents : undefined
+  const monthlyCents = totals ? totals.monthlyCents : undefined
+  const tipCents = totals ? totals.tipCents : undefined
   useEffect(() => {
-    onTodayTotal?.(todayCents)
-  }, [onTodayTotal, todayCents])
-  useEffect(() => () => onTodayTotal?.(null), [onTodayTotal])
+    onConfirmTotals?.(monthlyCents === undefined ? null : { todayCents: todayCents ?? null, monthlyCents, ...(tipCents === undefined ? {} : { tipCents }) })
+  }, [onConfirmTotals, todayCents, monthlyCents, tipCents])
+  useEffect(() => () => onConfirmTotals?.(null), [onConfirmTotals])
 
   const close = useCallback((focusId?: AddonId) => {
     previewSeq.current++
@@ -261,10 +274,12 @@ export function AddonsBlock(props: Props) {
         prorationDate: r.prorationDate,
         nextDate: r.nextDate,
         ...(drop ? { tipDropTo: r.tipDollarsAfter } : {}),
+        // Under $0.50 nothing is charged today (it lands on the next charge), so no "today" total then.
+        totals: { todayCents: r.amountDueCents >= ADDON_MIN_CHARGE_CENTS ? r.amountDueCents : null, monthlyCents: r.nextAmountCents, tipCents: r.tipDollarsAfter * 100 },
       })
       return
     }
-    setPending({ id: addon.id, kind: 'confirm', action: 'off', question: addonOffQuestion(name, r.endDate), lines: [], button: ADDON_TURN_OFF })
+    setPending({ id: addon.id, kind: 'confirm', action: 'off', question: addonOffQuestion(name, r.endDate), lines: [], button: ADDON_TURN_OFF, totals: { todayCents: null, monthlyCents: r.nextAmountCents } })
   }
 
   async function confirmLive(p: LiveProps) {

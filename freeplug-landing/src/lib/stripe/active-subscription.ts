@@ -22,14 +22,23 @@ import { planStripLine, type PlanLineItem } from './plan-line'
 export const CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE =
   "You can't close this request while your plan is active, because your site is still hosted under it. To cancel your plan, choose Cancel options in your dashboard. Once the plan has ended, you can close the request here."
 
-/** Formats a plan end date as "Month D, YYYY" (UTC, so server and client agree). */
+/** U+00A0 NO-BREAK SPACE: keeps a date on one line (Lina, Oct 4). */
+export const NBSP = '\u00A0'
+
+/**
+ * Formats a plan end date as "Month D, YYYY" (UTC, so server and client agree), with no-break spaces
+ * between month and day and between day and year ("October\u00A09,\u00A02026"), so a date never wraps
+ * across lines (Lina, Oct 4). The ONE place this happens: renewalLineText and every other caller get it.
+ */
 export function formatPlanEndDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    timeZone: 'UTC',
-  })
+  return date
+    .toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'UTC',
+    })
+    .replace(/\s/g, NBSP)
 }
 
 /**

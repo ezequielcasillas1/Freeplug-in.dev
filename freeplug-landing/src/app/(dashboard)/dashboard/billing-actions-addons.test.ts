@@ -88,12 +88,12 @@ describe('preview (turn on): the real amount, the lock line, the fallback', () =
   it('passes the real amount and the full price through', async () => {
     h.preview = { ok: true, action: 'on', addon: 'big_change', prorationDate: 100, amountDueCents: 375, fullCents: 575, currency: 'usd', nextAmountCents: 6075, nextBillingAt: SWITCH_AT, tipDollarsNow: 0, tipDollarsAfter: 0 }
     expect(await previewAddonChangeAction('big_change', 'on')).toEqual({
-      ok: true, action: 'on', prorationDate: 100, amountDueCents: 375, fullCents: 575, nextAmountCents: 6075, nextDate: 'November 3, 2026', tipDollarsNow: 0, tipDollarsAfter: 0,
+      ok: true, action: 'on', prorationDate: 100, amountDueCents: 375, fullCents: 575, nextAmountCents: 6075, nextDate: 'November\u00A03,\u00A02026', tipDollarsNow: 0, tipDollarsAfter: 0,
     })
   })
   it('a plan switch pending: "You can change add-ons after your switch on {date}." with the schedule date', async () => {
     h.preview = { ok: false, code: 'pending_switch', message: 'x', switchAt: SWITCH_AT }
-    expect(await previewAddonChangeAction('small_edit', 'on')).toEqual({ ok: false, message: 'You can change add-ons after your switch on November 3, 2026.', prorationDate: null })
+    expect(await previewAddonChangeAction('small_edit', 'on')).toEqual({ ok: false, message: 'You can change add-ons after your switch on November\u00A03,\u00A02026.', prorationDate: null })
   })
   it('an add-on set to end / a grandfathered plan: Sable 9:05 lines', async () => {
     h.preview = { ok: false, code: 'pending_addons', message: 'x' }
@@ -115,7 +115,7 @@ describe('preview (turn on): the real amount, the lock line, the fallback', () =
 describe("Confirm: Sable's final result lines, word for word", () => {
   it.each([
     [{ ok: true, kind: 'on', addon: 'small_edit', tipDollars: 0, invoiceStatus: 'paid', invoiceId: 'in_1' }, 'small_edit', { ok: true, message: '+1 small edit is on.' }],
-    [{ ok: true, kind: 'removal_scheduled', addon: 'big_change', effectiveAt: SWITCH_AT }, 'big_change', { ok: true, message: 'Big change ends November 3, 2026.' }],
+    [{ ok: true, kind: 'removal_scheduled', addon: 'big_change', effectiveAt: SWITCH_AT }, 'big_change', { ok: true, message: 'Big change ends November\u00A03,\u00A02026.' }],
     [{ ok: true, kind: 'kept', addon: 'big_change', effectiveAt: null }, 'big_change', { ok: true, message: 'Big change stays on.' }],
     [{ ok: false, code: 'payment_failed', message: 'x' }, 'small_edit', { ok: false, message: "Your card wasn't charged, so +1 small edit is still off. Update your card in Manage billing, then try again." }],
     [{ ok: false, code: 'finishing', message: 'x', invoiceId: 'in_1' }, 'big_change', { ok: false, code: 'finishing', message: "Your payment went through. We're finishing turning on Big change. Refresh in a moment to see it. If it can't be added, we'll refund the charge automatically." }],
@@ -125,7 +125,7 @@ describe("Confirm: Sable's final result lines, word for word", () => {
     [{ ok: false, code: 'price_mismatch', message: 'x' }, 'big_change', { ok: false, message: "We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help." }],
     [{ ok: true, kind: 'on', addon: 'big_change', tipDollars: 0, invoiceStatus: null, invoiceId: null, deferredCents: 35 }, 'big_change', { ok: true, message: 'Big change is on.' }],
     [{ ok: false, code: 'not_applied', message: 'x', refunded: false }, 'small_edit', { ok: false, message: "We couldn't turn on +1 small edit, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge." }],
-    [{ ok: false, code: 'pending_switch', message: 'x', switchAt: SWITCH_AT }, 'small_edit', { ok: false, message: 'You can change add-ons after your switch on November 3, 2026.' }],
+    [{ ok: false, code: 'pending_switch', message: 'x', switchAt: SWITCH_AT }, 'small_edit', { ok: false, message: 'You can change add-ons after your switch on November\u00A03,\u00A02026.' }],
     [{ ok: false, code: 'not_on', message: 'x' }, 'small_edit', { ok: false, message: "We couldn't change your add-ons right now. Try again, or email support@freeplug-in.dev." }],
   ])('%#', async (result, id, expected) => {
     h.change = result

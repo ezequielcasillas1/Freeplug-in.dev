@@ -95,7 +95,7 @@ describe('Plans page billing', () => {
     schedule = 'sub_sched_1'
     await renderPage({ billing: 'pending' })
     expect(screen.getByTestId('billing-pending-notice').textContent).toBe(
-      'You have a switch to Starter planned for November 3, 2026, so billing is handled here until then. You can update your card and see your invoices below.'
+      'You have a switch to Starter planned for November\u00A03,\u00A02026, so billing is handled here until then. You can update your card and see your invoices below.'
     )
     expect(screen.getByText(/Changing to Starter on November 3, 2026/)).toBeTruthy()
     const billing = screen.getByTestId('billing-tools')
@@ -129,7 +129,7 @@ describe('Plans page billing', () => {
     expect(within(box).getByRole('button', { name: 'Keep Fast lane' })).toBeTruthy()
     const list = container.querySelector('[data-plan-step="starter"]') as HTMLElement
     expect(strip.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(within(list).getByTestId('starts-badge').textContent).toBe('Starts November 3, 2026')
+    expect(within(list).getByTestId('starts-badge').textContent).toBe('Starts November\u00A03,\u00A02026')
     expect(screen.queryByRole('button', { name: 'Manage billing' })).toBeNull()
     // selected = current: the main button only ever means "switch"
     expect(screen.getByRole('button', { name: 'Choose a different plan to switch' })).toBeDisabled()

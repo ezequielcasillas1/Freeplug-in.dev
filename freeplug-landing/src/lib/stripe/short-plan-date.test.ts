@@ -15,6 +15,12 @@ describe('formatShortPlanDate', () => {
   it('UTC, like formatPlanEndDate (server and client agree)', () => {
     const d = new Date('2026-11-03T02:00:00Z') // still Nov 2 in Chicago
     expect(formatShortPlanDate(d, now)).toBe('Nov 3')
-    expect(formatPlanEndDate(d)).toBe('November 3, 2026')
+    expect(formatPlanEndDate(d)).toBe('November\u00A03,\u00A02026')
+  })
+  it('Lina (Oct 4): formatPlanEndDate puts U+00A0 between month and day and between day and year, never a plain space', () => {
+    const s = formatPlanEndDate(new Date('2026-10-09T12:00:00Z'))
+    expect(s).toBe('October\u00A09,\u00A02026')
+    expect(s).not.toMatch(/ /)
+    expect([...s].filter((c) => c === '\u00A0')).toHaveLength(2)
   })
 })

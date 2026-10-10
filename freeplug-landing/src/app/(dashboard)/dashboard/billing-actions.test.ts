@@ -479,7 +479,7 @@ describe('previewPlanChange + confirm (Aria, Oct 3 1:34 PM)', () => {
   it("previews the caller's own subscription only (read-only), with a fresh server proration_date", async () => {
     const before = nowS()
     const r = await previewPlanChange('fast_lane')
-    expect(r).toMatchObject({ ok: true, amountDueCents: 1953, nextAmountCents: 6500, nextDate: 'November 3, 2026' })
+    expect(r).toMatchObject({ ok: true, amountDueCents: 1953, nextAmountCents: 6500, nextDate: 'November\u00A03,\u00A02026' })
     const pd = (r as { prorationDate: number }).prorationDate
     expect(pd).toBeGreaterThanOrEqual(before)
     expect(pd).toBeLessThanOrEqual(nowS())

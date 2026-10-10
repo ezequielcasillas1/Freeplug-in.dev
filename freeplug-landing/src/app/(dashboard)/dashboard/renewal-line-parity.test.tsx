@@ -66,6 +66,8 @@ describe('renewal line parity: dashboard reminder === Plans renewal line', () =>
 
     expect(dashMain).toBe(`Your next bill will be $71.35 on ${formatPlanEndDate(new Date(PERIOD_END * 1000))}.`)
     expect(dashMain).toBe(plansMain)
+    // Lina (Oct 4): the date inside the line keeps U+00A0 on both surfaces (one line at 375).
+    expect(dashMain).toMatch(/[A-Z][a-z]+\u00A0\d{1,2},\u00A0\d{4}\.$/)
     expect(dashGray).toBe('Includes $0.35 left from your last change.')
     expect(dashGray).toBe(plansGray)
   })
