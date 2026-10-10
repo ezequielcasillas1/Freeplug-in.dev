@@ -1,5 +1,6 @@
 import { CHANGE_REQUESTS_EMPTY, CHANGE_REQUESTS_HEADING, customerStatusLines } from '@/lib/change-requests/copy'
 import type { CustomerChangeRequest } from '@/lib/change-requests/customer'
+import { ChangeRequestText } from './ChangeRequestText'
 
 const STATUS_STYLE: Record<string, string> = {
   pending_review: 'bg-amber-50 text-amber-900 border-amber-200',
@@ -44,9 +45,12 @@ export function ChangeRequestsCard({ requests }: { requests: readonly CustomerCh
                     {label}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-gray-700 break-words line-clamp-2">{r.description}</p>
+                <ChangeRequestText id={r.id} text={r.description} />
                 {detail ? (
-                  <p className="mt-1 text-sm text-gray-600 break-words" data-testid="change-request-detail">
+                  <p
+                    className="mt-2 border-l-2 border-gray-300 pl-3 text-sm text-gray-600 break-words"
+                    data-testid="change-request-detail"
+                  >
                     {detail}
                   </p>
                 ) : null}

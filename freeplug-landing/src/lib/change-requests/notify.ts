@@ -111,9 +111,20 @@ export async function deliverChangeRequest(
 /** Background task for a new request (runs after the customer's response). */
 export async function notifyNewChangeRequest(
   admin: Admin,
-  input: { requestId: string; userId: string; changeType: string },
+  input: { requestId: string; userId: string; changeType: string; websiteRequestId?: string | null },
   opts: { fetchImpl?: typeof fetch; timeoutMs?: number } = {}
 ): Promise<DeliverResult> {
+  // The row is inserted before the notes append; when that append started a new website request,
+  // link it here (service role; only if the row has none, and only the same user's request).
+  if (input.websiteRequestId) {
+    const { error: linkErr } = await admin
+      .from('change_requests')
+      .update({ website_request_id: input.websiteRequestId })
+      .eq('id', input.requestId)
+      .eq('user_id', input.userId)
+      .is('website_request_id', null)
+    if (linkErr) console.error(`${LOG} could not link the website request`, input.requestId, linkErr.message)
+  }
   const { billing, planStep } = await classifyChangeRequest(admin, input.userId, input.changeType)
   const { error } = await admin.from('change_requests').update({ billing, plan_step: planStep }).eq('id', input.requestId)
   if (error) console.error(`${LOG} could not save billing`, input.requestId, error.message)

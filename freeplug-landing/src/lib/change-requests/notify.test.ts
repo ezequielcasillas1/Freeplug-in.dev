@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const ent = vi.hoisted(() => ({
-  value: { step: { id: 'starter' }, legacy: false, includedEditsPerMonth: 1, bigChangesPerMonth: 0 } as Record<string, unknown>,
+  value: { step: { id: 'starter' }, legacy: false, includedEditsPerMonth: 1, bigChangesPerMonth: 0, addons: [] } as Record<string, unknown>,
   fail: false,
 }))
 vi.mock('@/lib/plans/user-entitlements', () => ({
@@ -92,7 +92,7 @@ function fakeAdmin(opts: { smallUsed?: number; bigUsed?: number; customer?: stri
 describe('classifyChangeRequest (server side, service role)', () => {
   beforeEach(() => {
     ent.fail = false
-    ent.value = { step: { id: 'starter' }, legacy: false, includedEditsPerMonth: 1, bigChangesPerMonth: 0 }
+    ent.value = { step: { id: 'starter' }, legacy: false, includedEditsPerMonth: 1, bigChangesPerMonth: 0, addons: [] }
     stripe.periodStart = 1759550400
   })
   it('included with a use left; paid_addon when used', async () => {

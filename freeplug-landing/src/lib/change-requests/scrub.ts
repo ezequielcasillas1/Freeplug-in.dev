@@ -5,7 +5,8 @@
  */
 export const SCRUB_TOKEN = '[removed]'
 
-const EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9-]+(?:\.[A-Z0-9-]+)*\.[A-Z]{2,}/gi
+/** Unicode-aware (Oct 10): "josé.ñandú@example.com" and IDN domains are emails too. */
+const EMAIL = /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)*\.[\p{L}]{2,}/giu
 /**
  * A run that starts with a digit, "+" or "(" and continues with digits joined by at most two of
  * space . - ( ). Digits are counted afterwards: 13-19 is a card-like run, 7-12 a phone number.

@@ -24,6 +24,11 @@ export function changeRequestDeclinedNote(note: string): string {
 /** changeRequests.declinedNoNote */
 export const CHANGE_REQUEST_DECLINED_NO_NOTE = 'Questions? Email support@freeplug-in.dev.'
 
+/** changeRequests.showAll (long request text, collapsed) */
+export const CHANGE_REQUEST_SHOW_ALL = 'Show all'
+/** changeRequests.showLess (long request text, expanded) */
+export const CHANGE_REQUEST_SHOW_LESS = 'Show less'
+
 /** i18n key of every string above (for the rebase key list). */
 export const CHANGE_REQUEST_COPY_KEYS = {
   heading: 'changeRequests.heading',
@@ -33,6 +38,8 @@ export const CHANGE_REQUEST_COPY_KEYS = {
   declined: 'changeRequests.status.declined',
   declinedNote: 'changeRequests.declinedNote',
   declinedNoNote: 'changeRequests.declinedNoNote',
+  showAll: 'changeRequests.showAll',
+  showLess: 'changeRequests.showLess',
 } as const
 
 export type ChangeRequestStatus = 'pending_review' | 'approved' | 'declined'

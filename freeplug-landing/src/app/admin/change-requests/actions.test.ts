@@ -47,7 +47,7 @@ import { adminDecideChangeRequest, adminResendChangeRequest } from './actions'
 const ID = '6f1c2a9e-3b7d-4e8a-9c41-2d5f8a7b0c13'
 const form = (v: Record<string, string>) => {
   const f = new FormData()
-  for (const [k, val] of Object.entries(v)) f.set(k, val)
+  for (const [k, val] of Object.entries({ confirmed: 'yes', ...v })) f.set(k, val)
   return f
 }
 
@@ -84,6 +84,7 @@ describe('admin Approve / Decline (Ezequiel\'s PR verdict)', () => {
 
   it.each([
     [{ id: 'nope', decision: 'approved', note: '', pr_url: '' }, /Invalid request id/],
+    [{ id: ID, decision: 'approved', note: '', pr_url: '', confirmed: '' }, /Confirm the decision first/],
     [{ id: ID, decision: 'maybe', note: '', pr_url: '' }, /Approve or Decline/],
     [{ id: ID, decision: 'declined', note: 'x'.repeat(501), pr_url: '' }, /500/],
     [{ id: ID, decision: 'approved', note: '', pr_url: 'https://evil.example/pull/1' }, /github\.com/],

@@ -86,6 +86,14 @@ vi.mock('@/lib/change-requests/notify', () => ({
   },
 }))
 
+const alerts = vi.hoisted(() => ({ calls: [] as unknown[] }))
+vi.mock('@/lib/change-requests/alert', () => ({
+  sendRowFailedAlert: async (a: unknown) => {
+    alerts.calls.push(a)
+    return { success: true, id: 'mail-1' }
+  },
+}))
+
 import { sendHelpChangeRequest } from './actions'
 
 const input = { changeType: 'Photos' as const, page: 'Home', description: 'Swap the hero photo' }
@@ -104,6 +112,7 @@ describe('sendHelpChangeRequest', () => {
     afterCalls.fns = []
     notify.calls = []
     notify.impl = async () => null
+    alerts.calls = []
   })
 
   it('is rate limited per user by the shared limiter (nothing saved when over)', async () => {
@@ -172,7 +181,7 @@ describe('sendHelpChangeRequest', () => {
     }
     const r = await sendHelpChangeRequest(input)
     expect(r.ok).toBe(true)
-    expect(state.inserts[0]).toMatchObject({
+    expect(state.inserts.find((i) => i.table === 'website_requests')).toMatchObject({
       business_name: 'Gracia Lawn',
       status: 'submitted',
       notes: 'Change request (Help chat):\nType: Photos\nPage: Home\nChange: Swap the hero photo',
@@ -190,10 +199,12 @@ describe('sendHelpChangeRequest', () => {
     ])
   })
 
-  it('links the row to a newly opened request', async () => {
-    state.latest = { status: 'closed', business_name: 'Gracia Lawn', notes: '' }
+  it('links the row to a newly opened request (row first, linked by the server task after)', async () => {
+    state.latest = { id: 'req-old', status: 'closed', business_name: 'Gracia Lawn', notes: '' }
     await sendHelpChangeRequest(input)
-    expect(state.inserts.find((i) => i.table === 'change_requests')).toMatchObject({ website_request_id: 'req-new', photo_name: null })
+    expect(state.inserts.find((i) => i.table === 'change_requests')).toMatchObject({ website_request_id: null, photo_name: null })
+    await afterCalls.fns[0]()
+    expect(notify.calls[0]).toMatchObject({ requestId: 'cr-1', websiteRequestId: 'req-new' })
   })
 
   it('answers before the webhook: the work is handed to after() and has not run when the submit returns', async () => {
@@ -204,7 +215,7 @@ describe('sendHelpChangeRequest', () => {
     expect(afterCalls.fns).toHaveLength(1)
     expect(notify.calls).toEqual([])
     await afterCalls.fns[0]()
-    expect(notify.calls).toEqual([{ requestId: 'cr-1', userId: 'user-1', changeType: 'Photos' }])
+    expect(notify.calls).toEqual([{ requestId: 'cr-1', userId: 'user-1', changeType: 'Photos', websiteRequestId: 'req-1' }])
   })
 
   it('a failing background task never reaches the customer (error is logged, not thrown)', async () => {
@@ -221,15 +232,80 @@ describe('sendHelpChangeRequest', () => {
     err.mockRestore()
   })
 
-  it('still succeeds when the change_requests row cannot be saved (e.g. migration not applied): notes only, no webhook', async () => {
-    state.latest = { status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+  it('ruling 7: row fails, notes work -> still OK, logged, admin alert email after the response (no webhook)', async () => {
+    state.latest = { id: 'req-1', status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
     state.open = { id: 'req-1', status: 'submitted' }
     state.insertErrors.change_requests = { message: 'relation "public.change_requests" does not exist', code: '42P01' }
     const err = vi.spyOn(console, 'error').mockImplementation(() => {})
     const r = await sendHelpChangeRequest(input)
     expect(r).toEqual({ ok: true, email: 'owner@example.com' })
     expect(state.updates[0]).toMatchObject({ table: 'website_requests' })
+    expect(err.mock.calls.some((c) => String(c[0]).includes('row not saved'))).toBe(true)
+    expect(alerts.calls).toEqual([]) // not before the response
+    expect(afterCalls.fns).toHaveLength(1)
+    await afterCalls.fns[0]()
+    expect(alerts.calls).toEqual([
+      { userId: 'user-1', websiteRequestId: 'req-1', businessName: 'Gracia Lawn', changeType: 'Photos', page: 'Home', reason: 'relation "public.change_requests" does not exist' },
+    ])
+    expect(notify.calls).toEqual([])
+    err.mockRestore()
+  })
+
+  it('ruling 7: row AND notes fail -> "Please try again, or email support@freeplug-in.dev and we\'ll help."', async () => {
+    state.latest = { id: 'req-1', status: 'in_review', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'in_review' } // notes append refuses an in-review request
+    state.insertErrors.change_requests = { message: 'boom', code: 'XX000' }
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const r = await sendHelpChangeRequest(input)
+    expect(r).toEqual({ ok: false, error: "Please try again, or email support@freeplug-in.dev and we'll help." })
     expect(afterCalls.fns).toHaveLength(0)
     err.mockRestore()
+  })
+
+  it('notes fail but the row saved -> OK (the row is in /admin/change-requests), logged', async () => {
+    state.latest = { id: 'req-1', status: 'in_review', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'in_review' }
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const r = await sendHelpChangeRequest(input)
+    expect(r).toEqual({ ok: true, email: 'owner@example.com' })
+    expect(state.inserts.find((i) => i.table === 'change_requests')).toMatchObject({ website_request_id: 'req-1' })
+    expect(err.mock.calls.some((c) => String(c[0]).includes('notes not appended'))).toBe(true)
+    err.mockRestore()
+  })
+
+  it.each([
+    [{ code: 'P0001', message: 'change_requests_pending_cap' }, 'You already have 10 change requests waiting for review. Please wait until we review some, or email support@freeplug-in.dev.'],
+    [{ code: 'P0001', message: 'change_requests_daily_cap' }, "You've sent 20 change requests in the last 24 hours. Please try again tomorrow, or email support@freeplug-in.dev."],
+    [{ code: '23514', message: 'new row for relation "change_requests" violates check constraint "change_requests_description_check"' }, 'Keep the change under 2,000 characters.'],
+  ])('ruling 8: DB cap %j -> friendly line, nothing appended to the notes', async (dbErr, line) => {
+    state.latest = { id: 'req-1', status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'submitted' }
+    state.insertErrors.change_requests = dbErr
+    const r = await sendHelpChangeRequest(input)
+    expect(r).toEqual({ ok: false, error: line })
+    expect(state.updates).toEqual([])
+    expect(afterCalls.fns).toHaveLength(0)
+  })
+
+  it('description length matches the form (2,000 raw characters)', async () => {
+    state.latest = { id: 'req-1', status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'submitted' }
+    expect(await sendHelpChangeRequest({ ...input, description: 'x'.repeat(2001) })).toEqual({ ok: false, error: 'Keep the change under 2,000 characters.' })
+    expect((await sendHelpChangeRequest({ ...input, description: 'x'.repeat(2000) })).ok).toBe(true)
+    expect((await sendHelpChangeRequest({ ...input, description: '   ' })).ok).toBe(false)
+  })
+
+  it("verbatim: the row stores the customer's description and page byte for byte (emails, phones, unicode, spacing)", async () => {
+    state.latest = { id: 'req-1', status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
+    state.open = { id: 'req-1', status: 'submitted' }
+    const description = '  Call me at (512) 555-0199 or email josé.ñandú@example.com — swap “Café” → 🌮 tacos\nLine 2\t end  '
+    const page = '  Menú / Página 2 ☕ '
+    const r = await sendHelpChangeRequest({ ...input, description, page })
+    expect(r.ok).toBe(true)
+    const row = state.inserts.find((i) => i.table === 'change_requests')!
+    expect(row.description).toBe(description)
+    expect(row.page).toBe(page)
+    expect(Buffer.from(String(row.description), 'utf8').equals(Buffer.from(description, 'utf8'))).toBe(true)
+    expect(String(row.description)).not.toContain('[removed]')
   })
 })

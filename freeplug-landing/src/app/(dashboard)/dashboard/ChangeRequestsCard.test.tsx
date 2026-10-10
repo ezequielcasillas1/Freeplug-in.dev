@@ -27,7 +27,7 @@ describe("change-request copy (Sable's final words, Oct 4 3:14 PM CT)", () => {
   it('each string has its own key', () => {
     const keys = Object.values(CHANGE_REQUEST_COPY_KEYS)
     expect(new Set(keys).size).toBe(keys.length)
-    expect(keys).toHaveLength(7)
+    expect(keys).toHaveLength(9)
   })
   it('never says "Waiting for approval" and "Approved" never implies when it goes live', () => {
     const all = [CHANGE_REQUESTS_HEADING, CHANGE_REQUESTS_EMPTY, CHANGE_REQUEST_STATUS_PENDING, CHANGE_REQUEST_STATUS_APPROVED, CHANGE_REQUEST_STATUS_DECLINED, CHANGE_REQUEST_DECLINED_NO_NOTE].join(' ')

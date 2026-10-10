@@ -36,4 +36,7 @@ describe('scrubForWebhook', () => {
     expect(out).toBe(`Text ${SCRUB_TOKEN} or ${SCRUB_TOKEN}, card ${SCRUB_TOKEN}.`)
     expect(out).not.toMatch(/\d{4}/)
   })
+  it('scrubs unicode emails (local part and domain)', () => {
+    expect(scrubForWebhook('mail josé.ñandú@example.com or 李@例子.中国 today')).toBe('mail [removed] or [removed] today')
+  })
 })

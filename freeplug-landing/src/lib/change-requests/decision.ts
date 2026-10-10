@@ -10,6 +10,8 @@ export const GITHUB_PR_URL = /^https:\/\/github\.com\/[A-Za-z0-9._-]+\/[A-Za-z0-
 const decisionSchema = z.object({
   id: z.string().uuid('Invalid request id'),
   decision: z.enum(['approved', 'declined'], { message: 'Pick Approve or Decline' }),
+  // Aria ruling 5: the decision is only recorded from the confirm step (never a single click).
+  confirmed: z.literal('yes', { message: 'Confirm the decision first.' }),
   note: z.string().trim().max(DECISION_NOTE_MAX, `Keep the note under ${DECISION_NOTE_MAX} characters`),
   prUrl: z
     .string()
@@ -24,6 +26,7 @@ export function parseDecisionForm(formData: FormData): { ok: true; value: Decisi
   const parsed = decisionSchema.safeParse({
     id: String(formData.get('id') ?? ''),
     decision: String(formData.get('decision') ?? ''),
+    confirmed: String(formData.get('confirmed') ?? ''),
     note: String(formData.get('note') ?? ''),
     prUrl: String(formData.get('pr_url') ?? ''),
   })

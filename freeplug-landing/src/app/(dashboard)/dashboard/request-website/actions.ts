@@ -16,6 +16,8 @@ import { HELP_CHAT_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { ERROR_TOO_MANY_TRIES } from '@/lib/outreach/copy'
 import { scheduleAfterResponse } from '@/lib/background'
 import { notifyNewChangeRequest } from '@/lib/change-requests/notify'
+import { sendRowFailedAlert } from '@/lib/change-requests/alert'
+import { CHANGE_REQUEST_NOT_SAVED, CHANGE_REQUEST_TOO_LONG, DESCRIPTION_MAX, friendlyInsertError } from '@/lib/change-requests/submit-errors'
 
 const requestSchema = z.object({
   business_name: z.string().min(1, 'Business name is required').max(200),
@@ -188,8 +190,16 @@ export async function submitWebsiteRequest(
 
 const changeRequestSchema = z.object({
   changeType: z.enum(CHANGE_TYPES),
-  page: z.string().trim().min(1, 'Tell us which page it is on.').max(200),
-  description: z.string().trim().min(1, 'Describe the change.').max(2000),
+  page: z
+    .string()
+    .max(200)
+    .refine((s) => s.trim().length > 0, { message: 'Tell us which page it is on.' }),
+  // Verbatim (Vera/Jace): validated trimmed, stored exactly as typed. Same limit as the form's
+  // textarea maxLength (raw text), and the DB check matches (20261010160000).
+  description: z
+    .string()
+    .max(DESCRIPTION_MAX, CHANGE_REQUEST_TOO_LONG)
+    .refine((s) => s.trim().length > 0, { message: 'Describe the change.' }),
   /** File name only. The request path has no file storage, so the photo itself is not uploaded. */
   photoName: z.string().trim().max(200).optional(),
 })
@@ -231,7 +241,7 @@ export async function sendHelpChangeRequest(
 
   const { data: latest } = await supabase
     .from('website_requests')
-    .select('status, business_name, contact_phone, google_business_url, notes')
+    .select('id, status, business_name, contact_phone, google_business_url, notes')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -265,22 +275,13 @@ export async function sendHelpChangeRequest(
     }
   }
 
-  const saved = await saveWebsiteRequest(supabase, user.id, {
-    business_name: latest.business_name,
-    contact_phone: latest.contact_phone ?? '',
-    google_business_url: latest.google_business_url ?? '',
-    notes,
-  })
-  if (saved.error) {
-    return { ok: false, error: saved.error }
-  }
-
-  // The change is already saved in the request notes, so a failed row only logs (e.g. before
-  // migration 20261004150000 is applied): the customer's submit still succeeds.
+  // 1) The change_requests row first (customer's own client, RLS), so the DB caps (ruling 8)
+  //    stop the request before anything is saved. Stored verbatim: description and page exactly
+  //    as typed (only the webhook payload is scrubbed).
   const { data: row, error: rowErr } = await supabase
     .from('change_requests')
     .insert({
-      website_request_id: saved.requestId ?? null,
+      website_request_id: isOpen ? ((latest.id as string | undefined) ?? null) : null,
       change_type: c.changeType,
       page: c.page,
       description: c.description,
@@ -288,20 +289,54 @@ export async function sendHelpChangeRequest(
     })
     .select('id')
     .maybeSingle()
-  if (rowErr || !row?.id) {
-    console.error('[change-requests] row not saved; the change is in the request notes only', rowErr?.message ?? 'no id')
+  const capError = friendlyInsertError(rowErr)
+  if (capError) return { ok: false, error: capError }
+  const rowId = !rowErr && row?.id ? (row.id as string) : null
+
+  // 2) The notes append (keeps /admin/requests working).
+  const saved = await saveWebsiteRequest(supabase, user.id, {
+    business_name: latest.business_name,
+    contact_phone: latest.contact_phone ?? '',
+    google_business_url: latest.google_business_url ?? '',
+    notes,
+  })
+
+  // Ruling 7: both failed -> try again line; row failed only -> OK + log + admin alert email;
+  // notes failed only -> OK + log (the row is in /admin/change-requests).
+  if (!rowId && saved.error) {
+    console.error('[change-requests] row AND notes not saved', rowErr?.message ?? 'no id', saved.error)
+    return { ok: false, error: CHANGE_REQUEST_NOT_SAVED }
+  }
+  if (saved.error) {
+    console.error('[change-requests] notes not appended; the change is in change_requests only', rowId, saved.error)
+  }
+
+  const userId = user.id
+  if (!rowId) {
+    const reason = rowErr?.message ?? 'insert returned no id'
+    console.error('[change-requests] row not saved; the change is in the request notes only', reason)
+    const alert = {
+      userId,
+      websiteRequestId: saved.requestId ?? null,
+      businessName: latest.business_name,
+      changeType: c.changeType,
+      page: c.page,
+      reason,
+    }
+    scheduleAfterResponse('change-requests-alert', async () => {
+      await sendRowFailedAlert(alert)
+    })
   } else {
-    const requestId = row.id as string
-    const userId = user.id
+    const websiteRequestId = saved.error ? null : (saved.requestId ?? null)
     scheduleAfterResponse('change-requests', async () => {
       let admin
       try {
         admin = createAdminClient()
       } catch {
-        console.error('[change-requests] no service role; billing and webhook skipped', requestId)
+        console.error('[change-requests] no service role; billing and webhook skipped', rowId)
         return
       }
-      await notifyNewChangeRequest(admin, { requestId, userId, changeType: c.changeType })
+      await notifyNewChangeRequest(admin, { requestId: rowId, userId, changeType: c.changeType, websiteRequestId })
     })
   }
 

@@ -234,6 +234,14 @@ implicitly (hosted; unchanged, waits for Vera's retest and Ezequiel's go).
   `20261004092000_addon_removals_owed` are already applied there (check `supabase_migrations.schema_migrations` on that
   project first). Without `addon_removals_owed`, every owed-removal save fails, so a single Stripe error
   on an upgrade or resume leaves a turned-off add-on renewing (Vera de173c8 L-1 / I-6).
+- **Change-requests launch guard (Jace, Oct 4; added Oct 10):** same rule, next to the three add-on
+  migrations above: `20261004150000_change_requests` and `20261010160000_change_request_caps` stay OFF
+  r13, OFF the preview and OFF every hosted project until Aria's go. The change-requests code (Help chat
+  row insert, /admin/change-requests, the dashboard card) must not be deployed anywhere hosted until both
+  are applied there first (check `supabase_migrations.schema_migrations`). Apply in order: the caps
+  migration replaces the description check the first one sets, and re-running the first one alone would
+  put the old check back (re-run the caps migration after it). The webhook values are wired only on the
+  review :3000 when Ezequiel supplies them.
 
 ## Buyout: existing pieces (for Aria's pay-to-own card)
 Nothing here changes until Aria's card is approved. Ezequiel wants a pay-to-own option; today there is
