@@ -2,17 +2,20 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 const items = [
-  { href: '/dashboard', label: 'Overview' },
-  { href: '/dashboard/plans', label: 'Plans' },
-  { href: '/dashboard/request-website', label: 'Request website' },
-  { href: '/dashboard/help', label: 'Help' },
-  { href: '/dashboard/cancel', label: 'Cancel' },
+  { href: '/dashboard', key: 'overview' },
+  { href: '/dashboard/plans', key: 'plans' },
+  { href: '/dashboard/request-website', key: 'requestWebsite' },
+  { href: '/dashboard/help', key: 'help' },
+  { href: '/dashboard/settings', key: 'settings' },
+  { href: '/dashboard/cancel', key: 'cancel' },
 ] as const
 
 export function DashboardNav() {
   const pathname = usePathname()
+  const t = useTranslations('dashboard.nav')
 
   // One row that scrolls sideways on narrow screens instead of wrapping (Lina, Sep 25). The
   // wrapper draws the bottom rule so the scroll area never clips the active underline.
@@ -20,9 +23,9 @@ export function DashboardNav() {
     <div className="border-b border-zinc-200 mb-8">
       <nav
         className="-mb-px flex flex-nowrap gap-6 overflow-x-auto whitespace-nowrap text-sm"
-        aria-label="Dashboard"
+        aria-label={t('ariaLabel.dashboard')}
       >
-        {items.map(({ href, label }) => {
+        {items.map(({ href, key }) => {
           const active = pathname === href
           return (
             <Link
@@ -35,7 +38,7 @@ export function DashboardNav() {
                   : 'shrink-0 pb-3 border-b-2 border-transparent font-medium text-gray-600 hover:text-[#ba3d3d]'
               }
             >
-              {label}
+              {t(`label.${key}`)}
             </Link>
           )
         })}

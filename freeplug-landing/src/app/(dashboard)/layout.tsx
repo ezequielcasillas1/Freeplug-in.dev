@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardNav } from '@/app/(dashboard)/DashboardNav'
 import { DashboardHeader } from '@/app/(dashboard)/DashboardHeader'
+import { DashboardFooter } from '@/app/(dashboard)/DashboardFooter'
 import { AppTreeDocument } from '@/app/app-document-server'
 
 /** Private pages: keep out of search results. */
@@ -33,6 +34,7 @@ export default async function DashboardLayout({
         <DashboardNav />
         {children}
       </main>
+      <DashboardFooter />
     </div>
     </AppTreeDocument>
   )

@@ -217,6 +217,12 @@
       "accessOfflineMessage": "Tu sitio web está fuera de línea porque se canceló tu hosting. Vuelve a contratar el hosting para recuperarlo.",
       "restartHostingLabel": "Reactivar hosting",
       "resumePlanLabel": "Reanudar plan"
+    },
+    "settings": {
+      "language": {
+        "label": "Idioma",
+        "saved": "Guardado"
+      }
     }
   },
   "errors": {

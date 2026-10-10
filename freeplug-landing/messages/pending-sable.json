@@ -12,7 +12,9 @@
     "tips.nudgePerk.quarterlyCall": "In ladder-copy.ts at ea817ef (PER_MONTH, TIP_NUDGE_PERK quarterlyCall/doneForYouEdits) but missing from Sable extraction. English verbatim from code.",
     "tips.nudgePerk.doneForYouEdits": "In ladder-copy.ts at ea817ef (PER_MONTH, TIP_NUDGE_PERK quarterlyCall/doneForYouEdits) but missing from Sable extraction. English verbatim from code.",
     "public.meta.faqTitle": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim.",
-    "public.meta.faqDescription": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim."
+    "public.meta.faqDescription": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim.",
+    "dashboard.nav.label.settings": "Dashboard tab for the new settings page (Oct 10). ES draft: \"Configuración\". Sable to confirm.",
+    "dashboard.settings.title": "Settings page title (Oct 10). ES draft: \"Configuración\". Sable to confirm."
   },
   "englishAwaitingSableFix_about": "English lines Sable flagged as stale, wrong, unapproved or placeholder (review sheet notes, Oct 4). Owen does NOT edit their English: they stay keyed with today's text until Sable's fixed versions land (Aria, 9:37 AM). Sable's own list of 28 is authoritative; this is the set her review-sheet notes flag.",
   "englishAwaitingSableFix": {
