@@ -30,6 +30,9 @@
   "observability": { "enabled": true },
   // Workers Paid plan (Ezequiel's decision to buy). Caps runaway CPU per request (Aria A2).
   "limits": { "cpu_ms": 10000 },
+  // Envato catalog sync (custom-worker.ts scheduled()). OFF until Ezequiel's Gate 1; also needs
+  // ENVATO_CRON_ENABLED=true and Workers Paid. Uncomment only with his yes:
+  // "triggers": { "crons": ["0 */3 * * *"] },
   // No second public hostname for production.
   "workers_dev": false,
   "preview_urls": false,
