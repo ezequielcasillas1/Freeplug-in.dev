@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { submitWebsiteRequest, type RequestWebsiteState } from './actions'
 
@@ -29,6 +30,7 @@ export function RequestWebsiteForm({
     {} as RequestWebsiteState
   )
   const notesRef = useRef<HTMLTextAreaElement>(null)
+  const t = useTranslations('dashboard.request')
 
   useEffect(() => {
     if (locked || !focusMaintenance || !notesRef.current) return
@@ -38,16 +40,16 @@ export function RequestWebsiteForm({
 
   // Update mode: an open request was loaded and is still editable (status 'submitted').
   const isUpdate = Boolean(defaultValues) && !locked
-  const submitLabel = isUpdate ? 'Save changes' : 'Submit request'
+  const submitLabel = isUpdate ? t('submitLabel.saveChanges') : t('submitLabel.submitRequest')
 
   const lockedClass = locked ? ' bg-zinc-50 text-gray-600 cursor-default' : ''
 
   const notesLabel = focusMaintenance
-    ? 'Describe the maintenance or changes needed *'
-    : 'Tell us about your business'
+    ? t('notesLabel.describeMaintenanceChangesNeeded')
+    : t('notesLabel.tellUsAboutBusiness')
 
   const notesHint = focusMaintenance
-    ? 'Include what should change (e.g. hours, photos, a section overhaul). We will review and quote before charging.'
+    ? t('notesHint')
     : null
 
   return (
@@ -64,14 +66,13 @@ export function RequestWebsiteForm({
 
       {focusMaintenance ? (
         <p className="rounded-lg bg-zinc-50 border border-zinc-200 text-gray-800 px-4 py-3 text-sm">
-          Maintenance pricing follows a quick review — it starts at $50, up to $100. You&apos;ll see
-          the exact price before you pay.
+          {t('maintenancePricingFollowsQuickReview')}
         </p>
       ) : null}
 
       <div>
         <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">
-          Business name *
+          {t('businessName')}
         </label>
         <input
           id="business_name"
@@ -89,7 +90,7 @@ export function RequestWebsiteForm({
           htmlFor="google_business_url"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Google Business Profile URL
+          {t('googleBusinessProfileUrl')}
         </label>
         <input
           id="google_business_url"
@@ -105,7 +106,7 @@ export function RequestWebsiteForm({
 
       <div>
         <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700 mb-1">
-          Phone
+          {t('phone')}
         </label>
         <input
           id="contact_phone"
@@ -138,7 +139,7 @@ export function RequestWebsiteForm({
 
       {locked ? null : (
         <Button type="submit" className="w-full sm:w-auto" disabled={pending}>
-          {pending ? 'Sending…' : submitLabel}
+          {pending ? t('sending') : submitLabel}
         </Button>
       )}
     </form>

@@ -74,7 +74,8 @@
         "plans": "Planes",
         "requestWebsite": "Pedir sitio web",
         "help": "Ayuda",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "settings": "Configuración"
       },
       "ariaLabel": {
         "dashboard": "Panel"
@@ -150,7 +151,18 @@
       "alertSubjectPlan": "Tu plan {planName}",
       "alertSubjectGrandfathered": "Tu {name}",
       "alertEndingNoDate": "{subject} terminará al final del periodo de facturación actual. Reanúdalo para mantener tu sitio web en línea.",
-      "alertEndingDays": "{subject} terminará en {days, plural, one {# día} other {# días}}. Reanúdalo para mantener tu sitio web en línea."
+      "alertEndingDays": "{subject} terminará en {days, plural, one {# día} other {# días}}. Reanúdalo para mantener tu sitio web en línea.",
+      "subscriptionStatus": {
+        "active": "Activo",
+        "trialing": "En periodo de prueba",
+        "past_due": "pago atrasado",
+        "unpaid": "sin pagar",
+        "incomplete": "pago incompleto",
+        "incomplete_expired": "pago vencido",
+        "paused": "en pausa",
+        "canceled": "cancelado"
+      },
+      "dateLine": "{label}: {date}"
     },
     "activity": {
       "title": {
@@ -210,7 +222,8 @@
       "requestWebsite": "Pedir un sitio web",
       "shareLocalBusinessDetailsEvaluate": "Compártenos los datos de tu negocio local. Revisamos cada solicitud en persona, por correo o por teléfono. Después de revisar tu presencia en Google Business y el alcance del proyecto, te contactaremos con los siguientes pasos.",
       "haveOpenRequest": "Tienes una solicitud abierta",
-      "backDashboard": "← Volver al panel"
+      "backDashboard": "← Volver al panel",
+      "closeConfirm": "¿Cerrar esta solicitud de sitio web? Puedes empezar una nueva más adelante."
     },
     "access": {
       "accessEndingMessage": "Tu hosting está cancelado. Tu sitio web sigue en línea hasta el {date} y después se desconecta. Reanuda tu plan antes de esa fecha para mantenerlo en línea.",
@@ -222,7 +235,8 @@
       "language": {
         "label": "Idioma",
         "saved": "Guardado"
-      }
+      },
+      "title": "Configuración"
     }
   },
   "errors": {
@@ -250,7 +264,8 @@
         "requestNotesFullEmail": "Las notas de tu solicitud ya están llenas. Escribe a support@freeplug-in.dev con este cambio.",
         "couldNotVerifyBilling": "No pudimos verificar el estado de tu facturación. Inténtalo más tarde.",
         "serverConfigurationIncompleteTry": "La configuración del servidor está incompleta. Inténtalo más tarde.",
-        "couldNotCloseRequest": "No pudimos cerrar tu solicitud. Inténtalo más tarde."
+        "couldNotCloseRequest": "No pudimos cerrar tu solicitud. Inténtalo más tarde.",
+        "noOpenRequest": "No tienes ninguna solicitud abierta para cerrar."
       },
       "page": {
         "tellUsWhichPage": "Dinos en qué página está."
@@ -346,7 +361,8 @@
     "center": {
       "label": {
         "guides": "Guías",
-        "contact": "Contacto"
+        "contact": "Contacto",
+        "faq": "Preguntas frecuentes"
       },
       "title": {
         "gettingStarted": "Primeros pasos",
@@ -419,9 +435,10 @@
       "supportFreeplugDev": "support@freeplug-in.dev",
       "supportHours": "Horario de atención",
       "needUrgentHelp": "¿Necesitas ayuda urgente?",
-      "criticalIssuesAffectingLiveWebsite": "Si hay un problema grave con tu sitio web en línea, pon \"URGENT\" en el asunto de tu correo para que lo veamos rápido en nuestra bandeja.",
+      "criticalIssuesAffectingLiveWebsite": "Para problemas graves que afecten tu sitio web publicado, escribe \"URGENTE\" en el asunto del correo para que destaque en nuestra bandeja de entrada.",
       "sendUrgentRequest": "Enviar solicitud urgente",
-      "planGuideStepComingSoon": "{name} ({price}/mes) (próximamente): {blurb}"
+      "planGuideStepComingSoon": "{name} ({price}/mes) (próximamente): {blurb}",
+      "urgentPrefillSubject": "URGENTE: Problema con mi sitio web publicado"
     },
     "chat": {
       "ariaLabel": {
@@ -651,7 +668,8 @@
       "leads": "Reporte mensual de visitas y avisos de cotización",
       "getFound": "Mantenemos al día tu perfil de Google Business",
       "growthPartner": "Actualización de temporada y llamada trimestral"
-    }
+    },
+    "perMonth": "/mes"
   },
   "claim": {
     "thisPlanFallback": "Este plan",
@@ -1054,7 +1072,8 @@
     },
     "legal": {
       "translationNotice": "Traducción para tu conveniencia; la versión en inglés prevalece."
-    }
+    },
+    "amountPerYear": "{amount} al año"
   },
   "email": {
     "subjects": {
@@ -1276,6 +1295,11 @@
       "small_edit": "Un cambio pequeño extra al mes",
       "big_change": "Un cambio más grande al mes, de hasta una hora de trabajo aproximadamente",
       "visitor_snapshot": "Un correo al mes con tus visitas"
+    }
+  },
+  "i18n": {
+    "picker": {
+      "label": "Idioma"
     }
   }
 }

@@ -4,15 +4,10 @@ import type { SubscriptionDetail } from './dashboard-actions'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
 import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
-import {
-  CHANGE_PLAN_LINK,
-  INCLUDED_EDIT_LINE,
-  KEEP_PLAN_BUTTON,
-  LEGACY_PLAN_LABEL,
-  LEGACY_PLAN_NOTE,
-  PENDING_CHANGE_LINE,
-  PERK_LINES,
-} from '@/lib/plans/ladder-copy'
+import { useLocale, useTranslations } from 'next-intl'
+import { toAppLocale } from '@/i18n/config'
+import { formatUsdIn } from '@/i18n/format'
+import { KNOWN_STATUSES } from '@/lib/stripe/plan-line'
 import type { WebsiteAccess } from '@/lib/website-access'
 import type { OutreachSubscriptionState } from './outreach-dashboard'
 import { OutreachPlanCard } from './OutreachPlanCard'
@@ -35,10 +30,6 @@ export function hideViewPlansLink(access: WebsiteAccess | null | undefined): boo
 }
 
 
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
-
 const statusColors: Record<string, { bg: string; text: string }> = {
   active: { bg: 'bg-green-50', text: 'text-green-700' },
   trialing: { bg: 'bg-blue-50', text: 'text-blue-700' },
@@ -51,7 +42,18 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 }
 
 export function SubscriptionDetails({ subscriptions, websiteAccess = null, outreach = null }: Props) {
-  const { addonsPendingEndLine, bigChangeLine } = useLadderCopy()
+  const { addonsPendingEndLine, bigChangeLine, CHANGE_PLAN_LINK, INCLUDED_EDIT_LINE, KEEP_PLAN_BUTTON, LEGACY_PLAN_LABEL, LEGACY_PLAN_NOTE, PENDING_CHANGE_LINE, PERK_LINES } = useLadderCopy()
+  const t = useTranslations()
+  const locale = toAppLocale(useLocale())
+  const dateFallback = t('common.dateFallback')
+  const statusLabel = (status: string) =>
+    status === 'active' || status === 'trialing' || (locale !== 'en' && KNOWN_STATUSES.includes(status))
+      ? t(`dashboard.home.subscriptionStatus.${status}`)
+      : status
+  const perInterval = (cents: number, interval: string) => {
+    const amount = formatUsdIn(locale, cents, 2)
+    return interval === 'year' ? t('common.amountPerYear', { amount }) : interval === 'month' ? t('common.amountPerMonth', { amount }) : `${amount}/${interval}`
+  }
   const activeSubscriptions = subscriptions.filter(
     (s) => s.status === 'active' || s.status === 'trialing'
   )
@@ -74,17 +76,17 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
           </div>
           <div className="flex-1">
             <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
-              Active Subscriptions
+              {t('dashboard.home.activeSubscriptions')}
             </h2>
             <p className={hideViewPlansLink(websiteAccess) ? 'text-gray-600' : 'text-gray-600 mb-4'}>
-              No active subscriptions.
+              {t('dashboard.home.noActiveSubscriptions')}
             </p>
             {hideViewPlansLink(websiteAccess) ? null : (
               <Link
                 href="/dashboard/plans"
                 className="inline-flex items-center gap-1 font-semibold text-[#ba3d3d] hover:underline text-sm"
               >
-                View available plans
+                {t('dashboard.home.viewAvailablePlans')}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             )}
@@ -97,7 +99,7 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-        Active Subscriptions
+        {t('dashboard.home.activeSubscriptions')}
       </h2>
       <div className="space-y-4">
         {activeSubscriptions.map((sub) => {
@@ -120,17 +122,17 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}
                       >
-                        {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                        {statusLabel(sub.status)}
                       </span>
                       {sub.cancelAtPeriodEnd && (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-50 text-amber-700">
-                          Canceling
+                          {t('dashboard.home.canceling')}
                         </span>
                       )}
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-0.5">
-                    {formatCents(sub.amount)}/{sub.interval}
+                    {perInterval(sub.amount, sub.interval)}
                   </p>
                   {sub.entitlements?.step && !sub.entitlements.legacy ? (
                     // Round 5: no separate step-name line (the title already says "Freeplug Hosting: <Name>")
@@ -182,7 +184,10 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                 <div className="flex items-center gap-1 text-gray-500">
                   <Calendar className="h-3.5 w-3.5 shrink-0" />
                   <span>
-                    {sub.cancelAtPeriodEnd ? 'Ends' : 'Renews'}: {formatBillingDate(sub.cancelAtPeriodEnd ? sub.endsAt ?? sub.currentPeriodEnd : sub.currentPeriodEnd)}
+                    {t('dashboard.home.dateLine', {
+                      label: sub.cancelAtPeriodEnd ? t('dashboard.home.ends') : t('dashboard.home.renews'),
+                      date: formatBillingDate(sub.cancelAtPeriodEnd ? sub.endsAt ?? sub.currentPeriodEnd : sub.currentPeriodEnd, dateFallback, locale),
+                    })}
                   </span>
                 </div>
               </div>
@@ -202,7 +207,7 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
           href="/dashboard/cancel"
           className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-700"
         >
-          Cancel options
+          {t('dashboard.home.cancelOptions')}
         </Link>
       </div>
     </div>

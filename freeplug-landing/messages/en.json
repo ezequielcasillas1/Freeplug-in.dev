@@ -151,7 +151,18 @@
       "alertSubjectPlan": "Your {planName} plan",
       "alertSubjectGrandfathered": "Your {name}",
       "alertEndingNoDate": "{subject} will end at the end of the current billing period. Resume to keep your website live.",
-      "alertEndingDays": "{subject} will end in {days, plural, one {# day} other {# days}}. Resume to keep your website live."
+      "alertEndingDays": "{subject} will end in {days, plural, one {# day} other {# days}}. Resume to keep your website live.",
+      "subscriptionStatus": {
+        "active": "Active",
+        "trialing": "Trialing",
+        "past_due": "past due",
+        "unpaid": "unpaid",
+        "incomplete": "incomplete",
+        "incomplete_expired": "incomplete expired",
+        "paused": "paused",
+        "canceled": "canceled"
+      },
+      "dateLine": "{label}: {date}"
     },
     "activity": {
       "title": {
@@ -211,7 +222,8 @@
       "requestWebsite": "Request a website",
       "shareLocalBusinessDetailsEvaluate": "Share your local business details. We evaluate every request in person, by email, or phone. After we review your Google Business presence and scope, we will follow up with next steps.",
       "haveOpenRequest": "You have an open request",
-      "backDashboard": "← Back to dashboard"
+      "backDashboard": "← Back to dashboard",
+      "closeConfirm": "Close this website request? You can start a new one later."
     },
     "access": {
       "accessEndingMessage": "Your hosting is canceled. Your website stays online until {date}, then goes offline. Resume your plan before then to keep it online.",
@@ -252,7 +264,8 @@
         "requestNotesFullEmail": "Your request notes are full. Email support@freeplug-in.dev with this change.",
         "couldNotVerifyBilling": "Could not verify your billing status. Try again later.",
         "serverConfigurationIncompleteTry": "Server configuration is incomplete. Try again later.",
-        "couldNotCloseRequest": "Could not close your request. Try again later."
+        "couldNotCloseRequest": "Could not close your request. Try again later.",
+        "noOpenRequest": "No open request to close."
       },
       "page": {
         "tellUsWhichPage": "Tell us which page it is on."
@@ -348,7 +361,8 @@
     "center": {
       "label": {
         "guides": "Guides",
-        "contact": "Contact"
+        "contact": "Contact",
+        "faq": "FAQ"
       },
       "title": {
         "gettingStarted": "Getting started",
@@ -423,7 +437,8 @@
       "needUrgentHelp": "Need urgent help?",
       "criticalIssuesAffectingLiveWebsite": "For critical issues affecting your live website, include \"URGENT\" in your email subject line so it stands out in our inbox.",
       "sendUrgentRequest": "Send urgent request",
-      "planGuideStepComingSoon": "{name} ({price}/mo) (coming soon): {blurb}"
+      "planGuideStepComingSoon": "{name} ({price}/mo) (coming soon): {blurb}",
+      "urgentPrefillSubject": "URGENT: Problem with my live website"
     },
     "chat": {
       "ariaLabel": {
@@ -1063,7 +1078,8 @@
     },
     "legal": {
       "translationNotice": "Translation provided for your convenience; the English version prevails."
-    }
+    },
+    "amountPerYear": "{amount}/year"
   },
   "email": {
     "subjects": {

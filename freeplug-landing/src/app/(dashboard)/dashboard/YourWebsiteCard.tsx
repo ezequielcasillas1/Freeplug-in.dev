@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
-import { VIEW_PREVIEW_LABEL, VIEW_WEBSITE_LABEL, YOUR_WEBSITE_HEADING } from '@/lib/outreach/copy'
+import { useTranslations } from 'next-intl'
 import type { TrackerStep } from '@/lib/outreach/tracker'
 
 type Props = {
@@ -22,9 +22,10 @@ type Props = {
  * (Lina/Sable 1:04 AM), with the current one in bold.
  */
 export function YourWebsiteCard({ steps, liveUrl, showPreview, liveNote = null }: Props) {
+  const t = useTranslations('claim')
   return (
     <div className="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm" data-testid="your-website-card">
-      <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">{YOUR_WEBSITE_HEADING}</h2>
+      <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">{t('yourWebsiteHeading')}</h2>
       <ol className="space-y-3">
         {steps.map((s, i) => (
           <li key={s.label} className="flex items-start gap-3" data-state={s.state}>
@@ -62,11 +63,11 @@ export function YourWebsiteCard({ steps, liveUrl, showPreview, liveNote = null }
           rel="noreferrer"
           className={cn(buttonVariants({ variant: 'primary', size: 'md' }), 'mt-6 w-full sm:w-auto')}
         >
-          {VIEW_WEBSITE_LABEL}
+          {t('viewWebsiteLabel')}
         </a>
       ) : showPreview ? (
         <Link href="/dashboard/website" className={cn(buttonVariants({ variant: 'primary', size: 'md' }), 'mt-6 w-full sm:w-auto')}>
-          {VIEW_PREVIEW_LABEL}
+          {t('viewPreviewLabel')}
         </Link>
       ) : null}
     </div>

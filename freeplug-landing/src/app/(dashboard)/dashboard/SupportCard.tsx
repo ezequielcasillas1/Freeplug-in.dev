@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { MessageCircle, Mail, HelpCircle } from 'lucide-react'
-import { SUPPORT_AVAILABILITY_LABEL, SUPPORT_CARD_LINE } from '@/lib/support-hours'
+import { useTranslations } from 'next-intl'
 
 export function SupportCard() {
+  const t = useTranslations()
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-        Need Help?
+        {t('dashboard.home.needHelp')}
       </h2>
       <div className="space-y-3">
         <a
@@ -18,7 +19,7 @@ export function SupportCard() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 group-hover:text-[#ba3d3d]">
-              Email Support
+              {t('dashboard.home.emailSupport')}
             </p>
             <p className="text-xs text-gray-500">support@freeplug-in.dev</p>
           </div>
@@ -33,9 +34,9 @@ export function SupportCard() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 group-hover:text-[#ba3d3d]">
-              Help Center
+              {t('dashboard.home.helpCenter')}
             </p>
-            <p className="text-xs text-gray-500">FAQs and guides</p>
+            <p className="text-xs text-gray-500">{t('dashboard.home.faqsGuides')}</p>
           </div>
         </Link>
 
@@ -44,8 +45,8 @@ export function SupportCard() {
             <MessageCircle className="h-4 w-4 text-green-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900">{SUPPORT_AVAILABILITY_LABEL}</p>
-            <p className="text-xs text-gray-500">{SUPPORT_CARD_LINE}</p>
+            <p className="text-sm font-medium text-gray-900">{t('common.support.availabilityLabel')}</p>
+            <p className="text-xs text-gray-500">{t('common.support.cardLine', { supportHours: t('common.support.hours') })}</p>
           </div>
         </div>
       </div>

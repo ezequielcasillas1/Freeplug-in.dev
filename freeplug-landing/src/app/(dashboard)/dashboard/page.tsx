@@ -31,6 +31,8 @@ import {
   CUSTOMER_CHANGE_REQUEST_LIMIT,
   type CustomerChangeRequest,
 } from '@/lib/change-requests/customer'
+import { getTranslations } from 'next-intl/server'
+import type { Translate } from '@/i18n/translate'
 
 type Props = {
   searchParams: Promise<{
@@ -42,15 +44,18 @@ type Props = {
   }>
 }
 
-function requestStatusLabel(status: string | undefined): string {
-  if (status === 'submitted') return 'Submitted'
-  if (status === 'in_review') return 'In review'
-  if (status === 'closed') return 'Closed'
+function requestStatusLabel(t: Translate, status: string | undefined): string {
+  if (status === 'submitted') return t('requestStatusLabel.submitted')
+  if (status === 'in_review') return t('requestStatusLabel.inReview')
+  if (status === 'closed') return t('requestStatusLabel.closed')
   return '—'
 }
 
 export default async function DashboardPage({ searchParams }: Props) {
-  const { RESUME_BUSY_MESSAGE, RESUME_FAILED_MESSAGE } = ladderCopy(await currentLocale())
+  const locale = await currentLocale()
+  const { RESUME_BUSY_MESSAGE, RESUME_FAILED_MESSAGE } = ladderCopy(locale)
+  const t = (await getTranslations('dashboard.home')) as unknown as Translate
+  const tc = (await getTranslations('claim')) as unknown as Translate
   const q = await searchParams
   const supabase = await createClient()
   const {
@@ -95,7 +100,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     }
   }
   // Offline only; a plan set to end shows the one "Subscription ending" alert instead (next round).
-  const accessAlert = dashboardAccessAlert(websiteAccess)
+  const accessAlert = dashboardAccessAlert(websiteAccess, locale)
 
   const { data: openRequest } = await supabase
     .from('website_requests')
@@ -130,19 +135,25 @@ export default async function DashboardPage({ searchParams }: Props) {
   const hasActivePlan = (enhancedData?.subscriptions ?? []).some((s) => s.status === 'active' || s.status === 'trialing')
   const outreachLive = outreachSite?.publish_status === 'live'
   const trackerSteps = outreachSite
-    ? outreachTracker({
-        claimed: true,
-        detailsConfirmed: Boolean(outreachDetails?.customer_confirmed_at),
-        hostingSetUp: Boolean(outreachSite.setup_completed_at),
-        live: outreachLive,
-      })
+    ? outreachTracker(
+        {
+          claimed: true,
+          detailsConfirmed: Boolean(outreachDetails?.customer_confirmed_at),
+          hostingSetUp: Boolean(outreachSite.setup_completed_at),
+          live: outreachLive,
+        },
+        locale
+      )
     : latestRequest
-      ? organicTracker({
-          hasRequest: true,
-          building: latestRequest.status === 'in_review',
-          hostingSetUp: hasActivePlan,
-          live: websiteAccess?.status === 'active',
-        })
+      ? organicTracker(
+          {
+            hasRequest: true,
+            building: latestRequest.status === 'in_review',
+            hostingSetUp: hasActivePlan,
+            live: websiteAccess?.status === 'active',
+          },
+          locale
+        )
       : null
   const outreachDash = outreachDashboardState(outreachSite, {
     steps: outreachSite ? trackerSteps : null,
@@ -155,13 +166,13 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   const intakeClosedInfo =
     !openRequest && latestRequest?.status === 'closed'
-      ? { businessName: latestRequest.business_name?.trim() || 'Your request' }
+      ? { businessName: latestRequest.business_name?.trim() || t('businessName.yourRequest') }
       : null
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-      <p className="text-gray-600 mb-6">Welcome back! Here is an overview of your account.</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('dashboard')}</h1>
+      <p className="text-gray-600 mb-6">{t('welcomeBackHereOverviewAccount')}</p>
 
       {q.hosting === 'resume_failed' ? (
         <p
@@ -189,20 +200,19 @@ export default async function DashboardPage({ searchParams }: Props) {
           className="mb-6 rounded-lg bg-green-50 border border-green-200 text-green-900 px-4 py-3 text-sm"
           role="status"
         >
-          Your password has been updated. You&apos;re signed in.
+          {t('passwordHasBeenUpdatedYoure')}
         </p>
       ) : null}
 
       {q.submitted === '1' ? (
         <p className="mb-6 rounded-lg bg-green-50 border border-green-200 text-green-900 px-4 py-3 text-sm">
-          Thanks — your request was submitted. We will follow up by email or phone.
+          {t('thanksRequestWasSubmittedFollow')}
         </p>
       ) : null}
 
       {q.checkout === 'success' ? (
         <p className="mb-6 rounded-lg bg-zinc-50 border border-zinc-200 text-gray-800 px-4 py-3 text-sm">
-          Checkout completed. Payment totals may take a short time to appear here after the webhook
-          runs.
+          {t('checkoutCompletedPaymentTotalsMay')}
         </p>
       ) : null}
 
@@ -214,7 +224,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           steps={trackerSteps}
           liveUrl={outreachSite ? (outreachLive ? outreachSite.live_url : null) : null}
           showPreview={Boolean(outreachSite && !outreachLive && (outreachSite.screenshot_desktop_path || outreachSite.screenshot_mobile_path))}
-          liveNote={outreachSite && !outreachLive ? TRACKER_LIVE_WAITING : null}
+          liveNote={outreachSite && !outreachLive ? tc('trackerLiveWaiting') : null}
         />
       ) : null}
 
@@ -250,7 +260,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         {outreachDash.showRequestCard ? (
           <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-              Your request
+              {t('businessName.yourRequest')}
             </h2>
             {openRequest ? (
               <>
@@ -258,7 +268,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                   {openRequest.business_name}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">
-                  Status: {requestStatusLabel(openRequest.status)}
+                  {t('statusLine', { status: requestStatusLabel(t, openRequest.status) })}
                 </p>
               </>
             ) : latestRequest?.status === 'closed' ? (
@@ -267,24 +277,24 @@ export default async function DashboardPage({ searchParams }: Props) {
                   {latestRequest.business_name}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">
-                  Status: {requestStatusLabel('closed')}
+                  {t('statusLine', { status: requestStatusLabel(t, 'closed') })}
                 </p>
                 <p className="text-sm text-gray-600 mt-2">
-                  This request is closed. You can start a new request when you are ready.
+                  {t('requestClosedStartNewRequest')}
                 </p>
               </>
             ) : (
-              <p className="text-gray-700">No website request yet.</p>
+              <p className="text-gray-700">{t('noWebsiteRequestYet')}</p>
             )}
             <p className="text-sm text-gray-700 mt-4 pt-4 border-t border-zinc-100">
-              <span className="font-medium text-gray-900">Next step: </span>
+              <span className="font-medium text-gray-900">{t('nextStep')} </span>
               {intakeClosedInfo
-                ? 'Your last request is closed. Open a new request if you want us to review a new or updated project.'
+                ? t('lastRequestClosedOpenNew')
                 : status === 'none'
-                  ? 'Tell us about your business and link your Google Business Profile.'
+                  ? t('tellUsAboutBusinessLink')
                   : openRequest
-                    ? 'You can update your request details while it is still marked submitted.'
-                    : 'Use the request form when you are ready for us to review your business.'}
+                    ? t('updateRequestDetailsWhileStill')
+                    : t('useRequestFormWhenReady')}
             </p>
             <div className="mt-4 flex flex-col gap-2">
               <Link
@@ -292,16 +302,16 @@ export default async function DashboardPage({ searchParams }: Props) {
                 className="inline-flex font-semibold text-[#ba3d3d] hover:underline"
               >
                 {openRequest
-                  ? 'View or update →'
+                  ? t('viewUpdate')
                   : latestRequest?.status === 'closed'
-                    ? 'New request →'
-                    : 'Start a request →'}
+                    ? t('newRequest')
+                    : t('startRequest')}
               </Link>
               <Link
                 href="/dashboard/plans"
                 className="inline-flex font-semibold text-[#ba3d3d] hover:underline"
               >
-                View plans & hosting →
+                {t('viewPlansHosting')}
               </Link>
             </div>
           </div>
@@ -313,7 +323,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           manageBilling={
             <form action={openBillingPortal}>
               <Button type="submit" variant="secondary" size="sm">
-                Manage billing
+                {t('manageBilling')}
               </Button>
             </form>
           }

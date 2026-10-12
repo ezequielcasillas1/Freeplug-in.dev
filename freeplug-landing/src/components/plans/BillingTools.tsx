@@ -1,4 +1,4 @@
-import { intlLocale } from '@/i18n/format'
+import { intlLocale, noWrapDate } from '@/i18n/format'
 import type { AppLocale } from '@/i18n/config'
 import type { InvoiceRow } from '@/lib/stripe/billing-routing'
 import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
@@ -6,7 +6,7 @@ import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 const money = (cents: number, currency: string, locale: AppLocale = 'en') =>
   new Intl.NumberFormat(intlLocale(locale), { style: 'currency', currency: currency.toUpperCase() }).format(cents / 100)
 const day = (iso: string, locale: AppLocale = 'en') =>
-  new Intl.DateTimeFormat(intlLocale(locale), { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso))
+  noWrapDate(locale, new Intl.DateTimeFormat(intlLocale(locale), { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso)))
 
 /**
  * Plans page billing (Aria, Oct 3 12:56): the card-update flow (portal session limited to

@@ -1,4 +1,5 @@
-import { intlLocale } from '@/i18n/format'
+import { intlLocale, noWrapDate } from '@/i18n/format'
+import { translatorFor } from '@/i18n/translate'
 import type { AppLocale } from '@/i18n/config'
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
@@ -34,6 +35,7 @@ export const NBSP = '\u00A0'
  * other caller get it.
  */
 export function formatPlanEndDate(date: Date, locale: AppLocale = 'en'): string {
+  // Every space a no-break space, in every locale (EN: ladder-fix; ES: noWrapDate's rule).
   return date
     .toLocaleDateString(intlLocale(locale), {
       month: 'long',
@@ -50,20 +52,22 @@ export function formatPlanEndDate(date: Date, locale: AppLocale = 'en'): string 
  */
 export function formatShortPlanDate(date: Date, now: Date = new Date(), locale: AppLocale = 'en'): string {
   const sameYear = date.getUTCFullYear() === now.getUTCFullYear()
-  return date.toLocaleDateString(intlLocale(locale), {
+  return noWrapDate(
+    locale,
+    date.toLocaleDateString(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     ...(sameYear ? {} : { year: 'numeric' as const }),
     timeZone: 'UTC',
   })
+  )
 }
 
 /** Shown when the plan is still active but already set to end (canceled at period end / cancel_at). */
-export function closeBlockedPlanEndingMessage(endsAt: Date | null): string {
-  if (!endsAt) {
-    return 'Your plan is canceled and ends at the end of the current billing period. You can close this request after that date.'
-  }
-  return `Your plan is canceled and ends on ${formatPlanEndDate(endsAt)}. You can close this request after that date.`
+export function closeBlockedPlanEndingMessage(endsAt: Date | null, locale: AppLocale = 'en'): string {
+  const t = translatorFor(locale, 'errors.plans.closeBlockedPlanEndingMessage')
+  if (!endsAt) return t('planCanceledEndsEnd')
+  return t('planCanceledEndsClose', { date: formatPlanEndDate(endsAt, locale) })
 }
 
 export type ActiveSubscriptionStatus =
@@ -143,7 +147,7 @@ export async function listLiveSubscriptions(customerId: string): Promise<Stripe.
  * One line per live subscription for the Plans page strip: "<step name> · $65/month" (see plan-line.ts;
  * grandfathered plans: "Hosting + Pro add-on · $50/month", no tip), plus the status when it is not "active".
  */
-export async function describeLiveSubscriptions(customerId: string): Promise<string[]> {
+export async function describeLiveSubscriptions(customerId: string, locale: AppLocale = 'en'): Promise<string[]> {
   const stripe = getStripe()
   const subs = await listLiveSubscriptions(customerId)
   const lines: string[] = []
@@ -158,7 +162,7 @@ export async function describeLiveSubscriptions(customerId: string): Promise<str
           : (item.price.product as Stripe.Product)
       items.push({ lookupKey: item.price.lookup_key ?? null, productName: product.name, productId: product.id ?? null, unitAmountCents: item.price.unit_amount ?? 0, quantity: item.quantity ?? 1 })
     }
-    lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars, addonCentsOfItems(sub.items.data)))
+    lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars, addonCentsOfItems(sub.items.data), locale))
   }
   return lines
 }

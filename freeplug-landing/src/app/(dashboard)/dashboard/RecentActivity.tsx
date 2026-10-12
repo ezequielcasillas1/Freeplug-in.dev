@@ -1,4 +1,7 @@
 import { DollarSign, FileText, CreditCard, Clock, CircleAlert } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import { toAppLocale, type AppLocale } from '@/i18n/config'
+import { formatDateIn, formatUsdIn } from '@/i18n/format'
 import type { ActivityItem } from './dashboard-actions'
 
 type Props = {
@@ -7,26 +10,21 @@ type Props = {
   loadFailed?: boolean
 }
 
-function formatRelativeTime(date: Date): string {
+type T = (key: string, values?: Record<string, number>) => string
+
+function formatRelativeTime(date: Date, t: T, locale: AppLocale): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / (1000 * 60))
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMins < 1) return t('justNow')
+  if (diffMins < 60) return t('minutesAgo', { minutes: diffMins })
+  if (diffHours < 24) return t('hoursAgo', { hours: diffHours })
+  if (diffDays < 7) return t('daysAgo', { days: diffDays })
 
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
+  return formatDateIn(locale, date, { month: 'short', day: 'numeric', timeZone: 'America/Chicago' })
 }
 
 const activityConfig = {
@@ -53,19 +51,21 @@ const activityConfig = {
 }
 
 export function RecentActivity({ activities, loadFailed = false }: Props) {
+  const t = useTranslations('dashboard.home')
+  const locale = toAppLocale(useLocale())
   if (loadFailed) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-          Recent Activity
+          {t('recentActivity')}
         </h2>
         <div className="flex items-start gap-3" role="alert" data-testid="recent-activity-error">
           <div className="rounded-lg bg-amber-50 p-2 flex-shrink-0">
             <CircleAlert className="h-4 w-4 text-amber-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900">Couldn&apos;t load activity</p>
-            <p className="text-sm text-gray-600">Refresh the page to try again.</p>
+            <p className="text-sm font-medium text-gray-900">{t('couldntLoadActivity')}</p>
+            <p className="text-sm text-gray-600">{t('refreshPageTryAgain')}</p>
           </div>
         </div>
       </div>
@@ -76,11 +76,11 @@ export function RecentActivity({ activities, loadFailed = false }: Props) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-          Recent Activity
+          {t('recentActivity')}
         </h2>
         <div className="flex items-center gap-3 text-gray-500">
           <Clock className="h-5 w-5" />
-          <p className="text-sm">No recent activity to display.</p>
+          <p className="text-sm">{t('noRecentActivityDisplay')}</p>
         </div>
       </div>
     )
@@ -89,7 +89,7 @@ export function RecentActivity({ activities, loadFailed = false }: Props) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-        Recent Activity
+        {t('recentActivity')}
       </h2>
       <div className="space-y-4">
         {activities.slice(0, 5).map((activity) => {
@@ -105,13 +105,13 @@ export function RecentActivity({ activities, loadFailed = false }: Props) {
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium text-gray-900 truncate">{activity.title}</p>
                   <span className="text-xs text-gray-500 flex-shrink-0">
-                    {formatRelativeTime(activity.date)}
+                    {formatRelativeTime(activity.date, t as T, locale)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 truncate">{activity.description}</p>
                 {activity.amount ? (
                   <p className="text-sm font-medium text-green-600 mt-0.5">
-                    +{formatCents(activity.amount)}
+                    +{formatUsdIn(locale, activity.amount, 2)}
                   </p>
                 ) : null}
               </div>
@@ -121,7 +121,7 @@ export function RecentActivity({ activities, loadFailed = false }: Props) {
       </div>
       {activities.length > 5 && (
         <p className="text-xs text-gray-500 mt-4 pt-4 border-t border-zinc-100">
-          Showing 5 of {activities.length} activities
+          {t('showing5Activities', { total: activities.length })}
         </p>
       )}
     </div>
