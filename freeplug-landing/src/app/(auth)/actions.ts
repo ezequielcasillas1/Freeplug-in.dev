@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cookies, headers } from 'next/headers'
 import { clientIpFrom } from '@/lib/rate-limit/client-ip'
+import { hashRateKey, rateCheck, type RateRule } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { appBaseUrl } from '@/lib/stripe/config'
@@ -25,6 +26,50 @@ import {
   type ResetFallbackReason,
 } from '@/lib/email/reset-fallback'
 
+/** Same message for sign-in and sign-up whether or not the email has an account. */
+const TOO_MANY_ATTEMPTS_MESSAGE = 'Too many attempts. Please try again later.'
+
+/**
+ * Sign-in / sign-up limits on the shared DB-backed limiter (public.rate_check, the same one the password
+ * reset uses). Sign-in counts FAILED attempts only, per email + client IP: after 5 failures inside 15
+ * minutes the next attempt is blocked until the oldest failure leaves the 15-minute window. Sign-up: 5
+ * attempts per client IP per hour. Without a trusted IP (clientIpFrom → the shared bucket) the IP part is
+ * the shared bucket, so sign-up becomes 5/hour for everyone without one.
+ */
+const AUTH_LIMITS = {
+  signInFailures: { bucket: 'signin_fail_email_ip', limit: 5, windowSeconds: 900 } satisfies RateRule,
+  signUpPerIp: { bucket: 'signup_ip', limit: 5, windowSeconds: 3600 } satisfies RateRule,
+}
+
+function signInKey(email: string, ip: string): string {
+  return `${email.trim().toLowerCase()}|${ip}`
+}
+
+/**
+ * Read-only check (rate_check itself would record a hit). Fails closed like rateCheck: a database error
+ * counts as locked out.
+ */
+async function signInLockedOut(key: string): Promise<boolean> {
+  try {
+    const rule = AUTH_LIMITS.signInFailures
+    const since = new Date(Date.now() - rule.windowSeconds * 1000).toISOString()
+    const { count, error } = await createAdminClient()
+      .from('rate_limit_hits')
+      .select('key_hash', { count: 'exact', head: true })
+      .eq('bucket', rule.bucket)
+      .eq('key_hash', hashRateKey(key))
+      .gte('hit_at', since)
+    if (error) {
+      console.error('[signin-rate]', error.message)
+      return true
+    }
+    return (count ?? 0) >= rule.limit
+  } catch (e) {
+    console.error('[signin-rate]', e instanceof Error ? e.message : e)
+    return true
+  }
+}
+
 export async function signIn(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
@@ -34,9 +79,16 @@ export async function signIn(formData: FormData) {
     redirect('/login?error=' + encodeURIComponent('Email and password are required.'))
   }
 
+  const rateKey = signInKey(email, await clientIp())
+  if (await signInLockedOut(rateKey)) {
+    redirect('/login?error=' + encodeURIComponent(TOO_MANY_ATTEMPTS_MESSAGE))
+  }
+
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) {
+    // Record the failure (rate_check inserts a hit while under the limit).
+    await rateCheck(AUTH_LIMITS.signInFailures, rateKey)
     redirect('/login?error=' + encodeURIComponent(error.message))
   }
 
@@ -59,6 +111,10 @@ export async function signUp(formData: FormData) {
   const next = formNext(formData)
   const businessName = String(formData.get('business_name') ?? '').trim().slice(0, 200)
   const signupPath = next ? `/signup?next=${encodeURIComponent(next)}&` : '/signup?'
+
+  if (!(await rateCheck(AUTH_LIMITS.signUpPerIp, await clientIp()))) {
+    redirect(signupPath + 'error=' + encodeURIComponent(TOO_MANY_ATTEMPTS_MESSAGE))
+  }
 
   if (!email || !password) {
     redirect(signupPath + 'error=' + encodeURIComponent('Email and password are required.'))

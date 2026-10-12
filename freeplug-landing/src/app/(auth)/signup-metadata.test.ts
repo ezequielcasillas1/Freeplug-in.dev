@@ -15,6 +15,7 @@ vi.mock('next/headers', () => ({ headers: async () => new Headers(), cookies: as
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
 vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({ auth: { signUp: signUpSpy } }) }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({}) }))
+vi.mock('@/lib/rate-limit', () => ({ hashRateKey: (k: string) => k, rateCheck: async () => true }))
 vi.mock('@/lib/supabase/anon', () => ({ createAnonClient: () => ({}) }))
 
 import { signUp } from './actions'
