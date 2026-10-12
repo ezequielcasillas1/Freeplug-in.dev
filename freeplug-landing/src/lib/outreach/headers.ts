@@ -10,10 +10,47 @@
  * them for static files that Cloudflare serves without running the Worker; headers.test.ts keeps
  * the two in sync.
  */
+/**
+ * Supabase project origin + its realtime wss origin, from NEXT_PUBLIC_SUPABASE_URL (inlined at build).
+ * Empty when unset or unparsable.
+ */
+function supabaseCspSources(): string[] {
+  try {
+    const u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '')
+    return [u.origin, `${u.protocol === 'http:' ? 'ws:' : 'wss:'}//${u.host}`]
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Report-only for now (Oct 12): only 'self', Stripe (js/api/hooks/checkout), the Supabase project
+ * (https + wss) and Cloudflare Turnstile (challenges.cloudflare.com).
+ */
+function contentSecurityPolicyReportOnly(): string {
+  const supabase = supabaseCspSources()
+  const stripeFrames = ['https://js.stripe.com', 'https://hooks.stripe.com', 'https://checkout.stripe.com']
+  return [
+    "default-src 'self'",
+    "script-src 'self' https://js.stripe.com https://challenges.cloudflare.com",
+    "style-src 'self' 'unsafe-inline'",
+    ['img-src', "'self'", 'data:', 'blob:', ...supabase.slice(0, 1)].join(' '),
+    "font-src 'self'",
+    ['connect-src', "'self'", 'https://api.stripe.com', ...supabase].join(' '),
+    ['frame-src', ...stripeFrames, 'https://challenges.cloudflare.com'].join(' '),
+    "form-action 'self' https://checkout.stripe.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "object-src 'none'",
+  ].join('; ')
+}
+
 export const SITE_SECURITY_HEADERS = {
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Content-Security-Policy-Report-Only': contentSecurityPolicyReportOnly(),
 } as const
 
 /** next.config.ts headers() source that matches every path, including "/". */

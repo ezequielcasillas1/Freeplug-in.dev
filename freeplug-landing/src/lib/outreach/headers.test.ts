@@ -59,8 +59,15 @@ describe('private preview headers', () => {
         { key: 'X-Frame-Options', value: 'DENY' },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+        { key: 'Content-Security-Policy-Report-Only', value: SITE_SECURITY_HEADERS['Content-Security-Policy-Report-Only'] },
       ],
     })
+    const csp = SITE_SECURITY_HEADERS['Content-Security-Policy-Report-Only']
+    for (const src of ['https://js.stripe.com', 'https://api.stripe.com', 'https://hooks.stripe.com', 'https://checkout.stripe.com', 'https://challenges.cloudflare.com']) {
+      expect(csp).toContain(src)
+    }
+    expect(csp).toContain("default-src 'self'")
     // Same key in a later rule wins in Next, so preview paths keep no-referrer.
     const lastReferrer = all.filter((r) => r.headers.some((h) => h.key === 'Referrer-Policy')).at(-1)!
     expect(lastReferrer.headers.find((h) => h.key === 'Referrer-Policy')!.value).toBe('no-referrer')
@@ -70,7 +77,10 @@ describe('private preview headers', () => {
     const root = path.join(__dirname, '../../..')
     const text = readFileSync(path.join(root, 'public/_headers'), 'utf8')
     const block = text.split(/\n\s*\n/).find((b) => /^\/\*$/m.test(b))!
-    for (const [k, v] of Object.entries(SITE_SECURITY_HEADERS)) expect(block).toContain(`  ${k}: ${v}`)
+    // Oct 12: HSTS + CSP-Report-Only are sent by Next/the Worker only (the CSP needs the build-time
+    // Supabase URL); static files keep the original three.
+    const STATIC_ONLY_SKIP = ['Strict-Transport-Security', 'Content-Security-Policy-Report-Only']
+    for (const [k, v] of Object.entries(SITE_SECURITY_HEADERS)) if (!STATIC_ONLY_SKIP.includes(k)) expect(block).toContain(`  ${k}: ${v}`)
     expect(text).toMatch(/^\/_next\/static\/\*\n\s+Cache-Control: public, max-age=31536000, immutable$/m)
     expect(existsSync(path.join(root, '../netlify.toml'))).toBe(false)
     expect(existsSync(path.join(root, 'netlify.toml'))).toBe(false)
