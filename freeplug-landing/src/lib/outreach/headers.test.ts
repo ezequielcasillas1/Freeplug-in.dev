@@ -59,7 +59,7 @@ describe('private preview headers', () => {
         { key: 'X-Frame-Options', value: 'DENY' },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-        { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+        { key: 'Strict-Transport-Security', value: 'max-age=86400' },
         { key: 'Content-Security-Policy-Report-Only', value: SITE_SECURITY_HEADERS['Content-Security-Policy-Report-Only'] },
       ],
     })
@@ -68,6 +68,7 @@ describe('private preview headers', () => {
       expect(csp).toContain(src)
     }
     expect(csp).toContain("default-src 'self'")
+    expect(csp).toContain('report-uri /api/csp-report')
     // Same key in a later rule wins in Next, so preview paths keep no-referrer.
     const lastReferrer = all.filter((r) => r.headers.some((h) => h.key === 'Referrer-Policy')).at(-1)!
     expect(lastReferrer.headers.find((h) => h.key === 'Referrer-Policy')!.value).toBe('no-referrer')
