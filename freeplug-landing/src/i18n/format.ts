@@ -8,12 +8,28 @@ export function intlLocale(locale: AppLocale = DEFAULT_LOCALE): string {
   return INTL_LOCALE[locale] ?? INTL_LOCALE.en
 }
 
+export const NBSP = '\u00A0'
+
+/**
+ * Lina's rule (Oct 4): a Spanish date never wraps, so EVERY space in it is U+00A0
+ * ("9\u00A0de\u00A0octubre\u00A0de\u00A02026"). Applied once here so every Spanish date caller
+ * gets it. English is left as Intl returns it on this branch (its NBSP pass lives on ladder-fix).
+ */
+export function noWrapDate(locale: AppLocale | undefined, text: string): string {
+  return locale === 'es' ? text.replace(/\s/g, NBSP) : text
+}
+
 export function formatDateIn(
   locale: AppLocale | undefined,
   date: Date,
   options: Intl.DateTimeFormatOptions
 ): string {
-  return new Intl.DateTimeFormat(intlLocale(locale), options).format(date)
+  return noWrapDate(locale, new Intl.DateTimeFormat(intlLocale(locale), options).format(date))
+}
+
+/** USD for the dashboard: "$1,234" / "$35.00". Same symbol in every locale (card R3: never converted). */
+export function formatUsdIn(locale: AppLocale | undefined, cents: number, fractionDigits: 0 | 2 = 2): string {
+  return `$${formatNumberIn(locale, cents / 100, { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}`
 }
 
 export function formatNumberIn(locale: AppLocale | undefined, value: number, options?: Intl.NumberFormatOptions): string {

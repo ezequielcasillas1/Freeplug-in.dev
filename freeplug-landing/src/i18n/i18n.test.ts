@@ -160,7 +160,7 @@ describe('formatting (card R3: USD everywhere, Intl per locale)', () => {
   it('dates and money', () => {
     const d = new Date(Date.UTC(2026, 9, 3, 12))
     expect(formatDateIn('en', d, { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })).toBe('October 3, 2026')
-    expect(formatDateIn('es', d, { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })).toBe('3 de octubre de 2026')
+    expect(formatDateIn('es', d, { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })).toBe('3\u00A0de\u00A0octubre\u00A0de\u00A02026')
     expect(formatNumberIn('es', 35, { style: 'currency', currency: 'USD' })).toBe('$35.00')
   })
   it('lists use Intl.ListFormat; English keeps the house style (no serial comma)', () => {

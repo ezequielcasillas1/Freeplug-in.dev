@@ -32,3 +32,14 @@ export function translatorFor(locale: AppLocale = DEFAULT_LOCALE, namespace?: st
   if (!process.env.VITEST) cache.set(id, fn)
   return fn
 }
+
+/**
+ * Translator over messages the server already resolved (the NextIntlClientProvider payload). Client
+ * code uses this instead of translatorFor: the browser has no FREEPLUG_I18N_ES_ALLOW_PENDING, so
+ * re-deciding there refused the draft and fell back to English. The server's locale decision (gate,
+ * status, local pending flag) is final; the client only formats.
+ */
+export function translatorFromMessages(locale: AppLocale, messages: Messages, namespace?: string): Translate {
+  const t = createTranslator({ locale, messages, namespace: namespace as never, timeZone: 'America/Chicago' })
+  return (key, values) => (t as unknown as Translate)(key, values)
+}

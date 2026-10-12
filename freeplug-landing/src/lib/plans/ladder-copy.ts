@@ -1,8 +1,9 @@
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
 import { ADDON_STEP_LIMITS, PLAN_STEPS, addonById, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
-import { DEFAULT_LOCALE, type AppLocale } from '@/i18n/config'
+import { DEFAULT_LOCALE, isAppLocale, type AppLocale } from '@/i18n/config'
 import { formatList } from '@/i18n/format'
-import { translatorFor, type Translate } from '@/i18n/translate'
+import { translatorFor, translatorFromMessages, type Translate } from '@/i18n/translate'
+import type { Messages } from '@/i18n/messages'
 
 /**
  * Hosting-ladder customer copy (Spanish build, Oct 4: card §5 C1/C3). Every string now lives in
@@ -273,7 +274,10 @@ export type LadderCopy = ReturnType<typeof build>
 const byLocale = new Map<AppLocale, LadderCopy>()
 
 /** The ladder copy in one language (English for anything unknown). */
-export function ladderCopy(locale: AppLocale = DEFAULT_LOCALE): LadderCopy {
+export function ladderCopy(locale: AppLocale = DEFAULT_LOCALE, resolved?: Messages): LadderCopy {
+  // Client components pass the provider's messages: the server already decided what is servable
+  // (gate, draft status, FREEPLUG_I18N_ES_ALLOW_PENDING), so the browser never re-decides it.
+  if (resolved && typeof resolved === 'object' && isAppLocale(locale)) return build(translatorFromMessages(locale, resolved), locale)
   const hit = byLocale.get(locale)
   if (hit) return hit
   const copy = build(translatorFor(locale), locale)
