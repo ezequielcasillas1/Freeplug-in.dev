@@ -111,7 +111,8 @@ describe('shared rate limiter', () => {
       walk(src)
       const rel = (f: string) => path.relative(src, f)
       const usesDecision = files.filter((f) => /\brateDecision\((?!\))/.test(readFileSync(f, 'utf8'))).map(rel).sort()
-      expect(usesDecision).toEqual(['lib/auth/reset-rate-limit.ts', 'lib/rate-limit/index.ts'])
+      // sign-up (auth-rate-limit, Aria): rateDecision so a DB error shows its own message (still blocks)
+      expect(usesDecision).toEqual(['app/(auth)/actions.ts', 'lib/auth/reset-rate-limit.ts', 'lib/rate-limit/index.ts'])
       const usesCheck = files.filter((f) => /\brateCheck\((?!\))/.test(readFileSync(f, 'utf8'))).map(rel).sort()
       expect(usesCheck).toEqual([
         // sign-in failure lockout + sign-up per-IP limit (auth-rate-limit, Oct 12): fail closed

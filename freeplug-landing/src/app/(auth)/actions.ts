@@ -3,8 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cookies, headers } from 'next/headers'
-import { clientIpFrom } from '@/lib/rate-limit/client-ip'
-import { hashRateKey, rateCheck, type RateRule } from '@/lib/rate-limit'
+import { SHARED_IP_BUCKET, clientIpFrom } from '@/lib/rate-limit/client-ip'
+import { hashRateKey, rateCheck, rateDecision, type RateRule } from '@/lib/rate-limit'
+import { adminAlertRecipients } from '@/lib/change-requests/alert'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { appBaseUrl } from '@/lib/stripe/config'
@@ -39,6 +40,8 @@ const CHECK_INBOX_MESSAGE = "If that email can be used, we've sent next steps. C
 const GENERIC_ERROR_MESSAGE = 'Something went wrong. Please try again.'
 
 const TOO_MANY_ATTEMPTS_MESSAGE = 'Too many attempts. Please try again later.'
+/** Sign-up when the limiter database errors. ES (Sable, pending): 'Algo falló de nuestro lado. Inténtalo de nuevo en un minuto.' */
+const LIMITER_DOWN_MESSAGE = 'Something went wrong on our end. Please try again in a minute.'
 
 /**
  * Sign-in / sign-up limits on the shared DB-backed limiter (public.rate_check, the same one the password
@@ -46,9 +49,16 @@ const TOO_MANY_ATTEMPTS_MESSAGE = 'Too many attempts. Please try again later.'
  * minutes the next attempt is blocked until the oldest failure leaves the 15-minute window. Sign-up: 5
  * attempts per client IP per hour. Without a trusted IP (clientIpFrom → the shared bucket) the IP part is
  * the shared bucket, so sign-up becomes 5/hour for everyone without one.
+ *
+ * The unknown-ip bucket: clientIpFrom only trusts CF-Connecting-IP when TRUST_CF_CONNECTING_IP=true
+ * (production + preview Workers, wrangler.jsonc). Everywhere else (local dev, review ports) every
+ * request shares SHARED_IP_BUCKET ('unknown-ip'), so a forged header can't buy a fresh bucket; the
+ * cost is that those servers share one sign-up budget and sign-in is effectively per email.
  */
 const AUTH_LIMITS = {
   signInFailures: { bucket: 'signin_fail_email_ip', limit: 5, windowSeconds: 900 } satisfies RateRule,
+  /** Aria (a): 20 failures per email per rolling hour across ALL IPs locks that email (no Turnstile on sign-in). */
+  signInFailuresPerEmail: { bucket: 'signin_fail_email', limit: 20, windowSeconds: 3600 } satisfies RateRule,
   signUpPerIp: { bucket: 'signup_ip', limit: 5, windowSeconds: 3600 } satisfies RateRule,
 }
 
@@ -56,13 +66,14 @@ function signInKey(email: string, ip: string): string {
   return `${email.trim().toLowerCase()}|${ip}`
 }
 
+type LockState = 'ok' | 'locked' | 'error'
+
 /**
- * Read-only check (rate_check itself would record a hit). Fails closed like rateCheck: a database error
- * counts as locked out.
+ * Read-only check (rate_check itself would record a hit). A database error returns 'error'; sign-in then
+ * fails OPEN (Aria): allowed, logged, admins alerted.
  */
-async function signInLockedOut(key: string): Promise<boolean> {
+async function signInLockState(key: string, rule: RateRule = AUTH_LIMITS.signInFailures): Promise<LockState> {
   try {
-    const rule = AUTH_LIMITS.signInFailures
     const since = new Date(Date.now() - rule.windowSeconds * 1000).toISOString()
     const { count, error } = await createAdminClient()
       .from('rate_limit_hits')
@@ -72,13 +83,79 @@ async function signInLockedOut(key: string): Promise<boolean> {
       .gte('hit_at', since)
     if (error) {
       console.error('[signin-rate]', error.message)
-      return true
+      return 'error'
     }
-    return (count ?? 0) >= rule.limit
+    return (count ?? 0) >= rule.limit ? 'locked' : 'ok'
   } catch (e) {
     console.error('[signin-rate]', e instanceof Error ? e.message : e)
-    return true
+    return 'error'
   }
+}
+
+/** Successful sign-in: forget this email+IP's failures. Best effort (logged, never blocks the login). */
+async function clearSignInFailures(key: string, rule: RateRule = AUTH_LIMITS.signInFailures): Promise<void> {
+  try {
+    const { error } = await createAdminClient()
+      .from('rate_limit_hits')
+      .delete()
+      .eq('bucket', rule.bucket)
+      .eq('key_hash', hashRateKey(key))
+    if (error) console.error('[signin-rate] clear failed:', error.message)
+  } catch (e) {
+    console.error('[signin-rate] clear failed:', e instanceof Error ? e.message : e)
+  }
+}
+
+const LIMITER_ALERT_INTERVAL_MS = 10 * 60 * 1000
+let lastLimiterAlertAt = 0
+let lastEmailCapAlertAt = 0
+
+/** Admin alert when an email hits the 20-failures/hour cap. Same path and throttle; no address in the mail. */
+function alertEmailCapHit(): void {
+  const now = Date.now()
+  if (now - lastEmailCapAlertAt < LIMITER_ALERT_INTERVAL_MS) return
+  lastEmailCapAlertAt = now
+  const to = adminAlertRecipients()
+  if (to.length === 0) {
+    console.error('[signin-rate] email-cap alert not sent: ADMIN_EMAILS is empty')
+    return
+  }
+  void runAfterResponse('signin-email-cap-alert', async () => {
+    const res = await sendMail({
+      to,
+      subject: 'Sign-in: an account hit the 20 failed attempts/hour cap',
+      text: 'An email address reached 20 failed sign-ins in an hour across all IPs and is locked for up to an hour (possible credential stuffing). A successful sign-in clears it.',
+      replyTo: null,
+      template: 'signin-email-cap',
+    })
+    if (!res.success) console.error('[signin-rate] email-cap alert not sent', res.reason)
+  })
+}
+
+/**
+ * Admin alert when the sign-in limiter database is down, through the existing admin alert path
+ * (ADMIN_EMAILS + the app mailer, as src/lib/change-requests/alert.ts). At most once per 10 minutes per
+ * process. No email, IP or error details in the mail.
+ */
+function alertLimiterDown(): void {
+  const now = Date.now()
+  if (now - lastLimiterAlertAt < LIMITER_ALERT_INTERVAL_MS) return
+  lastLimiterAlertAt = now
+  const to = adminAlertRecipients()
+  if (to.length === 0) {
+    console.error('[signin-rate] admin alert not sent: ADMIN_EMAILS is empty')
+    return
+  }
+  void runAfterResponse('signin-rate-alert', async () => {
+    const res = await sendMail({
+      to,
+      subject: 'Sign-in rate limiter unavailable (failing open)',
+      text: 'The sign-in lockout check could not reach the rate limit database, so sign-ins are being allowed without the lockout. Check Supabase (public.rate_limit_hits / rate_check).',
+      replyTo: null,
+      template: 'signin-rate-limiter-down',
+    })
+    if (!res.success) console.error('[signin-rate] admin alert not sent', res.reason)
+  })
 }
 
 export async function signIn(formData: FormData) {
@@ -91,8 +168,16 @@ export async function signIn(formData: FormData) {
   }
 
   const rateKey = signInKey(email, await clientIp())
-  if (await signInLockedOut(rateKey)) {
+  const emailKey = email.trim().toLowerCase()
+  const lock = await signInLockState(rateKey)
+  const emailLock = lock === 'locked' ? 'ok' : await signInLockState(emailKey, AUTH_LIMITS.signInFailuresPerEmail)
+  if (emailLock === 'locked') alertEmailCapHit()
+  if (lock === 'locked' || emailLock === 'locked') {
     redirect('/login?error=' + encodeURIComponent(TOO_MANY_ATTEMPTS_MESSAGE))
+  }
+  if (lock === 'error' || emailLock === 'error') {
+    console.error('[signin-rate] limiter database unavailable; allowing sign-in (fail open)')
+    alertLimiterDown()
   }
 
   const supabase = await createClient()
@@ -100,9 +185,12 @@ export async function signIn(formData: FormData) {
   if (error) {
     // Record the failure (rate_check inserts a hit while under the limit).
     await rateCheck(AUTH_LIMITS.signInFailures, rateKey)
+    await rateCheck(AUTH_LIMITS.signInFailuresPerEmail, emailKey)
     redirect('/login?error=' + encodeURIComponent(SIGN_IN_FAILED_MESSAGE))
   }
 
+  await clearSignInFailures(rateKey)
+  await clearSignInFailures(emailKey, AUTH_LIMITS.signInFailuresPerEmail)
   revalidatePath('/', 'layout')
   redirect(next)
 }
@@ -123,10 +211,6 @@ export async function signUp(formData: FormData) {
   const businessName = String(formData.get('business_name') ?? '').trim().slice(0, 200)
   const signupPath = next ? `/signup?next=${encodeURIComponent(next)}&` : '/signup?'
 
-  if (!(await rateCheck(AUTH_LIMITS.signUpPerIp, await clientIp()))) {
-    redirect(signupPath + 'error=' + encodeURIComponent(TOO_MANY_ATTEMPTS_MESSAGE))
-  }
-
   if (!email || !password) {
     redirect(signupPath + 'error=' + encodeURIComponent('Email and password are required.'))
   }
@@ -139,6 +223,15 @@ export async function signUp(formData: FormData) {
   }
   if (password !== confirm) {
     redirect(signupPath + 'error=' + encodeURIComponent('Passwords do not match.'))
+  }
+
+  // Only valid submissions count toward the 5/hour cap (Aria). A limiter DB error keeps blocking.
+  const decision = await rateDecision(AUTH_LIMITS.signUpPerIp, await clientIp())
+  if (decision === 'limited') {
+    redirect(signupPath + 'error=' + encodeURIComponent(TOO_MANY_ATTEMPTS_MESSAGE))
+  }
+  if (decision === 'error') {
+    redirect(signupPath + 'error=' + encodeURIComponent(LIMITER_DOWN_MESSAGE))
   }
 
   const supabase = await createClient()
@@ -220,8 +313,21 @@ export async function signInWithGoogle(formData?: FormData) {
   }
 }
 
+const UNKNOWN_IP_WARN_INTERVAL_MS = 60 * 1000
+let lastUnknownIpWarnAt = 0
+
 async function clientIp(): Promise<string> {
-  return clientIpFrom(await headers())
+  const ip = clientIpFrom(await headers())
+  // Production should always have a trusted CF-Connecting-IP; warn (at most once a minute per process)
+  // when it falls into the shared bucket. Logs only the bucket name.
+  if (ip === SHARED_IP_BUCKET && process.env.NODE_ENV === 'production') {
+    const now = Date.now()
+    if (now - lastUnknownIpWarnAt >= UNKNOWN_IP_WARN_INTERVAL_MS) {
+      lastUnknownIpWarnAt = now
+      console.warn('[rate-limit] production request in the unknown-ip bucket (TRUST_CF_CONNECTING_IP / CF-Connecting-IP missing)')
+    }
+  }
+  return ip
 }
 
 /** Reset-link base: the local origin in `next dev` on localhost, else emailBaseUrl(). */
