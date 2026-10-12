@@ -5,6 +5,7 @@ import { NICHES, NICHE_LABEL } from '@/lib/envato/niche-tags'
 import { CORE_CATEGORIES } from '@/lib/envato/partitions'
 import { assertTemplatesAccess } from './guard'
 import { decideCleaningAction, importShortlistAction, syncNowAction, widenAction } from './actions'
+import { ScrollX, STICKY_FIRST_TD, STICKY_FIRST_TH } from './ScrollX'
 import { formatCents, isoHoursAgo, parseFilters, FRESH_HOURS, MIN_PER_TYPE } from './view'
 
 export const dynamic = 'force-dynamic'
@@ -177,12 +178,13 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
       {f.view === 'general' ? <p className="text-sm text-amber-800">Widened to general local business (logged).</p> : null}
 
       {f.view === 'shortlist' && f.niche ? (
-        <table className="w-full text-sm bg-white border" data-testid="shortlist-table">
-          <thead><tr className="text-left bg-zinc-50"><th className="p-2">Template</th><th>Platform</th><th>Regular</th><th>Extended</th><th>Status</th><th>Build note</th><th>Demo</th></tr></thead>
+        <ScrollX testId="shortlist-scroll">
+        <table className="min-w-[44rem] w-full text-sm" data-testid="shortlist-table">
+          <thead><tr className="text-left bg-zinc-50"><th className={`p-2 ${STICKY_FIRST_TH}`}>Template</th><th>Platform</th><th>Regular</th><th>Extended</th><th>Status</th><th>Build note</th><th>Demo</th></tr></thead>
           <tbody>
             {picks.map((p) => (
               <tr key={`${p.envato_item_id}-${p.niche}`} className="border-t align-top" data-verify={p.verify_status}>
-                <td className="p-2"><a href={p.url} className="text-[#ba3d3d] hover:underline" target="_blank" rel="noreferrer">{p.name}</a></td>
+                <td className={`p-2 max-w-[11rem] ${STICKY_FIRST_TD}`}><a href={p.url} className="text-[#ba3d3d] hover:underline" target="_blank" rel="noreferrer">{p.name}</a></td>
                 <td>{p.platform}</td>
                 <td data-testid="price-regular">{formatCents(p.regular_price_cents)}</td>
                 <td data-testid="price-extended">{formatCents(p.extended_price_cents)}</td>
@@ -193,6 +195,7 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
             ))}
           </tbody>
         </table>
+        </ScrollX>
       ) : null}
 
       {(f.view === 'catalog' || f.view === 'general' || f.view === 'needs-lina') && (f.niche || f.view === 'needs-lina') ? (

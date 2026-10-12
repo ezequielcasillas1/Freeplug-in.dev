@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NICHES, NICHE_LABEL } from '@/lib/envato/niche-tags'
 import { assertTemplatesAccess } from '../guard'
+import { ScrollX, STICKY_FIRST_TD, STICKY_FIRST_TH } from '../ScrollX'
 import { isoHoursAgo } from '../view'
 
 export const dynamic = 'force-dynamic'
@@ -23,18 +24,20 @@ export default async function TemplatesDigestPage() {
     <div data-testid="templates-digest">
       <h2 className="text-xl font-semibold mb-1">Template digest (last 7 days)</h2>
       <p className="text-sm text-zinc-600 mb-3">Needs Lina: {needsLina ?? 0}</p>
-      <table className="w-full text-sm bg-white border">
-        <thead><tr className="text-left bg-zinc-50"><th className="p-2">Type</th><th>Confirmed picks</th><th>Widens</th></tr></thead>
+      <ScrollX>
+        <table className="min-w-[36rem] w-full text-sm">
+        <thead><tr className="text-left bg-zinc-50"><th className={`p-2 ${STICKY_FIRST_TH}`}>Type</th><th>Confirmed picks</th><th>Widens</th></tr></thead>
         <tbody>
           {NICHES.map((n) => (
             <tr key={n} className="border-t">
-              <td className="p-2">{NICHE_LABEL[n]}</td>
+              <td className={`p-2 ${STICKY_FIRST_TD}`}>{NICHE_LABEL[n]}</td>
               <td className={(c.get(n) ?? 0) < 6 ? 'text-red-700' : ''}>{c.get(n) ?? 0}</td>
               <td>{w.get(n) ?? 0}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      </ScrollX>
     </div>
   )
 }
