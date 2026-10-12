@@ -216,7 +216,7 @@ describe('sign-up weak password (gap 3)', () => {
   it('Supabase weak_password shows the password message, not the check-your-inbox line', async () => {
     signUpSpy.mockResolvedValueOnce({ data: { user: null, session: null }, error: { code: 'weak_password', name: 'AuthWeakPasswordError', message: 'Password should contain at least one character of each: ...' } })
     expect(await url(signUp(signupForm()))).toBe(
-      '/signup?error=' + encodeURIComponent('Your password needs at least 6 characters. Please try a stronger one.')
+      '/signup?error=' + encodeURIComponent("That password isn't strong enough. Please try a different one.")
     )
   })
   it('too-short password keeps the existing form wording', async () => {

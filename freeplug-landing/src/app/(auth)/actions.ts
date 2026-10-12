@@ -38,8 +38,9 @@ import {
 const SIGN_IN_FAILED_MESSAGE = 'Email or password is incorrect.'
 const CHECK_INBOX_MESSAGE = "If that email can be used, we've sent next steps. Check your inbox."
 const GENERIC_ERROR_MESSAGE = 'Something went wrong. Please try again.'
-/** Weak/invalid password from Supabase on sign-up (gap 3). ES (Sable, pending). */
-const WEAK_PASSWORD_MESSAGE = `Your password needs at least ${PASSWORD_MIN_LENGTH} characters. Please try a stronger one.`
+/** Weak/invalid password from Supabase on sign-up (gap 3). ES in comment below (Sable). */
+// ES: "Esa contraseña no es lo bastante segura. Prueba con otra."
+const WEAK_PASSWORD_MESSAGE = "That password isn't strong enough. Please try a different one."
 
 /**
  * Supabase's password-strength rejection (AuthWeakPasswordError, code weak_password; older servers only
