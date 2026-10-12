@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { PhotoUploadBox, usePhotoQueue } from '@/components/outreach/PhotoUploadBox'
-import { FIELD_PHOTOS, UPLOAD_PHOTOS_LABEL } from '@/lib/outreach/copy'
+import { useTranslations } from 'next-intl'
 import { uploadCustomerPhotoAction } from '@/app/claim/actions'
 import { startPhotoBatchAction } from './actions'
 
 /** Dashboard "Upload photos": pick photos, then send them (three at a time, each retryable). */
 export function DashboardPhotoUploader({ photosUsed }: { photosUsed: number }) {
+  const t = useTranslations('claim')
   const queue = usePhotoQueue(photosUsed)
   const [submissionId, setSubmissionId] = useState<string | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +29,7 @@ export function DashboardPhotoUploader({ photosUsed }: { photosUsed: number }) {
   return (
     <div className="space-y-4">
       <PhotoUploadBox
-        label={FIELD_PHOTOS}
+        label={t('fieldPhotos')}
         queue={queue}
         disabled={pending}
         onRetry={submissionId === undefined ? undefined : (id) => queue.retry(id, uploaderFor(submissionId))}
@@ -67,7 +68,7 @@ export function DashboardPhotoUploader({ photosUsed }: { photosUsed: number }) {
           setPending(false)
         }}
       >
-        {pending ? '…' : UPLOAD_PHOTOS_LABEL}
+        {pending ? '…' : t('uploadPhotosLabel')}
       </Button>
       {error ? (
         <p className="text-sm text-red-700" role="alert">

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { ArrowRight, CreditCard } from 'lucide-react'
-import { PLAN_LIVE_UNAVAILABLE_MESSAGE, PLAN_WAITING_FOR_PUBLISH_MESSAGE, STEP3_HEADING } from '@/lib/outreach/copy'
+import { useTranslations } from 'next-intl'
+import { SUPPORT_EMAIL } from '@/lib/site'
 import type { OutreachPlanBox } from './outreach-dashboard'
 
 /**
@@ -14,6 +15,7 @@ import type { OutreachPlanBox } from './outreach-dashboard'
  * `children` renders under the line inside the same card (the Cancel page's 4:03 help line).
  */
 export function OutreachPlanCard({ box, children }: { box: Exclude<OutreachPlanBox, 'plan'>; children?: ReactNode }) {
+  const t = useTranslations()
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm" data-testid="outreach-plan-card">
       <div className="flex items-start gap-3">
@@ -21,14 +23,14 @@ export function OutreachPlanCard({ box, children }: { box: Exclude<OutreachPlanB
           <CreditCard className="h-5 w-5 text-gray-400" />
         </div>
         <div className="flex-1">
-          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">Active Subscriptions</h2>
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">{t('dashboard.home.activeSubscriptions')}</h2>
           {box === 'plan_unavailable' ? (
             <p className="text-gray-600" data-testid="plan-live-unavailable">
-              {PLAN_LIVE_UNAVAILABLE_MESSAGE}
+              {t('claim.planLiveUnavailableMessage', { supportEmail: SUPPORT_EMAIL })}
             </p>
           ) : box === 'plan_waiting' ? (
             <p className="text-gray-600" data-testid="plan-waiting">
-              {PLAN_WAITING_FOR_PUBLISH_MESSAGE}
+              {t('claim.planWaitingForPublishMessage')}
             </p>
           ) : (
             <Link
@@ -36,7 +38,7 @@ export function OutreachPlanCard({ box, children }: { box: Exclude<OutreachPlanB
               className="inline-flex items-center gap-1 font-semibold text-[#ba3d3d] hover:underline text-sm"
               data-testid="choose-plan-link"
             >
-              {STEP3_HEADING}
+              {t('plans.ladderHeading')}
               <ArrowRight className="h-4 w-4" />
             </Link>
           )}

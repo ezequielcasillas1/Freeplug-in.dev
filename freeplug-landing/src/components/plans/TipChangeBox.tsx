@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import type { PlanStep } from '@/lib/plans/ladder'
 import type { ChangeTipResponse, TipPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
+import { useTranslations } from 'next-intl'
 import { TipSlider } from './TipSlider'
 
 const charge = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
@@ -40,6 +41,7 @@ type Props = {
  */
 export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = null, onPreviewTip, onChangeTip, addonCents = 0, amountOnly = false }: Props) {
   const { TIP_CHANGE_BUTTON, TIP_CHANGE_HEADING, TIP_CHANGE_NOTE, TIP_CHANGE_PENDING, TIP_CHANGED, TIP_END_NONE, TIP_LOCKED_AMOUNT, TIP_LOCKED_NOTE, TIP_NEXT_BILL, TIP_NEXT_BILL_NO_DATE, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON } = useLadderCopy()
+  const t = useTranslations('errors.plans')
   const [tip, setTip] = useState(currentTipDollars)
   const [state, setState] = useState<Phase>({ phase: 'idle' })
   const [notice, setNotice] = useState<string | null>(null)
@@ -100,7 +102,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
       setState({ phase: 'confirm', text, tipDollars: tip, confirmId: p.confirmId })
     } catch {
       if (seq !== previewSeq.current) return
-      setError('Network error. Try again.')
+      setError(t('networkError'))
       setState({ phase: 'idle' })
     }
   }
@@ -113,7 +115,7 @@ export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = nul
       if (r.ok) setNotice(TIP_CHANGED(state.text))
       else setError(r.message)
     } catch {
-      setError('Network error. Try again.')
+      setError(t('networkError'))
     }
     close()
   }

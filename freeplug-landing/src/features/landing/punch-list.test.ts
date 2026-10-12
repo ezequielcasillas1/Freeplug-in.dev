@@ -71,6 +71,12 @@ describe('titles (G2)', () => {
     ['src/app/[locale]/signup/page.tsx', 'auth.signup.metaTitle'],
     ['src/app/[locale]/request-website/page.tsx', 'public.meta.requestWebsiteTitle'],
     ['src/app/not-found.tsx', 'public.notFound.metaTitle'],
+    // Signed-in dashboard (Spanish build): titles come from dashboard.meta.*.
+    ['src/app/(dashboard)/dashboard/request-website/page.tsx', 'dashboard.meta.requestWebsiteTitle'],
+    ['src/app/(dashboard)/layout.tsx', 'dashboard.meta.dashboardTitle'],
+    ['src/app/(dashboard)/dashboard/domain/page.tsx', 'dashboard.meta.domainTitle'],
+    ['src/app/(dashboard)/dashboard/photos/page.tsx', 'dashboard.meta.photosTitle'],
+    ['src/app/(dashboard)/dashboard/website/page.tsx', 'dashboard.meta.websiteTitle'],
   ])('%s sets its own "… | Freeplug" title from en.json (%s)', (rel, key) => {
     expect(enValue(key)).toMatch(/^[^|]+ \| Freeplug$/)
     const leaf = key.split('.').pop()!
@@ -80,7 +86,6 @@ describe('titles (G2)', () => {
     ['src/app/(auth)/login/page.tsx'],
     ['src/app/(auth)/forgot-password/page.tsx'],
     ['src/app/(auth)/reset-password/page.tsx'],
-    ['src/app/(dashboard)/dashboard/request-website/page.tsx'],
   ])('%s sets its own "… | Freeplug" title', (rel) => {
     expect(read(rel)).toMatch(/title[:=]?\s*'[^']+ \| Freeplug'|const title = '[^']+ \| Freeplug'/)
   })

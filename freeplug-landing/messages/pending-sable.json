@@ -1,20 +1,16 @@
 {
   "_about": "Keys Owen added for the Spanish build (Oct 4). English is Owen's wiring text; Sable owns final wording in both languages. Every key here is missing from es.json on purpose (pending Sable). The test i18n/catalog.test.ts fails if es.json misses any other key.",
   "addedByOwen": {
-    "i18n.picker.label": "Language picker/banner (card R4). Card suggests the es prompt \"¿Prefieres español?\"; Sable to confirm. The banner shows the es value on English pages.",
     "i18n.banner.prompt": "Language picker/banner (card R4). Card suggests the es prompt \"¿Prefieres español?\"; Sable to confirm. The banner shows the es value on English pages.",
     "i18n.banner.dismiss": "Language picker/banner (card R4). Card suggests the es prompt \"¿Prefieres español?\"; Sable to confirm. The banner shows the es value on English pages.",
     "public.landing.footer.label.faq": "Footer link label not in Sable extraction (excluded as an acronym?). Sable to supply es.",
     "public.landing.about.description.whenOwnerSaysYes": "In code at ea817ef (AboutSection.tsx:17, :60) but missing from Sable extraction. English copied verbatim from code; Sable to confirm English and supply es.",
     "public.landing.about.freeplugOutreachSide": "In code at ea817ef (AboutSection.tsx:17, :60) but missing from Sable extraction. English copied verbatim from code; Sable to confirm English and supply es.",
     "public.landing.outreach.description.builds72AfterFreeMultiPage": "In code at ea817ef (OutreachSection.tsx:51) but missing from Sable extraction. English verbatim from code; Sable to supply es.",
-    "plans.perMonth": "In ladder-copy.ts at ea817ef (PER_MONTH, TIP_NUDGE_PERK quarterlyCall/doneForYouEdits) but missing from Sable extraction. English verbatim from code.",
     "tips.nudgePerk.quarterlyCall": "In ladder-copy.ts at ea817ef (PER_MONTH, TIP_NUDGE_PERK quarterlyCall/doneForYouEdits) but missing from Sable extraction. English verbatim from code.",
     "tips.nudgePerk.doneForYouEdits": "In ladder-copy.ts at ea817ef (PER_MONTH, TIP_NUDGE_PERK quarterlyCall/doneForYouEdits) but missing from Sable extraction. English verbatim from code.",
     "public.meta.faqTitle": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim.",
-    "public.meta.faqDescription": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim.",
-    "dashboard.nav.label.settings": "Dashboard tab for the new settings page (Oct 10). ES draft: \"Configuración\". Sable to confirm.",
-    "dashboard.settings.title": "Settings page title (Oct 10). ES draft: \"Configuración\". Sable to confirm."
+    "public.meta.faqDescription": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim."
   },
   "englishAwaitingSableFix_about": "English lines Sable flagged as stale, wrong, unapproved or placeholder (review sheet notes, Oct 4). Owen does NOT edit their English: they stay keyed with today's text until Sable's fixed versions land (Aria, 9:37 AM). Sable's own list of 28 is authoritative; this is the set her review-sheet notes flag.",
   "englishAwaitingSableFix": {

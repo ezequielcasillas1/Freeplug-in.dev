@@ -1,12 +1,7 @@
 import type { BuyoutRequestResult } from '@/lib/buyout/buyout'
 import type { WebsiteAccess } from '@/lib/website-access'
-import {
-  showBuyoutCard,
-  BUYOUT_CANCEL_BODY,
-  BUYOUT_CANCEL_HEADING,
-  BUYOUT_DASHBOARD_BODY,
-  BUYOUT_DASHBOARD_HEADING,
-} from '@/lib/buyout/buyout'
+import { useTranslations } from 'next-intl'
+import { showBuyoutCard } from '@/lib/buyout/buyout'
 import { BuyoutRequestButton } from './BuyoutRequestButton'
 
 type Props = {
@@ -20,6 +15,7 @@ type Props = {
 /** Plain card: dashboard card style on the dashboard, benefit-card style on the cancel page. */
 export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '' }: Props) {
   const dashboard = variant === 'dashboard'
+  const t = useTranslations('buyout')
   return (
     <section
       className={`rounded-xl border border-zinc-200 bg-white ${dashboard ? 'p-6 shadow-sm' : 'p-5'} ${className}`}
@@ -32,10 +28,10 @@ export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '
             : 'font-medium text-gray-900'
         }
       >
-        {dashboard ? BUYOUT_DASHBOARD_HEADING : BUYOUT_CANCEL_HEADING}
+        {dashboard ? t('dashboardHeading') : t('cancelHeading')}
       </h2>
       <p className={dashboard ? 'text-sm text-gray-600 mb-4' : 'text-sm text-gray-600 mt-1 mb-4'}>
-        {dashboard ? BUYOUT_DASHBOARD_BODY : BUYOUT_CANCEL_BODY}
+        {dashboard ? t('dashboardBody') : t('cancelBody')}
       </p>
       <BuyoutRequestButton alreadyRequested={alreadyRequested} onRequest={onRequest} />
     </section>

@@ -13,6 +13,7 @@ import { changeAddonAction, changeHostingPlan, changeTipAction, previewAddonChan
 import { ladderCopy } from '@/lib/plans/ladder-copy'
 import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { currentLocale } from '@/i18n/current-locale'
+import { getTranslations } from 'next-intl/server'
 import { stepById } from '@/lib/plans/ladder'
 import { BillingTools } from '@/components/plans/BillingTools'
 import { listInvoicesForCustomer, type InvoiceRow } from '@/lib/stripe/billing-routing'
@@ -53,6 +54,7 @@ function BillingNotices({ billing, card, pendingChange }: { billing?: string; ca
 export default async function DashboardPlansPage({ searchParams }: Props) {
   const locale = await currentLocale()
   const { DASHBOARD_PLANS_INTRO } = ladderCopy(locale)
+  const t = await getTranslations('plans.page')
   const { billing, card } = (await searchParams) ?? {}
   const supabase = await createClient()
   const {
@@ -69,20 +71,16 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
     const gatedInvoices = gated?.stripe_customer_id ? await loadInvoices(gated.stripe_customer_id) : undefined
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Plans</h1>
-        <p className="text-gray-600 mb-6 max-w-2xl">
-          After you submit a website request, you can choose monthly hosting here. Maintenance stays
-          quote-first — describe work on the request form.
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('plans')}</h1>
+        <p className="text-gray-600 mb-6 max-w-2xl">{t('afterSubmitWebsiteRequestChoose')}</p>
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 max-w-xl mb-8">
-          Submit your business details so we can review your site and Google Business presence. Then
-          hosting checkout will be available.
+          {t('submitBusinessDetailsSoReview')}
         </div>
         <Link
           href="/dashboard/request-website"
           className="inline-flex rounded-lg bg-[#ba3d3d] text-white px-5 py-2.5 text-sm font-semibold hover:opacity-95"
         >
-          Request a website
+          {t('requestWebsite')}
         </Link>
         {gatedInvoices !== undefined ? (
           <>
@@ -113,7 +111,7 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
     .single()
   if (prof?.stripe_customer_id) {
     try {
-      currentPlanLines = await describeLiveSubscriptions(prof.stripe_customer_id)
+      currentPlanLines = await describeLiveSubscriptions(prof.stripe_customer_id, locale)
       if (currentPlanLines.length > 0) {
         // Current step = the webhook-written snapshot (changes when Stripe's webhook lands).
         const { entitlements: ent } = await getUserEntitlements(supabase, user!.id, prof.stripe_customer_id)
@@ -155,7 +153,7 @@ export default async function DashboardPlansPage({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Plans</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('plans')}</h1>
       <p className="text-gray-600 mb-8 max-w-2xl">
         {DASHBOARD_PLANS_INTRO}
       </p>

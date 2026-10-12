@@ -1,4 +1,4 @@
-import { intlLocale } from '@/i18n/format'
+import { intlLocale, noWrapDate } from '@/i18n/format'
 import type { AppLocale } from '@/i18n/config'
 import type Stripe from 'stripe'
 
@@ -76,12 +76,15 @@ export function formatBillingDate(
   locale: AppLocale = 'en'
 ): string {
   if (!date || Number.isNaN(date.getTime())) return fallback
-  return date.toLocaleDateString(intlLocale(locale), {
+  return noWrapDate(
+    locale,
+    date.toLocaleDateString(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
     timeZone: 'UTC',
   })
+  )
 }
 
 /** Whole days from now until `date` (rounded up), or null when the date is missing. */
