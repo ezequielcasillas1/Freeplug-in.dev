@@ -7,6 +7,7 @@ import { assertTemplatesAccess } from './guard'
 import { decideCleaningAction, importShortlistAction, syncNowAction, widenAction } from './actions'
 import { ScrollX, STICKY_FIRST_TD, STICKY_FIRST_TH } from './ScrollX'
 import { formatCents, isoHoursAgo, parseFilters, FRESH_HOURS, MIN_PER_TYPE } from './view'
+import { envatoTokenConfigured } from '@/lib/envato/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -128,7 +129,11 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
         </p>
         <p className="text-xs text-zinc-500">Scheduled 3-hour sync is written but OFF (Gate 1). Rows not seen in {FRESH_HOURS} h are hidden.</p>
         <div className="flex flex-wrap gap-2">
-          <form action={syncNowAction}><button className="rounded bg-[#ba3d3d] px-3 py-1 text-white">Sync now</button></form>
+          {envatoTokenConfigured() ? (
+            <form action={syncNowAction}><button className="rounded bg-[#ba3d3d] px-3 py-1 text-white">Sync now</button></form>
+          ) : (
+            <button type="button" disabled data-testid="sync-manual-only" title="No Envato token loaded on this server. Run the manual sync command." className="rounded bg-zinc-200 px-3 py-1 text-zinc-600 cursor-not-allowed">Manual sync only</button>
+          )}
           <form action={importShortlistAction}><button className="rounded border border-zinc-300 px-3 py-1">Re-import Lina&apos;s shortlist</button></form>
           <Link href="/admin/templates/widen-log" className="px-3 py-1 text-[#ba3d3d] underline">Widen log</Link>
           <Link href="/admin/templates/digest" className="px-3 py-1 text-[#ba3d3d] underline">Digest</Link>
@@ -202,12 +207,12 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
         <ul className="space-y-2" data-testid="catalog-list">
           {items.length === 0 ? <li className="text-sm text-zinc-600">Nothing here yet{f.view !== 'needs-lina' ? ' (run a sync)' : ''}.</li> : null}
           {items.map((i) => (
-            <li key={i.id} className="flex gap-3 rounded border bg-white p-2 text-sm" data-item={i.id}>
+            <li key={i.id} className="flex flex-col gap-3 rounded border bg-white p-2 text-sm sm:flex-row min-w-0" data-item={i.id}>
               {i.preview_image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={i.preview_image_url} alt="" width={120} height={60} className="h-16 w-28 object-cover rounded" />
               ) : <div className="h-16 w-28 bg-zinc-100 rounded" />}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0 break-words">
                 <a href={i.url ?? '#'} target="_blank" rel="noreferrer" className="font-medium text-[#ba3d3d] hover:underline">{i.name}</a>
                 <p className="text-xs text-zinc-500">
                   {i.platform.toUpperCase()} · {i.category} · Regular {formatCents(i.price_cents)} · Extended {formatCents(i.extended_price_cents)} ·{' '}
@@ -217,7 +222,7 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
                 {i.live_preview_url ? <a href={i.live_preview_url} target="_blank" rel="noreferrer" className="text-xs underline">demo</a> : null}
               </div>
               {f.view === 'needs-lina' ? (
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-row flex-wrap gap-2 sm:flex-col sm:gap-1" data-testid="cleaning-buttons">
                   {(['yes', 'no'] as const).map((d) => (
                     <form key={d} action={decideCleaningAction}>
                       <input type="hidden" name="id" value={i.id} />
