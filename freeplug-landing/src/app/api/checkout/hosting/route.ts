@@ -31,9 +31,11 @@ import { ADDON_TURN_OFF_FIRST, STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } fro
 export const runtime = 'nodejs'
 
 export async function POST(request: Request) {
-  // Same check as /claim/start: a cross-site POST gets 403 before anything else runs.
+  // Same check as /claim/start: a cross-site POST gets 403 before anything else runs. Unlike /claim
+  // (Referrer-Policy: no-referrer), checkout pages send a real Origin, so `Origin: null` is refused too
+  // (Aria); a missing Origin is still judged by Sec-Fetch-Site.
   const h = request.headers
-  if (!isSameOriginPost(h.get('origin'), h.get('sec-fetch-site'), request.url, emailBaseUrl())) {
+  if (h.get('origin') === 'null' || !isSameOriginPost(h.get('origin'), h.get('sec-fetch-site'), request.url, emailBaseUrl())) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
   try {

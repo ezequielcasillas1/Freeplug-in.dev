@@ -18,6 +18,12 @@ describe('POST /api/checkout/hosting same-origin check', () => {
   it('cross-site POST gets 403 before auth runs', async () => {
     expect(await post({ origin: 'https://evil.example', 'sec-fetch-site': 'cross-site' })).toBe(403)
   })
+  it('Origin: null gets 403', async () => {
+    expect(await post({ origin: 'null' })).toBe(403)
+  })
+  it('no Origin but Sec-Fetch-Site cross-site gets 403', async () => {
+    expect(await post({ 'sec-fetch-site': 'cross-site' })).toBe(403)
+  })
   it('same-origin POST is allowed', async () => {
     expect(await post({ origin: 'http://localhost:3000', 'sec-fetch-site': 'same-origin' })).not.toBe(403)
   })
