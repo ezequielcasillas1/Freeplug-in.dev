@@ -38,6 +38,16 @@ import {
 const SIGN_IN_FAILED_MESSAGE = 'Email or password is incorrect.'
 const CHECK_INBOX_MESSAGE = "If that email can be used, we've sent next steps. Check your inbox."
 const GENERIC_ERROR_MESSAGE = 'Something went wrong. Please try again.'
+/** Weak/invalid password from Supabase on sign-up (gap 3). ES (Sable, pending). */
+const WEAK_PASSWORD_MESSAGE = `Your password needs at least ${PASSWORD_MIN_LENGTH} characters. Please try a stronger one.`
+
+/**
+ * Supabase's password-strength rejection (AuthWeakPasswordError, code weak_password; older servers only
+ * a 422 "Password should be ..." message). It says nothing about whether the account exists.
+ */
+function isWeakPasswordError(error: { code?: string; name?: string; message?: string }): boolean {
+  return error.code === 'weak_password' || error.name === 'AuthWeakPasswordError' || /^password should/i.test(error.message ?? '')
+}
 
 const TOO_MANY_ATTEMPTS_MESSAGE = 'Too many attempts. Please try again later.'
 /** Sign-up when the limiter database errors. ES (Sable, pending): 'Algo falló de nuestro lado. Inténtalo de nuevo en un minuto.' */
@@ -256,8 +266,11 @@ export async function signUp(formData: FormData) {
     },
   })
 
-  // Error and "confirm your email" answer identically, so the response never says whether the email
-  // already has an account.
+  // A weak/invalid password gets its own message (it can't reveal an account); every other error and
+  // "confirm your email" answer identically, so the response never says whether the email has an account.
+  if (error && isWeakPasswordError(error)) {
+    redirect(signupPath + 'error=' + encodeURIComponent(WEAK_PASSWORD_MESSAGE))
+  }
   if (error || (data.user && !data.session)) {
     if (error) console.error('[signup]', error.message)
     redirect(
