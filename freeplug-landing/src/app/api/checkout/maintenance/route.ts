@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { isSameOriginPost } from '@/app/claim/start/claim-redirect'
+import { emailBaseUrl } from '@/lib/site'
 import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
@@ -18,6 +20,11 @@ export const runtime = 'nodejs'
  * record here and ignore any client-sent amount.
  */
 export async function POST(request: Request) {
+  // Same check as /claim/start: a cross-site POST gets 403 before anything else runs.
+  const h = request.headers
+  if (!isSameOriginPost(h.get('origin'), h.get('sec-fetch-site'), request.url, emailBaseUrl())) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
   try {
     const supabaseAuth = await createClient()
     const {
