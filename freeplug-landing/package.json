@@ -58,5 +58,8 @@
     "typescript": "^5",
     "vitest": "^4.0.18",
     "wrangler": "^4.147.0"
+  },
+  "overrides": {
+    "source-map-js": "1.2.2"
   }
 }
