@@ -130,7 +130,7 @@ describe('signIn lockout', () => {
     for (let i = 0; i < 5; i++) await login()
     ip = '203.0.113.9' // ignored without TRUST_CF_CONNECTING_IP
     expect(await login()).toBe(blocked)
-    expect([...hits.keys()]).toEqual(['signin_fail_email_ip:a@example.com|unknown-ip'])
+    expect([...hits.keys()].filter((k) => k.startsWith('signin_fail_email_ip:'))).toEqual(['signin_fail_email_ip:a@example.com|unknown-ip'])
   })
   it('limiter DB error: sign-in fails OPEN (allowed) and alerts admins', async () => {
     db.down = true
@@ -161,5 +161,28 @@ describe('signUp per-IP limit', () => {
       '/signup?error=' + encodeURIComponent('Something went wrong on our end. Please try again in a minute.')
     )
     expect(signUpSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('per-email cap across IPs (Aria a)', () => {
+  it('20 failures from different IPs lock the email (same message), other emails unaffected, admin alerted', async () => {
+    for (let i = 0; i < 20; i++) {
+      ip = `203.0.113.${i + 1}`
+      expect(await login()).not.toBe(blocked)
+    }
+    ip = '198.51.100.7'
+    expect(await login()).toBe(blocked)
+    expect(signInSpy).toHaveBeenCalledTimes(20)
+    expect(mailSpy).toHaveBeenCalledTimes(1)
+    expect(await login('other@example.com')).not.toBe(blocked)
+  })
+  it('a successful sign-in clears the per-email count', async () => {
+    for (let i = 0; i < 19; i++) {
+      ip = `203.0.113.${i + 1}`
+      await login()
+    }
+    signInSpy.mockResolvedValueOnce({ error: null })
+    expect(await login()).toBe('/dashboard')
+    expect(hits.get('signin_fail_email:a@example.com')).toBeUndefined()
   })
 })
