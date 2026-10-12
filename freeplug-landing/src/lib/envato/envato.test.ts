@@ -33,11 +33,39 @@ describe('cleaning tagger: whole words only', () => {
     expect(classifyCleaning({ name: 'Agency', tags: ['clean design', 'clean code', 'clean layout'] }).kind).toBe('none')
     expect(autoNiches({ name: 'Clean Corporate', tags: ['clean'] })).not.toContain('cleaning')
   })
-  it('flags hotel-style housekeeping for Lina instead of tagging', () => {
+  it('flags hotel-style housekeeping for Lina and keeps the cleaning tag until she decides', () => {
     const r = classifyCleaning({ name: 'Luxury Hotel & Resort', tags: ['housekeeping', 'hotel'] })
-    expect(r).toEqual({ kind: 'flag', matchedTag: 'housekeeping', why: expect.any(String) })
-    expect(autoNiches({ name: 'Luxury Hotel & Resort', tags: ['housekeeping', 'hotel'] })).not.toContain('cleaning')
+    expect(r).toMatchObject({ kind: 'flag', matchedTag: 'housekeeping', coTag: 'hotel' })
+    expect(autoNiches({ name: 'Luxury Hotel & Resort', tags: ['housekeeping', 'hotel'] })).toContain('cleaning')
     expect(classifyCleaning({ name: 'Home Housekeeping Services', tags: [] }).kind).toBe('cleaning')
+  })
+  for (const term of ['house cleaning', 'maid service', 'housekeeping', 'cleaning service', 'home cleaning', 'janitorial']) {
+    for (const co of ['hotel', 'hostel', 'resort', 'motel', 'booking']) {
+      it(`flags "${term}" + "${co}"`, () => {
+        const r = classifyCleaning({ name: 'Theme X', tags: [term, co] })
+        expect(r).toMatchObject({ kind: 'flag', matchedTag: term, coTag: co })
+        expect(autoNiches({ name: 'Theme X', tags: [term, co] })).toContain('cleaning')
+      })
+    }
+  }
+  it('flag needs whole words on both sides, and one of the six terms (not maid/cleaning alone)', () => {
+    expect(classifyCleaning({ name: 'T', tags: ['cleaning service', 'bookings'] }).kind).toBe('cleaning')
+    expect(classifyCleaning({ name: 'T', tags: ['cleaning service', 'hotelier'] }).kind).toBe('cleaning')
+    expect(classifyCleaning({ name: 'T', tags: ['housekeepings', 'hotel'] }).kind).toBe('none')
+    expect(classifyCleaning({ name: 'T', tags: ['maid', 'hotel'] }).kind).toBe('cleaning')
+    expect(classifyCleaning({ name: 'T', tags: ['cleaning', 'booking'] }).kind).toBe('cleaning')
+    expect(classifyCleaning({ name: 'Grand Hotel', tags: ['booking'] }).kind).toBe('none')
+  })
+  it('a flagged template sits in Needs Lina after sync, keeps the tag, and leaves after her decision', async () => {
+    const store = new MemoryCatalogStore()
+    const rows = [item(8, 'Queak - Cleaning Service', ['booking'])]
+    await syncCatalog({ api: fakeApi({ c: rows }), store, categories: ['c'], withExtendedPrices: false })
+    expect(store.items.get(8)!.needs_lina).toBe(true)
+    expect(store.items.get(8)!.auto_niches).toContain('cleaning')
+    store.decide({ envato_item_id: 8, niche: 'cleaning', decision: 'no' })
+    await syncCatalog({ api: fakeApi({ c: rows.map((r) => ({ ...r, number_of_sales: 3 })) }), store, categories: ['c'], withExtendedPrices: false })
+    expect(store.items.get(8)!.needs_lina).toBe(false)
+    expect(store.items.get(8)!.auto_niches).not.toContain('cleaning')
   })
 })
 

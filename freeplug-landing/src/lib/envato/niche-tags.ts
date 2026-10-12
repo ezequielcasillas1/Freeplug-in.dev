@@ -59,34 +59,38 @@ const NICHE_RES = Object.fromEntries(
 export const CLEANING_RE =
   /\b(carpet cleaning|window cleaning|pressure washing|cleaning|cleaners?|maids?|housekeeping|janitorial)\b/gi
 const DESIGN_ONLY_RE = /\bclean(ing)?\s+(design|code|layout|ui|look|style)\b/gi
-const HOTEL_RE = /\b(hotels?|hostels?|resorts?|motels?)\b/i
+/** Needs Lina rule (Aria + Jace, Oct 12 12:40 PM): one of these whole-word cleaning terms together with a
+ * whole-word hotel/hostel/resort/motel/booking tag. A flagged item KEEPS its cleaning tag until Lina decides. */
+export const FLAG_TERM_RE = /\b(house cleaning|maid service|housekeeping|cleaning service|home cleaning|janitorial)\b/i
+export const FLAG_CO_TAG_RE = /\b(hotel|hostel|resort|motel|booking)\b/i
 
 export type CleaningResult =
   | { kind: 'none' }
   | { kind: 'cleaning'; matchedTag: string }
-  | { kind: 'flag'; matchedTag: string; why: string }
+  | { kind: 'flag'; matchedTag: string; coTag: string; why: string }
 
 /** Decide the cleaning tag from the name and tags (not search hits). */
 export function classifyCleaning(input: { name: string; tags: string[] }): CleaningResult {
-  const fields = [input.name, ...input.tags].map((s) => s.replace(DESIGN_ONLY_RE, ' '))
+  const raw = [input.name, ...input.tags]
+  const fields = raw.map((s) => s.replace(DESIGN_ONLY_RE, ' '))
   const matches = new Set<string>()
   for (const f of fields) for (const m of f.matchAll(CLEANING_RE)) matches.add(m[0].toLowerCase())
-  if (matches.size === 0) return { kind: 'none' }
-  const first = [...matches][0]
-  const onlyHousekeeping = [...matches].every((m) => m === 'housekeeping')
-  if (onlyHousekeeping && [input.name, ...input.tags].some((t) => HOTEL_RE.test(t))) {
-    return { kind: 'flag', matchedTag: 'housekeeping', why: 'housekeeping + hotel/hostel wording' }
+  const term = fields.map((f) => FLAG_TERM_RE.exec(f)?.[0]).find(Boolean)
+  const co = raw.map((t) => FLAG_CO_TAG_RE.exec(t)?.[0]).find(Boolean)
+  if (term && co) {
+    return { kind: 'flag', matchedTag: term.toLowerCase(), coTag: co.toLowerCase(), why: `"${term.toLowerCase()}" + "${co.toLowerCase()}"` }
   }
-  return { kind: 'cleaning', matchedTag: first }
+  if (matches.size === 0) return { kind: 'none' }
+  return { kind: 'cleaning', matchedTag: [...matches][0] }
 }
 
-/** auto_niches for an item. Cleaning only on a 'cleaning' result (flags go to Needs Lina). */
+/** auto_niches for an item. A flagged item keeps the cleaning tag (and goes to Needs Lina) until Lina decides. */
 export function autoNiches(input: { name: string; tags: string[] }): Niche[] {
   const text = [input.name, ...input.tags]
   const out: Niche[] = []
   for (const [niche, re] of Object.entries(NICHE_RES)) {
     if (text.some((t) => re.test(t))) out.push(niche as Niche)
   }
-  if (classifyCleaning(input).kind === 'cleaning') out.push('cleaning')
+  if (classifyCleaning(input).kind !== 'none') out.push('cleaning')
   return out
 }
