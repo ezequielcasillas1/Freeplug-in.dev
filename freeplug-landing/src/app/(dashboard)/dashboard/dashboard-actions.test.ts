@@ -40,6 +40,8 @@ const stripe = {
   /** renewal mode: the customer balance (positive = a carried small amount owed) and the upcoming invoice. */
   balance: 0,
   previews: [] as unknown[],
+  previewFails: false,
+  renewalDays: 5,
 }
 vi.mock('@/lib/stripe/server', () => ({
   getStripe: () => {
@@ -78,14 +80,18 @@ vi.mock('@/lib/stripe/server', () => ({
     }
     if (stripe.mode === 'renewal') {
       // Priority + Big change, renewing in 5 days (the Upcoming billing reminder shows)
-      const periodEnd = Math.floor(Date.now() / 1000) + 5 * 86400 - 600
+      const periodEnd = Math.floor(Date.now() / 1000) + stripe.renewalDays * 86400 - 600
       const item = (lookup_key: string, name: string, unit_amount: number) => ({ price: { lookup_key, product: { id: `prod_${lookup_key}`, name }, unit_amount, recurring: { interval: 'month' } }, quantity: 1, current_period_end: periodEnd, current_period_start: periodEnd - 30 * 86400 })
       return {
         subscriptions: { list: async () => ({ data: [{ id: 'sub_r', status: 'active', created: 1790000000, cancel_at_period_end: false, items: { data: [item('freeplug_step_priority_monthly', 'Freeplug Hosting: Priority', 5500), item('freeplug_addon_big_change_monthly', 'Big change', 575)] } }] }) },
         invoices: {
           list: async () => ({ data: [] }),
           // Stripe's upcoming invoice: the customer balance applied (a debit is added); deliberately NOT price + carried
-          createPreview: async (p: unknown) => (stripe.previews.push(p), { object: 'invoice', amount_due: 7135, starting_balance: stripe.balance, total: 7135 - stripe.balance, currency: 'usd' }),
+          createPreview: async (p: unknown) => {
+            stripe.previews.push(p)
+            if (stripe.previewFails) throw new Error('stripe 500 (simulated)')
+            return { object: 'invoice', amount_due: 7135, starting_balance: stripe.balance, total: 7135 - stripe.balance, currency: 'usd' }
+          },
         },
         customers: { retrieve: async () => ({ id: 'cus_1', object: 'customer', balance: stripe.balance }) },
       }
@@ -128,6 +134,7 @@ vi.mock('@/lib/stripe/server', () => ({
 }))
 
 import { getEnhancedDashboardData } from './dashboard-actions'
+import { formatPlanEndDate } from '@/lib/stripe/active-subscription'
 
 describe('getEnhancedDashboardData and Stripe errors (round 9)', () => {
   beforeEach(() => {
@@ -263,30 +270,51 @@ describe('Recent activity payments from billing_ledger (description column fix)'
   })
 })
 
-describe('Upcoming billing reminder with a carried small amount (Aria 2:40 PM, Sable two lines)', () => {
+describe('Upcoming billing reminder: the renewal line (Aria 3:13 PM), with a carried small amount (Aria 2:40 PM, Sable two lines)', () => {
+  // The renewal date the mock sends (5 days out), in the Plans renewal line's format ("November 3, 2026").
+  const renewsOn = () => formatPlanEndDate(new Date((Math.floor(Date.now() / 1000) + 5 * 86400 - 600) * 1000))
   beforeEach(() => {
     stripe.mode = 'renewal'
     stripe.previews = []
+    stripe.previewFails = false
+    stripe.renewalDays = 5
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
   it('carried pending: the amount is Stripe\'s upcoming-invoice total, and the gray line says what is included', async () => {
     stripe.balance = 35
     const a = (await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')!
-    expect(a.message).toBe('Your next payment of $71.35 is due in 5 days.')
+    expect(a.message).toBe(`Your next bill will be $71.35 on ${renewsOn()}.`)
+    expect(a.message).not.toMatch(/due in|days/)
     expect(a.detail).toBe('Includes $0.35 left from your last change.')
     expect(stripe.previews).toEqual([{ subscription: 'sub_r' }])
   })
   it('nothing carried: the line is unchanged (the plan price), no gray line, no preview call', async () => {
     stripe.balance = 0
     const a = (await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')!
-    expect(a.message).toBe('Your next payment of $60.75 is due in 5 days.')
+    expect(a.message).toBe(`Your next bill will be $60.75 on ${renewsOn()}.`)
     expect(a).not.toHaveProperty('detail')
     expect(stripe.previews).toEqual([])
   })
   it('account credit (balance below 0, nothing carried): unchanged too', async () => {
     stripe.balance = -200
     const a = (await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')!
-    expect(a.message).toBe('Your next payment of $60.75 is due in 5 days.')
+    expect(a.message).toBe(`Your next bill will be $60.75 on ${renewsOn()}.`)
     expect(a).not.toHaveProperty('detail')
+  })
+  it('carried pending but the upcoming preview fails: the plain renewal line (plan price), no gray line, logged', async () => {
+    stripe.balance = 35
+    stripe.previewFails = true
+    const a = (await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')!
+    expect(a.message).toBe(`Your next bill will be $60.75 on ${renewsOn()}.`)
+    expect(a).not.toHaveProperty('detail')
+    expect(console.error).toHaveBeenCalledWith('[dashboard] upcoming invoice preview failed', 'stripe 500 (simulated)')
+  })
+  it('the 7-day window is unchanged: 7 days out shows it, 8 days out does not', async () => {
+    stripe.balance = 0
+    stripe.renewalDays = 7
+    expect((await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')).toBeDefined()
+    stripe.renewalDays = 8
+    expect((await getEnhancedDashboardData())!.alerts.find((x) => x.id === 'upcoming-billing')).toBeUndefined()
   })
 })
 

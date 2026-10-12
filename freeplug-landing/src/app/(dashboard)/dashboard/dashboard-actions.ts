@@ -14,7 +14,7 @@ import { RESUME_PLAN_ANCHOR_HREF, subscriptionEndingMessage } from '@/lib/dashbo
 import { planDisplayName, planNameOf, subscriptionListName, type PlanDisplayItem } from '@/lib/stripe/plan-line'
 import { isTipPrice } from '@/lib/plans/tips'
 import { isAddonPrice } from '@/lib/plans/addons'
-import { ADDON_NAMES, renewalCarriedLine } from '@/lib/plans/ladder-copy'
+import { ADDON_NAMES, renewalCarriedLine, renewalLineText } from '@/lib/plans/ladder-copy'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import type { Entitlements } from '@/lib/plans/ladder'
 import { periodStartDate } from '@/lib/plans/included-edits'
@@ -388,11 +388,13 @@ export async function getEnhancedDashboardData(
       // Stripe's upcoming-invoice total, with the carried part on a gray line under it. Else unchanged.
       const carried = profile?.stripe_customer_id ? await upcomingWithCarried(profile.stripe_customer_id, activeSubscription.id) : null
       const amount = carried?.totalCents ?? activeSubscription.amount
+      // Aria 3:13 PM: the locked renewal line (the Plans key and date format), no days countdown.
+      const date = activeSubscription.currentPeriodEnd ? formatPlanEndDate(activeSubscription.currentPeriodEnd) : null
       alerts.push({
         id: 'upcoming-billing',
         type: 'info',
         title: 'Upcoming billing',
-        message: `Your next payment of $${(amount / 100).toFixed(2)} is due in ${daysUntilBilling} day${daysUntilBilling === 1 ? '' : 's'}.`,
+        message: renewalLineText(amount, date),
         ...(carried ? { detail: renewalCarriedLine(carried.carriedCents) } : {}),
       })
     }

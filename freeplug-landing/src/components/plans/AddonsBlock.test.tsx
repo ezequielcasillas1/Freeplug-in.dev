@@ -484,3 +484,86 @@ describe('Vera M-1 (Aria a, Lina + Sable): a small amount carried from the last 
     await waitFor(() => expect(screen.queryByTestId('sticky-addon-today')).toBeNull())
   })
 })
+
+describe('Lina (Oct 4): the Plans phone sticky bar', () => {
+  const preview = async (_id: AddonId, action: 'on' | 'off'): Promise<AddonPreviewResponse> =>
+    action === 'on'
+      ? { ok: true, action: 'on', prorationDate: 1_790_000_000, amountDueCents: 535, fullCents: 500, carriedCents: 35, nextAmountCents: 6575, nextDate: 'November 3, 2026', tipDollarsNow: 0, tipDollarsAfter: 0 }
+      : { ok: true, action: 'off', endDate: 'November 3, 2026', nextAmountCents: 5500, nextDate: 'November 3, 2026' }
+  const card = (onPreviewAddon = preview) =>
+    render(
+      <HostingCheckoutCard
+        currentPlanLines={['Priority · $60.75/month']}
+        currentStepId="priority"
+        renewalDate="November 3, 2026"
+        onChangePlan={vi.fn(async () => ({ ok: true, message: 'done' }))}
+        onPreviewChange={vi.fn()}
+        currentAddons={['big_change']}
+        onPreviewAddon={vi.fn(onPreviewAddon)}
+        onChangeAddon={vi.fn()}
+        stickyOnPhone
+      />
+    )
+
+  it('sits directly in the card content (no mb-3 wrapper), sticky at bottom 0, white, 1px top border, safe-area padding, above the cards', () => {
+    const { container } = card()
+    const bar = screen.getByTestId('switch-area')
+    const shell = container.firstElementChild as HTMLElement
+    expect(bar.parentElement).toBe(shell) // a wrapper would trap the sticky inside its own height
+    expect(shell.className).not.toMatch(/overflow-(hidden|auto|scroll)/)
+    const cls = bar.className.split(/\s+/)
+    for (const c of ['sticky', 'bottom-0', 'z-10', 'bg-white', 'border-t', 'border-zinc-200', 'pb-[max(0.75rem,env(safe-area-inset-bottom))]', 'mb-3']) expect(cls).toContain(c)
+    // Desktop (sm+) it's a normal block again.
+    for (const c of ['sm:static', 'sm:border-0', 'sm:bg-transparent']) expect(cls).toContain(c)
+    // Nothing else in the card sits above it.
+    expect(container.querySelectorAll('[class*="z-2"],[class*="z-3"],[class*="z-4"],[class*="z-5"]')).toHaveLength(0)
+  })
+
+  it('confirm open: the bar swaps to the after-change totals (bold "$5.35 today" + the new monthly); Cancel restores the current ones', async () => {
+    card()
+    const amount = () => screen.getByTestId('plan-total-amount')
+    expect(amount().textContent).toBe('$60.75/month')
+    expect(amount().dataset.totals).toBe('current')
+    expect(screen.queryByTestId('sticky-addon-today')).toBeNull()
+
+    fireEvent.click(sw('small_edit'))
+    const box = await screen.findByTestId('addon-confirm')
+    await waitFor(() => expect(amount().textContent).toBe('$65.75/month'))
+    expect(amount().dataset.totals).toBe('after')
+    // The breakdown above it adds up to the same after-change total (Priority $55 + add-ons $10.75).
+    expect(screen.getByTestId('plan-total-breakdown').textContent).toBe('Priority $55 · Add-ons $10.75')
+    const today = screen.getByTestId('sticky-addon-today')
+    expect(today.textContent).toBe('$5.35 today')
+    expect(today.className).toMatch(/font-bold/)
+    expect(within(screen.getByTestId('switch-area')).getByTestId('sticky-addon-today')).toBe(today)
+
+    fireEvent.click(within(box).getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(amount().textContent).toBe('$60.75/month'))
+    expect(amount().dataset.totals).toBe('current')
+    expect(screen.getByTestId('plan-total-breakdown').textContent).toBe('Priority $55 · Add-ons $5.75')
+    expect(screen.queryByTestId('sticky-addon-today')).toBeNull()
+  })
+
+  it('nothing carried: still "{total} today" in the bar; under $0.50 (lands on the next charge): no today line', async () => {
+    const { unmount } = card(async () => ({ ok: true, action: 'on', prorationDate: 1, amountDueCents: 500, fullCents: 500, carriedCents: 0, nextAmountCents: 6575, nextDate: null, tipDollarsNow: 0, tipDollarsAfter: 0 }))
+    fireEvent.click(sw('small_edit'))
+    expect((await screen.findByTestId('sticky-addon-today')).textContent).toBe('$5 today')
+    unmount()
+    card(async () => ({ ok: true, action: 'on', prorationDate: 1, amountDueCents: 35, fullCents: 500, carriedCents: 0, nextAmountCents: 6575, nextDate: null, tipDollarsNow: 0, tipDollarsAfter: 0 }))
+    fireEvent.click(sw('small_edit'))
+    await screen.findByTestId('addon-confirm')
+    await waitFor(() => expect(screen.getByTestId('plan-total-amount').textContent).toBe('$65.75/month'))
+    expect(screen.queryByTestId('sticky-addon-today')).toBeNull()
+  })
+
+  it('turning one off: the bar shows the monthly total after it ends, no today line; Cancel restores', async () => {
+    card()
+    fireEvent.click(sw('big_change'))
+    const box = await screen.findByTestId('addon-confirm')
+    await waitFor(() => expect(screen.getByTestId('plan-total-amount').textContent).toBe('$55/month'))
+    expect(screen.getByTestId('plan-total-breakdown').textContent).not.toMatch(/Add-ons \$5\.75/)
+    expect(screen.queryByTestId('sticky-addon-today')).toBeNull()
+    fireEvent.click(within(box).getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.getByTestId('plan-total-amount').textContent).toBe('$60.75/month'))
+  })
+})

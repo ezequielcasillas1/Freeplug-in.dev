@@ -345,10 +345,19 @@ export const TIP_CHANGE_HEADING = 'Your monthly tip'
 export const TIP_CHANGE_NOTE = 'Changes start with your next bill. Nothing is charged today. To stop your tip, set it to No tip.'
 /** [Sable] Plans page: button that shows the next bill before saving. */
 export const TIP_CHANGE_BUTTON = 'Update tip'
-/** [Sable] Plans page: the tip-change confirmation ("Your next bill will be $X on <date>."). */
+/**
+ * [Sable] The renewal line ("Your next bill will be $X on <date>."): the Plans tip-change confirmation and,
+ * since Aria 3:13 PM, the dashboard "Upcoming billing" reminder (one key: a one-line swap for both).
+ */
 export const TIP_NEXT_BILL = (amount: string, date: string) => `Your next bill will be ${amount} on ${date}.`
 /** [Sable] Same, when the date is unknown. */
 export const TIP_NEXT_BILL_NO_DATE = (amount: string) => `Your next bill will be ${amount}.`
+/**
+ * The ONE renewal line builder (Plans tip box, its saved notice, the dashboard reminder; Sable 3:15 PM: the
+ * same keys, so they can't drift). dateText is formatPlanEndDate's "November 3, 2026"; null = no date.
+ */
+export const renewalLineText = (totalCents: number, dateText: string | null) =>
+  dateText ? TIP_NEXT_BILL(dollars(totalCents), dateText) : TIP_NEXT_BILL_NO_DATE(dollars(totalCents))
 /**
  * [Final, Sable Oct 4 ~2:43 PM CT; Aria 2:40 ruling] Renewal lines while a small amount carried from the last
  * change is still unbilled: the main line stays the existing one ("Your next bill will be {total} on

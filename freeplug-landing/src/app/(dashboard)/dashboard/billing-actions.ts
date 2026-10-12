@@ -36,8 +36,7 @@ import {
   TIP_CHANGE_UNAVAILABLE,
   TIP_CHANGED,
   TIP_IN_PROGRESS,
-  TIP_NEXT_BILL,
-  TIP_NEXT_BILL_NO_DATE,
+  renewalLineText,
   renewalCarriedLine,
   TIP_NOT_FOR_PLAN,
   TIP_OUT_OF_RANGE,
@@ -439,12 +438,11 @@ async function runTipChange(tipDollars: number, confirmId?: string): Promise<Cha
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (!r.ok) return { ok: false, message: tipRefusalMessage(r.code) }
-    const amount = `$${(r.nextAmountCents / 100).toFixed(r.nextAmountCents % 100 === 0 ? 0 : 2)}`
     const date = r.nextBillingAt ? formatPlanEndDate(new Date(r.nextBillingAt)) : null
     // The tip box shows "Saved." + the next-bill line the customer confirmed; this is the fallback.
     return {
       ok: true,
-      message: TIP_CHANGED(date ? TIP_NEXT_BILL(amount, date) : TIP_NEXT_BILL_NO_DATE(amount)),
+      message: TIP_CHANGED(renewalLineText(r.nextAmountCents, date)),
       ...(r.carriedCents && r.carriedCents > 0 ? { carriedNote: renewalCarriedLine(r.carriedCents) } : {}),
     }
   } catch (e) {

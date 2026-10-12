@@ -17,7 +17,7 @@ import type {
 } from '@/app/(dashboard)/dashboard/billing-actions'
 import { TipSlider, tipTotalText } from './TipSlider'
 import { TipChangeBox } from './TipChangeBox'
-import { AddonsBlock } from './AddonsBlock'
+import { AddonsBlock, type ConfirmTotals } from './AddonsBlock'
 import { PLAN_STEPS, type AddonId, type PlanStep, type PlanStepId } from '@/lib/plans/ladder'
 import { addonConfigCents } from '@/lib/plans/addons'
 import { tipRangeFor } from '@/lib/plans/tips'
@@ -203,7 +203,7 @@ export function HostingCheckoutCard({
   // New checkout: the add-ons picked (they stay through step picks; the server re-checks them).
   const [addonPicks, setAddonPicks] = useState<AddonId[]>([])
   /** Vera M-1: an open add-on confirm with a carried small amount: its "{total} today" (phone bar), else null. */
-  const [addonTodayCents, setAddonTodayCents] = useState<number | null>(null)
+  const [confirmTotals, setConfirmTotals] = useState<ConfirmTotals | null>(null)
   const [loading, setLoading] = useState(false)
   const [keeping, setKeeping] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -579,18 +579,27 @@ export function HostingCheckoutCard({
       ? { addons: liveAddonCents, tip: currentStepId === selected.id ? currentTipDollars * 100 : 0 }
       : null
   /** One total only (Lina): "Starter $35 · Add-ons $10.75 · Tip $4", then "$49.75/month" bold. */
-  const totalBlock = totalParts ? (
+  // Lina (Oct 4): while an add-on confirm is open, the after-change totals (the server's monthly; the
+  // breakdown's add-ons are what's left of it after the plan and the tip, so the line always adds up).
+  const shownParts =
+    totalParts && confirmTotals
+      ? (() => {
+          const tip = confirmTotals.tipCents ?? totalParts.tip
+          return { addons: confirmTotals.monthlyCents - selected.monthlyCents - tip, tip }
+        })()
+      : totalParts
+  const totalBlock = totalParts && shownParts ? (
     <div className="mb-3" data-testid="plan-total">
       <p className="text-sm text-gray-600" data-testid="plan-total-breakdown">
-        {planTotalBreakdown(selected.name, selected.monthlyCents, totalParts.addons, totalParts.tip)}
+        {planTotalBreakdown(selected.name, selected.monthlyCents, shownParts.addons, shownParts.tip)}
       </p>
-      <p className="text-base font-bold text-gray-900" data-testid="plan-total-amount">
-        {planTotalLine(selected.monthlyCents + totalParts.addons + totalParts.tip)}
+      <p className="text-base font-bold text-gray-900" data-testid="plan-total-amount" data-totals={confirmTotals ? 'after' : 'current'}>
+        {planTotalLine(selected.monthlyCents + shownParts.addons + shownParts.tip)}
       </p>
-      {stickyOnPhone && addonTodayCents !== null ? (
+      {stickyOnPhone && confirmTotals && confirmTotals.todayCents !== null ? (
         // Vera M-1 (Lina): the phone bar shows the same total the open add-on confirm charges today.
         <p className="text-base font-bold text-gray-900 sm:hidden" data-testid="sticky-addon-today">
-          {addonTodayTotal(addonTodayCents)}
+          {addonTodayTotal(confirmTotals.todayCents)}
         </p>
       ) : null}
     </div>
@@ -610,7 +619,9 @@ export function HostingCheckoutCard({
   ) : null
 
   const switchArea = (
-    <div className={cn('flex flex-col', stickyOnPhone ? STICKY_BAR : '')} data-testid="switch-area">
+    // Lina (Oct 4): a direct child of the card's content (no wrapper), so it sticks while the card is on
+    // screen and releases once the card scrolls off.
+    <div className={cn('mb-3 flex flex-col', stickyOnPhone ? STICKY_BAR : '')} data-testid="switch-area">
       {messages}
       {/* Live region: "Calculating…" and the confirm line are read out (Lina §3a). */}
       <p role="status" aria-live="polite" className="sr-only" data-testid="confirm-live">
@@ -790,7 +801,7 @@ export function HostingCheckoutCard({
           legacy={!currentStepId}
           onPreview={onPreviewAddon!}
           onChange={onChangeAddon!}
-          onTodayTotal={setAddonTodayCents}
+          onConfirmTotals={setConfirmTotals}
         />
       ) : null}
       {tipping ? (
@@ -808,7 +819,7 @@ export function HostingCheckoutCard({
       ) : null}
       {hasLivePlan ? (
         <>
-          {canSwitch ? <div className="mb-3">{switchArea}</div> : null}
+          {canSwitch ? switchArea : null}
           {/* Hidden while a change is pending: on this page it only reloads it (Lina §3a.6). */}
           {canSwitch && pendingChange ? null : (
             <form action={openBillingPortal}>
