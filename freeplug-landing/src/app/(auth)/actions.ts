@@ -27,6 +27,17 @@ import {
 } from '@/lib/email/reset-fallback'
 
 /** Same message for sign-in and sign-up whether or not the email has an account. */
+/**
+ * Fixed auth messages (Oct 12): raw Supabase error text never reaches ?error=, and nothing says whether an
+ * account exists. No i18n catalog yet. ES strings (Sable) go here when one exists:
+ *   SIGN_IN_FAILED_MESSAGE      es: 'El correo o la contraseña no son correctos.'
+ *   CHECK_INBOX_MESSAGE         es: 'Si ese correo se puede usar, te enviamos los siguientes pasos. Revisa tu bandeja de entrada.'
+ *   GENERIC_ERROR_MESSAGE       es: 'Algo salió mal. Inténtalo de nuevo.'
+ */
+const SIGN_IN_FAILED_MESSAGE = 'Email or password is incorrect.'
+const CHECK_INBOX_MESSAGE = "If that email can be used, we've sent next steps. Check your inbox."
+const GENERIC_ERROR_MESSAGE = 'Something went wrong. Please try again.'
+
 const TOO_MANY_ATTEMPTS_MESSAGE = 'Too many attempts. Please try again later.'
 
 /**
@@ -89,7 +100,7 @@ export async function signIn(formData: FormData) {
   if (error) {
     // Record the failure (rate_check inserts a hit while under the limit).
     await rateCheck(AUTH_LIMITS.signInFailures, rateKey)
-    redirect('/login?error=' + encodeURIComponent(error.message))
+    redirect('/login?error=' + encodeURIComponent(SIGN_IN_FAILED_MESSAGE))
   }
 
   revalidatePath('/', 'layout')
@@ -152,14 +163,13 @@ export async function signUp(formData: FormData) {
     },
   })
 
-  if (error) {
-    redirect(signupPath + 'error=' + encodeURIComponent(error.message))
-  }
-
-  if (data.user && !data.session) {
+  // Error and "confirm your email" answer identically, so the response never says whether the email
+  // already has an account.
+  if (error || (data.user && !data.session)) {
+    if (error) console.error('[signup]', error.message)
     redirect(
       '/login?message=' +
-        encodeURIComponent('Check your email to confirm your account.') +
+        encodeURIComponent(CHECK_INBOX_MESSAGE) +
         (next ? `&next=${encodeURIComponent(next)}` : '')
     )
   }
@@ -201,7 +211,8 @@ export async function signInWithGoogle(formData?: FormData) {
   })
 
   if (error) {
-    redirect('/login?error=' + encodeURIComponent(error.message))
+    console.error('[google-sign-in]', error.message)
+    redirect('/login?error=' + encodeURIComponent(GENERIC_ERROR_MESSAGE))
   }
 
   if (data.url) {
@@ -334,7 +345,8 @@ export async function updatePassword(formData: FormData) {
 
   const { error } = await supabase.auth.updateUser({ password })
   if (error) {
-    redirect('/reset-password?error=' + encodeURIComponent(error.message))
+    console.error('[update-password]', error.message)
+    redirect('/reset-password?error=' + encodeURIComponent(GENERIC_ERROR_MESSAGE))
   }
 
   jar.delete(RESET_COOKIE_NAME)

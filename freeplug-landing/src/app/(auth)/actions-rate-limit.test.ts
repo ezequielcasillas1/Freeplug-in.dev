@@ -95,3 +95,28 @@ describe('signUp per-IP limit', () => {
     expect(signUpSpy).toHaveBeenCalledTimes(5)
   })
 })
+
+describe('generic auth messages (no raw Supabase text, no account-existence hint)', () => {
+  beforeEach(() => {
+    hits.clear()
+    signInSpy.mockReset()
+    signUpSpy.mockReset()
+  })
+  it('wrong password and unknown email read identically', async () => {
+    signInSpy.mockResolvedValueOnce({ error: { message: 'Invalid login credentials' } })
+    const a = await login('known@example.com')
+    signInSpy.mockResolvedValueOnce({ error: { message: 'Email not confirmed' } })
+    const b = await login('unknown@example.com')
+    expect(a).toBe('/login?error=' + encodeURIComponent('Email or password is incorrect.'))
+    expect(b).toBe(a)
+  })
+  it('sign-up error and new-account success answer the same way', async () => {
+    const f = () => form({ email: 'n@example.com', password: 'secret123', confirm: 'secret123' })
+    signUpSpy.mockResolvedValueOnce({ data: { user: null, session: null }, error: { message: 'User already registered' } })
+    const a = await url(signUp(f()))
+    signUpSpy.mockResolvedValueOnce({ data: { user: { id: 'u' }, session: null }, error: null })
+    const b = await url(signUp(f()))
+    expect(a).toBe('/login?message=' + encodeURIComponent("If that email can be used, we've sent next steps. Check your inbox."))
+    expect(b).toBe(a)
+  })
+})
