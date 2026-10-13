@@ -14,17 +14,20 @@ type Props = {
   lang: Lang
   requestId: string
   type: Niche
-  typeSaved: boolean
+  repick?: boolean
   changeTypeHref: string
   items: PickerItem[]
   initial: Selection | null
   save: (requestId: string, input: PickInput) => Promise<PickResult>
 }
 
+/** Lina: first 12 cards, then Show more loads 12 per tap. */
+export const PAGE_SIZE = 12
+
 const RED_BTN = 'min-h-[44px] rounded-lg bg-[#ba3d3d] px-4 text-white font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d]'
 const OUTLINE_BTN = 'min-h-[44px] rounded-lg border border-[#ba3d3d] px-4 text-[#ba3d3d] font-semibold inline-flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d]'
 
-export function Picker({ lang, requestId, type, typeSaved, changeTypeHref, items, initial, save }: Props) {
+export function Picker({ lang, requestId, type, repick, changeTypeHref, items, initial, save }: Props) {
   const router = useRouter()
   const [sel, setSel] = useState<Selection | null>(initial)
   const [pasteOpen, setPasteOpen] = useState(initial?.kind === 'paste')
@@ -33,6 +36,12 @@ export function Picker({ lang, requestId, type, typeSaved, changeTypeHref, items
   const [confirming, setConfirming] = useState(false)
   const [saveErr, setSaveErr] = useState<string | null>(null)
   const [pending, start] = useTransition()
+  // A restored pick past the first page stays visible after refresh.
+  const [shown, setShown] = useState(() => {
+    const idx = initial?.kind === 'item' ? items.findIndex((i) => i.id === initial.id) : -1
+    return Math.max(PAGE_SIZE, Math.ceil((idx + 1) / PAGE_SIZE) * PAGE_SIZE)
+  })
+  const remaining = Math.max(0, items.length - shown)
 
   const selItem = sel?.kind === 'item' ? items.find((i) => i.id === sel.id) ?? null : null
   const selName =
@@ -93,8 +102,9 @@ export function Picker({ lang, requestId, type, typeSaved, changeTypeHref, items
       <p className="mt-2 text-gray-600">{t(lang, 'picker.intro')}</p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <span data-testid="type-chip" className="inline-flex min-h-[32px] items-center rounded-full bg-gray-100 px-3 text-sm font-medium text-gray-900">{TYPE_LABELS[lang][type]}</span>
-        {!typeSaved ? <a href={changeTypeHref} className="inline-flex min-h-[44px] items-center text-sm text-[#ba3d3d] underline">{t(lang, 'picker.type.change')}</a> : null}
+        <a href={changeTypeHref} className="inline-flex min-h-[44px] items-center text-sm text-[#ba3d3d] underline">{t(lang, 'picker.type.change')}</a>
       </div>
+      {repick ? <p role="status" data-testid="type-cleared" className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">{t(lang, 'picker.type.cleared')}</p> : null}
       </div>
       {/* DOM order keeps keyboard order: option cards, grid, then bar (bar shows under the header on desktop). */}
       <div className="order-3">
@@ -141,7 +151,7 @@ export function Picker({ lang, requestId, type, typeSaved, changeTypeHref, items
         <p data-testid="empty" className="mt-2 text-gray-700">{t(lang, 'picker.empty')}</p>
       ) : (
         <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="grid">
-          {items.map((i) => {
+          {items.slice(0, shown).map((i) => {
             const on = sel?.kind === 'item' && sel.id === i.id
             return (
               <li key={i.id} data-testid={`card-${i.id}`} className={`relative flex flex-col rounded-lg bg-white overflow-hidden ${on ? 'border-2 border-[#ba3d3d]' : 'border border-gray-200'}`}>
@@ -179,11 +189,22 @@ export function Picker({ lang, requestId, type, typeSaved, changeTypeHref, items
           })}
         </ul>
       )}
+      {remaining > 0 ? (
+        <button
+          type="button"
+          data-testid="show-more"
+          onClick={() => setShown((n) => n + PAGE_SIZE)}
+          aria-label={t(lang, remaining >= PAGE_SIZE ? 'picker.showmore.aria' : 'picker.showmore.aria.rest')}
+          className={`${OUTLINE_BTN} mt-4 w-full`}
+        >
+          {t(lang, 'picker.showmore')}
+        </button>
+      ) : null}
       </div>
       {sel ? (
         <div data-testid="confirm-bar" className="order-4 sm:order-2 fixed inset-x-0 bottom-0 z-20 flex h-[72px] items-center gap-3 border-t border-gray-200 bg-white px-4 sm:static sm:mt-4 sm:h-auto sm:justify-end sm:border-0 sm:bg-transparent sm:px-0">
           <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900 sm:flex-none">{selName}</span>
-          <button type="button" onClick={() => setConfirming(true)} className={RED_BTN}>{t(lang, 'picker.bar.continue')}</button>
+          <button type="button" onClick={() => setConfirming(true)} className={RED_BTN}>{t(lang, 'picker.continue')}</button>
         </div>
       ) : null}
 

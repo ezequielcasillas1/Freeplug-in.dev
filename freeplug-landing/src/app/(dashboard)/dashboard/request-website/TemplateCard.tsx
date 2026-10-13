@@ -23,7 +23,7 @@ export function TemplateCard({ pick, lang, showDone }: { pick: TemplateCardPick;
       {showDone && doneLine ? (
         <p role="status" data-testid="template-done" className="mb-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">{doneLine}</p>
       ) : null}
-      <h2 className="text-lg font-semibold text-gray-900">{t(lang, 'picker.card.heading')}</h2>
+      <h2 className="text-lg font-semibold text-gray-900">{t(lang, 'picker.card.title')}</h2>
       {pick.choice == null ? (
         <>
           <p className="mt-1 text-sm text-gray-600">{t(lang, 'picker.intro')}</p>

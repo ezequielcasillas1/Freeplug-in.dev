@@ -60,15 +60,60 @@ describe('Picker', () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith('/dashboard/request-website?picked=1'))
   })
 
-  it('restores a saved pick (persists after refresh) and hides Change type once saved', () => {
-    render(<Picker {...base} typeSaved initial={{ kind: 'item', id: 3 }} save={vi.fn()} />)
+  it('restores a saved pick (persists after refresh) and always shows Change business type', () => {
+    render(<Picker {...base} initial={{ kind: 'item', id: 3 }} save={vi.fn()} />)
     expect(within(screen.getByTestId('card-3')).getByRole('button', { name: 'Selected' })).toBeTruthy()
-    expect(screen.queryByText('Change business type')).toBeNull()
+    expect(screen.getByText('Change business type').getAttribute('href')).toBe('/x?step=type')
+  })
+
+  it('type-cleared: neutral banner under the chip, stays while they choose again', () => {
+    render(<Picker {...base} repick save={vi.fn()} />)
+    const b = screen.getByTestId('type-cleared')
+    expect(b.textContent).toBe('Your business type changed, so please choose a template again.')
+    expect(b.className).not.toMatch(/red/)
+    expect(b.previousElementSibling?.querySelector('[data-testid=type-chip]')).toBeTruthy()
+    fireEvent.click(within(screen.getByTestId('card-1')).getByRole('button', { name: 'Choose this one' }))
+    expect(screen.getByTestId('type-cleared')).toBeTruthy()
+  })
+
+  it('shows 12 cards, then Show more adds 12 per tap (aria: 12 more / more)', () => {
+    const many: PickerItem[] = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: `T${i + 1}`, thumb: null, preview: null, available: true }))
+    render(<Picker {...base} items={many} save={vi.fn()} />)
+    expect(screen.getAllByRole('listitem')).toHaveLength(12)
+    const more = screen.getByTestId('show-more')
+    expect(more.textContent).toBe('Show more')
+    expect(more.getAttribute('aria-label')).toBe('Show 12 more templates')
+    expect(more.className).toContain('w-full')
+    fireEvent.click(more)
+    expect(screen.getAllByRole('listitem')).toHaveLength(24)
+    expect(screen.getByTestId('show-more').getAttribute('aria-label')).toBe('Show more templates')
+    fireEvent.click(screen.getByTestId('show-more'))
+    expect(screen.getAllByRole('listitem')).toHaveLength(30)
+    expect(screen.queryByTestId('show-more')).toBeNull()
+  })
+
+  it('no Show more at 12; a restored pick past page 1 stays visible; bar padding stays below the button', () => {
+    const many: PickerItem[] = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: `T${i + 1}`, thumb: null, preview: null, available: true }))
+    const { unmount } = render(<Picker {...base} items={many.slice(0, 12)} save={vi.fn()} />)
+    expect(screen.queryByTestId('show-more')).toBeNull()
+    unmount()
+    render(<Picker {...base} items={many} initial={{ kind: 'item', id: 20 }} save={vi.fn()} />)
+    expect(screen.getAllByRole('listitem')).toHaveLength(24)
+    expect(within(screen.getByTestId('card-20')).getByRole('button', { name: 'Selected' })).toBeTruthy()
+    expect(screen.getByTestId('picker').className).toContain('pb-24')
+    expect(screen.getByTestId('picker').contains(screen.getByTestId('show-more'))).toBe(true)
+  })
+
+  it('Spanish show-more strings', () => {
+    const many: PickerItem[] = Array.from({ length: 13 }, (_, i) => ({ id: i + 1, name: `T${i + 1}`, thumb: null, preview: null, available: true }))
+    render(<Picker {...base} lang="es" items={many} save={vi.fn()} />)
+    expect(screen.getByTestId('show-more').textContent).toBe('Ver más')
+    expect(screen.getByTestId('show-more').getAttribute('aria-label')).toBe('Ver más plantillas')
   })
 
   it('empty state', () => {
     render(<Picker {...base} items={[]} save={vi.fn()} />)
-    expect(screen.getByTestId('empty').textContent).toContain('No templates for this type yet')
+    expect(screen.getByTestId('empty').textContent).toContain('No templates for this business type yet')
     expect(screen.getByTestId('option-team')).toBeTruthy()
   })
 })
@@ -86,5 +131,23 @@ describe('TypeStep', () => {
     expect(btn.disabled).toBe(false)
     fireEvent.click(btn)
     expect(push).toHaveBeenCalledWith('/p?type=cleaning')
+  })
+})
+
+describe('TypeStep change mode (type already saved)', () => {
+  it('saves the new type and goes back to the grid with repick when the pick was cleared', async () => {
+    push.mockClear()
+    const save = vi.fn().mockResolvedValue({ ok: true, cleared: true })
+    render(<TypeStep lang="en" basePath="/p" initial="cleaning" change={{ requestId: 'rid', save }} />)
+    fireEvent.click(screen.getByDisplayValue('dental'))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/p?repick=1'))
+    expect(save).toHaveBeenCalledWith('rid', 'dental')
+  })
+  it('shows the locked line when the server refuses', async () => {
+    const save = vi.fn().mockResolvedValue({ ok: false, error: 'locked' })
+    render(<TypeStep lang="en" basePath="/p" initial="cleaning" change={{ requestId: 'rid', save }} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    await waitFor(() => expect(screen.getByTestId('type-save-error').textContent).toContain('support@freeplug-in.dev'))
   })
 })
