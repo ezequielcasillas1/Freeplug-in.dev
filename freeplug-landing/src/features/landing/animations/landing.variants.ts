@@ -112,3 +112,23 @@ export const techLogoVariants: Variants = {
     transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 }
+
+/** Tech stack tiles: the same fade-up as the heading and feature cards, no rotate or scale (Lina, Oct 3). */
+export const techTileVariants: Variants = fadeInUp
+
+/** Small stagger for the tech stack tiles. */
+export const techTileStagger: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+}
+
+/** prefers-reduced-motion: tiles sit at rest in every state and any switch is instant. */
+export const techTileAtRest: Variants = {
+  hidden: { opacity: 1, y: 0, transition: { duration: 0 } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0 } },
+}
+
+/** prefers-reduced-motion: no stagger. */
+export const techTileNoStagger: Variants = { hidden: {}, visible: {} }

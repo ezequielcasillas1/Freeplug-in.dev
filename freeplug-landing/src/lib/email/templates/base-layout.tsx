@@ -10,13 +10,17 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
+import { emailBaseUrl, SUPPORT_EMAIL } from '@/lib/site'
 
 type Props = {
   preview: string
   children: React.ReactNode
+  /** Site base URL for links; defaults to NEXT_PUBLIC_APP_URL, then https://freeplug-in.dev. */
+  baseUrl?: string
 }
 
-export function BaseEmailLayout({ preview, children }: Props) {
+export function BaseEmailLayout({ preview, children, baseUrl }: Props) {
+  const base = emailBaseUrl(baseUrl)
   return (
     <Html>
       <Head />
@@ -24,20 +28,20 @@ export function BaseEmailLayout({ preview, children }: Props) {
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Text style={logo}>Freeplug.dev</Text>
+            <Text style={logo}>Freeplug</Text>
           </Section>
           <Section style={content}>{children}</Section>
           <Hr style={hr} />
           <Section style={footer}>
             <Text style={footerText}>
-              © {new Date().getFullYear()} Freeplug.dev. All rights reserved.
+              © {new Date().getFullYear()} Freeplug. All rights reserved.
             </Text>
             <Text style={footerText}>
-              <Link href="https://freeplug.dev" style={footerLink}>
+              <Link href={base} style={footerLink}>
                 Visit our website
               </Link>
               {' · '}
-              <Link href="mailto:support@freeplug.dev" style={footerLink}>
+              <Link href={`mailto:${SUPPORT_EMAIL}`} style={footerLink}>
                 Contact support
               </Link>
             </Text>

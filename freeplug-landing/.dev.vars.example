@@ -1,0 +1,11 @@
+# Local `npm run preview` / `wrangler dev` only (copy to .dev.vars, which git ignores).
+# Dummy values: never put live keys here. Real secrets go in with `wrangler versions secret put`.
+NEXTJS_ENV=development
+TRUST_CF_CONNECTING_IP=true
+STRIPE_SECRET_KEY=sk_test_dummy_local_only
+STRIPE_WEBHOOK_SECRET=whsec_dummy_local_only
+SUPABASE_SERVICE_ROLE_KEY=dummy-local-service-role
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+# Email: leave RESEND_API_KEY unset locally so nothing can reach api.resend.com; app sends then fail
+# with "Email is not configured" and the password reset falls back to the (local) Supabase mailer.
+# RESEND_API_KEY=

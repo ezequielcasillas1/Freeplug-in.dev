@@ -27,7 +27,6 @@ export function AdminAccountsTable({ users }: { users: AuthUserRowView[] }) {
         <thead className="bg-zinc-50 text-zinc-600 border-b border-zinc-200">
           <tr>
             <th className="p-3 font-medium">Email</th>
-            <th className="p-3 font-medium">User id</th>
             <th className="p-3 font-medium">Created</th>
             <th className="p-3 font-medium">Ban</th>
             <th className="p-3 font-medium">Actions</th>
@@ -50,9 +49,10 @@ function AdminAccountRow({ user }: { user: AuthUserRowView }) {
 
   return (
     <tr className="border-t border-zinc-100 align-top">
-      <td className="p-3 break-all max-w-[200px]">{user.email ?? '—'}</td>
-      <td className="p-3 font-mono text-[10px] text-zinc-500 break-all max-w-[120px]">
-        {user.id}
+      <td className="p-3 max-w-[200px]">
+        <span className="block truncate" title={user.email ?? undefined}>
+          {user.email ?? '—'}
+        </span>
       </td>
       <td className="p-3 text-zinc-600 whitespace-nowrap text-xs">
         {user.created_at ? new Date(user.created_at).toLocaleString() : '—'}

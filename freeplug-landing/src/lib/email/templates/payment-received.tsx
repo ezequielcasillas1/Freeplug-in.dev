@@ -1,5 +1,6 @@
 import { Text, Button, Section, Row, Column } from '@react-email/components'
 import * as React from 'react'
+import { emailBaseUrl } from '@/lib/site'
 import { BaseEmailLayout } from './base-layout'
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
   paymentDate: string
   nextBillingDate?: string
   totalPaidToDate?: string
-  websiteValueProgress?: string
+  baseUrl?: string
 }
 
 export function PaymentReceivedEmail({
@@ -21,10 +22,11 @@ export function PaymentReceivedEmail({
   paymentDate,
   nextBillingDate,
   totalPaidToDate,
-  websiteValueProgress,
+  baseUrl,
 }: Props) {
+  const base = emailBaseUrl(baseUrl)
   return (
-    <BaseEmailLayout preview={`Payment received - ${amount} for ${planName}`}>
+    <BaseEmailLayout baseUrl={base} preview={`Payment received - ${amount} for ${planName}`}>
       <Text style={heading}>Payment Received</Text>
       <Text style={paragraph}>
         Hi{userName ? ` ${userName}` : ''},
@@ -60,20 +62,15 @@ export function PaymentReceivedEmail({
         )}
       </Section>
 
-      {(totalPaidToDate || websiteValueProgress) && (
+      {totalPaidToDate && (
         <Section style={progressBox}>
-          <Text style={progressTitle}>Your Progress</Text>
-          {totalPaidToDate && (
-            <Text style={progressText}>Total paid to date: {totalPaidToDate}</Text>
-          )}
-          {websiteValueProgress && (
-            <Text style={progressText}>Website value progress: {websiteValueProgress}</Text>
-          )}
+          <Text style={progressTitle}>Your Account History</Text>
+          <Text style={progressText}>Total paid to date: {totalPaidToDate}</Text>
         </Section>
       )}
 
       <Section style={buttonContainer}>
-        <Button style={button} href="https://freeplug.dev/dashboard">
+        <Button style={button} href={`${base}/dashboard`}>
           View Dashboard
         </Button>
       </Section>

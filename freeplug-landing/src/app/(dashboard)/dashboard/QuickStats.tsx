@@ -1,8 +1,13 @@
 import { DollarSign, CreditCard, Calendar, Globe } from 'lucide-react'
 import type { DashboardStats } from './dashboard-actions'
+import type { WebsiteCardStatus } from './outreach-dashboard'
 
 type Props = {
   stats: DashboardStats
+  /** Outreach customers: the Website card follows the "Your website" tracker (outreach-dashboard.ts). */
+  website?: WebsiteCardStatus | null
+  /** Outreach after Live when the plan can't be loaded: a dash like "Customer Since", not 0. */
+  activePlansDash?: boolean
 }
 
 const statusConfig = {
@@ -12,8 +17,10 @@ const statusConfig = {
   none: { label: 'Not started', color: 'text-gray-500', bg: 'bg-gray-50' },
 }
 
-export function QuickStats({ stats }: Props) {
-  const status = statusConfig[stats.websiteStatus]
+export function QuickStats({ stats, website = null, activePlansDash = false }: Props) {
+  const status = website
+    ? { ...(website.tone === 'live' ? statusConfig.live : statusConfig.pending), label: website.label }
+    : statusConfig[stats.websiteStatus]
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -38,7 +45,9 @@ export function QuickStats({ stats }: Props) {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-500 truncate">Active Plans</p>
-            <p className="text-lg font-bold text-gray-900">{stats.activeSubscriptionCount}</p>
+            <p className="text-lg font-bold text-gray-900" data-testid="active-plans">
+              {activePlansDash ? '—' : stats.activeSubscriptionCount}
+            </p>
           </div>
         </div>
       </div>
@@ -50,7 +59,7 @@ export function QuickStats({ stats }: Props) {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-500 truncate">Customer Since</p>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-gray-900" data-testid="customer-since">
               {stats.daysSinceFirstPayment !== null
                 ? stats.daysSinceFirstPayment === 0
                   ? 'Today'
@@ -68,7 +77,7 @@ export function QuickStats({ stats }: Props) {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-500 truncate">Website</p>
-            <p className={`text-lg font-bold ${status.color}`}>{status.label}</p>
+            <p className={`text-lg font-bold ${status.color}`} data-testid="website-status">{status.label}</p>
           </div>
         </div>
       </div>

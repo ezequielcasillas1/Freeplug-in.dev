@@ -1,0 +1,305 @@
+'use client'
+
+import Image from 'next/image'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { ArrowRight, Globe2, Handshake, MapPin, MessageCircle, Wrench } from 'lucide-react'
+import { buttonVariants } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils/cn'
+import { fadeInUp, staggerContainer, cardVariants } from '../animations/landing.variants'
+
+const texasCities = [
+  {
+    name: 'San Marcos',
+    image: '/images/outreach/san-marcos.jpg',
+    alt: 'Stock photo of a city skyline — San Marcos, Texas',
+  },
+  {
+    name: 'Kyle',
+    image: '/images/outreach/kyle.jpg',
+    alt: 'Stock photo of a residential street — Kyle, Texas',
+  },
+  {
+    name: 'New Braunfels',
+    image: '/images/outreach/new-braunfels.jpg',
+    alt: 'Stock photo of a river landscape — New Braunfels, Texas',
+  },
+  {
+    name: 'San Antonio',
+    image: '/images/outreach/san-antonio.jpg',
+    alt: 'Stock photo of San Antonio, Texas',
+  },
+  {
+    name: 'Austin',
+    image: '/images/outreach/austin.jpg',
+    alt: 'Stock photo of the Austin, Texas skyline',
+  },
+]
+
+const howItWorks = [
+  {
+    step: '1',
+    icon: MessageCircle,
+    title: 'Freeplug reaches out',
+    description: 'We contact owners who need a site — or you request one yourself.',
+  },
+  {
+    step: '2',
+    icon: Wrench,
+    title: '72 After builds',
+    description: '72 After builds a free multi-page site from a solid template, your real services, and clear Get-a-quote pages.',
+  },
+  {
+    step: '3',
+    icon: Handshake,
+    title: 'You go live',
+    description: "You review the site and add your phone number and photos when you're ready. Then you go live, and monthly hosting keeps your site online.",
+  },
+]
+
+export function OutreachSection() {
+  return (
+    <>
+      {/* Texas metros */}
+      <section id="outreach" className="py-24 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#ba3d3d]/5 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="text-center mb-14"
+          >
+            <motion.span
+              variants={fadeInUp}
+              className="inline-block px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
+            >
+              Service areas
+            </motion.span>
+            <motion.h2
+              variants={fadeInUp}
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
+            >
+              Where we work in{' '}
+              <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
+                Texas
+              </span>
+            </motion.h2>
+            <motion.p
+              variants={fadeInUp}
+              className="text-lg text-gray-600 max-w-2xl mx-auto"
+            >
+              We’re focused on Central Texas first — San Marcos and nearby cities.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          >
+            {texasCities.map((city) => (
+              <motion.div key={city.name} variants={cardVariants}>
+                <Card className="h-full overflow-hidden border-0 shadow-lg p-0 hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 group">
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <Image
+                      src={city.image}
+                      alt={city.alt}
+                      // City photos are all 800x600 and sit below the first screen at 375px and desktop:
+                      // explicit size (no layout shift; the aspect box sets the shown size) and lazy load.
+                      width={800}
+                      height={600}
+                      loading="lazy"
+                      // Served as-is (78-156 KB JPGs): keeps /_next/image off the Cloudflare Images
+                      // quota, which is for uploads (Cloudflare port, Oct 3).
+                      unoptimized
+                      className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white">
+                      <MapPin className="w-4 h-4" />
+                      <span className="font-semibold text-lg drop-shadow">{city.name}</span>
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-gray-500">{city.name} — stock photo</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.p
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center text-gray-500 text-sm max-w-xl mx-auto"
+          >
+            More Texas cities as capacity grows. Ask if your town isn’t listed.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Outside the U.S. */}
+      <section id="service-areas" className="py-24 bg-white relative overflow-hidden">
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-[#ba3d3d]/5 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-100px' }}
+              className="space-y-6"
+            >
+              <motion.span
+                variants={fadeInUp}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider"
+              >
+                <Globe2 className="w-4 h-4" />
+                International
+              </motion.span>
+              <motion.h2
+                variants={fadeInUp}
+                className="text-3xl sm:text-4xl font-bold text-gray-900"
+              >
+                Beyond Texas and the US
+              </motion.h2>
+              <motion.p variants={fadeInUp} className="text-lg text-gray-600 leading-relaxed">
+                Freeplug can reach businesses outside the US through our in-network partners and
+                channels. International outreach depends on language, local rules, and partner
+                capacity — we don’t promise every country or a set timeline. If you’re outside the
+                US and want a free site through the network, start a request and we’ll tell you
+                what’s possible.
+              </motion.p>
+              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="/signup"
+                  className={cn(
+                    buttonVariants({ size: 'lg' }),
+                    'shadow-lg shadow-[#ba3d3d]/30'
+                  )}
+                >
+                  Request international outreach
+                  <ArrowRight size={18} className="ml-2" />
+                </Link>
+              </motion.div>
+              <motion.p variants={fadeInUp} className="text-sm text-gray-500">
+                Availability varies by region and partner. No guaranteed coverage or launch date.
+              </motion.p>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-80px' }}
+              variants={staggerContainer}
+              className="grid grid-cols-2 gap-4"
+            >
+              {[
+                {
+                  src: '/images/outreach/international-1.jpg',
+                  alt: 'Stock photo of an international city skyline',
+                  label: 'International skyline — stock photo',
+                },
+                {
+                  src: '/images/outreach/international-2.jpg',
+                  alt: 'Stock photo of a city skyline outside the U.S.',
+                  label: 'City skyline — stock photo',
+                },
+              ].map((img) => (
+                <motion.div key={img.src} variants={cardVariants}>
+                  <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg">
+                    <Image
+                      src={img.src}
+                      alt={img.alt}
+                      width={800}
+                      height={600}
+                      loading="lazy"
+                      unoptimized
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <p className="absolute bottom-3 left-3 right-3 text-white text-xs font-medium drop-shadow">
+                      {img.label}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works / connects to 72 After */}
+      <section id="how-it-works" className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="text-center mb-14"
+          >
+            <motion.span
+              variants={fadeInUp}
+              className="inline-block px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
+            >
+              How it connects
+            </motion.span>
+            <motion.h2
+              variants={fadeInUp}
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
+            >
+              How it{' '}
+              <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
+                works
+              </span>
+            </motion.h2>
+            <motion.p
+              variants={fadeInUp}
+              className="text-lg text-gray-600 max-w-2xl mx-auto"
+            >
+              Freeplug connects the conversation. 72 After does the build.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            className="grid md:grid-cols-3 gap-8"
+          >
+            {howItWorks.map((item) => (
+              <motion.div key={item.step} variants={cardVariants}>
+                <Card className="h-full text-left hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 border-0 shadow-lg bg-white relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e]" />
+                  <CardContent className="pt-8 pb-8 px-6">
+                    <div className="flex items-center gap-4 mb-5">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#ba3d3d] to-[#8a2e2e] flex items-center justify-center shadow-lg shadow-[#ba3d3d]/25">
+                        <item.icon className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-[#ba3d3d] uppercase tracking-wider">
+                        Step {item.step}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+    </>
+  )
+}

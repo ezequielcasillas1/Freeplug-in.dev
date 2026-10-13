@@ -5,10 +5,10 @@ import { adminSendCustomerEmail } from './actions'
 
 type Props = {
   to: string | null
-  smtpConfigured: boolean
+  mailConfigured: boolean
 }
 
-export function AdminQuickEmail({ to, smtpConfigured }: Props) {
+export function AdminQuickEmail({ to, mailConfigured }: Props) {
   const [open, setOpen] = useState(false)
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
@@ -23,11 +23,12 @@ export function AdminQuickEmail({ to, smtpConfigured }: Props) {
     <div className="max-w-[260px]">
       <a
         href={`mailto:${encodeURIComponent(to)}`}
-        className="text-[#ba3d3d] hover:underline break-all text-sm block"
+        title={to}
+        className="text-[#ba3d3d] hover:underline text-sm block truncate"
       >
         {to}
       </a>
-      {smtpConfigured ? (
+      {mailConfigured ? (
         <div className="mt-2">
           <button
             type="button"
@@ -37,7 +38,7 @@ export function AdminQuickEmail({ to, smtpConfigured }: Props) {
             }}
             className="text-xs font-medium text-zinc-600 hover:text-[#ba3d3d]"
           >
-            {open ? 'Hide SMTP send' : 'Send via SMTP'}
+            {open ? 'Hide email form' : 'Send email'}
           </button>
           {open ? (
             <form
@@ -93,7 +94,7 @@ export function AdminQuickEmail({ to, smtpConfigured }: Props) {
           ) : null}
         </div>
       ) : (
-        <p className="text-[10px] text-zinc-400 mt-1">SMTP not set — use mailto</p>
+        <p className="text-[10px] text-zinc-400 mt-1">Email not set up — use mailto</p>
       )}
     </div>
   )

@@ -1,5 +1,6 @@
 import { Text, Button, Section, Row, Column } from '@react-email/components'
 import * as React from 'react'
+import { emailBaseUrl } from '@/lib/site'
 import { BaseEmailLayout } from './base-layout'
 
 type Props = {
@@ -8,6 +9,7 @@ type Props = {
   amount: string
   billingDate: string
   daysUntilBilling: number
+  baseUrl?: string
 }
 
 export function BillingReminderEmail({
@@ -16,9 +18,12 @@ export function BillingReminderEmail({
   amount,
   billingDate,
   daysUntilBilling,
+  baseUrl,
 }: Props) {
+  const base = emailBaseUrl(baseUrl)
   return (
     <BaseEmailLayout
+      baseUrl={base}
       preview={`Upcoming billing reminder - ${amount} on ${billingDate}`}
     >
       <Text style={heading}>Upcoming Billing Reminder</Text>
@@ -50,12 +55,12 @@ export function BillingReminderEmail({
       </Text>
 
       <Section style={buttonContainer}>
-        <Button style={button} href="https://freeplug.dev/dashboard">
+        <Button style={button} href={`${base}/dashboard`}>
           View Dashboard
         </Button>
         <Text style={secondaryLink}>
           or{' '}
-          <a href="https://freeplug.dev/dashboard/cancel" style={link}>
+          <a href={`${base}/dashboard/cancel`} style={link}>
             manage your subscription
           </a>
         </Text>

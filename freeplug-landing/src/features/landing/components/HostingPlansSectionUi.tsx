@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { CreditCard } from 'lucide-react'
 import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
+import { LANDING_PLANS_INTRO } from '@/lib/plans/ladder-copy'
 import { fadeInUp, staggerContainer } from '../animations/landing.variants'
 
 const MAINTENANCE_LOGIN_NEXT = encodeURIComponent(
@@ -40,14 +41,15 @@ export function HostingPlansSectionUi({
             Hosting & maintenance
           </h2>
           <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            Choose a monthly hosting amount and optional add-on. For maintenance, we analyze your
-            request first — then quote and invoice.
+            {LANDING_PLANS_INTRO}
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        {/* Lina §1: the ladder full width with the sellable steps in columns from lg; Maintenance below. */}
+        <div className="space-y-8">
           <motion.div variants={fadeInUp}>
             <HostingCheckoutCard
+              layout="columns"
               signedIn={signedIn}
               allowCheckout={hostingCheckoutAllowed}
             />

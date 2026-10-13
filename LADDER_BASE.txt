@@ -1,0 +1,8 @@
+Freeplug hosting ladder — base record (Owen, worktree /workspace/freeplug-ladder, branch hosting-ladder-2026-10-03)
+base_commit: bf5940fef31781b798cd5e568bfe986a1b662fea (tip of cf-port-2026-10-03: 5 port round commits + env-example placeholder commit, on top of 9345ae0)
+original_backup_base: 9345ae0ecbcd175ae07b15a57d4f983814585824 (backup/box-build-2026-10-03)
+rebased_at: 2026-10-03 11:52:20 CDT (from the provisional snapshot base f26a55d; that commit is no longer on the branch)
+superseded_snapshot: /workspace/owen/cf-port-snapshot-20261003-114028.patch sha256 ecbed71695b7e6c04de7c1f36e88de1a4eaa1cc3c99d2df5f4c8c60fae74e567 (port tree differed from it only in CF-PORT-NOTES.md, .env.example, .dev.vars.example and two removed scratch .patch files)
+npm: npm ci (node v20.19.2, npm 9.2.0), lockfile identical to bf5940f. EBADENGINE warnings: wrangler/miniflare want node>=22.
+base_vitest on clean bf5940f (11:52 CT): 75/75 files, 872/872 tests pass.
+ladder: everything after bf5940f on this branch; review with git diff bf5940f.. (patch: /workspace/owen/hosting-ladder.patch)

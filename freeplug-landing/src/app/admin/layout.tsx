@@ -1,9 +1,16 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { assertAdminAccess } from '@/lib/admin/guard'
 import { AdminNav } from './AdminNav'
 
 /** Read `SUPABASE_SERVICE_ROLE_KEY` at request time (not at static prerender). */
 export const dynamic = 'force-dynamic'
+
+/** Private pages: keep out of search results. */
+export const metadata: Metadata = {
+  title: 'Dashboard | Freeplug',
+  robots: { index: false },
+}
 
 export default async function AdminLayout({
   children,

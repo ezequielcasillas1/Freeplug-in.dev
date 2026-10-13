@@ -1,20 +1,26 @@
 import { Text, Button, Section } from '@react-email/components'
 import * as React from 'react'
+import { emailBaseUrl } from '@/lib/site'
 import { BaseEmailLayout } from './base-layout'
 
 type Props = {
   userName?: string
+  baseUrl?: string
 }
 
-export function WelcomeEmail({ userName }: Props) {
+export function WelcomeEmail({ userName, baseUrl }: Props) {
+  const base = emailBaseUrl(baseUrl)
   return (
-    <BaseEmailLayout preview="Welcome to Freeplug.dev - Let's build your online presence">
-      <Text style={heading}>Welcome to Freeplug.dev!</Text>
+    <BaseEmailLayout
+      baseUrl={base}
+      preview="Welcome to Freeplug - Let's build your online presence"
+    >
+      <Text style={heading}>Welcome to Freeplug!</Text>
       <Text style={paragraph}>
         Hi{userName ? ` ${userName}` : ''},
       </Text>
       <Text style={paragraph}>
-        Thank you for joining Freeplug.dev! We are excited to help you establish and grow your
+        Thank you for joining Freeplug! We are excited to help you establish and grow your
         online presence with professional website hosting and maintenance services.
       </Text>
       <Text style={paragraph}>Here is what you can do next:</Text>
@@ -25,7 +31,7 @@ export function WelcomeEmail({ userName }: Props) {
         <Text style={listItem}>4. Watch your online presence grow</Text>
       </Section>
       <Section style={buttonContainer}>
-        <Button style={button} href="https://freeplug.dev/dashboard">
+        <Button style={button} href={`${base}/dashboard`}>
           Go to Dashboard
         </Button>
       </Section>
@@ -33,7 +39,7 @@ export function WelcomeEmail({ userName }: Props) {
         If you have any questions, just reply to this email or reach out to our support team.
       </Text>
       <Text style={signature}>
-        — The Freeplug.dev Team
+        — The Freeplug Team
       </Text>
     </BaseEmailLayout>
   )
