@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPortal: vi.fn() }))
@@ -246,6 +246,18 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     switching()
     expect(screen.getByRole('button', { name: 'Choose a different plan to switch' })).toBeDisabled()
     expect(screen.queryByTestId('switch-help')).toBeNull()
+  })
+
+  it('Lina: phones hide the switch button whenever it is disabled (here: a downgrade going through), desktop keeps it', async () => {
+    const { container } = switching({ currentStepId: 'priority', currentPlanLines: ['Freeplug Hosting: Priority · $55.00/month'], onChangePlan: vi.fn(() => new Promise<never>(() => {})) })
+    pickStep(container, 'starter')
+    const btn = screen.getByTestId('switch-area').querySelector('button') as HTMLButtonElement
+    expect(btn).toBeEnabled()
+    expect(btn.className).not.toMatch(/max-sm:hidden/)
+    fireEvent.click(btn)
+    await waitFor(() => expect(btn).toBeDisabled())
+    expect(btn.className).toMatch(/max-sm:hidden/)
+    expect(btn.className).not.toMatch(/(^|\s)hidden(\s|$)/) // desktop unchanged
   })
 
   it('M-1: phones hide the disabled "Choose a different plan to switch"; a real switch stays visible', () => {

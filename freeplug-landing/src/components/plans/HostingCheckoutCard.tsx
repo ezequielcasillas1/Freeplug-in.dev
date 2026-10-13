@@ -84,6 +84,7 @@ export const CONFIRM_OPEN_MS = (PRORATION_DATE_MAX_AGE_SECONDS - 30) * 1000
 const STICKY_BAR =
   'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:max-h-[90px] max-sm:overflow-hidden max-sm:[&_*]:mb-0 max-sm:[&_p]:truncate sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
 
+
 const COLS: Record<number, string> = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6' }
 
 type Props = {
@@ -678,8 +679,8 @@ export function HostingCheckoutCard({
       ) : (
         <div>
           {inlineTotals}
-          {/* M-1: on phones the disabled "Choose a different plan to switch" is hidden; a real switch shows. */}
-          <Button ref={switchRef} className={cn('w-full', direction === 'same' && 'max-sm:hidden')} size="lg" onClick={onSwitch} disabled={switchDisabled}>
+          {/* M-1 (Lina): on phones a disabled switch button is hidden, whatever the reason; only an enabled one shows. */}
+          <Button ref={switchRef} className={cn('w-full', switchDisabled && 'max-sm:hidden')} size="lg" onClick={onSwitch} disabled={switchDisabled}>
             {loading ? <Loader2 className="animate-spin" size={22} /> : switchLabel}
           </Button>
           {switchHelp ? (
