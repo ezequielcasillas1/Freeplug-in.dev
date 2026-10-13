@@ -16,6 +16,8 @@ export type PickRequestRow = {
   status: string
   business_type: string | null
   template_locked_at: string | null
+  template_choice?: string | null
+  envato_item_id?: number | string | null
 }
 
 /**
@@ -56,6 +58,8 @@ export type PickDeps = {
   loadRequest: (id: string) => Promise<PickRequestRow | null>
   lookupItem: (id: number) => Promise<CatalogCard | null>
   loadWiden: (id: number) => Promise<WidenRow | null>
+  /** Widen log rows for this business type that name this request or have no request id. */
+  findWidens: (requestId: string, niche: Niche) => Promise<WidenRow[]>
   write: (id: string, patch: Record<string, unknown>) => Promise<boolean>
   now: () => Date
 }
@@ -64,11 +68,28 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 /**
  * A widen counts for this request when the log row is for the request's business type and either
- * names this request or is a team widen (the admin "Widen to general" logs no request id).
+ * names this request or is a team widen with no request id (Aria: a team widen applies to every
+ * request of that business type; the admin "Widen to general" logs no request id).
  */
 export function widenApplies(w: WidenRow | null, requestId: string, niche: Niche): boolean {
   if (!w || w.niche !== niche) return false
   return w.request_id === requestId || (w.request_id == null && w.actor_role === 'team')
+}
+
+/**
+ * "General local business" template (Aria ruling, Oct 12): tagged other_local, or on no specific niche
+ * (auto_niches empty or only other_local). A widen never admits another niche's template.
+ * NOTE: the admin "general" view (admin/templates/page.tsx) lists every fresh active item without a
+ * niche filter; this customer-side definition is deliberately narrower, per Aria.
+ */
+export function isGeneralTemplate(item: Pick<CatalogCard, 'autoNiches'>): boolean {
+  return item.autoNiches.every((n) => n === 'other_local')
+}
+
+/** Item allowed for this type: tagged for it, or general AND covered by an applicable widen. */
+export function itemAllowedForType(item: Pick<CatalogCard, 'autoNiches'>, type: Niche, widenOk: boolean): boolean {
+  if (item.autoNiches.includes(type)) return true
+  return widenOk && isGeneralTemplate(item)
 }
 
 export async function savePickCore(deps: PickDeps, requestId: unknown, input: PickInput): Promise<PickResult> {
@@ -89,6 +110,7 @@ export async function savePickCore(deps: PickDeps, requestId: unknown, input: Pi
     if (req.business_type != null) {
       if (!isNiche(req.business_type)) return fail('save')
       type = req.business_type
+      // a different type goes through changeBusinessTypeCore first
       if (input.businessType != null && input.businessType !== req.business_type) return fail('save')
     } else {
       if (!isNiche(input.businessType)) return fail('save')
@@ -105,7 +127,7 @@ export async function savePickCore(deps: PickDeps, requestId: unknown, input: Pi
       if (!item.autoNiches.includes(type)) {
         const wid = input.widenLogId == null ? NaN : Number(input.widenLogId)
         const widen = Number.isSafeInteger(wid) && wid > 0 ? await deps.loadWiden(wid) : null
-        if (!widenApplies(widen, requestId, type)) return fail('stale')
+        if (!itemAllowedForType(item, type, widenApplies(widen, requestId, type))) return fail('stale')
       }
       Object.assign(patch, { template_choice: 'envato_catalog', envato_item_id: id, pasted_template_url: null })
     } else if (input.choice === 'client_pasted') {
@@ -116,6 +138,46 @@ export async function savePickCore(deps: PickDeps, requestId: unknown, input: Pi
     }
     patch.template_picked_at = now.toISOString()
     return (await deps.write(requestId, patch)) ? { ok: true } : fail('save')
+  } catch {
+    return fail('save')
+  }
+}
+
+export type TypeChangeResult = { ok: true; cleared: boolean } | { ok: false; error: PickError }
+
+/**
+ * Change business type (Aria ruling 2): allowed whenever the pick is editable. A catalog pick that
+ * doesn't fit the new type (not tagged for it, and not a general template under an applicable widen)
+ * is cleared so the customer chooses again; client_pasted and team_pick stay.
+ */
+export async function changeBusinessTypeCore(deps: PickDeps, requestId: unknown, newType: unknown): Promise<TypeChangeResult> {
+  const fail = (error: PickError): TypeChangeResult => ({ ok: false, error })
+  try {
+    const uid = await deps.userId()
+    if (!uid) return fail('save')
+    if (typeof requestId !== 'string' || !UUID_RE.test(requestId)) return fail('save')
+    if (!isNiche(newType)) return fail('save')
+    const req = await deps.loadRequest(requestId)
+    if (!req || req.user_id !== uid) return fail('save')
+    if (!isPickEditable(req)) return fail('locked')
+    const patch: Record<string, unknown> = { business_type: newType }
+    let cleared = false
+    if (req.template_choice === 'envato_catalog' && req.envato_item_id != null) {
+      const item = await deps.lookupItem(Number(req.envato_item_id))
+      let fits = false
+      if (item) {
+        if (item.autoNiches.includes(newType)) fits = true
+        else if (isGeneralTemplate(item)) {
+          const widens = await deps.findWidens(requestId, newType)
+          fits = widens.some((w) => widenApplies(w, requestId, newType))
+        }
+      }
+      if (!fits) {
+        Object.assign(patch, { template_choice: null, envato_item_id: null, pasted_template_url: null, template_picked_at: null })
+        cleared = true
+      }
+    }
+    return (await deps.write(requestId, patch)) ? { ok: true, cleared } : fail('save')
   } catch {
     return fail('save')
   }
