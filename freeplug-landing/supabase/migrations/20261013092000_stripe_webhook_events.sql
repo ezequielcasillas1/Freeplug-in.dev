@@ -2,9 +2,9 @@
 -- (2xx, no redelivery asked). A redelivery of a processed event answers 200 and does nothing.
 -- Not applied to any hosted project by this change.
 --
--- Access (Aria, Oct 13): event_id is the PRIMARY KEY, RLS on with no policies, nothing granted here.
--- anon and authenticated are revoked explicitly; only the server's service role (Supabase's default
--- privileges, which bypass RLS) reads and writes it.
+-- Access (Aria, Oct 13): event_id is the PRIMARY KEY, RLS on with no policies. anon and authenticated are
+-- revoked explicitly; only the server's service role (which bypasses RLS) reads and writes it, through the
+-- explicit grant below, so it does not depend on Supabase's default privileges (Vera I-f).
 --
 -- Retention: keep rows 90 days. Stripe retries a delivery for up to 3 days and a manual resend uses the
 -- same event id, so 90 days is well past any redelivery. Cleanup is a manual or later scheduled job
@@ -22,3 +22,4 @@ alter table public.stripe_webhook_events enable row level security;
 revoke all on table public.stripe_webhook_events from public;
 revoke all on table public.stripe_webhook_events from anon;
 revoke all on table public.stripe_webhook_events from authenticated;
+grant select, insert, update, delete on table public.stripe_webhook_events to service_role;
