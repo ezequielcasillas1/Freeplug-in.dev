@@ -320,6 +320,21 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     }
   })
 
+  it('Lina (Oct 13): bar lines wrap: no truncate/ellipsis/nowrap/clip classes on the bar or its lines', () => {
+    switching({ showTip: true, showAddons: true } as Partial<React.ComponentProps<typeof HostingCheckoutCard>>)
+    const bar = screen.getByTestId('sticky-totals')
+    const BAD = /(^|\s)(\S*:)?(truncate|text-ellipsis|whitespace-nowrap|line-clamp-\d+|overflow-hidden|max-h-\S+)(\s|$)|\[&_p\]:truncate/
+    expect(bar.className).not.toMatch(BAD)
+    expect(bar.className).toContain('max-sm:[&_p]:whitespace-normal')
+    const lines = bar.querySelectorAll('p')
+    expect(lines.length).toBeGreaterThan(0)
+    for (const p of lines) {
+      expect(p.className).not.toMatch(BAD)
+      expect(p.textContent ?? '').not.toContain('…')
+      for (const amount of (p.textContent ?? '').match(/\$[\d,.\u00a0]+/g) ?? []) expect(amount).not.toMatch(/[ \t\u2000-\u200b]/)
+    }
+  })
+
   it('M-1: phones hide the disabled "Choose a different plan to switch"; a real switch stays visible', () => {
     const { container } = switching()
     const same = screen.getByRole('button', { name: 'Choose a different plan to switch' })

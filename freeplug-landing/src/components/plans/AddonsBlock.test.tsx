@@ -514,7 +514,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     expect(bar.parentElement).toBe(shell) // a wrapper would trap the sticky inside its own height
     expect(shell.className).not.toMatch(/overflow-(hidden|auto|scroll)/)
     const cls = bar.className.split(/\s+/)
-    for (const c of ['sticky', 'bottom-0', 'z-10', 'bg-white', 'border-t', 'border-zinc-200', 'pb-[max(0.75rem,env(safe-area-inset-bottom))]', 'max-sm:mb-3', 'max-sm:[&_p]:truncate']) expect(cls).toContain(c)
+    for (const c of ['sticky', 'bottom-0', 'z-10', 'bg-white', 'border-t', 'border-zinc-200', 'pb-[max(0.75rem,env(safe-area-inset-bottom))]', 'max-sm:mb-3', 'max-sm:[&_p]:whitespace-normal']) expect(cls).toContain(c)
     expect(bar.className).not.toMatch(/max-h-|overflow-hidden/) // Vera: no cap; the bar grows to fit
     // Desktop (sm+) it's a normal block again.
     for (const c of ['sm:static', 'sm:border-0', 'sm:bg-transparent']) expect(cls).toContain(c)

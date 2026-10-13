@@ -19,8 +19,9 @@ import {
   TIP_VALUETEXT,
   tipAmountLine,
 } from '@/lib/plans/ladder-copy'
+import { formatAmount } from '@/lib/format/keep-together'
 
-const usd = (dollars: number) => `$${dollars}`
+const usd = (dollars: number) => formatAmount(dollars * 100)
 
 /** "$65 + $5 tip = $70/month" (or "$65/month, no tip"); shared by the slider and the phone bar. */
 export function tipTotalText(step: Pick<PlanStep, 'monthlyCents'>, tipDollars: number): string {

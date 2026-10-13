@@ -1,8 +1,9 @@
+import { formatAmount, formatAmountCents } from '@/lib/format/keep-together'
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
 import { ADDON_STEP_LIMITS, PLAN_STEPS, addonById, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
 
 /** "$35" style, from ladder.ts (never hard-code a price in copy). */
-const dollars = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
+const dollars = (cents: number) => formatAmount(cents)
 /** "$35, $55 or $65", built from the SELLABLE steps in PLAN_STEPS (coming-soon steps not priced). */
 const PRICE_LIST = (() => {
   const all = PLAN_STEPS.filter((s) => s.sellable).map((s) => dollars(s.monthlyCents))
@@ -460,7 +461,7 @@ export const addonThenLine = (nextCents: number, date: string | null) =>
  */
 export const addonAddedToNextBill = (cents: number) => `${dollars(cents)} will be added to your next charge.`
 /** Two decimals always ("$5.00 + $0.35"): the carried split adds cents to whole dollars. */
-const cents2 = (cents: number) => `$${(cents / 100).toFixed(2)}`
+const cents2 = (cents: number) => formatAmountCents(cents)
 /**
  * [Sable + Lina, M-1 (Aria a)] Add-on confirm when a small amount from the last change is carried onto
  * this charge: line 1 bold "{total} today", line 2 gray small "{price} + {carried} left from your last

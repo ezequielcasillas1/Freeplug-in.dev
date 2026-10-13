@@ -63,13 +63,14 @@ import {
   addonTodayTotal,
   CHANGE_PLAN_SWITCHING,
 } from '@/lib/plans/ladder-copy'
+import { formatAmount, formatAmountCents } from '@/lib/format/keep-together'
 
 function formatDollars(cents: number): string {
-  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
+  return formatAmount(cents)
 }
 /** The amount charged today always shows cents ("$12.34", "$0.00"). */
 function formatCharge(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
+  return formatAmountCents(cents)
 }
 
 const LOGIN_THEN_REQUEST = `/login?next=${encodeURIComponent('/dashboard/request-website')}`
@@ -79,11 +80,12 @@ export const CONFIRM_OPEN_MS = (PRORATION_DATE_MAX_AGE_SECONDS - 30) * 1000
 
 /**
  * Phones (< sm): only the totals stick to the bottom of the screen while the card is in view (M-1). The bar
- * grows to fit its content (no height cap, so longer Spanish copy is not clipped), its lines never wrap, and it sits directly above the action/confirm buttons in the
- * flow, so it is released before it can cover them. From sm up it is a plain static block (unchanged).
+ * grows to fit its content (no height cap), its lines wrap in both languages (Lina, Oct 13: no ellipsis; amounts
+ * and dates are kept whole with U+00A0 by lib/format/keep-together), and it sits directly above the
+ * action/confirm buttons in the flow, so it is released before it can cover them. From sm up it is a plain static block (unchanged).
  */
 const STICKY_BAR =
-  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:[&_*]:mb-0 max-sm:[&_p]:truncate sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
+  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:[&_*]:mb-0 max-sm:[&_p]:whitespace-normal sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
 
 /**
  * Lina (Oct 13): the sticky bar's MEASURED height (ResizeObserver) is published on the card as
