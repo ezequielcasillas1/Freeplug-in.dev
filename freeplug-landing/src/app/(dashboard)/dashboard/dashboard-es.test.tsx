@@ -160,8 +160,8 @@ describe('key coverage: every key the signed-in area uses has Spanish', () => {
   it('each has an es entry (or is listed in pending-sable.json)', () => {
     expect([...used].filter((k) => !ES[k] && !pendingKeys.has(k)).sort()).toEqual([])
   })
-  it('no pending key is rendered by the dashboard except the not-shown tip perks', () => {
-    expect([...used].filter((k) => pendingKeys.has(k)).sort()).toEqual(['tips.nudgePerk.doneForYouEdits', 'tips.nudgePerk.quarterlyCall'])
+  it('no pending key is rendered by the dashboard', () => {
+    expect([...used].filter((k) => pendingKeys.has(k)).sort()).toEqual([])
   })
 })
 

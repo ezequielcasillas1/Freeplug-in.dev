@@ -7,8 +7,6 @@
     "public.landing.about.description.whenOwnerSaysYes": "In code at ea817ef (AboutSection.tsx:17, :60) but missing from Sable extraction. English copied verbatim from code; Sable to confirm English and supply es.",
     "public.landing.about.freeplugOutreachSide": "In code at ea817ef (AboutSection.tsx:17, :60) but missing from Sable extraction. English copied verbatim from code; Sable to confirm English and supply es.",
     "public.landing.outreach.description.builds72AfterFreeMultiPage": "In code at ea817ef (OutreachSection.tsx:51) but missing from Sable extraction. English verbatim from code; Sable to supply es.",
-    "tips.nudgePerk.quarterlyCall": "In ladder-copy.ts at ea817ef (PER_MONTH, TIP_NUDGE_PERK quarterlyCall/doneForYouEdits) but missing from Sable extraction. English verbatim from code.",
-    "tips.nudgePerk.doneForYouEdits": "In ladder-copy.ts at ea817ef (PER_MONTH, TIP_NUDGE_PERK quarterlyCall/doneForYouEdits) but missing from Sable extraction. English verbatim from code.",
     "public.meta.faqTitle": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim.",
     "public.meta.faqDescription": "FAQ layout metadata (src/app/faq/layout.tsx at ea817ef), missing from Sable extraction. English verbatim."
   },

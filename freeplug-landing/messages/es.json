@@ -574,7 +574,7 @@
       "hostingSslSecureHttps": "Hosting y SSL (una conexión https segura)",
       "emailSupportDuringSupport": "Soporte por correo en el horario de atención"
     },
-    "ladderHeading": "Elige tu plan de hosting",
+    "ladderHeading": "Elige tu plan de hospedaje web",
     "ladderSubheading": "Cada plan incluye todo lo de los planes anteriores. Se cobra cada mes a través de Stripe.",
     "mostPopularLabel": "El más popular",
     "everythingIn": "Todo lo de {name}, más:",
@@ -1224,7 +1224,9 @@
       "quoteAlerts": "un correo en cuanto alguien pide una cotización",
       "gbpManaged": "el cuidado de tu perfil de Google Business",
       "reviewKit": "un kit para pedir reseñas",
-      "seasonalRefresh": "una actualización de temporada"
+      "seasonalRefresh": "una actualización de temporada",
+      "quarterlyCall": "una llamada de planeación de 15 minutos cada trimestre",
+      "doneForYouEdits": "cambios hechos por nosotros"
     },
     "planStripTip": " + {tip} de propina",
     "changeHeading": "Tu propina mensual",
