@@ -89,7 +89,24 @@ export function isGeneralTemplate(item: Pick<CatalogCard, 'autoNiches'>): boolea
 /** Item allowed for this type: tagged for it, or general AND covered by an applicable widen. */
 export function itemAllowedForType(item: Pick<CatalogCard, 'autoNiches'>, type: Niche, widenOk: boolean): boolean {
   if (item.autoNiches.includes(type)) return true
+  // L3 (Jace): other_local is the general type, so every general template fits it without a widen.
+  if (type === 'other_local' && isGeneralTemplate(item)) return true
   return widenOk && isGeneralTemplate(item)
+}
+
+/**
+ * M1 (Lina): niche-tagged items first, then widened general templates flagged general:true (each id once,
+ * never another niche's item).
+ */
+export function mergeWidenedItems<T extends Pick<CatalogCard, 'id' | 'autoNiches'>>(tagged: T[], general: T[]): (T & { general: boolean })[] {
+  const seen = new Set(tagged.map((i) => i.id))
+  const out: (T & { general: boolean })[] = tagged.map((i) => ({ ...i, general: false }))
+  for (const g of general) {
+    if (seen.has(g.id) || !isGeneralTemplate(g)) continue
+    seen.add(g.id)
+    out.push({ ...g, general: true })
+  }
+  return out
 }
 
 export async function savePickCore(deps: PickDeps, requestId: unknown, input: PickInput): Promise<PickResult> {
@@ -166,7 +183,7 @@ export async function changeBusinessTypeCore(deps: PickDeps, requestId: unknown,
       const item = await deps.lookupItem(Number(req.envato_item_id))
       let fits = false
       if (item) {
-        if (item.autoNiches.includes(newType)) fits = true
+        if (itemAllowedForType(item, newType, false)) fits = true
         else if (isGeneralTemplate(item)) {
           const widens = await deps.findWidens(requestId, newType)
           fits = widens.some((w) => widenApplies(w, requestId, newType))

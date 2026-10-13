@@ -23,4 +23,20 @@ describe('picker copy', () => {
   it('fills placeholders', () => {
     expect(t('es', 'picker.confirm.title', { name: 'Sparkle' })).toBe('¿Usar Sparkle para tu sitio?')
   })
+
+  it('M2: Spanish flag accepts true or on', async () => {
+    const { esEnabled } = await import('./copy')
+    expect(esEnabled('true')).toBe(true)
+    expect(esEnabled('on')).toBe(true)
+    expect(esEnabled(' ON ')).toBe(true)
+    expect(esEnabled('false')).toBe(false)
+    expect(esEnabled(undefined)).toBe(false)
+  })
+  it("has Sable's fix-round keys verbatim", async () => {
+    const { COPY } = await import('./copy')
+    expect(COPY.en['picker.confirm.title.link']).toBe('Use the template from your link?')
+    expect(COPY.es['picker.confirm.title.teampick']).toBe('¿Dejar que 72 After elija tu plantilla?')
+    expect(COPY.es['picker.card.general.aria']).toBe('Plantilla general, no hecha para un solo tipo de negocio')
+    expect(COPY.en['picker.showmore.aria.rest']).toBe('Show more templates')
+  })
 })
