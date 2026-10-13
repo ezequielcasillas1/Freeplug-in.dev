@@ -23,6 +23,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 ## Launch checklist
 
 - [ ] Confirm Cloudflare Access is in front of the preview Worker (`env.preview`, workers.dev) before any preview deploy or before sharing a preview link (base QA L-3).
+- SMS / Twilio / 10DLC: out of launch scope (Cheke, Oct 13): email only via Resend free plan. There is no SMS sender; `FREEPLUG_SMS_ENABLED` stays unset (off). Do not register 10DLC or add Twilio keys for launch.
 
 ## Learn More
 

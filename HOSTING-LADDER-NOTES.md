@@ -317,4 +317,4 @@ pinned word for word in ladder-copy.test.ts:
   grandfathered plans keep their product name).
 
 ## Not built (Part B)
-L2 AI editor + quota enforcement, leads report job, form-fill storage, GBP API, SMS, L3.
+L2 AI editor + quota enforcement, leads report job, form-fill storage, GBP API, SMS (out of launch scope (Cheke, Oct 13): email only via Resend free plan), L3.
