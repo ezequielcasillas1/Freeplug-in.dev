@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPortal: vi.fn() }))
 
 import { HostingCheckoutCard } from './HostingCheckoutCard'
-import { AddonsBlock, CONFIRM_SCROLL_FALLBACK_MS } from './AddonsBlock'
+import { AddonsBlock, CONFIRM_SCROLL_FALLBACK_MS, CONFIRM_SCROLL_MARGIN } from './AddonsBlock'
 import { ADDONS, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
 import type { AddonPreviewResponse, ChangeAddonResponse, PlanPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 import { addonChargeNote, addonPerkLine, BIG_CHANGE_BIGGER_NOTE, TIP_SLIDER_LABEL } from '@/lib/plans/ladder-copy'
@@ -535,7 +535,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
       await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
       expect(scroll.mock.contexts.filter((c) => c === actions)).toHaveLength(1)
       expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' })
-      expect(actions.className).toMatch(/max-sm:scroll-mb-\[var\(--sticky-bar-h,90px\)\]/)
+      expect(actions.className).toContain('max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]')
       expect(within(actions).getByTestId('addon-confirm-button')).toBeInTheDocument()
       expect(within(actions).getByTestId('addon-cancel')).toBeInTheDocument()
       expect(document.activeElement).toBe(within(actions).getByTestId('addon-confirm-button'))
@@ -580,7 +580,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
       act(() => observers.forEach((fire) => fire())) // the ResizeObserver reports the taller bar
       await waitFor(() => expect(offsets).toEqual(['73px']))
       expect(opts).toEqual([{ block: 'nearest', behavior: 'smooth' }])
-      expect(screen.getByTestId('addon-confirm-actions').className).toMatch(/max-sm:scroll-mb-\[var\(--sticky-bar-h,90px\)\]/)
+      expect(screen.getByTestId('addon-confirm-actions').className).toContain('max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]')
       // Exactly one: neither another resize nor the fallback timer scrolls again.
       act(() => observers.forEach((fire) => fire()))
       await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
@@ -589,6 +589,50 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
       globalThis.ResizeObserver = origRO
       Element.prototype.getBoundingClientRect = origRect
       Element.prototype.scrollIntoView = origScroll
+    }
+  })
+
+  it('Lina: the scroll offset is set in one place: measured bar height + 16px (CONFIRM_SCROLL_MARGIN)', async () => {
+    expect(CONFIRM_SCROLL_MARGIN).toBe('max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]')
+    card()
+    fireEvent.click(sw('small_edit'))
+    const actions = await screen.findByTestId('addon-confirm-actions')
+    expect(actions.className.split(/\s+/).filter((c) => c.includes('scroll-m'))).toEqual([CONFIRM_SCROLL_MARGIN])
+  })
+
+  it('Vera (instant jump): opening the confirm moves the page only through the one smooth scroll (no plain focus(), no instant scroll API)', async () => {
+    const focusCalls: Array<{ el: Element; opts: FocusOptions | undefined }> = []
+    const scrolls: unknown[] = []
+    const origFocus = HTMLElement.prototype.focus
+    const origScroll = Element.prototype.scrollIntoView
+    const origScrollTo = window.scrollTo
+    const origScrollBy = window.scrollBy
+    HTMLElement.prototype.focus = function (this: HTMLElement, opts?: FocusOptions) {
+      focusCalls.push({ el: this, opts })
+      return origFocus.call(this, opts)
+    }
+    Element.prototype.scrollIntoView = function (o?: unknown) {
+      scrolls.push(o)
+    }
+    const instant = vi.fn()
+    window.scrollTo = instant as unknown as typeof window.scrollTo
+    window.scrollBy = instant as unknown as typeof window.scrollBy
+    try {
+      card()
+      const before = focusCalls.length
+      fireEvent.click(sw('small_edit'))
+      await screen.findByTestId('addon-confirm-actions')
+      await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
+      const opened = focusCalls.slice(before)
+      expect(opened.length).toBeGreaterThan(0) // focus does move to Turn on
+      for (const f of opened) expect(f.opts).toMatchObject({ preventScroll: true })
+      expect(instant).not.toHaveBeenCalled()
+      expect(scrolls).toEqual([{ block: 'nearest', behavior: 'smooth' }])
+    } finally {
+      HTMLElement.prototype.focus = origFocus
+      Element.prototype.scrollIntoView = origScroll
+      window.scrollTo = origScrollTo
+      window.scrollBy = origScrollBy
     }
   })
 

@@ -102,6 +102,12 @@ type LiveProps = {
 /** Fallback: scroll the open confirm into view this long after it opens if the bar's height never changes. */
 export const CONFIRM_SCROLL_FALLBACK_MS = 150
 
+/**
+ * Lina (Oct 13): the ONE place the add-on confirm's scroll offset is set (both languages): the sticky bar's
+ * measured height (--sticky-bar-h, 90px before the first measurement) plus 16px of breathing room.
+ */
+export const CONFIRM_SCROLL_MARGIN = 'max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]'
+
 type Props = {
   stepId: PlanStepId
   className?: string
@@ -452,7 +458,7 @@ export function AddonsBlock(props: Props) {
             {l}
           </p>
         ))}
-        <div ref={confirmActionsRef} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center max-sm:scroll-mb-[var(--sticky-bar-h,90px)]" data-testid="addon-confirm-actions">
+        <div ref={confirmActionsRef} className={cn('mt-3 flex flex-col gap-2 sm:flex-row sm:items-center', CONFIRM_SCROLL_MARGIN)} data-testid="addon-confirm-actions">
           <Button
             ref={turnOnRef}
             size="sm"

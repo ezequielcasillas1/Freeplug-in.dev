@@ -93,7 +93,6 @@ const STICKY_BAR =
  */
 export const STICKY_BAR_HEIGHT_VAR = '--sticky-bar-h'
 export const STICKY_BAR_PAGE_PAD = 'max-sm:pb-[var(--sticky-bar-h,90px)]'
-export const STICKY_BAR_SCROLL_MARGIN = 'max-sm:scroll-mb-[var(--sticky-bar-h,90px)]'
 
 /** Measures an element's height as it changes; 0 when it is not mounted. */
 function useMeasuredHeight(): [(el: HTMLElement | null) => void, number] {
