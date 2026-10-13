@@ -254,7 +254,7 @@ export async function POST(request: Request) {
 
       const { data: rows, error: findErr } = await admin
         .from('profiles')
-        .select('id, cumulative_website_value_paid_cents')
+        .select('id')
         .eq('stripe_customer_id', customerId)
         .limit(1)
 
@@ -273,46 +273,25 @@ export async function POST(request: Request) {
       // created_at = when Stripe says it was paid, not when this delivery landed (Vera, Oct 4): a retried
       // or replayed invoice.paid must not move Customer Since or the Recent activity date forward.
       const paidAt = invoicePaidAtIso(inv)
-      const ledgerRow = {
-        profile_id: profile.id,
-        stripe_invoice_id: inv.id,
-        amount_cents: inv.amount_paid,
-        ...(paidAt ? { created_at: paidAt } : {}),
-      }
       // The tipping system: the tip part of this payment, shown on its own (admin, ledger). The
       // total stays amount_paid, so every existing total is unchanged.
       const tipCents = Math.min(invoiceTipCents(inv), inv.amount_paid)
-      let { error: insertErr } = await admin.from('billing_ledger').insert({ ...ledgerRow, tip_cents: tipCents })
-      // Before migration 20261003200000 (tip_cents) is applied: never lose the ledger row over the
-      // new column. Undefined column (42703) or PostgREST's schema-cache miss (PGRST204) only.
-      if (insertErr && (insertErr.code === '42703' || insertErr.code === 'PGRST204')) {
-        console.warn('[webhook] billing_ledger.tip_cents missing; row saved without it', inv.id)
-        ;({ error: insertErr } = await admin.from('billing_ledger').insert(ledgerRow))
-      }
-
-      if (insertErr) {
-        if (insertErr.code === '23505') {
-          break
-        }
-        console.error('[webhook] billing_ledger insert', insertErr)
+      // Phase 4 L-2: the ledger row (unique on the invoice) and the paid total (everything paid, tips and
+      // add-ons included; feeds "Total Paid") in ONE transaction: public.record_invoice_paid. A duplicate is a
+      // no-op (false); the total is incremented in place, so concurrent invoices for one profile both count.
+      const { data: recorded, error: recordErr } = await admin.rpc('record_invoice_paid', {
+        p_profile_id: profile.id,
+        p_stripe_invoice_id: inv.id,
+        p_amount_cents: inv.amount_paid,
+        p_tip_cents: tipCents,
+        p_paid_at: paidAt,
+      })
+      if (recordErr) {
+        // Phase 4 L-1: Stripe must retry; nothing was saved (one transaction).
+        console.error('[webhook] record_invoice_paid', recordErr)
         return NextResponse.json({ error: 'Ledger row not saved' }, { status: 500 })
       }
-
-      const prev = profile.cumulative_website_value_paid_cents ?? 0
-      const { error: updErr } = await admin
-        .from('profiles')
-        .update({
-          // Everything paid, tips and add-ons included (Aria, Oct 3 3:31 PM CT; add-ons Oct 4): this
-          // column feeds the "Total Paid" displays. Pay-to-own will use its own ledger built from invoice lines, not this counter
-          // (read-modify-write; see HOSTING-LADDER-NOTES.md "Buyout: existing pieces").
-          cumulative_website_value_paid_cents: prev + inv.amount_paid,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', profile.id)
-
-      if (updErr) {
-        console.error('[webhook] profiles cumulative update', updErr)
-      }
+      if (recorded === false) console.info('[webhook] invoice.paid already recorded', inv.id)
       break
     }
     default:
