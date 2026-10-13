@@ -23,11 +23,10 @@ describe('Lows migration: change_requests checks (phase 5 L-1 / L-2)', () => {
     expect(sqlList(count![1])).toEqual([...CHANGE_TYPES])
     expect(counts).toContain('change_requests_change_type_allowed_check')
   })
-  it('(a) was dropped: the existing addon_removals_owed_cleared_check already covers a blank cleared_how', () => {
-    expect(code(migration)).not.toMatch(/addon_removals_owed/)
-    expect(code(counts)).not.toMatch(/addon_removals_owed/)
-    const owed = readFileSync(path.join(root, 'supabase/migrations/20261004092000_addon_removals_owed.sql'), 'utf8')
-    expect(owed).toMatch(/cleared_at is not null and cleared_how in \('refunded', 'not_billed', 'kept'\)/)
+  it('(a) cleared_at set requires a non-NULL cleared_how (Vera L-b); counted in the read-only query', () => {
+    expect(code(migration)).toMatch(/add constraint addon_removals_owed_cleared_how_required_check\s+check \(cleared_at is null or cleared_how is not null\) not valid;/)
+    expect(code(counts)).toMatch(/where not \(cleared_at is null or cleared_how is not null\)/)
+    expect(counts).toContain('addon_removals_owed_cleared_how_required_check')
   })
   it('nothing is validated in this migration; the count query is read-only', () => {
     expect(code(migration)).not.toMatch(/validate constraint/i)

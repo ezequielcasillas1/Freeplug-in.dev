@@ -1,7 +1,11 @@
 -- Read-only: counts existing rows that would violate the NOT VALID checks in
 -- migrations/20261013091000_low_check_constraints.sql. Changes nothing (runs in a read-only transaction).
 begin transaction read only;
-select 'profiles_plan_addons_one_dim_check' as check_name, count(*) as bad_rows
+select 'addon_removals_owed_cleared_how_required_check' as check_name, count(*) as bad_rows
+  from public.addon_removals_owed
+ where not (cleared_at is null or cleared_how is not null)
+union all
+select 'profiles_plan_addons_one_dim_check', count(*)
   from public.profiles
  where not (array_ndims(plan_addons) is null or array_ndims(plan_addons) = 1)
 union all
