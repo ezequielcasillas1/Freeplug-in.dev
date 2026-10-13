@@ -9,8 +9,9 @@
 --         saveWebsiteRequest) writes with the user's session, not the service role
 --         (website_requests_insert_own forces status 'submitted'; website_requests_update_own_open only
 --         touches the user's own open row; guard triggers protect status/price/source/due_by).
---         The Envato template picker (envato-picker-client branch, lib/templates/server.ts) also
---         updates the user's own row with the user's session.
+--         The Envato template picker (envato-picker-client branch, lib/templates/server.ts L74-80)
+--         writes with the service role (admin client, owner re-checked in the query), so it does not
+--         depend on these grants.
 --   * authenticated loses DELETE and TRUNCATE (no path uses them; RLS does not cover TRUNCATE), and
 --     REFERENCES and TRIGGER (no client use).
 -- service_role is untouched. Idempotent: revoking a privilege that is not held is a no-op.
