@@ -261,12 +261,41 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     expect(btn.className).not.toMatch(/(^|\s)(max-sm:)?hidden(\s|$)/)
   })
 
-  it('Lina: the card keeps the sticky bar height as bottom padding on phones only', () => {
-    switching()
-    expect(screen.getByTestId('checkout-card-shell').className).toMatch(/max-sm:pb-\[90px\]/)
-    cleanup()
-    render(<HostingCheckoutCard />)
-    expect(screen.getByTestId('checkout-card-shell').className).not.toMatch(/pb-\[90px\]/)
+  it('Lina (Oct 13): the card pads its phone bottom by the MEASURED sticky bar height, and follows resizes', async () => {
+    let height = 74
+    const observers: Array<() => void> = []
+    const origRO = globalThis.ResizeObserver
+    const origRect = Element.prototype.getBoundingClientRect
+    globalThis.ResizeObserver = class {
+      constructor(private cb: () => void) {}
+      observe() {
+        observers.push(() => this.cb())
+      }
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const h = this.getAttribute('data-testid') === 'sticky-totals' ? height : 0
+      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: h, width: 0, height: h, toJSON: () => ({}) } as DOMRect
+    }
+    try {
+      switching()
+      const shell = screen.getByTestId('checkout-card-shell')
+      expect(shell.className).toMatch(/max-sm:pb-\[var\(--sticky-bar-h,0px\)\]/)
+      expect(shell.className).not.toMatch(/\[90px\]/)
+      expect(shell.style.getPropertyValue('--sticky-bar-h')).toBe('74px')
+      height = 82
+      act(() => observers.forEach((fire) => fire()))
+      await waitFor(() => expect(shell.style.getPropertyValue('--sticky-bar-h')).toBe('82px'))
+      cleanup()
+      render(<HostingCheckoutCard />)
+      const plain = screen.getByTestId('checkout-card-shell')
+      expect(plain.className).not.toMatch(/sticky-bar-h/)
+      expect(plain.style.getPropertyValue('--sticky-bar-h')).toBe('')
+    } finally {
+      globalThis.ResizeObserver = origRO
+      Element.prototype.getBoundingClientRect = origRect
+    }
   })
 
   it('M-1: phones hide the disabled "Choose a different plan to switch"; a real switch stays visible', () => {

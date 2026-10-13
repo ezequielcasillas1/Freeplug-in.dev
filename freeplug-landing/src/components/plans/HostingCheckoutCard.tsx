@@ -85,8 +85,34 @@ export const CONFIRM_OPEN_MS = (PRORATION_DATE_MAX_AGE_SECONDS - 30) * 1000
 const STICKY_BAR =
   'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:max-h-[90px] max-sm:overflow-hidden max-sm:[&_*]:mb-0 max-sm:[&_p]:truncate sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
 
-/** Phone bottom padding = the sticky bar's max height (max-sm:max-h-[90px] above). */
-export const STICKY_BAR_PAGE_PAD = 'max-sm:pb-[90px]'
+/**
+ * Lina (Oct 13): the sticky bar's MEASURED height (ResizeObserver) is published on the card as
+ * --sticky-bar-h; on phones the card pads its bottom by it and the add-on confirm uses it as scroll margin.
+ */
+export const STICKY_BAR_HEIGHT_VAR = '--sticky-bar-h'
+export const STICKY_BAR_PAGE_PAD = 'max-sm:pb-[var(--sticky-bar-h,0px)]'
+export const STICKY_BAR_SCROLL_MARGIN = 'max-sm:scroll-mb-[var(--sticky-bar-h,0px)]'
+
+/** Measures an element's height as it changes; 0 when it is not mounted. */
+function useMeasuredHeight(): [(el: HTMLElement | null) => void, number] {
+  const [height, setHeight] = useState(0)
+  const observer = useRef<ResizeObserver | null>(null)
+  const ref = useCallback((el: HTMLElement | null) => {
+    observer.current?.disconnect()
+    observer.current = null
+    if (!el) {
+      setHeight(0)
+      return
+    }
+    const measure = () => setHeight(Math.ceil(el.getBoundingClientRect().height))
+    measure()
+    if (typeof ResizeObserver !== 'undefined') {
+      observer.current = new ResizeObserver(measure)
+      observer.current.observe(el)
+    }
+  }, [])
+  return [ref, height]
+}
 
 const COLS: Record<number, string> = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6' }
 
@@ -220,6 +246,7 @@ export function HostingCheckoutCard({
   const [soonOpen, setSoonOpen] = useState(false)
   const soonId = useId()
   const switchRef = useRef<HTMLButtonElement>(null)
+  const [stickyBarRef, stickyBarHeight] = useMeasuredHeight()
   const confirmRef = useRef<HTMLButtonElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Stale-request guard for the upgrade preview: every preview takes a number, and closing (Esc, Not
@@ -633,7 +660,7 @@ export function HostingCheckoutCard({
   // follow it in the normal flow. During the confirm the totals stay hidden from sm up, as before.
   const stickyTotals = (hideFromSm: boolean) =>
     stickyOnPhone && totals ? (
-      <div className={cn(STICKY_BAR, hideFromSm && 'sm:hidden')} data-testid="sticky-totals">
+      <div ref={stickyBarRef} className={cn(STICKY_BAR, hideFromSm && 'sm:hidden')} data-testid="sticky-totals">
         {totals}
       </div>
     ) : null
@@ -745,7 +772,11 @@ export function HostingCheckoutCard({
 
   return (
     // Lina: on phones the page keeps room under its content for the sticky bar (max 90px), so nothing sits under it.
-    <div className={cn(shell, stickyOnPhone && STICKY_BAR_PAGE_PAD)} data-testid="checkout-card-shell">
+    <div
+      className={cn(shell, stickyOnPhone && STICKY_BAR_PAGE_PAD)}
+      style={stickyOnPhone ? ({ [STICKY_BAR_HEIGHT_VAR]: `${stickyBarHeight}px` } as React.CSSProperties) : undefined}
+      data-testid="checkout-card-shell"
+    >
       <RemovalOwedBox addons={removalOwedAddons} focus={focusRemovalOwed} />
       {hasLivePlan ? (
         <div className="mb-6 space-y-3" data-testid="plan-strip">

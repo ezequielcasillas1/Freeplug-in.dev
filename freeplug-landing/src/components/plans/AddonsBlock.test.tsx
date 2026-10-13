@@ -521,7 +521,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     expect(container.querySelectorAll('[class*="z-2"],[class*="z-3"],[class*="z-4"],[class*="z-5"]')).toHaveLength(0)
   })
 
-  it('Lina: opening the confirm scrolls its Turn on/Cancel row into view, kept above the phone bar (scroll margin = bar height)', async () => {
+  it('Lina: opening the confirm scrolls its Turn on/Cancel row into view, kept above the phone bar (scroll margin = measured bar height, --sticky-bar-h)', async () => {
     const scroll = vi.fn()
     const orig = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = scroll
@@ -531,7 +531,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
       const actions = await screen.findByTestId('addon-confirm-actions')
       await waitFor(() => expect(scroll.mock.contexts).toContain(actions))
       expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' })
-      expect(actions.className).toMatch(/max-sm:scroll-mb-\[90px\]/)
+      expect(actions.className).toMatch(/max-sm:scroll-mb-\[var\(--sticky-bar-h,0px\)\]/)
       expect(within(actions).getByTestId('addon-confirm-button')).toBeInTheDocument()
       expect(within(actions).getByTestId('addon-cancel')).toBeInTheDocument()
       expect(document.activeElement).toBe(within(actions).getByTestId('addon-confirm-button'))

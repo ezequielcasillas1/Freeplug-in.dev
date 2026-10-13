@@ -182,7 +182,7 @@ export function AddonsBlock(props: Props) {
   useLayoutEffect(() => {
     if (pendingKind !== 'confirm' && pendingKind !== 'loading') return
     if (pendingKind === 'confirm') {
-      // Lina: bring the Activate/Cancel buttons into view (above the phone sticky bar, via scroll-margin).
+      // Lina: bring the Activate/Cancel buttons into view (above the phone sticky bar: scroll margin = its measured height, --sticky-bar-h).
       turnOnRef.current?.focus({ preventScroll: true })
       confirmActionsRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
     }
@@ -417,7 +417,7 @@ export function AddonsBlock(props: Props) {
             {l}
           </p>
         ))}
-        <div ref={confirmActionsRef} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center max-sm:scroll-mb-[90px]" data-testid="addon-confirm-actions">
+        <div ref={confirmActionsRef} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center max-sm:scroll-mb-[var(--sticky-bar-h,0px)]" data-testid="addon-confirm-actions">
           <Button
             ref={turnOnRef}
             size="sm"
