@@ -1,6 +1,8 @@
 /** i18n-es-base: the 24 ladder keys from BASE-QA-phase1 (H-1) go through the catalog (Sable, 10-13 sheet). */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ADMIN_MARK_BIG_CHANGE, ladderCopy } from './ladder-copy'
+import enMessages from '../../../messages/en.json'
+import esMessages from '../../../messages/es.json'
 
 beforeEach(() => vi.stubEnv('FREEPLUG_I18N_ES_ALLOW_PENDING', '1'))
 afterEach(() => vi.unstubAllEnvs())
@@ -81,4 +83,19 @@ describe('Sable 04:22 (freeplug-ladder-es-2026-10-13.md)', () => {
     expect(ladderCopy('es').addonChargeNoteShort(500)).toBe('Se cobran $5 hoy y luego $5 al mes. Primero usamos tu saldo a favor. Si lo desactivas, sigue activo hasta fin de periodo.')
     expect(ladderCopy('es').addonChargeNote(500)).toMatch(/^Al activarlo, se cobran \$5 hoy por este periodo de facturación/)
   })
+})
+
+describe('Sable 04:29: charge notes use {total} for today and {price} for the month', () => {
+  const NOTE_KEYS = ['chargeNote', 'chargeNoteShort'] as const
+  const catalogs = { en: enMessages as unknown as { addons: Record<string, string> }, es: esMessages as unknown as { addons: Record<string, string> } }
+  for (const [loc, cat] of Object.entries(catalogs)) {
+    for (const key of NOTE_KEYS) {
+      it(`${loc} addons.${key}: exactly one {total} and one {price}`, () => {
+        const v = cat.addons[key]
+        expect(v, key).toBeTypeOf('string')
+        expect(v.match(/\{total\}/g)?.length ?? 0).toBe(1)
+        expect(v.match(/\{price\}/g)?.length ?? 0).toBe(1)
+      })
+    }
+  }
 })

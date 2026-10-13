@@ -1266,8 +1266,8 @@
       "visitorSnapshot": "A monthly email with how many people visited your site."
     },
     "bigChangeBiggerNote": "Need something bigger, like a new page or feature? We'll quote it as maintenance first, and you can still use this month's change.",
-    "chargeNote": "Turning it on charges {price} today for this billing period, then {price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.",
-    "chargeNoteShort": "Turning it on charges {price} today for this billing period, then {price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.",
+    "chargeNote": "Turning it on charges {total} today for this billing period, then {price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.",
+    "chargeNoteShort": "Charges {total} today, then {price} a month. We use your account credit first. If you turn it off, it stays on until the period ends.",
     "tipDropQuestionCheckout": "Your tip goes down to {tip}. Turn on {name}?",
     "turnOn": "Turn on",
     "turnOnQuestion": "Turn on {name}?",

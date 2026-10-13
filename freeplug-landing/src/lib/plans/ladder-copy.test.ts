@@ -43,6 +43,7 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
     const fn = (f: unknown) => sample(f as (...a: unknown[]) => unknown)
     const exempt = new Set<string | null>([
       fn(copy.addonChargeNote),
+      fn(copy.addonChargeNoteShort), // Sable 04:29 spare short note: same approved credit sentence
       fn(copy.addonChargeAfterCreditLine),
       copy.ADDON_CREDIT_COVERS,
       fn(copy.addonFinishing),
@@ -56,7 +57,7 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
       fn(copy.RESUME_REMOVAL_OWED_STATUS),
     ])
     // Sable 10:47: the L-1 reason no longer says "refunded" (back to 10; it must stay off this list)
-    expect(exempt.size).toBe(10)
+    expect(exempt.size).toBe(11) // +1: the spare short charge note (Sable 04:29)
     expect(exempt.has(fn(copy.ADDON_REFUND_REASONS.turned_off))).toBe(false)
     const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i
     expect(new Set(all.filter((s) => banned.test(s)))).toEqual(exempt)

@@ -228,9 +228,13 @@ function build(t: Translate, locale: AppLocale) {
       return t('addons.perk.visitorSnapshot')
     },
     BIG_CHANGE_BIGGER_NOTE: t('addons.bigChangeBiggerNote'),
-    addonChargeNote: (cents: number) => t('addons.chargeNote', { price: dollars(cents) }),
+    /**
+     * Sable 04:29: {total} = today's charge, {price} = the monthly price. The card has no preview, so the
+     * total defaults to the full price (the most it can charge); pass the prorated total when known.
+     */
+    addonChargeNote: (priceCents: number, totalCents: number = priceCents) => t('addons.chargeNote', { total: dollars(totalCents), price: dollars(priceCents) }),
     /** SPARE ONLY (Sable 04:22): short charge note for a layout overlap. Not shown anywhere; addonChargeNote stays. */
-    addonChargeNoteShort: (cents: number) => t('addons.chargeNoteShort', { price: dollars(cents) }),
+    addonChargeNoteShort: (priceCents: number, totalCents: number = priceCents) => t('addons.chargeNoteShort', { total: dollars(totalCents), price: dollars(priceCents) }),
     starterSmallEditAddonLine: (show: boolean = showAiEditQuota): string => {
       const base = t('help.chat.starterSmallEditAddon', { price: dollars(addonById('small_edit')!.monthlyCents), addonName: ADDON_NAMES.small_edit })
       return show ? `${base} ${t('help.chat.starterSmallEditAiBuilder')}` : base

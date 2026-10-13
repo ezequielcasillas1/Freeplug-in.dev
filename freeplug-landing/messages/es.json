@@ -1260,8 +1260,8 @@
       "visitorSnapshot": "Un correo mensual con cuántas personas visitaron tu sitio."
     },
     "bigChangeBiggerNote": "¿Necesitas algo más grande, como una página o función nueva? Primero te lo cotizamos como mantenimiento, y aun así puedes usar el cambio de este mes.",
-    "chargeNote": "Al activarlo, se cobran {price} hoy por este periodo de facturación y luego {price} cada mes. Primero usamos tu saldo a favor, si tienes. Si lo desactivas, sigue activo hasta que termine el periodo.",
-    "chargeNoteShort": "Se cobran {price} hoy y luego {price} al mes. Primero usamos tu saldo a favor. Si lo desactivas, sigue activo hasta fin de periodo.",
+    "chargeNote": "Al activarlo, se cobran {total} hoy por este periodo de facturación y luego {price} cada mes. Primero usamos tu saldo a favor, si tienes. Si lo desactivas, sigue activo hasta que termine el periodo.",
+    "chargeNoteShort": "Se cobran {total} hoy y luego {price} al mes. Primero usamos tu saldo a favor. Si lo desactivas, sigue activo hasta fin de periodo.",
     "tipDropQuestionCheckout": "Tu propina bajará a {tip}. ¿Activar {name}?",
     "turnOn": "Activar",
     "turnOnQuestion": "¿Activar {name}?",
