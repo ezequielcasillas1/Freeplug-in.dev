@@ -4,7 +4,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type Stripe from 'stripe'
 import { PLAN_STEPS, type PlanStepId } from '@/lib/plans/ladder'
-import { changePlanStep } from '@/lib/stripe/change-plan'
+import { changePlanStep, type PendingRestoreFailed } from '@/lib/stripe/change-plan'
 
 const step = (id: PlanStepId) => PLAN_STEPS.find((s) => s.id === id)!
 const NOW = new Date('2026-10-03T17:00:00Z')
@@ -74,7 +74,7 @@ describe('Phase 4 M-1: upgrade error after releasing a pending downgrade', () =>
     ['rate limit', { type: 'StripeRateLimitError', code: 'rate_limit' }],
   ])('%s: the pending downgrade is put back, then the error is thrown', async (_n, extra) => {
     const f = fake(Object.assign(new Error('boom'), extra))
-    const onRestoreFailed = vi.fn(async () => {})
+    const onRestoreFailed = vi.fn(async (_o: PendingRestoreFailed) => {})
     await expect(changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW, log: () => {}, onRestoreFailed }, sub, 'fast_lane')).rejects.toThrow('boom')
     expect(f.calls.slice(0, 3)).toEqual(['schedules.retrieve', 'schedules.release', 'subscriptions.update'])
     expect(restored(f.calls)).toBe(true)
@@ -90,7 +90,7 @@ describe('Phase 4 M-1: upgrade error after releasing a pending downgrade', () =>
 
   it('the put-back fails too: never silent (logged + admin alert naming the lost downgrade), error still thrown', async () => {
     const f = fake(Object.assign(new Error('boom'), { type: 'StripeAPIError' }), { restoreFails: true })
-    const onRestoreFailed = vi.fn(async () => {})
+    const onRestoreFailed = vi.fn(async (_o: PendingRestoreFailed) => {})
     const logs: string[] = []
     await expect(changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW, log: (m) => logs.push(m), onRestoreFailed, sleep: async () => {} }, sub, 'fast_lane', { userId: 'u1' })).rejects.toThrow('boom')
     expect(onRestoreFailed).toHaveBeenCalledTimes(1)
@@ -100,7 +100,7 @@ describe('Phase 4 M-1: upgrade error after releasing a pending downgrade', () =>
 
   it('the put-back fails on a card error: pendingRestored false and the alert still goes out', async () => {
     const f = fake(Object.assign(new Error('declined'), { type: 'StripeCardError' }), { restoreFails: true })
-    const onRestoreFailed = vi.fn(async () => {})
+    const onRestoreFailed = vi.fn(async (_o: PendingRestoreFailed) => {})
     const r = await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW, log: () => {}, onRestoreFailed }, sub, 'fast_lane')
     expect(r).toMatchObject({ ok: false, code: 'payment_failed', pendingRestored: false })
     expect(onRestoreFailed).toHaveBeenCalledTimes(1)
@@ -108,8 +108,8 @@ describe('Phase 4 M-1: upgrade error after releasing a pending downgrade', () =>
 
   it('a pending add-on removal that cannot be put back is recorded as OWED (flag + alert) and alerted as lost', async () => {
     const f = fake(Object.assign(new Error('boom'), { type: 'StripeAPIError' }), { restoreFails: true, addonRemoval: true })
-    const onRemovalOwed = vi.fn(async () => ({ saved: true, alerted: true }))
-    const onRestoreFailed = vi.fn(async () => {})
+    const onRemovalOwed = vi.fn(async (_o: unknown) => ({ saved: true, alerted: true }))
+    const onRestoreFailed = vi.fn(async (_o: PendingRestoreFailed) => {})
     await expect(changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW, log: () => {}, onRemovalOwed, onRestoreFailed }, subWithAddon, 'fast_lane', { userId: 'u1' })).rejects.toThrow('boom')
     expect(onRemovalOwed).toHaveBeenCalledWith({ subscriptionId: 'sub_1', customerId: 'cus_1', userId: 'u1', addons: ['small_edit'], effectiveAt: new Date(PERIOD_END * 1000).toISOString() })
     expect(onRestoreFailed.mock.calls[0][0]).toMatchObject({ pendingStep: 'priority', addonsTurnedOff: ['small_edit'], removalOwedSaved: true })
@@ -138,10 +138,10 @@ describe('Phase 4 M-1: upgrade error after releasing a pending downgrade', () =>
 
   it('idempotency_key_in_use from Stripe (another isolate): in_progress, no put-back over the other request, but alerted', async () => {
     const f = fake(Object.assign(new Error('in use'), { code: 'idempotency_key_in_use' }))
-    const onRestoreFailed = vi.fn(async () => {})
+    const onRestoreFailed = vi.fn(async (_o: PendingRestoreFailed) => {})
     expect(await changePlanStep({ stripe: f.stripe, priceIdFor, now: () => NOW, log: () => {}, onRestoreFailed }, sub, 'fast_lane')).toMatchObject({ ok: false, code: 'in_progress' })
     expect(restored(f.calls)).toBe(false)
     expect(onRestoreFailed).toHaveBeenCalledTimes(1)
-    expect(onRestoreFailed.mock.calls[0][0].upgradeError).toMatch(/idempotency_key_in_use/)
+    expect(onRestoreFailed.mock.calls[0]![0].upgradeError).toMatch(/idempotency_key_in_use/)
   })
 })
