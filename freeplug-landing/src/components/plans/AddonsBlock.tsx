@@ -99,7 +99,12 @@ type LiveProps = {
   onConfirmTotals?: (totals: ConfirmTotals | null) => void
 }
 
-type Props = { stepId: PlanStepId; className?: string } & (CheckoutProps | LiveProps)
+type Props = {
+  stepId: PlanStepId
+  className?: string
+  /** The phone sticky bar's measured height (published as --sticky-bar-h); a change re-scrolls an open confirm. */
+  stickyBarHeight?: number
+} & (CheckoutProps | LiveProps)
 
 type Pending =
   | { id: AddonId; kind: 'loading' }
@@ -176,15 +181,30 @@ export function AddonsBlock(props: Props) {
     if (focusId) setTimeout(() => cardRefs.current[focusId]?.focus(), 0)
   }, [])
 
-  // Focus + Esc in the same commit that shows the confirm (Vera, aaec23d finding 2 pattern).
   const pendingKind = pending?.kind ?? null
   const pendingId = pending?.id ?? null
+  // Vera (375, ce0af86): opening the confirm adds the "today" line, so the bar grows (49 -> 73px) AFTER the
+  // first scroll. Once the new height is measured and published (--sticky-bar-h, the scroll margin), scroll
+  // again so Turn on/Cancel end up above the taller bar.
+  const stickyBarHeight = props.stickyBarHeight
+  const stickyBarHeightRef = useRef(stickyBarHeight)
+  stickyBarHeightRef.current = stickyBarHeight
+  const scrolledForBarHeight = useRef<number | undefined>(undefined)
+  useEffect(() => {
+    if (pendingKind !== 'confirm' || stickyBarHeight === undefined) return
+    if (scrolledForBarHeight.current === stickyBarHeight) return
+    scrolledForBarHeight.current = stickyBarHeight
+    confirmActionsRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+  }, [pendingKind, stickyBarHeight])
+
+  // Focus + Esc in the same commit that shows the confirm (Vera, aaec23d finding 2 pattern).
   useLayoutEffect(() => {
     if (pendingKind !== 'confirm' && pendingKind !== 'loading') return
     if (pendingKind === 'confirm') {
       // Lina: bring the Activate/Cancel buttons into view (above the phone sticky bar: scroll margin = its measured height, --sticky-bar-h).
       turnOnRef.current?.focus({ preventScroll: true })
       confirmActionsRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+      scrolledForBarHeight.current = stickyBarHeightRef.current
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close(pendingId ?? undefined)

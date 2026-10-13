@@ -854,6 +854,7 @@ export function HostingCheckoutCard({
       </fieldset>
       {checkoutAddons ? (
         <AddonsBlock
+          stickyBarHeight={stickyOnPhone ? stickyBarHeight : undefined}
           mode="checkout"
           stepId={selected.id}
           selected={addonPicks}
@@ -867,6 +868,7 @@ export function HostingCheckoutCard({
         />
       ) : liveAddons ? (
         <AddonsBlock
+          stickyBarHeight={stickyOnPhone ? stickyBarHeight : undefined}
           mode="live"
           // Sable (L-2, Oct 4 9:29): the live block follows the plan the customer is ON, not the row
           // they're looking at (the switch acts on the current subscription).

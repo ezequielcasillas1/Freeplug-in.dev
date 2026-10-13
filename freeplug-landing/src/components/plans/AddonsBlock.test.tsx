@@ -541,6 +541,48 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     }
   })
 
+  it('Vera 375: the bar grows after the confirm opens (49 -> 73px); a second scroll runs once the new height is published', async () => {
+    const observers: Array<() => void> = []
+    const origRO = globalThis.ResizeObserver
+    const origRect = Element.prototype.getBoundingClientRect
+    const origScroll = Element.prototype.scrollIntoView
+    globalThis.ResizeObserver = class {
+      constructor(private cb: () => void) {}
+      observe() {
+        observers.push(() => this.cb())
+      }
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver
+    // The bar is 49px with the monthly total, 73px once the "today" line is in it.
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const h = this.getAttribute('data-testid') === 'sticky-totals' ? (this.querySelector('[data-testid="sticky-addon-today"]') ? 73 : 49) : 0
+      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: h, width: 0, height: h, toJSON: () => ({}) } as DOMRect
+    }
+    // Record the published --sticky-bar-h (the scroll margin's value) at each scroll.
+    const offsets: string[] = []
+    Element.prototype.scrollIntoView = function (this: Element) {
+      if (this.getAttribute('data-testid') === 'addon-confirm-actions') offsets.push(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h'))
+    }
+    try {
+      card()
+      expect(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h')).toBe('49px')
+      fireEvent.click(sw('small_edit'))
+      await screen.findByTestId('sticky-addon-today')
+      expect(offsets).toEqual(['49px']) // first scroll, before the bar has grown
+      act(() => observers.forEach((fire) => fire())) // the ResizeObserver reports the taller bar
+      await waitFor(() => expect(offsets).toEqual(['49px', '73px']))
+      expect(screen.getByTestId('addon-confirm-actions').className).toMatch(/max-sm:scroll-mb-\[var\(--sticky-bar-h,90px\)\]/)
+      // No further scroll without a height change.
+      act(() => observers.forEach((fire) => fire()))
+      expect(offsets).toHaveLength(2)
+    } finally {
+      globalThis.ResizeObserver = origRO
+      Element.prototype.getBoundingClientRect = origRect
+      Element.prototype.scrollIntoView = origScroll
+    }
+  })
+
   it('confirm open: the bar swaps to the after-change totals (bold "$5.35 today" + the new monthly); Cancel restores the current ones', async () => {
     card()
     const amount = () => screen.getByTestId('plan-total-amount')
