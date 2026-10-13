@@ -11,5 +11,9 @@ select 'profiles_plan_addons_one_dim_check', count(*)
 union all
 select 'change_requests_description_nonblank_check', count(*)
   from public.change_requests
- where description is not null and not (description ~ '\S');
+ where description is not null and not (btrim(description, E' \t\n\r') <> '')
+union all
+select 'change_requests_change_type_allowed_check', count(*)
+  from public.change_requests
+ where change_type is not null and change_type not in ('Text or prices', 'Photos', 'Hours or contact info', 'Something else');
 rollback;
