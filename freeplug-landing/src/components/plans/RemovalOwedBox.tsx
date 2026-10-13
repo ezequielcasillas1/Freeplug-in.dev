@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import type { AddonId } from '@/lib/plans/ladder'
-import { addonNameList, RESUME_REMOVAL_OWED_STATUS } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { REMOVAL_OWED_BOX_ID } from '@/lib/plans/removal-owed-box'
 
 /**
@@ -18,6 +18,7 @@ export const REMOVAL_OWED_PROGRAMMATIC_FOCUS_CLASSES =
   'data-[focus-ring=true]:focus:outline data-[focus-ring=true]:focus:outline-2 data-[focus-ring=true]:focus:outline-offset-2 data-[focus-ring=true]:focus:outline-[#ba3d3d]'
 
 export function RemovalOwedBox({ addons, focus = false }: { addons: readonly AddonId[]; focus?: boolean }) {
+  const { addonNameList, RESUME_REMOVAL_OWED_STATUS } = useLadderCopy()
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!focus || !ref.current) return

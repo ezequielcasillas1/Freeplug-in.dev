@@ -12,7 +12,6 @@ import {
   getActiveSubscriptionStatus,
 } from '@/lib/stripe/active-subscription'
 import { HELP_CHAT_LIMIT, rateCheck } from '@/lib/rate-limit'
-import { ERROR_TOO_MANY_TRIES } from '@/lib/outreach/copy'
 import { scheduleAfterResponse } from '@/lib/background'
 import { notifyNewChangeRequest } from '@/lib/change-requests/notify'
 import { sendRowFailedAlert } from '@/lib/change-requests/alert'

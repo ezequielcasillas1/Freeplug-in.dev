@@ -173,7 +173,7 @@ describe('Spanish dates: every space is U+00A0', () => {
     expect(formatBillingDate(d, '—', 'es')).toBe('9\u00A0oct\u00A02026')
     expect(formatPlanEndDate(d, 'es')).toBe('9\u00A0de\u00A0octubre\u00A0de\u00A02026')
   })
-  it('English dates are unchanged', () => {
-    expect(formatPlanEndDate(d, 'en')).toBe('October 9, 2026')
+  it('English dates keep the ladder-fix no-break spaces', () => {
+    expect(formatPlanEndDate(d, 'en')).toBe('October\u00A09,\u00A02026')
   })
 })

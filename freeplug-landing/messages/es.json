@@ -355,7 +355,8 @@
     "resumeUntilText": "Puedes reanudar tu plan hasta el {date}. Después de esa fecha, tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting.",
     "resumeHeading": "¿Quieres reanudar?",
     "offlineHeading": "Recupera tu sitio web",
-    "offlineSavedText": "Tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting."
+    "offlineSavedText": "Tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting.",
+    "resumeRemovalOwedStatus": "Tu plan está activo de nuevo. Todavía estamos desactivando {name}. Si se cobra antes de terminar, te lo reembolsamos."
   },
   "help": {
     "center": {
@@ -637,13 +638,14 @@
         "uncollectible": "No pagada"
       },
       "viewInvoice": "Ver",
-      "invoicePlanPart": "Plan {amount}"
+      "invoicePlanPart": "Plan {amount}",
+      "downloadInvoicePdf": "PDF"
     },
     "currentPlanLine": "Plan actual: {line}",
     "seeComingSoon": "Planes próximamente ({count})",
     "chooseStepButton": "Elegir {name}",
     "grandfatheredHostingOnlyName": "Plan de hosting",
-    "grandfatheredHostingShort": "Hosting",
+    "grandfatheredHostingShort": "Hospedaje",
     "legacyAddonName": "Complemento {tier}",
     "totalBreakdown": {
       "addons": "Complementos {amount}",
@@ -1235,13 +1237,14 @@
     "notForPlan": "Las propinas no están disponibles en tu plan.",
     "outOfRange": "Elige una propina dentro del rango de la barra.",
     "changeUnavailable": "No pudimos cambiar tu propina en este momento. Inténtalo de nuevo o escribe a support@freeplug-in.dev.",
-    "inProgress": "Tu cambio de propina ya está en proceso. Recarga en un momento para verlo."
+    "inProgress": "Tu cambio de propina ya está en proceso. Recarga en un momento para verlo.",
+    "renewalCarriedLine": "Incluye {amount} pendiente de tu último cambio."
   },
   "addons": {
     "heading": "Complementos",
     "starterCapNote": "hasta {amount} al mes en Starter",
     "names": {
-      "small_edit": "+1 small edit",
+      "small_edit": "+1 cambio pequeño",
       "big_change": "Big change",
       "visitor_snapshot": "Visitor snapshot"
     },
@@ -1278,7 +1281,7 @@
     "legacyNote": "Los complementos no están disponibles en tu plan. Para usarlos, cámbiate a uno de los planes de arriba.",
     "error": "No pudimos cambiar tus complementos en este momento. Inténtalo de nuevo o escribe a support@freeplug-in.dev.",
     "paymentFailed": "No se hizo ningún cargo a tu tarjeta, así que {name} sigue desactivado. Actualiza tu tarjeta en Administrar facturación e inténtalo de nuevo.",
-    "refunded": "No pudimos activar {name}, así que te reembolsamos el cargo a tu tarjeta. Puede tardar de 5 a 10 días hábiles en verse.",
+    "refunded": "No pudimos activar {name}. {splitLine}{delay}",
     "refundFailed": "No pudimos activar {name} y el reembolso no se hizo automáticamente. Escribe a support@freeplug-in.dev y resolvemos el cargo.",
     "turnOffFirst": "Primero desactiva un complemento",
     "stayOnLine": "Tus complementos siguen activos: {names}.",
@@ -1295,7 +1298,29 @@
       "small_edit": "Un cambio pequeño extra al mes",
       "big_change": "Un cambio más grande al mes, de hasta una hora de trabajo aproximadamente",
       "visitor_snapshot": "Un correo al mes con tus visitas"
-    }
+    },
+    "addedToNextBill": "Se agregarán {amount} a tu próximo cobro.",
+    "carriedBreakdown": "{price} + {carried} pendiente de tu último cambio",
+    "priceUnconfirmed": "No pudimos confirmar este precio. Inténtalo de nuevo o escribe a support@freeplug-in.dev y te ayudamos.",
+    "refundSplit": {
+      "carried": "Devolvimos {credit} al crédito de tu cuenta y cancelamos el cargo pequeño de {carried}, así que no lo pagarás.",
+      "cardAndCredit": "Te reembolsamos {card} a tu tarjeta y devolvimos {credit} al crédito de tu cuenta.",
+      "credit": "Devolvimos {credit} al crédito de tu cuenta.",
+      "card": "Te reembolsamos {card} a tu tarjeta."
+    },
+    "cardRefundDelay": "El reembolso a tu tarjeta puede tardar de 5 a 10 días hábiles en aparecer.",
+    "refundReasons": {
+      "switch_pending": "No pudimos activar {name} porque ya había un cambio de plan programado. Los complementos no se pueden cambiar hasta que se haga el cambio.",
+      "removal_pending": "No pudimos activar {name} porque otro complemento ya estaba programado para terminar. Los complementos no se pueden cambiar hasta que termine.",
+      "period_ended": "No pudimos activar {name} porque el periodo de facturación que pagaste terminó antes de que pudiéramos agregarlo.",
+      "tip_unconfirmed": "No pudimos activar {name} porque habría bajado tu propina, y no lo habías confirmado.",
+      "plan_ended": "No pudimos activar {name} porque tu plan de hospedaje web terminó o está programado para terminar.",
+      "not_added": "No pudimos activar {name} por un problema al agregarlo a tu plan.",
+      "turned_off": "Desactivaste {name}, pero aun así se cobró en este periodo."
+    },
+    "refundEmailSubject": "No pudimos activar {name}",
+    "turnedOffRefundEmailSubject": "Te reembolsamos el cobro de {name}.",
+    "refundEmailHelp": "¿Preguntas? Escribe a support@freeplug-in.dev."
   },
   "i18n": {
     "picker": {

@@ -38,7 +38,7 @@ type Props = {
  * cancels the same way and the late preview is dropped.
  */
 export function TipChangeBox({ step, currentTipDollars, locked, lockedDate = null, onPreviewTip, onChangeTip, addonCents = 0, amountOnly = false }: Props) {
-  const { TIP_CHANGE_BUTTON, TIP_CHANGE_HEADING, TIP_CHANGE_NOTE, TIP_CHANGE_PENDING, TIP_CHANGED, TIP_END_NONE, TIP_LOCKED_AMOUNT, TIP_LOCKED_NOTE, TIP_NEXT_BILL, TIP_NEXT_BILL_NO_DATE, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, renewalCarriedLine, renewalLineText } = useLadderCopy()
+  const { TIP_CHANGE_BUTTON, TIP_CHANGE_HEADING, TIP_CHANGE_NOTE, TIP_CHANGE_PENDING, TIP_CHANGED, TIP_END_NONE, TIP_LOCKED_AMOUNT, TIP_LOCKED_NOTE, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, renewalCarriedLine, renewalLineText } = useLadderCopy()
   const t = useTranslations('errors.plans')
   const [tip, setTip] = useState(currentTipDollars)
   const [state, setState] = useState<Phase>({ phase: 'idle' })

@@ -355,7 +355,8 @@
     "resumeUntilText": "You can resume your plan until {date}. After that, your website is saved, and you can bring it back by signing up for hosting again.",
     "resumeHeading": "Ready to resume?",
     "offlineHeading": "Bring your website back",
-    "offlineSavedText": "Your website is saved, and you can bring it back by signing up for hosting again."
+    "offlineSavedText": "Your website is saved, and you can bring it back by signing up for hosting again.",
+    "resumeRemovalOwedStatus": "Your plan is back on. We're still turning off {name}. If it's charged before that's done, we'll refund it."
   },
   "help": {
     "center": {
@@ -637,7 +638,8 @@
         "uncollectible": "Unpaid"
       },
       "viewInvoice": "View",
-      "invoicePlanPart": "Plan {amount}"
+      "invoicePlanPart": "Plan {amount}",
+      "downloadInvoicePdf": "PDF"
     },
     "currentPlanLine": "Current plan: {line}",
     "seeComingSoon": "Plans coming soon ({count})",
@@ -1243,7 +1245,8 @@
     "notForPlan": "Tips aren't available on your plan.",
     "outOfRange": "Choose a tip within the range on the slider.",
     "changeUnavailable": "We couldn't change your tip right now. Try again, or email support@freeplug-in.dev.",
-    "inProgress": "Your tip change is already going through. Refresh in a moment to see it."
+    "inProgress": "Your tip change is already going through. Refresh in a moment to see it.",
+    "renewalCarriedLine": "Includes {amount} left from your last change."
   },
   "addons": {
     "heading": "Add-ons",
@@ -1286,7 +1289,7 @@
     "legacyNote": "Add-ons aren't available on your plan. To use them, switch to one of the plans above.",
     "error": "We couldn't change your add-ons right now. Try again, or email support@freeplug-in.dev.",
     "paymentFailed": "Your card wasn't charged, so {name} is still off. Update your card in Manage billing, then try again.",
-    "refunded": "We couldn't turn on {name}, so we've refunded the charge to your card. It can take 5–10 business days to show.",
+    "refunded": "We couldn't turn on {name}. {splitLine}{delay}",
     "refundFailed": "We couldn't turn on {name}, and the refund didn't go through automatically. Email support@freeplug-in.dev and we'll sort out the charge.",
     "turnOffFirst": "Turn off an add-on first",
     "stayOnLine": "Your add-ons stay on: {names}.",
@@ -1303,7 +1306,29 @@
       "small_edit": "One extra small edit a month",
       "big_change": "One larger change a month, up to about an hour of work",
       "visitor_snapshot": "A monthly email with your visitor count"
-    }
+    },
+    "addedToNextBill": "{amount} will be added to your next charge.",
+    "carriedBreakdown": "{price} + {carried} left from your last change",
+    "priceUnconfirmed": "We couldn't confirm this price. Please try again, or email support@freeplug-in.dev and we'll help.",
+    "refundSplit": {
+      "carried": "We added {credit} back to your account credit and canceled the {carried} small charge, so you won't pay it.",
+      "cardAndCredit": "We refunded {card} to your card and added {credit} back to your account credit.",
+      "credit": "We added {credit} back to your account credit.",
+      "card": "We refunded {card} to your card."
+    },
+    "cardRefundDelay": "The card refund can take 5–10 business days to show up.",
+    "refundReasons": {
+      "switch_pending": "We couldn't turn on {name} because a plan switch was already scheduled. Add-ons can't change until the switch happens.",
+      "removal_pending": "We couldn't turn on {name} because another add-on was already set to end. Add-ons can't change until it ends.",
+      "period_ended": "We couldn't turn on {name} because the billing period you paid for ended before we could add it.",
+      "tip_unconfirmed": "We couldn't turn on {name} because it would have lowered your tip, which you hadn't confirmed.",
+      "plan_ended": "We couldn't turn on {name} because your hosting plan has ended or is set to end.",
+      "not_added": "We couldn't turn on {name} because of a problem adding it to your plan.",
+      "turned_off": "You turned off {name}, but it was still charged this period."
+    },
+    "refundEmailSubject": "We couldn't turn on {name}",
+    "turnedOffRefundEmailSubject": "We refunded your {name} charge.",
+    "refundEmailHelp": "Questions? Email support@freeplug-in.dev."
   },
   "i18n": {
     "picker": {

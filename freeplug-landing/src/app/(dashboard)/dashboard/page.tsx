@@ -24,7 +24,6 @@ import { YourWebsiteCard } from './YourWebsiteCard'
 import { QuickActions } from './QuickActions'
 import { getClaimedSiteForUser, getSiteDetails } from '@/lib/outreach/server'
 import { organicTracker, outreachTracker } from '@/lib/outreach/tracker'
-import { TRACKER_LIVE_WAITING } from '@/lib/outreach/copy'
 import { ChangeRequestsCard } from './ChangeRequestsCard'
 import {
   CUSTOMER_CHANGE_REQUEST_COLUMNS,

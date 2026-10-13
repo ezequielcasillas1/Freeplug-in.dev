@@ -61,25 +61,18 @@ function build(t: Translate, locale: AppLocale) {
    */
   const addonRefundSplitLine = (cardCents: number, creditCents: number, carriedCents: number = 0): string => {
     if (carriedCents > 0 && cardCents === 0 && creditCents > carriedCents) {
-      return `We added ${dollars(creditCents - carriedCents)} back to your account credit and canceled the ${dollars(carriedCents)} small charge, so you won't pay it.`
+      return t('addons.refundSplit.carried', { credit: dollars(creditCents - carriedCents), carried: dollars(carriedCents) })
     }
-    if (cardCents > 0 && creditCents > 0) return `We refunded ${dollars(cardCents)} to your card and added ${dollars(creditCents)} back to your account credit.`
-    if (creditCents > 0) return `We added ${dollars(creditCents)} back to your account credit.`
-    return `We refunded ${dollars(cardCents)} to your card.`
+    if (cardCents > 0 && creditCents > 0) return t('addons.refundSplit.cardAndCredit', { card: dollars(cardCents), credit: dollars(creditCents) })
+    if (creditCents > 0) return t('addons.refundSplit.credit', { credit: dollars(creditCents) })
+    return t('addons.refundSplit.card', { card: dollars(cardCents) })
   }
-  /** Sable 9:55: the card delay sentence, only when money went back to a card. */
-  const cardRefundDelay = (cardCents: number) => (cardCents > 0 ? ' The card refund can take 5–10 business days to show up.' : '')
+  /** Sable 9:55: the card delay sentence, only when money went back to a card (its leading space joins it on). */
+  const cardRefundDelay = (cardCents: number) => (cardCents > 0 ? ` ${t('addons.cardRefundDelay')}` : '')
   /** Aria, Oct 4 9:27: why an add-on charge was refunded automatically (self-heal), in plain words. */
-  const ADDON_REFUND_REASONS: Record<AddonRefundReason, (name: string) => string> = {
-    switch_pending: (name) => `We couldn't turn on ${name} because a plan switch was already scheduled. Add-ons can't change until the switch happens.`,
-    removal_pending: (name) => `We couldn't turn on ${name} because another add-on was already set to end. Add-ons can't change until it ends.`,
-    period_ended: (name) => `We couldn't turn on ${name} because the billing period you paid for ended before we could add it.`,
-    tip_unconfirmed: (name) => `We couldn't turn on ${name} because it would have lowered your tip, which you hadn't confirmed.`,
-    plan_ended: (name) => `We couldn't turn on ${name} because your hosting plan has ended or is set to end.`,
-    not_added: (name) => `We couldn't turn on ${name} because of a problem adding it to your plan.`,
-    // L-1 (Aria 9:57): an add-on the customer turned off was still billed at renewal; refunded by the self-heal.
-    turned_off: (name) => `You turned off ${name}, but it was still charged this period.`,
-  }
+  const ADDON_REFUND_REASONS = Object.fromEntries(
+    ADDON_REFUND_REASON_IDS.map((id) => [id, (name: string) => t(`addons.refundReasons.${id}`, { name })])
+  ) as Record<AddonRefundReason, (name: string) => string>
   return {
     /** The language this copy is in (for dates/amounts formatted next to it). */
     LOCALE: locale,
@@ -161,7 +154,7 @@ function build(t: Translate, locale: AppLocale) {
     VIEW_INVOICE: t('plans.billing.viewInvoice'),
     INVOICE_PLAN_PART: (amount: string) => t('plans.billing.invoicePlanPart', { amount }),
     INVOICE_TIP_PART: (amount: string) => t('tips.invoiceTipPart', { amount }),
-    DOWNLOAD_INVOICE_PDF: 'PDF',
+    DOWNLOAD_INVOICE_PDF: t('plans.billing.downloadInvoicePdf'),
     /** PROPOSED for Sable, NOT wired (see errors.plans.alreadyHasPlanMessage, awaiting Sable's fix). */
     ALREADY_HAS_PLAN_SWITCH: t('plans.change.alreadyHasPlanSwitch'),
     CURRENT_PLAN_LINE: (line: string) => t('plans.currentPlanLine', { line }),
@@ -290,35 +283,38 @@ function build(t: Translate, locale: AppLocale) {
     planStripAddons: (cents: number) => t('addons.planStripAddons', { amount: dollars(cents) }),
     ADDON_TOTAL_LINE: (plan: string, addons: string, tip: string | null, total: string) =>
       tip ? t('cancel.addonTotalLine.withTip', { plan, addons, tip, total }) : t('cancel.addonTotalLine.noTip', { plan, addons, total }),
-    // ---- Base (ladder-fix-2026-10-03, f5a0f2a) additions, kept through the i18n cherry-pick. English
-    // literals here until their catalog keys land (see the i18n-es-base ladder-keys commit).
+    // ---- Base (ladder-fix-2026-10-03, f5a0f2a) additions, in the catalog since i18n-es-base (Sable's
+    // Spanish, /workspace/copy/freeplug-ladder-es-2026-10-13.md).
     /** Aria 10:09 (option A): Resume worked but the dropped add-on removal couldn't be put back (amber box). */
-    RESUME_REMOVAL_OWED_STATUS: (name: string) => `Your plan is back on. We're still turning off ${name}. If it's charged before that's done, we'll refund it.`,
+    RESUME_REMOVAL_OWED_STATUS: (name: string) => t('cancel.resumeRemovalOwedStatus', { name }),
     /** The ONE renewal line builder (Plans tip box, its saved notice, the dashboard reminder; Sable 3:15 PM). */
     renewalLineText: (totalCents: number, dateText: string | null) =>
       dateText ? t('tips.nextBill', { amount: dollars(totalCents), date: dateText }) : t('tips.nextBillNoDate', { amount: dollars(totalCents) }),
     /** [Final, Sable Oct 4 ~2:43 PM CT] Gray line under the renewal line while a carried small amount is unbilled. */
-    renewalCarriedLine: (carriedCents: number) => `Includes ${dollars(carriedCents)} left from your last change.`,
+    renewalCarriedLine: (carriedCents: number) => t('tips.renewalCarriedLine', { amount: dollars(carriedCents) }),
     /** Aria, Oct 4 9:27: under Stripe's $0.50 minimum it goes on the next monthly bill. */
-    addonAddedToNextBill: (cents: number) => `${dollars(cents)} will be added to your next charge.`,
-    /** [Sable + Lina, M-1 (Aria a)] bold "{total} today" + gray "{price} + {carried} left from your last change". */
+    addonAddedToNextBill: (cents: number) => t('addons.addedToNextBill', { amount: dollars(cents) }),
+    /**
+     * [Sable + Lina, M-1 (Aria a)] bold "{total} today". NOT in the catalog yet: no Sable Spanish ("{total} hoy"
+     * is unconfirmed, i18n-es-notes/rebase-todo.md), so it stays English in every locale for now.
+     */
     addonTodayTotal: (totalCents: number) => `${dollars(totalCents)} today`,
-    addonCarriedBreakdown: (priceCents: number, carriedCents: number) => `${cents2(priceCents)} + ${cents2(carriedCents)} left from your last change`,
+    addonCarriedBreakdown: (priceCents: number, carriedCents: number) => t('addons.carriedBreakdown', { price: cents2(priceCents), carried: cents2(carriedCents) }),
     /** Aria 9:27: the charge total isn't exactly the add-on price: refused. */
-    ADDON_PRICE_UNCONFIRMED: `We couldn't confirm this price. Please try again, or email ${SUPPORT_EMAIL} and we'll help.`,
+    ADDON_PRICE_UNCONFIRMED: t('addons.priceUnconfirmed'),
     addonRefundSplitLine,
     addonRefunded: (name: string, cardCents: number, creditCents: number) =>
-      `We couldn't turn on ${name}. ${addonRefundSplitLine(cardCents, creditCents)}${cardRefundDelay(cardCents)}`,
+      t('addons.refunded', { name, splitLine: addonRefundSplitLine(cardCents, creditCents), delay: cardRefundDelay(cardCents) }),
     ADDON_REFUND_REASONS,
     /** Plans page note and the email line: the reason, then where the money went. */
     addonRefundNote: (name: string, reason: AddonRefundReason, cardCents: number, creditCents: number, carriedCents: number = 0) =>
       `${ADDON_REFUND_REASONS[isAddonRefundReason(reason) ? reason : 'not_added'](name)} ${addonRefundSplitLine(cardCents, creditCents, carriedCents)}${cardRefundDelay(cardCents)}`,
-    /** Several add-ons in one line: "+1 small edit and Big change". */
-    addonNameList: (ids: readonly AddonId[] | AddonId) => ([] as AddonId[]).concat(ids).map((id) => ADDON_NAMES[id] ?? id).join(' and '),
-    addonRefundEmailSubject: (name: string) => `We couldn't turn on ${name}`,
+    /** Several add-ons in one line, an Intl list: "+1 small edit and Big change" / "+1 cambio pequeño y Big change". */
+    addonNameList: (ids: readonly AddonId[] | AddonId) => formatList(([] as AddonId[]).concat(ids).map((id) => ADDON_NAMES[id] ?? id), locale),
+    addonRefundEmailSubject: (name: string) => t('addons.refundEmailSubject', { name }),
     /** Sable, Oct 4 10:01: the subject of the L-1 self-heal refund email ONLY. */
-    addonTurnedOffRefundEmailSubject: (name: string) => `We refunded your ${name} charge.`,
-    ADDON_REFUND_EMAIL_HELP: `Questions? Email ${SUPPORT_EMAIL}.`,
+    addonTurnedOffRefundEmailSubject: (name: string) => t('addons.turnedOffRefundEmailSubject', { name }),
+    ADDON_REFUND_EMAIL_HELP: t('addons.refundEmailHelp'),
   }
 }
 
