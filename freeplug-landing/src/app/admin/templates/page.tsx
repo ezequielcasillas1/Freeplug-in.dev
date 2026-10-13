@@ -137,6 +137,7 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
           <form action={importShortlistAction}><button className="rounded border border-zinc-300 px-3 py-1">Re-import Lina&apos;s shortlist</button></form>
           <Link href="/admin/templates/widen-log" className="px-3 py-1 text-[#ba3d3d] underline">Widen log</Link>
           <Link href="/admin/templates/digest" className="px-3 py-1 text-[#ba3d3d] underline">Digest</Link>
+          <Link href="/admin/templates/picks" className="px-3 py-1 text-[#ba3d3d] underline">Customer picks</Link>
         </div>
       </section>
 

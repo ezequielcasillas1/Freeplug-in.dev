@@ -27,6 +27,8 @@ const eslintConfig = defineConfig([
       "src/lib/stripe/checkout-customer.ts",
       // Envato picker (Oct 12): catalog store adapter, service_role-only tables.
       "src/lib/envato/store-server.ts",
+      // Customer template picker (Oct 12): narrow catalog reads + the pick write (service_role).
+      "src/lib/templates/server.ts",
       "src/lib/stripe/sync-checkout-customer.ts",
       "src/**/*.test.{ts,tsx}",
     ],
