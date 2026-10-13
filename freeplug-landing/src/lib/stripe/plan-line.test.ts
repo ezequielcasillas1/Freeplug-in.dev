@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { formatPlanDollars, planDisplayName, planNameOf, planStripLine, subscriptionListName } from './plan-line'
 import { PLAN_STEPS } from '../plans/ladder'
 
@@ -47,6 +47,15 @@ describe('grandfathered display name (Sable 6:19 PM; Vera copy-c4f9940 lows)', (
     expect(planDisplayName([pro, hosting])).toBe('Hosting + Pro add-on')
     // the add-on product by id (freeplug_addon_<tier>_monthly), whatever its name
     expect(planDisplayName([hosting, { lookupKey: null, productName: 'Old add-on', productId: 'freeplug_addon_plus_monthly' }])).toBe('Hosting + Plus add-on')
+  })
+  it('Sable: in Spanish the legacy tier stays its English name: "Hospedaje + Add-on Pro" (never "Complemento Pro")', () => {
+    vi.stubEnv('FREEPLUG_I18N_ES_ALLOW_PENDING', '1') // Spanish catalog while it is pending (as ladder-copy-es-base.test)
+    expect(planDisplayName([hosting, pro], 'es')).toBe('Hospedaje + Add-on Pro')
+    expect(planDisplayName([pro, hosting], 'es')).toBe('Hospedaje + Add-on Pro')
+    expect(planDisplayName([hosting, { lookupKey: null, productName: 'Old add-on', productId: 'freeplug_addon_plus_monthly' }], 'es')).toBe('Hospedaje + Add-on Plus')
+    expect(planDisplayName([hosting, pro], 'es')).not.toMatch(/Complemento/)
+    expect(planDisplayName([hosting, pro])).toBe('Hosting + Pro add-on') // English unchanged
+    vi.unstubAllEnvs()
   })
   it('add-on with a tip: "Hosting + Pro add-on + $4 tip" (the real tip amount)', () => {
     expect(subscriptionListName(planDisplayName([hosting, pro]), 4)).toBe('Hosting + Pro add-on + $4 tip')
