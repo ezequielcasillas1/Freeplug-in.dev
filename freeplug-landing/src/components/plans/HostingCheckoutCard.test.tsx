@@ -248,16 +248,17 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     expect(screen.queryByTestId('switch-help')).toBeNull()
   })
 
-  it('Lina: phones hide the switch button whenever it is disabled (here: a downgrade going through), desktop keeps it', async () => {
+  it('Lina (Oct 13): while a switch submits, the phone switch button stays visible, busy with "Switching…"', async () => {
     const { container } = switching({ currentStepId: 'priority', currentPlanLines: ['Freeplug Hosting: Priority · $55.00/month'], onChangePlan: vi.fn(() => new Promise<never>(() => {})) })
     pickStep(container, 'starter')
-    const btn = screen.getByTestId('switch-area').querySelector('button') as HTMLButtonElement
+    const btn = screen.getByTestId('switch-button')
     expect(btn).toBeEnabled()
-    expect(btn.className).not.toMatch(/max-sm:hidden/)
     fireEvent.click(btn)
     await waitFor(() => expect(btn).toBeDisabled())
-    expect(btn.className).toMatch(/max-sm:hidden/)
-    expect(btn.className).not.toMatch(/(^|\s)hidden(\s|$)/) // desktop unchanged
+    expect(btn).toHaveTextContent('Switching…')
+    expect(btn).toHaveAttribute('aria-busy', 'true')
+    expect(btn.querySelector('.animate-spin')).not.toBeNull()
+    expect(btn.className).not.toMatch(/(^|\s)(max-sm:)?hidden(\s|$)/)
   })
 
   it('Lina: the card keeps the sticky bar height as bottom padding on phones only', () => {

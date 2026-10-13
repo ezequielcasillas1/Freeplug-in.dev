@@ -216,6 +216,8 @@ export const CHOOSE_STEP_BUTTON = (name: string) => `Choose ${name}`
 export const CLAIM_CHANGE_PLAN_LINK = 'Change plan'
 /** [Final, Sable] Switching card: selected = current plan (button disabled). */
 export const CHANGE_PLAN_PICK_TO_SWITCH = 'Choose a different plan to switch'
+/** Lina (Oct 13): the switch button's busy text while a switch is submitting (shown with a spinner). */
+export const CHANGE_PLAN_SWITCHING = 'Switching…'
 /** [Final, Sable] Switching card: selected step is higher (starts now). */
 export const CHANGE_PLAN_BUTTON_NOW = (name: string) => `Switch to ${name} now`
 /**

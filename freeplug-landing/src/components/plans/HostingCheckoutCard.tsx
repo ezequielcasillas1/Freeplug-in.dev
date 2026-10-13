@@ -61,6 +61,7 @@ import {
   planTotalBreakdown,
   planTotalLine,
   addonTodayTotal,
+  CHANGE_PLAN_SWITCHING,
 } from '@/lib/plans/ladder-copy'
 
 function formatDollars(cents: number): string {
@@ -560,6 +561,7 @@ export function HostingCheckoutCard({
   // Downgrades have no confirm, so the tip line sits under the downgrade button, with the "what
   // happens" line (Lina §3a pattern), and again in the pending box once the switch is planned.
   const downgradeTipLine = direction === 'downgrade' && tipText && renewalDate ? PLAN_CHANGE_TIP_ENDS_ON(tipText, renewalDate) : null
+  const noRealSwitch = direction === 'same' || !pickable(selected.id)
   const switchDisabled = loading || keeping || direction === 'same' || !pickable(selected.id) || confirm.phase !== 'idle'
 
   const messages = (
@@ -682,8 +684,25 @@ export function HostingCheckoutCard({
         <div>
           {inlineTotals}
           {/* M-1 (Lina): on phones a disabled switch button is hidden, whatever the reason; only an enabled one shows. */}
-          <Button ref={switchRef} className={cn('w-full', switchDisabled && 'max-sm:hidden')} size="lg" onClick={onSwitch} disabled={switchDisabled}>
-            {loading ? <Loader2 className="animate-spin" size={22} /> : switchLabel}
+          {/* Lina (Oct 13): while a switch submits it stays visible, busy ("Switching…" + spinner); on phones it is
+              hidden only when there is no real switch to make (same plan, or a plan that can't be picked). */}
+          <Button
+            ref={switchRef}
+            className={cn('w-full', noRealSwitch && 'max-sm:hidden')}
+            size="lg"
+            onClick={onSwitch}
+            disabled={switchDisabled}
+            aria-busy={loading || undefined}
+            data-testid="switch-button"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 animate-spin" size={22} aria-hidden="true" />
+                {CHANGE_PLAN_SWITCHING}
+              </>
+            ) : (
+              switchLabel
+            )}
           </Button>
           {switchHelp ? (
             <p className="mt-2 text-sm text-gray-500" data-testid="switch-help">
