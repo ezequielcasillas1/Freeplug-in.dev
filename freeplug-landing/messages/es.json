@@ -611,6 +611,7 @@
       "startsOnBadge": "Empieza el {date}",
       "changePlanLink": "Cambiar de plan",
       "pickToSwitch": "Elige otro plan para cambiarte",
+      "switching": "Cambiando de plan…",
       "buttonNow": "Cambiar a {name} ahora",
       "buttonOn": "Cambiar a {name} el {date}",
       "helpUp": "Empieza de inmediato. Hoy solo pagas la diferencia por lo que queda de este periodo de facturación, y tu fecha de cobro sigue igual.",
@@ -648,6 +649,7 @@
     "grandfatheredHostingOnlyName": "Plan de hosting",
     "grandfatheredHostingShort": "Hospedaje",
     "legacyAddonName": "Complemento {tier}",
+    "genericAddonLabel": "Complemento",
     "totalBreakdown": {
       "addons": "Complementos {amount}",
       "tip": "Propina {amount}",
@@ -1259,6 +1261,7 @@
     },
     "bigChangeBiggerNote": "¿Necesitas algo más grande, como una página o función nueva? Primero te lo cotizamos como mantenimiento, y aun así puedes usar el cambio de este mes.",
     "chargeNote": "Al activarlo, se cobran {price} hoy por este periodo de facturación y luego {price} cada mes. Primero usamos tu saldo a favor, si tienes. Si lo desactivas, sigue activo hasta que termine el periodo.",
+    "chargeNoteShort": "Se cobran {price} hoy y luego {price} al mes. Primero usamos tu saldo a favor. Si lo desactivas, sigue activo hasta fin de periodo.",
     "tipDropQuestionCheckout": "Tu propina bajará a {tip}. ¿Activar {name}?",
     "turnOn": "Activar",
     "turnOnQuestion": "¿Activar {name}?",

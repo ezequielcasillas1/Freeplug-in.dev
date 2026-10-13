@@ -611,6 +611,7 @@
       "startsOnBadge": "Starts {date}",
       "changePlanLink": "Change plan",
       "pickToSwitch": "Choose a different plan to switch",
+      "switching": "Switching…",
       "buttonNow": "Switch to {name} now",
       "buttonOn": "Switch to {name} on {date}",
       "helpUp": "Starts right away. Today you pay only the difference for the rest of this billing period, and your billing date stays the same.",
@@ -648,6 +649,7 @@
     "grandfatheredHostingOnlyName": "Hosting plan",
     "grandfatheredHostingShort": "Hosting",
     "legacyAddonName": "{tier} add-on",
+    "genericAddonLabel": "Add-on",
     "totalBreakdown": {
       "addons": "Add-ons {amount}",
       "tip": "Tip {amount}",
@@ -1265,6 +1267,7 @@
     },
     "bigChangeBiggerNote": "Need something bigger, like a new page or feature? We'll quote it as maintenance first, and you can still use this month's change.",
     "chargeNote": "Turning it on charges {price} today for this billing period, then {price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.",
+    "chargeNoteShort": "Turning it on charges {price} today for this billing period, then {price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.",
     "tipDropQuestionCheckout": "Your tip goes down to {tip}. Turn on {name}?",
     "turnOn": "Turn on",
     "turnOnQuestion": "Turn on {name}?",

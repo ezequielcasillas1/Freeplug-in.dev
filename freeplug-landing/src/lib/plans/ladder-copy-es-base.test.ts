@@ -63,3 +63,22 @@ describe('ladder keys added after the i18n snapshot', () => {
     expect(en().ADDON_REFUND_EMAIL_HELP).toBe('Questions? Email support@freeplug-in.dev.')
   })
 })
+
+describe('Sable 04:22 (freeplug-ladder-es-2026-10-13.md)', () => {
+  it('unknown add-on fallback: "Complemento" in es only; named add-ons stay English', () => {
+    expect(ladderCopy('en').GENERIC_ADDON_NAME('$15')).toBe('Add-on ($15)')
+    expect(ladderCopy('en').GENERIC_ADDON_NAME()).toBe('Add-on')
+    expect(ladderCopy('es').GENERIC_ADDON_NAME('$15')).toBe('Complemento ($15)')
+    expect(ladderCopy('es').GENERIC_ADDON_LABEL).toBe('Complemento')
+    expect(ladderCopy('es').ADDON_NAMES.small_edit).toBe('+1 small edit')
+    expect(ladderCopy('es').ADDON_NAMES.big_change).toBe('Big change')
+  })
+  it('switch busy label', () => {
+    expect(ladderCopy('en').CHANGE_PLAN_SWITCHING).toBe('Switching…')
+    expect(ladderCopy('es').CHANGE_PLAN_SWITCHING).toBe('Cambiando de plan…')
+  })
+  it('short charge note is a spare string; the full note is what addonChargeNote shows', () => {
+    expect(ladderCopy('es').addonChargeNoteShort(500)).toBe('Se cobran $5 hoy y luego $5 al mes. Primero usamos tu saldo a favor. Si lo desactivas, sigue activo hasta fin de periodo.')
+    expect(ladderCopy('es').addonChargeNote(500)).toMatch(/^Al activarlo, se cobran \$5 hoy por este periodo de facturación/)
+  })
+})

@@ -163,6 +163,8 @@ function build(t: Translate, locale: AppLocale) {
     CHOOSE_STEP_BUTTON: (name: string) => t('plans.chooseStepButton', { name }),
     CLAIM_CHANGE_PLAN_LINK: t('plans.change.changePlanLink'),
     CHANGE_PLAN_PICK_TO_SWITCH: t('plans.change.pickToSwitch'),
+    /** Lina (Oct 13): busy label on the switch button while it submits ('Switching…' / 'Cambiando de plan…', Sable 04:22). */
+    CHANGE_PLAN_SWITCHING: t('plans.change.switching'),
     CHANGE_PLAN_BUTTON_NOW: (name: string) => t('plans.change.buttonNow', { name }),
     /** On the button `date` is the short form ("Nov 3") so it fits at 375 (Lina, round 5b). */
     CHANGE_PLAN_BUTTON_ON: (name: string, date: string) => t('plans.change.buttonOn', { name, date }),
@@ -181,6 +183,9 @@ function build(t: Translate, locale: AppLocale) {
     GRANDFATHERED_HOSTING_ONLY_NAME: t('plans.grandfatheredHostingOnlyName'),
     GRANDFATHERED_HOSTING_SHORT: t('plans.grandfatheredHostingShort'),
     LEGACY_ADDON_NAME: (tierName: string) => t('plans.legacyAddonName', { tier: tierName }),
+    /** L-1 unknown grandfathered add-on: "Add-on ($15)" / "Complemento ($15)" (Sable 04:22; named add-ons stay English). */
+    GENERIC_ADDON_LABEL: t('plans.genericAddonLabel'),
+    GENERIC_ADDON_NAME: (price?: string) => (price ? `${t('plans.genericAddonLabel')} (${price})` : t('plans.genericAddonLabel')),
     HELP_PAYMENT_METHOD: t('help.answers.paymentMethod'),
     UPGRADE_CONFIRM_ZERO: (name: string, monthly: string, date: string) => t('plans.change.confirmZero', { name, monthly, date }),
     UPGRADE_REPLACES_PENDING: (pendingName: string) => t('plans.change.replacesPending', { pendingName }),
@@ -224,6 +229,8 @@ function build(t: Translate, locale: AppLocale) {
     },
     BIG_CHANGE_BIGGER_NOTE: t('addons.bigChangeBiggerNote'),
     addonChargeNote: (cents: number) => t('addons.chargeNote', { price: dollars(cents) }),
+    /** SPARE ONLY (Sable 04:22): short charge note for a layout overlap. Not shown anywhere; addonChargeNote stays. */
+    addonChargeNoteShort: (cents: number) => t('addons.chargeNoteShort', { price: dollars(cents) }),
     starterSmallEditAddonLine: (show: boolean = showAiEditQuota): string => {
       const base = t('help.chat.starterSmallEditAddon', { price: dollars(addonById('small_edit')!.monthlyCents), addonName: ADDON_NAMES.small_edit })
       return show ? `${base} ${t('help.chat.starterSmallEditAiBuilder')}` : base
@@ -410,6 +417,7 @@ export const SEE_COMING_SOON = EN.SEE_COMING_SOON
 export const CHOOSE_STEP_BUTTON = EN.CHOOSE_STEP_BUTTON
 export const CLAIM_CHANGE_PLAN_LINK = EN.CLAIM_CHANGE_PLAN_LINK
 export const CHANGE_PLAN_PICK_TO_SWITCH = EN.CHANGE_PLAN_PICK_TO_SWITCH
+export const CHANGE_PLAN_SWITCHING = EN.CHANGE_PLAN_SWITCHING
 export const CHANGE_PLAN_BUTTON_NOW = EN.CHANGE_PLAN_BUTTON_NOW
 export const CHANGE_PLAN_BUTTON_ON = EN.CHANGE_PLAN_BUTTON_ON
 export const CHANGE_PLAN_HELP_UP = EN.CHANGE_PLAN_HELP_UP
@@ -426,6 +434,8 @@ export const CANCEL_OPTIONS_LINK = EN.CANCEL_OPTIONS_LINK
 export const GRANDFATHERED_HOSTING_ONLY_NAME = EN.GRANDFATHERED_HOSTING_ONLY_NAME
 export const GRANDFATHERED_HOSTING_SHORT = EN.GRANDFATHERED_HOSTING_SHORT
 export const LEGACY_ADDON_NAME = EN.LEGACY_ADDON_NAME
+export const GENERIC_ADDON_LABEL = EN.GENERIC_ADDON_LABEL
+export const GENERIC_ADDON_NAME = EN.GENERIC_ADDON_NAME
 export const HELP_PAYMENT_METHOD = EN.HELP_PAYMENT_METHOD
 export const UPGRADE_CONFIRM_ZERO = EN.UPGRADE_CONFIRM_ZERO
 export const UPGRADE_REPLACES_PENDING = EN.UPGRADE_REPLACES_PENDING
@@ -464,6 +474,7 @@ export const ADDON_NAMES = EN.ADDON_NAMES
 export const addonPerkLine = EN.addonPerkLine
 export const BIG_CHANGE_BIGGER_NOTE = EN.BIG_CHANGE_BIGGER_NOTE
 export const addonChargeNote = EN.addonChargeNote
+export const addonChargeNoteShort = EN.addonChargeNoteShort
 export const starterSmallEditAddonLine = EN.starterSmallEditAddonLine
 export const addonPriceLine = EN.addonPriceLine
 export const addonTipDropQuestion = EN.addonTipDropQuestion
