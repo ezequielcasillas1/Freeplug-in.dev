@@ -76,9 +76,13 @@ const LOGIN_THEN_REQUEST = `/login?next=${encodeURIComponent('/dashboard/request
 /** The confirm closes this long after the preview arrived, before the server's 10-minute limit. */
 export const CONFIRM_OPEN_MS = (PRORATION_DATE_MAX_AGE_SECONDS - 30) * 1000
 
-/** Phones (< sm): the action area sticks to the bottom of the screen while the card is in view. */
+/**
+ * Phones (< sm): only the totals stick to the bottom of the screen while the card is in view (M-1). The bar
+ * is capped at ~90px, its lines never wrap, and it sits directly above the action/confirm buttons in the
+ * flow, so it is released before it can cover them. From sm up it is a plain static block (unchanged).
+ */
 const STICKY_BAR =
-  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
+  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:max-h-[90px] max-sm:overflow-hidden max-sm:[&_*]:mb-0 max-sm:[&_p]:truncate sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
 
 const COLS: Record<number, string> = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6' }
 
@@ -590,7 +594,7 @@ export function HostingCheckoutCard({
       : totalParts
   const totalBlock = totalParts && shownParts ? (
     <div className="mb-3" data-testid="plan-total">
-      <p className="text-sm text-gray-600" data-testid="plan-total-breakdown">
+      <p className={cn('text-sm text-gray-600', stickyOnPhone && 'max-sm:hidden')} data-testid="plan-total-breakdown">
         {planTotalBreakdown(selected.name, selected.monthlyCents, shownParts.addons, shownParts.tip)}
       </p>
       <p className="text-base font-bold text-gray-900" data-testid="plan-total-amount" data-totals={confirmTotals ? 'after' : 'current'}>
@@ -618,10 +622,23 @@ export function HostingCheckoutCard({
     </p>
   ) : null
 
+  const totals = totalBlock ?? phoneSummary
+  // Lina (Oct 4): the sticky bar is a direct child of the card's content (no wrapper), so it sticks while the
+  // card is on screen and releases once the card scrolls off. M-1: it holds the totals only; the buttons
+  // follow it in the normal flow. During the confirm the totals stay hidden from sm up, as before.
+  const stickyTotals = (hideFromSm: boolean) =>
+    stickyOnPhone && totals ? (
+      <div className={cn(STICKY_BAR, hideFromSm && 'sm:hidden')} data-testid="sticky-totals">
+        {totals}
+      </div>
+    ) : null
+  const inlineTotals = stickyOnPhone ? null : totals
+  const inConfirm = confirm.phase === 'confirm' || confirm.phase === 'submitting'
+
   const switchArea = (
-    // Lina (Oct 4): a direct child of the card's content (no wrapper), so it sticks while the card is on
-    // screen and releases once the card scrolls off.
-    <div className={cn('mb-3 flex flex-col', stickyOnPhone ? STICKY_BAR : '')} data-testid="switch-area">
+    <>
+    {stickyTotals(inConfirm)}
+    <div className="mb-3 flex flex-col" data-testid="switch-area">
       {messages}
       {/* Live region: "Calculating…" and the confirm line are read out (Lina §3a). */}
       <p role="status" aria-live="polite" className="sr-only" data-testid="confirm-live">
@@ -633,7 +650,7 @@ export function HostingCheckoutCard({
       </p>
       {confirm.phase === 'loading' ? (
         <div data-testid="upgrade-calculating">
-          {totalBlock ?? phoneSummary}
+          {inlineTotals}
           <Button className="w-full" size="lg" disabled aria-disabled="true">
             <Loader2 className="mr-2 animate-spin" size={20} aria-hidden="true" />
             {UPGRADE_CALCULATING}
@@ -660,8 +677,9 @@ export function HostingCheckoutCard({
         </div>
       ) : (
         <div>
-          {totalBlock ?? phoneSummary}
-          <Button ref={switchRef} className="w-full" size="lg" onClick={onSwitch} disabled={switchDisabled}>
+          {inlineTotals}
+          {/* M-1: on phones the disabled "Choose a different plan to switch" is hidden; a real switch shows. */}
+          <Button ref={switchRef} className={cn('w-full', direction === 'same' && 'max-sm:hidden')} size="lg" onClick={onSwitch} disabled={switchDisabled}>
             {loading ? <Loader2 className="animate-spin" size={22} /> : switchLabel}
           </Button>
           {switchHelp ? (
@@ -682,21 +700,25 @@ export function HostingCheckoutCard({
         </div>
       )}
     </div>
+    </>
   )
 
   const chooseText = onChoosePlan ? (chooseLabelFor ? chooseLabelFor(selected.name) : (chooseLabel ?? 'Continue')) : CONTINUE_TO_PAYMENT
   const payArea = (
-    <div className={cn('flex flex-col', stickyOnPhone ? STICKY_BAR : '')} data-testid="pay-area">
+    <>
+    {/* Phone bar (Lina §0/§2): "<Name> · $<price>/month"; the grey note sits directly above the button. */}
+    {stickyTotals(false)}
+    <div className="flex flex-col" data-testid="pay-area">
       {messages}
       <div>
-        {/* Phone bar (Lina §0/§2): "<Name> · $<price>/month", then the grey note directly above the button. */}
-        {totalBlock ?? phoneSummary}
+        {inlineTotals}
         {onChoosePlan && noteAboveButton ? <p className="mb-3 text-sm text-gray-500">{noteAboveButton}</p> : null}
         <Button className="w-full" size="lg" onClick={startHostingCheckout} disabled={loading || !pickable(planStep)}>
           {loading ? <Loader2 className="animate-spin" size={22} /> : chooseText}
         </Button>
       </div>
     </div>
+    </>
   )
 
   return (

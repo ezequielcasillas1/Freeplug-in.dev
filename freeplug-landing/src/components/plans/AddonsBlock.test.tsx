@@ -507,12 +507,14 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
 
   it('sits directly in the card content (no mb-3 wrapper), sticky at bottom 0, white, 1px top border, safe-area padding, above the cards', () => {
     const { container } = card()
-    const bar = screen.getByTestId('switch-area')
+    // M-1: only the totals stick on phones; the buttons (switch-area) follow it in the normal flow.
+    const bar = screen.getByTestId('sticky-totals')
+    expect(screen.getByTestId('switch-area').className).not.toMatch(/sticky/)
     const shell = container.firstElementChild as HTMLElement
     expect(bar.parentElement).toBe(shell) // a wrapper would trap the sticky inside its own height
     expect(shell.className).not.toMatch(/overflow-(hidden|auto|scroll)/)
     const cls = bar.className.split(/\s+/)
-    for (const c of ['sticky', 'bottom-0', 'z-10', 'bg-white', 'border-t', 'border-zinc-200', 'pb-[max(0.75rem,env(safe-area-inset-bottom))]', 'mb-3']) expect(cls).toContain(c)
+    for (const c of ['sticky', 'bottom-0', 'z-10', 'bg-white', 'border-t', 'border-zinc-200', 'pb-[max(0.75rem,env(safe-area-inset-bottom))]', 'max-sm:mb-3', 'max-sm:max-h-[90px]', 'max-sm:[&_p]:truncate']) expect(cls).toContain(c)
     // Desktop (sm+) it's a normal block again.
     for (const c of ['sm:static', 'sm:border-0', 'sm:bg-transparent']) expect(cls).toContain(c)
     // Nothing else in the card sits above it.
@@ -535,7 +537,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     const today = screen.getByTestId('sticky-addon-today')
     expect(today.textContent).toBe('$5.35 today')
     expect(today.className).toMatch(/font-bold/)
-    expect(within(screen.getByTestId('switch-area')).getByTestId('sticky-addon-today')).toBe(today)
+    expect(within(screen.getByTestId('sticky-totals')).getByTestId('sticky-addon-today')).toBe(today)
 
     fireEvent.click(within(box).getByRole('button', { name: 'Cancel' }))
     await waitFor(() => expect(amount().textContent).toBe('$60.75/month'))

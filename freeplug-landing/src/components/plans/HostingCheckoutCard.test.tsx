@@ -163,10 +163,15 @@ describe('checkout and claim modes', () => {
     const btn = screen.getByRole('button', { name: 'Choose Priority' })
     const note = screen.getByText('No charge until live.')
     expect(note.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    const bar = screen.getByTestId('pay-area')
+    // M-1: only the totals stick on phones; the note and the button follow in the normal flow.
+    const bar = screen.getByTestId('sticky-totals')
     expect(bar.className).toMatch(/sticky bottom-0/)
     expect(bar.className).toMatch(/sm:static/)
-    expect(bar.contains(note)).toBe(true)
+    expect(bar.className).toMatch(/max-sm:max-h-\[90px\]/)
+    expect(bar.contains(note)).toBe(false)
+    expect(bar.contains(btn)).toBe(false)
+    expect(bar.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByTestId('pay-area').className).not.toMatch(/sticky/)
     expect(within(bar).getByTestId('sticky-summary')).toHaveTextContent('Priority · $55/month')
     fireEvent.click(btn)
     await waitFor(() => expect(onChoosePlan).toHaveBeenCalledWith({ planStep: 'priority', tipDollars: 0 }))
@@ -241,6 +246,19 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     switching()
     expect(screen.getByRole('button', { name: 'Choose a different plan to switch' })).toBeDisabled()
     expect(screen.queryByTestId('switch-help')).toBeNull()
+  })
+
+  it('M-1: phones hide the disabled "Choose a different plan to switch"; a real switch stays visible', () => {
+    const { container } = switching()
+    const same = screen.getByRole('button', { name: 'Choose a different plan to switch' })
+    expect(same.className).toMatch(/max-sm:hidden/)
+    pickStep(container, 'fast_lane')
+    const real = screen.getByRole('button', { name: /Fast lane/ })
+    expect(real).toBeEnabled()
+    expect(real.className).not.toMatch(/max-sm:hidden/)
+    // The sticky bar carries totals only, never a button.
+    const bar = screen.queryByTestId('sticky-totals')
+    if (bar) expect(within(bar).queryAllByRole('button')).toHaveLength(0)
   })
 
   it('higher: "Switch to <Name> now" + the up line; lower: "Switch to <Name> on <date>" + the down line', () => {
@@ -338,10 +356,16 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     const confirmBtn = within(confirm).getByRole('button', { name: 'Confirm' })
     expect(confirmBtn.className).toMatch(/w-full/)
     expect(document.activeElement).toBe(confirmBtn)
-    // Confirm sits first, Cancel under it; the whole thing is in the sticky bar on phones
+    // Confirm sits first, Cancel under it; on phones they follow the sticky totals bar, outside it (M-1)
     const cancelBtn = within(confirm).getByRole('button', { name: 'Not now' })
     expect(confirmBtn.compareDocumentPosition(cancelBtn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(screen.getByTestId('switch-area').className).toMatch(/sticky bottom-0/)
+    expect(screen.getByTestId('switch-area').className).not.toMatch(/sticky/)
+    const stickyBar = screen.queryByTestId('sticky-totals')
+    if (stickyBar) {
+      expect(stickyBar.contains(confirmBtn)).toBe(false)
+      expect(stickyBar.contains(cancelBtn)).toBe(false)
+      expect(stickyBar.className).toMatch(/sm:hidden/)
+    }
     expect(onChangePlan).not.toHaveBeenCalled()
   })
 
