@@ -271,7 +271,8 @@
         "tellUsWhichPage": "Tell us which page it is on."
       },
       "description": {
-        "describeChange": "Describe the change."
+        "describeChange": "Describe the change.",
+        "tooLong": "Please keep your request under 2,000 characters."
       }
     },
     "checkout": {
@@ -1328,7 +1329,8 @@
     },
     "refundEmailSubject": "We couldn't turn on {name}",
     "turnedOffRefundEmailSubject": "We refunded your {name} charge.",
-    "refundEmailHelp": "Questions? Email support@freeplug-in.dev."
+    "refundEmailHelp": "Questions? Email support@freeplug-in.dev.",
+    "todayTotal": "{total} today"
   },
   "i18n": {
     "picker": {

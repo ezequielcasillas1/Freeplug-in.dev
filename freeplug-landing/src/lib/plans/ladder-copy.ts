@@ -294,11 +294,8 @@ function build(t: Translate, locale: AppLocale) {
     renewalCarriedLine: (carriedCents: number) => t('tips.renewalCarriedLine', { amount: dollars(carriedCents) }),
     /** Aria, Oct 4 9:27: under Stripe's $0.50 minimum it goes on the next monthly bill. */
     addonAddedToNextBill: (cents: number) => t('addons.addedToNextBill', { amount: dollars(cents) }),
-    /**
-     * [Sable + Lina, M-1 (Aria a)] bold "{total} today". NOT in the catalog yet: no Sable Spanish ("{total} hoy"
-     * is unconfirmed, i18n-es-notes/rebase-todo.md), so it stays English in every locale for now.
-     */
-    addonTodayTotal: (totalCents: number) => `${dollars(totalCents)} today`,
+    /** [Sable + Lina, M-1 (Aria a)] bold "{total} today" / "{total} hoy" (Sable 10-13). */
+    addonTodayTotal: (totalCents: number) => t('addons.todayTotal', { total: dollars(totalCents) }),
     addonCarriedBreakdown: (priceCents: number, carriedCents: number) => t('addons.carriedBreakdown', { price: cents2(priceCents), carried: cents2(carriedCents) }),
     /** Aria 9:27: the charge total isn't exactly the add-on price: refused. */
     ADDON_PRICE_UNCONFIRMED: t('addons.priceUnconfirmed'),
@@ -309,7 +306,7 @@ function build(t: Translate, locale: AppLocale) {
     /** Plans page note and the email line: the reason, then where the money went. */
     addonRefundNote: (name: string, reason: AddonRefundReason, cardCents: number, creditCents: number, carriedCents: number = 0) =>
       `${ADDON_REFUND_REASONS[isAddonRefundReason(reason) ? reason : 'not_added'](name)} ${addonRefundSplitLine(cardCents, creditCents, carriedCents)}${cardRefundDelay(cardCents)}`,
-    /** Several add-ons in one line, an Intl list: "+1 small edit and Big change" / "+1 cambio pequeño y Big change". */
+    /** Several add-ons in one line, an Intl list: "+1 small edit and Big change" / "+1 small edit y Big change". */
     addonNameList: (ids: readonly AddonId[] | AddonId) => formatList(([] as AddonId[]).concat(ids).map((id) => ADDON_NAMES[id] ?? id), locale),
     addonRefundEmailSubject: (name: string) => t('addons.refundEmailSubject', { name }),
     /** Sable, Oct 4 10:01: the subject of the L-1 self-heal refund email ONLY. */

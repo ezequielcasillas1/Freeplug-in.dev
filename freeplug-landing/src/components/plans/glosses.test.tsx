@@ -24,12 +24,12 @@ describe('plan and add-on glosses', () => {
     expect(screen.queryAllByTestId('plan-gloss')).toHaveLength(0)
   })
 
-  it('Spanish: Sable\'s glosses, plan names stay English (small edit add-on: Sable 10-13 sheet)', () => {
+  it('Spanish: Sable\'s glosses, names stay English', () => {
     const es = ladderCopy('es')
     expect(es.PLAN_GLOSS.starter).toBe('Tu sitio web en línea, con conexión segura https')
     expect(es.PLAN_GLOSS.growth).toBe('Actualización de temporada y llamada trimestral')
     expect(es.ADDON_GLOSS.small_edit).toBe('Un cambio pequeño extra al mes')
-    expect(es.ADDON_NAMES.small_edit).toBe('+1 cambio pequeño')
+    expect(es.ADDON_NAMES.small_edit).toBe('+1 small edit')
     expect(es.ADDON_NAMES.big_change).toBe(ladderCopy('en').ADDON_NAMES.big_change)
     setTestLocale('es')
     render(<HostingCheckoutCard />)

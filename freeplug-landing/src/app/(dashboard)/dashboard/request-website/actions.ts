@@ -15,7 +15,7 @@ import { HELP_CHAT_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { scheduleAfterResponse } from '@/lib/background'
 import { notifyNewChangeRequest } from '@/lib/change-requests/notify'
 import { sendRowFailedAlert } from '@/lib/change-requests/alert'
-import { CHANGE_REQUEST_NOT_SAVED, CHANGE_REQUEST_TOO_LONG, DESCRIPTION_MAX, friendlyInsertError } from '@/lib/change-requests/submit-errors'
+import { CHANGE_REQUEST_NOT_SAVED, CHANGE_REQUEST_TOO_LONG, CHANGE_REQUEST_TOO_LONG_KEY, DESCRIPTION_MAX, friendlyInsertError } from '@/lib/change-requests/submit-errors'
 import { currentLocale } from '@/i18n/current-locale'
 import { translatorFor, type Translate } from '@/i18n/translate'
 
@@ -26,11 +26,10 @@ async function errorsT(): Promise<Translate> {
 
 /**
  * Zod issue messages are catalog keys; anything else (zod's own English) becomes "Invalid input.".
- * Exception: the change-request length line (CHANGE_REQUEST_TOO_LONG, EN interim, no catalog key yet) is shown as is.
  */
 function issueText(t: Translate, issues: readonly { message: string }[]): string {
   const texts = issues.map((i) =>
-    i.message === CHANGE_REQUEST_TOO_LONG ? i.message : t(i.message.startsWith('errors.') ? i.message : 'errors.request.error.invalidInput')
+    t(i.message.startsWith('errors.') ? i.message : 'errors.request.error.invalidInput')
   )
   return [...new Set(texts)].join(' ')
 }
@@ -210,7 +209,7 @@ const changeRequestSchema = z.object({
   // textarea maxLength (raw text), and the DB check matches (20261010160000).
   description: z
     .string()
-    .max(DESCRIPTION_MAX, CHANGE_REQUEST_TOO_LONG)
+    .max(DESCRIPTION_MAX, CHANGE_REQUEST_TOO_LONG_KEY)
     .refine((s) => s.trim().length > 0, { message: 'errors.request.description.describeChange' }),
   /** File name only. The request path has no file storage, so the photo itself is not uploaded. */
   photoName: z.string().trim().max(200).optional(),
@@ -302,7 +301,7 @@ export async function sendHelpChangeRequest(
     .select('id')
     .maybeSingle()
   const capError = friendlyInsertError(rowErr)
-  if (capError) return { ok: false, error: capError }
+  if (capError) return { ok: false, error: capError === CHANGE_REQUEST_TOO_LONG ? t(CHANGE_REQUEST_TOO_LONG_KEY) : capError }
   const rowId = !rowErr && row?.id ? (row.id as string) : null
 
   // 2) The notes append (keeps /admin/requests working).

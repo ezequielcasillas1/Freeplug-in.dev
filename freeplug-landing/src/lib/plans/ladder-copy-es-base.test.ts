@@ -20,14 +20,14 @@ describe('ladder keys added after the i18n snapshot', () => {
     expect(es().addonAddedToNextBill(35)).toBe('Se agregarán $0.35 a tu próximo cobro.')
     expect(es().addonCarriedBreakdown(500, 35)).toBe('$5.00 + $0.35 pendiente de tu último cambio')
     expect(es().ADDON_PRICE_UNCONFIRMED).toBe('No pudimos confirmar este precio. Inténtalo de nuevo o escribe a support@freeplug-in.dev y te ayudamos.')
-    expect(es().addonRefundSplitLine(0, 500, 35)).toBe('Devolvimos $4.65 al crédito de tu cuenta y cancelamos el cargo pequeño de $0.35, así que no lo pagarás.')
-    expect(es().addonRefundSplitLine(300, 200)).toBe('Te reembolsamos $3 a tu tarjeta y devolvimos $2 al crédito de tu cuenta.')
-    expect(es().addonRefundSplitLine(0, 200)).toBe('Devolvimos $2 al crédito de tu cuenta.')
+    expect(es().addonRefundSplitLine(0, 500, 35)).toBe('Te devolvimos $4.65 a tu saldo a favor y cancelamos el cargo pequeño de $0.35, así que no lo pagarás.')
+    expect(es().addonRefundSplitLine(300, 200)).toBe('Te reembolsamos $3 a tu tarjeta y devolvimos $2 a tu saldo a favor.')
+    expect(es().addonRefundSplitLine(0, 200)).toBe('Te devolvimos $2 a tu saldo a favor.')
     expect(es().addonRefundSplitLine(300, 0)).toBe('Te reembolsamos $3 a tu tarjeta.')
     expect(es().addonRefunded('Big change', 300, 0)).toBe(
       'No pudimos activar Big change. Te reembolsamos $3 a tu tarjeta. El reembolso a tu tarjeta puede tardar de 5 a 10 días hábiles en aparecer.'
     )
-    expect(es().addonRefunded('Big change', 0, 200)).toBe('No pudimos activar Big change. Devolvimos $2 al crédito de tu cuenta.')
+    expect(es().addonRefunded('Big change', 0, 200)).toBe('No pudimos activar Big change. Te devolvimos $2 a tu saldo a favor.')
     expect(es().ADDON_REFUND_REASONS.switch_pending('X')).toMatch(/^No pudimos activar X porque ya había un cambio de plan programado\./)
     expect(es().ADDON_REFUND_REASONS.removal_pending('X')).toMatch(/^No pudimos activar X porque otro complemento/)
     expect(es().ADDON_REFUND_REASONS.period_ended('X')).toMatch(/periodo de facturación que pagaste/)
@@ -43,8 +43,11 @@ describe('ladder keys added after the i18n snapshot', () => {
   it('the 3 same-as-English checks and the admin string', () => {
     expect(es().INVOICE_PLAN_PART('$35')).toBe('Plan $35')
     expect(es().GRANDFATHERED_HOSTING_SHORT).toBe('Hospedaje')
-    expect(es().ADDON_NAMES.small_edit).toBe('+1 cambio pequeño')
-    expect(es().addonNameList(['small_edit', 'big_change'])).toBe('+1 cambio pequeño y Big change')
+    expect(es().ADDON_NAMES.small_edit).toBe('+1 small edit')
+    expect(es().addonNameList(['small_edit', 'big_change'])).toBe('+1 small edit y Big change')
+    expect(es().addonTodayTotal(535)).toBe('$5.35 hoy')
+    expect(en().addonTodayTotal(535)).toBe('$5.35 today')
+    expect(es().addonChargeNote(500)).toBe('Al activarlo, se cobran $5 hoy por este periodo de facturación y luego $5 cada mes. Primero usamos tu saldo a favor, si tienes. Si lo desactivas, sigue activo hasta que termine el periodo.')
     expect(ADMIN_MARK_BIG_CHANGE).toBe('Mark as big change')
   })
 

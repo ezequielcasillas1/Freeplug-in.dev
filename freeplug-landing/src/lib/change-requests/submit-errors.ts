@@ -10,7 +10,9 @@ export const CHANGE_REQUEST_PENDING_CAP =
 export const CHANGE_REQUEST_DAILY_CAP =
   "You've sent 20 change requests in the last 24 hours. Please try again tomorrow, or email support@freeplug-in.dev."
 /** changeRequests.error.tooLong (same limit as the form: 2,000 characters) */
-export const CHANGE_REQUEST_TOO_LONG = 'Keep the change under 2,000 characters.'
+export const CHANGE_REQUEST_TOO_LONG = 'Please keep your request under 2,000 characters.'
+/** Catalog key for CHANGE_REQUEST_TOO_LONG (en = the line above; es: Sable 10-13). */
+export const CHANGE_REQUEST_TOO_LONG_KEY = 'errors.request.description.tooLong'
 /** changeRequests.error.notSaved (row and notes both failed; Aria's words, ruling 7) */
 export const CHANGE_REQUEST_NOT_SAVED = "Please try again, or email support@freeplug-in.dev and we'll help."
 

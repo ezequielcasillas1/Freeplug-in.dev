@@ -271,7 +271,8 @@
         "tellUsWhichPage": "Dinos en qué página está."
       },
       "description": {
-        "describeChange": "Describe el cambio."
+        "describeChange": "Describe el cambio.",
+        "tooLong": "Escribe tu solicitud en menos de 2,000 caracteres."
       }
     },
     "checkout": {
@@ -1244,7 +1245,7 @@
     "heading": "Complementos",
     "starterCapNote": "hasta {amount} al mes en Starter",
     "names": {
-      "small_edit": "+1 cambio pequeño",
+      "small_edit": "+1 small edit",
       "big_change": "Big change",
       "visitor_snapshot": "Visitor snapshot"
     },
@@ -1255,7 +1256,7 @@
       "visitorSnapshot": "Un correo mensual con cuántas personas visitaron tu sitio."
     },
     "bigChangeBiggerNote": "¿Necesitas algo más grande, como una página o función nueva? Primero te lo cotizamos como mantenimiento, y aun así puedes usar el cambio de este mes.",
-    "chargeNote": "Al activarlo, te cobramos {price} ahora por este periodo de facturación y luego {price} cada mes. Si lo desactivas, sigue activo hasta que termine el periodo.",
+    "chargeNote": "Al activarlo, se cobran {price} hoy por este periodo de facturación y luego {price} cada mes. Primero usamos tu saldo a favor, si tienes. Si lo desactivas, sigue activo hasta que termine el periodo.",
     "tipDropQuestionCheckout": "Tu propina bajará a {tip}. ¿Activar {name}?",
     "turnOn": "Activar",
     "turnOnQuestion": "¿Activar {name}?",
@@ -1303,9 +1304,9 @@
     "carriedBreakdown": "{price} + {carried} pendiente de tu último cambio",
     "priceUnconfirmed": "No pudimos confirmar este precio. Inténtalo de nuevo o escribe a support@freeplug-in.dev y te ayudamos.",
     "refundSplit": {
-      "carried": "Devolvimos {credit} al crédito de tu cuenta y cancelamos el cargo pequeño de {carried}, así que no lo pagarás.",
-      "cardAndCredit": "Te reembolsamos {card} a tu tarjeta y devolvimos {credit} al crédito de tu cuenta.",
-      "credit": "Devolvimos {credit} al crédito de tu cuenta.",
+      "carried": "Te devolvimos {credit} a tu saldo a favor y cancelamos el cargo pequeño de {carried}, así que no lo pagarás.",
+      "cardAndCredit": "Te reembolsamos {card} a tu tarjeta y devolvimos {credit} a tu saldo a favor.",
+      "credit": "Te devolvimos {credit} a tu saldo a favor.",
       "card": "Te reembolsamos {card} a tu tarjeta."
     },
     "cardRefundDelay": "El reembolso a tu tarjeta puede tardar de 5 a 10 días hábiles en aparecer.",
@@ -1320,7 +1321,8 @@
     },
     "refundEmailSubject": "No pudimos activar {name}",
     "turnedOffRefundEmailSubject": "Te reembolsamos el cobro de {name}.",
-    "refundEmailHelp": "¿Preguntas? Escribe a support@freeplug-in.dev."
+    "refundEmailHelp": "¿Preguntas? Escribe a support@freeplug-in.dev.",
+    "todayTotal": "{total} hoy"
   },
   "i18n": {
     "picker": {
