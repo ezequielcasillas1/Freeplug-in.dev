@@ -6,8 +6,8 @@ import { NICHES, type Niche } from '@/lib/envato/niche-tags'
  * here keyed by Sable's i18n keys. Spanish renders only when NEXT_PUBLIC_FREEPLUG_I18N_ES === 'true' and the
  * page gets ?lang=es (local review), otherwise English.
  *
- * Keys marked DESIGN come from Lina's packet wording (no Sable line yet) and need Sable's final words;
- * their ES is a placeholder draft. Open: picker.confirm.body "[ask Cheke]".
+ * Card/back/retry/continue/unavailable/cleared/showmore keys: Sable, 'Added 11:30 PM' in the same file.
+ * picker.showmore.aria.rest (batch < 12) is not in Sable's file yet. Open: picker.confirm.body "[ask Cheke]".
  */
 export type Lang = 'en' | 'es'
 
@@ -26,7 +26,7 @@ const EN = {
   'picker.confirm.yes': 'Yes, use this template',
   'picker.confirm.back': 'Keep looking',
   'picker.done': "Got it. We'll build your site with {name}.",
-  'picker.empty': 'No templates for this type yet. Try All types.',
+  'picker.empty': 'No templates for this business type yet. Change your business type, or let 72 After pick for you.',
   'picker.error': "We couldn't load templates. Please try again.",
   'picker.teampick.title': 'Let 72 After pick for me',
   'picker.teampick.body': "Not sure? We'll choose a template that fits your business.",
@@ -45,15 +45,20 @@ const EN = {
   'picker.type.next': 'Continue',
   'picker.type.change': 'Change business type',
   'picker.type.required': 'Please choose a business type.',
-  // DESIGN (Lina's packet wording, awaiting Sable)
-  'picker.card.heading': 'Template',
+  // Sable, Added 11:30 PM
+  'picker.card.title': 'Template',
   'picker.card.choose': 'Choose a template',
   'picker.card.change': 'Change',
   'picker.card.teampick': '72 After will pick',
   'picker.card.unavailable': 'Not available',
   'picker.retry': 'Retry',
   'picker.back': 'Back to your request',
-  'picker.bar.continue': 'Continue',
+  'picker.continue': 'Continue',
+  'picker.type.cleared': 'Your business type changed, so please choose a template again.',
+  'picker.showmore': 'Show more',
+  'picker.showmore.aria': 'Show 12 more templates',
+  // not in Sable's file; string from the 11:30 PM steering message
+  'picker.showmore.aria.rest': 'Show more templates',
 } as const
 export type CopyKey = keyof typeof EN
 
@@ -72,7 +77,7 @@ const ES: Record<CopyKey, string> = {
   'picker.confirm.yes': 'Sí, usar esta plantilla',
   'picker.confirm.back': 'Seguir viendo',
   'picker.done': 'Listo. Construiremos tu sitio con {name}.',
-  'picker.empty': 'Todavía no hay plantillas para este tipo. Prueba con Todos los tipos.',
+  'picker.empty': 'Todavía no hay plantillas para este tipo de negocio. Cambia el tipo de negocio o deja que 72 After elija por ti.',
   'picker.error': 'No pudimos cargar las plantillas. Inténtalo de nuevo.',
   'picker.teampick.title': 'Que 72 After elija por mí',
   'picker.teampick.body': '¿No estás seguro? Elegimos una plantilla que vaya con tu negocio.',
@@ -91,15 +96,19 @@ const ES: Record<CopyKey, string> = {
   'picker.type.next': 'Continuar',
   'picker.type.change': 'Cambiar tipo de negocio',
   'picker.type.required': 'Elige un tipo de negocio.',
-  // DESIGN placeholders (draft ES, awaiting Sable)
-  'picker.card.heading': 'Plantilla',
-  'picker.card.choose': 'Elegir una plantilla',
+  // Sable, Added 11:30 PM
+  'picker.card.title': 'Plantilla',
+  'picker.card.choose': 'Elige una plantilla',
   'picker.card.change': 'Cambiar',
-  'picker.card.teampick': '72 After elegirá',
+  'picker.card.teampick': '72 After la elegirá',
   'picker.card.unavailable': 'No disponible',
   'picker.retry': 'Reintentar',
   'picker.back': 'Volver a tu solicitud',
-  'picker.bar.continue': 'Continuar',
+  'picker.continue': 'Continuar',
+  'picker.type.cleared': 'Cambiaste el tipo de negocio, así que elige una plantilla otra vez.',
+  'picker.showmore': 'Ver más',
+  'picker.showmore.aria': 'Ver 12 plantillas más',
+  'picker.showmore.aria.rest': 'Ver más plantillas',
 }
 
 export const TYPE_LABELS: Record<Lang, Record<Niche, string>> = {

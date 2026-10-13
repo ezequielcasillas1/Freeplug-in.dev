@@ -7,7 +7,7 @@ import { isFresh, type CatalogCard } from '@/lib/templates/catalog-lookup'
 import { getCatalogItem, listTemplatesForType } from '@/lib/templates/server'
 import { pickLang, t, TYPE_LABELS } from '@/lib/templates/copy'
 import { isPickEditable } from '@/lib/templates/pick'
-import { saveTemplatePick } from './actions'
+import { changeBusinessType, saveTemplatePick } from './actions'
 import { Picker, type PickerItem, type Selection } from './Picker'
 import { TypeStep } from './TypeStep'
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: 'Choose your site template | Freeplug
 
 type Props = {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ type?: string; lang?: string; step?: string }>
+  searchParams: Promise<{ type?: string; lang?: string; step?: string; repick?: string }>
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -70,8 +70,14 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
 
   const queryType = isNiche(q.type) ? q.type : null
   const type = savedType ?? queryType
-  if (!type || (!savedType && q.step === 'type')) {
-    return <div className="overflow-x-hidden">{back}<TypeStep lang={lang} basePath={basePath} initial={type} /></div>
+  if (!type || q.step === 'type') {
+    // Business type is editable whenever the pick is (Aria ruling 2). Once saved, Continue saves the new type.
+    return (
+      <div className="overflow-x-hidden">
+        {back}
+        <TypeStep lang={lang} basePath={basePath} initial={type} change={savedType ? { requestId: id, save: changeBusinessType } : undefined} />
+      </div>
+    )
   }
 
   let items: PickerItem[] | null = null
@@ -96,7 +102,7 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
       : req.template_choice === 'client_pasted' && req.pasted_template_url ? { kind: 'paste', url: req.pasted_template_url }
         : req.template_choice === 'envato_catalog' && req.envato_item_id != null ? { kind: 'item', id: Number(req.envato_item_id) }
           : null
-  const changeQ = new URLSearchParams({ step: 'type', type, ...(lang === 'es' ? { lang } : {}) })
+  const changeQ = new URLSearchParams({ step: 'type', ...(savedType ? {} : { type }), ...(lang === 'es' ? { lang } : {}) })
   return (
     <div className="overflow-x-hidden" aria-label={TYPE_LABELS[lang][type]}>
       {back}
@@ -104,7 +110,7 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
         lang={lang}
         requestId={id}
         type={type}
-        typeSaved={savedType != null}
+        repick={q.repick === '1'}
         changeTypeHref={`${basePath}?${changeQ}`}
         items={items}
         initial={initial}
