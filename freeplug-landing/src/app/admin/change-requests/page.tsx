@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { assertAdminAccess } from '@/lib/admin/guard'
 import { AdminConfigError } from '../AdminConfigError'
 import {
   ADMIN_BILLING_LABEL,
@@ -11,6 +12,9 @@ import {
 } from '@/lib/change-requests/admin-view'
 
 export default async function AdminChangeRequestsPage() {
+  // Phase 5 L-3: the page checks admin access itself before any service-role query (the layout
+  // renders concurrently, so its guard alone does not stop this query).
+  await assertAdminAccess()
   let admin
   try {
     admin = createAdminClient()

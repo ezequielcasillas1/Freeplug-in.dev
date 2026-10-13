@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { assertAdminAccess } from '@/lib/admin/guard'
 import { AdminConfigError } from '../../AdminConfigError'
 import {
   ADMIN_BILLING_LABEL,
@@ -18,6 +19,9 @@ type Props = { params: Promise<{ id: string }> }
 const ct = (iso: string) => `${new Date(iso).toLocaleString('en-US', { timeZone: 'America/Chicago' })} CT`
 
 export default async function AdminChangeRequestPage({ params }: Props) {
+  // Phase 5 L-3: the page checks admin access itself before any service-role query (the layout
+  // renders concurrently, so its guard alone does not stop this query).
+  await assertAdminAccess()
   const { id } = await params
   if (!z.string().uuid().safeParse(id).success) notFound()
   let admin
