@@ -16,6 +16,7 @@ import { getAddonPriceId } from '@/lib/stripe/prices'
 import { supabasePlanChangeLockStore } from '@/lib/plans/plan-change-lock'
 import { healOwedRemovals } from '@/lib/stripe/addon-removal-owed'
 import { supabaseRemovalOwedStore, type RemovalOwedDb } from '@/lib/stripe/addon-removal-owed-server'
+import { markWebhookEventProcessed, webhookEventState, type WebhookEventsDb } from '@/lib/stripe/webhook-events'
 
 export const runtime = 'nodejs'
 
@@ -78,6 +79,12 @@ export async function POST(request: Request) {
   } catch (e) {
     console.error('[webhook/stripe] admin client', e)
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
+  }
+
+  // Phase 4 L-1: an event we already finished answers 200 and does nothing.
+  const eventsDb = admin as unknown as WebhookEventsDb
+  if ((await webhookEventState(eventsDb, event.id)) === 'processed') {
+    return NextResponse.json({ received: true, duplicate: true })
   }
 
   let websiteAccess: WebsiteAccessStatus | undefined
@@ -252,8 +259,9 @@ export async function POST(request: Request) {
         .limit(1)
 
       if (findErr) {
+        // Phase 4 L-1: Stripe must retry, or the ledger row and the paid total are lost for good.
         console.error('[webhook] profiles lookup', findErr)
-        break
+        return NextResponse.json({ error: 'Profile lookup failed' }, { status: 500 })
       }
 
       const profile = rows?.[0]
@@ -287,7 +295,7 @@ export async function POST(request: Request) {
           break
         }
         console.error('[webhook] billing_ledger insert', insertErr)
-        break
+        return NextResponse.json({ error: 'Ledger row not saved' }, { status: 500 })
       }
 
       const prev = profile.cumulative_website_value_paid_cents ?? 0
@@ -312,5 +320,6 @@ export async function POST(request: Request) {
   }
 
   if (redeliver) return NextResponse.json({ error: redeliver }, { status: 500 })
+  await markWebhookEventProcessed(eventsDb, event.id, event.type)
   return NextResponse.json(websiteAccess ? { received: true, websiteAccess } : { received: true })
 }
