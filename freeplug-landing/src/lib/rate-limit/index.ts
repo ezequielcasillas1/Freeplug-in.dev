@@ -16,8 +16,8 @@ export function hashRateKey(raw: string): string {
 export type RateDecision = 'allowed' | 'limited' | 'error'
 
 /**
- * The raw decision, so a caller can choose what a database error means. Only the password reset uses this
- * directly (it fails OPEN to its in-memory limit, src/lib/auth/reset-rate-limit.ts); everything else calls
+ * The raw decision, so a caller can choose what a database error means. Only the password reset's per-address caps use
+ * this directly (they fail OPEN to its in-memory limit, src/lib/auth/reset-rate-limit.ts); everything else calls
  * rateCheck(), which keeps failing closed.
  */
 export async function rateDecision(rule: RateRule, rawKey: string): Promise<RateDecision> {
