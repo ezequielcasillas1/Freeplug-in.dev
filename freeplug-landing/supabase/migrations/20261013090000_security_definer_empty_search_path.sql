@@ -25,3 +25,23 @@ alter function public.reject_site_details_submission(uuid) set search_path = '';
 alter function public.apply_site_details_submission(uuid) set search_path = '';
 alter function public.purge_site_photos(uuid[], interval) set search_path = '';
 alter function public.confirm_customer_details(uuid, uuid, jsonb, jsonb) set search_path = '';
+
+-- Aria's ruling (Oct 13): every other SECURITY DEFINER function still on search_path = public (or
+-- pg_catalog, public) gets the same treatment. Their latest bodies already use only public.<name>,
+-- auth.uid() / auth.users and built-ins:
+--   handle_new_user                    20260402120000_profiles_and_website_requests.sql (auth.users trigger)
+--   ensure_own_profile                 20260402120000_profiles_and_website_requests.sql
+--   acknowledge_website_transfer       20260404100000_close_website_request_rpcs.sql (replaces 20260403120000)
+--   cancel_own_website_request         20260404100000_close_website_request_rpcs.sql
+--   cancel_website_request_for_user    20260924210000_cancel_website_request_service_role_only.sql
+--   outreach_site_events_apply         20260927050100_outreach_sites.sql (trigger)
+--   edit_uses_request_once             20261004091000_addon_edit_uses.sql (trigger)
+--   change_requests_enforce_caps       20261010160000_change_request_caps.sql (trigger; was pg_catalog, public)
+alter function public.handle_new_user() set search_path = '';
+alter function public.ensure_own_profile() set search_path = '';
+alter function public.acknowledge_website_transfer() set search_path = '';
+alter function public.cancel_own_website_request() set search_path = '';
+alter function public.cancel_website_request_for_user(uuid) set search_path = '';
+alter function public.outreach_site_events_apply() set search_path = '';
+alter function public.edit_uses_request_once() set search_path = '';
+alter function public.change_requests_enforce_caps() set search_path = '';
