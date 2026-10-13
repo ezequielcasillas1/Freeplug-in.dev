@@ -521,6 +521,25 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     expect(container.querySelectorAll('[class*="z-2"],[class*="z-3"],[class*="z-4"],[class*="z-5"]')).toHaveLength(0)
   })
 
+  it('Lina: opening the confirm scrolls its Turn on/Cancel row into view, kept above the phone bar (scroll margin = bar height)', async () => {
+    const scroll = vi.fn()
+    const orig = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scroll
+    try {
+      card()
+      fireEvent.click(sw('small_edit'))
+      const actions = await screen.findByTestId('addon-confirm-actions')
+      await waitFor(() => expect(scroll.mock.contexts).toContain(actions))
+      expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' })
+      expect(actions.className).toMatch(/max-sm:scroll-mb-\[90px\]/)
+      expect(within(actions).getByTestId('addon-confirm-button')).toBeInTheDocument()
+      expect(within(actions).getByTestId('addon-cancel')).toBeInTheDocument()
+      expect(document.activeElement).toBe(within(actions).getByTestId('addon-confirm-button'))
+    } finally {
+      Element.prototype.scrollIntoView = orig
+    }
+  })
+
   it('confirm open: the bar swaps to the after-change totals (bold "$5.35 today" + the new monthly); Cancel restores the current ones', async () => {
     card()
     const amount = () => screen.getByTestId('plan-total-amount')

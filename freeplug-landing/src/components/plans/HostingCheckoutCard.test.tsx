@@ -260,6 +260,14 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     expect(btn.className).not.toMatch(/(^|\s)hidden(\s|$)/) // desktop unchanged
   })
 
+  it('Lina: the card keeps the sticky bar height as bottom padding on phones only', () => {
+    switching()
+    expect(screen.getByTestId('checkout-card-shell').className).toMatch(/max-sm:pb-\[90px\]/)
+    cleanup()
+    render(<HostingCheckoutCard />)
+    expect(screen.getByTestId('checkout-card-shell').className).not.toMatch(/pb-\[90px\]/)
+  })
+
   it('M-1: phones hide the disabled "Choose a different plan to switch"; a real switch stays visible', () => {
     const { container } = switching()
     const same = screen.getByRole('button', { name: 'Choose a different plan to switch' })

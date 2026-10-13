@@ -147,6 +147,7 @@ export function AddonsBlock(props: Props) {
   const [error, setError] = useState<string | null>(null)
   const [keeping, setKeeping] = useState<AddonId | null>(null)
   const turnOnRef = useRef<HTMLButtonElement>(null)
+  const confirmActionsRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Partial<Record<AddonId, HTMLElement | null>>>({})
   // Stale-request guard (as in HostingCheckoutCard): closing bumps it, a late preview is dropped.
   const previewSeq = useRef(0)
@@ -180,7 +181,11 @@ export function AddonsBlock(props: Props) {
   const pendingId = pending?.id ?? null
   useLayoutEffect(() => {
     if (pendingKind !== 'confirm' && pendingKind !== 'loading') return
-    if (pendingKind === 'confirm') turnOnRef.current?.focus()
+    if (pendingKind === 'confirm') {
+      // Lina: bring the Activate/Cancel buttons into view (above the phone sticky bar, via scroll-margin).
+      turnOnRef.current?.focus({ preventScroll: true })
+      confirmActionsRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close(pendingId ?? undefined)
     }
@@ -412,7 +417,7 @@ export function AddonsBlock(props: Props) {
             {l}
           </p>
         ))}
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div ref={confirmActionsRef} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center max-sm:scroll-mb-[90px]" data-testid="addon-confirm-actions">
           <Button
             ref={turnOnRef}
             size="sm"
