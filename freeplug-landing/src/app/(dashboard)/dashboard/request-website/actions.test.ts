@@ -276,7 +276,7 @@ describe('sendHelpChangeRequest', () => {
   it.each([
     [{ code: 'P0001', message: 'change_requests_pending_cap' }, 'You already have 10 change requests waiting for review. Please wait until we review some, or email support@freeplug-in.dev.'],
     [{ code: 'P0001', message: 'change_requests_daily_cap' }, "You've sent 20 change requests in the last 24 hours. Please try again tomorrow, or email support@freeplug-in.dev."],
-    [{ code: '23514', message: 'new row for relation "change_requests" violates check constraint "change_requests_description_check"' }, 'Keep the change under 2,000 characters.'],
+    [{ code: '23514', message: 'new row for relation "change_requests" violates check constraint "change_requests_description_check"' }, 'Please keep your request under 2,000 characters.'],
   ])('ruling 8: DB cap %j -> friendly line, nothing appended to the notes', async (dbErr, line) => {
     state.latest = { id: 'req-1', status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
     state.open = { id: 'req-1', status: 'submitted' }
@@ -290,7 +290,7 @@ describe('sendHelpChangeRequest', () => {
   it('description length matches the form (2,000 raw characters)', async () => {
     state.latest = { id: 'req-1', status: 'submitted', business_name: 'Gracia Lawn', notes: '' }
     state.open = { id: 'req-1', status: 'submitted' }
-    expect(await sendHelpChangeRequest({ ...input, description: 'x'.repeat(2001) })).toEqual({ ok: false, error: 'Keep the change under 2,000 characters.' })
+    expect(await sendHelpChangeRequest({ ...input, description: 'x'.repeat(2001) })).toEqual({ ok: false, error: 'Please keep your request under 2,000 characters.' })
     expect((await sendHelpChangeRequest({ ...input, description: 'x'.repeat(2000) })).ok).toBe(true)
     expect((await sendHelpChangeRequest({ ...input, description: '   ' })).ok).toBe(false)
   })
