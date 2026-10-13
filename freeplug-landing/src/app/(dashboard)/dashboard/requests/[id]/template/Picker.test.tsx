@@ -1,0 +1,90 @@
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+
+const push = vi.fn()
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh: vi.fn() }) }))
+
+import { Picker, type PickerItem } from './Picker'
+import { TypeStep } from './TypeStep'
+
+const items: PickerItem[] = Array.from({ length: 6 }, (_, i) => ({ id: i + 1, name: `Clean ${i + 1}`, thumb: `https://img/${i}.jpg`, preview: `https://demo/${i}`, available: i !== 5 }))
+const base = { lang: 'en' as const, requestId: '00000000-0000-4000-8000-00000000c0de', type: 'cleaning' as const, typeSaved: false, changeTypeHref: '/x?step=type', items, initial: null }
+
+describe('Picker', () => {
+  it('shows each template once, 4:3 lazy thumbs with alt text, and disables unavailable', () => {
+    render(<Picker {...base} save={vi.fn()} />)
+    expect(screen.getAllByRole('listitem')).toHaveLength(6)
+    const img = screen.getByAltText('Preview of the Clean 1 template')
+    expect(img.getAttribute('loading')).toBe('lazy')
+    const last = screen.getByTestId('card-6')
+    expect(within(last).getByTestId('unavailable')).toBeTruthy()
+    expect((within(last).getByRole('button', { name: 'Choose this one' }) as HTMLButtonElement).disabled).toBe(true)
+    expect(within(screen.getByTestId('card-1')).getByRole('link', { name: /Preview/ }).getAttribute('target')).toBe('_blank')
+  })
+
+  it('keeps one selection across option cards and grid', () => {
+    render(<Picker {...base} save={vi.fn()} />)
+    fireEvent.click(within(screen.getByTestId('card-2')).getByRole('button', { name: 'Choose this one' }))
+    expect(within(screen.getByTestId('card-2')).getByRole('button', { name: 'Selected' })).toBeTruthy()
+    expect(screen.getAllByTestId('selected-badge')).toHaveLength(1)
+    fireEvent.click(within(screen.getByTestId('option-team')).getByRole('button', { name: 'Choose this one' }))
+    expect(screen.getAllByTestId('selected-badge')).toHaveLength(1)
+    expect(within(screen.getByTestId('card-2')).queryByRole('button', { name: 'Selected' })).toBeNull()
+    expect(screen.getByTestId('confirm-bar').textContent).toContain('Let 72 After pick for me')
+  })
+
+  it('paste: bad link shows the error under the input and keeps the text', () => {
+    render(<Picker {...base} save={vi.fn()} />)
+    fireEvent.click(within(screen.getByTestId('option-paste')).getByRole('button', { name: 'Template link' }))
+    const input = screen.getByLabelText('Template link') as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'https://example.com/x' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Use this link' }))
+    expect(screen.getByRole('alert').textContent).toContain('https://themeforest.net/item/')
+    expect(input.value).toBe('https://example.com/x')
+    expect(screen.queryByTestId('confirm-bar')).toBeNull()
+    fireEvent.change(input, { target: { value: 'https://themeforest.net/item/a/1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Use this link' }))
+    expect(screen.getByTestId('confirm-bar')).toBeTruthy()
+  })
+
+  it('confirm screen saves with the business type; save error keeps the selection', async () => {
+    const save = vi.fn().mockResolvedValueOnce({ ok: false, error: 'stale' }).mockResolvedValueOnce({ ok: true })
+    render(<Picker {...base} save={save} />)
+    fireEvent.click(within(screen.getByTestId('card-1')).getByRole('button', { name: 'Choose this one' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(screen.getByTestId('confirm-screen').textContent).toContain('Use Clean 1 for your site?')
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, use this template' }))
+    await waitFor(() => expect(screen.getByTestId('save-error').textContent).toContain("isn't available anymore"))
+    expect(save).toHaveBeenCalledWith(base.requestId, { choice: 'envato_catalog', envatoItemId: 1, businessType: 'cleaning' })
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, use this template' }))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/dashboard/request-website?picked=1'))
+  })
+
+  it('restores a saved pick (persists after refresh) and hides Change type once saved', () => {
+    render(<Picker {...base} typeSaved initial={{ kind: 'item', id: 3 }} save={vi.fn()} />)
+    expect(within(screen.getByTestId('card-3')).getByRole('button', { name: 'Selected' })).toBeTruthy()
+    expect(screen.queryByText('Change business type')).toBeNull()
+  })
+
+  it('empty state', () => {
+    render(<Picker {...base} items={[]} save={vi.fn()} />)
+    expect(screen.getByTestId('empty').textContent).toContain('No templates for this type yet')
+    expect(screen.getByTestId('option-team')).toBeTruthy()
+  })
+})
+
+describe('TypeStep', () => {
+  it('20 tiles, Cleaning first, other_local last, Continue disabled until chosen', () => {
+    render(<TypeStep lang="en" basePath="/p" initial={null} />)
+    const radios = screen.getAllByRole('radio') as HTMLInputElement[]
+    expect(radios).toHaveLength(20)
+    expect(radios[0].value).toBe('cleaning')
+    expect(radios[19].value).toBe('other_local')
+    const btn = screen.getByRole('button', { name: 'Continue' }) as HTMLButtonElement
+    expect(btn.disabled).toBe(true)
+    fireEvent.click(radios[0])
+    expect(btn.disabled).toBe(false)
+    fireEvent.click(btn)
+    expect(push).toHaveBeenCalledWith('/p?type=cleaning')
+  })
+})

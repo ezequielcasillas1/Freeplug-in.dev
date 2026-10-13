@@ -10,6 +10,9 @@ import {
 import { CANCEL_OPTIONS_LINK } from '@/lib/plans/ladder-copy'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
+import { TemplateCard, type TemplateCardPick } from './TemplateCard'
+import { getCatalogItem } from '@/lib/templates/server'
+import { pickLang } from '@/lib/templates/copy'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
 export const metadata: Metadata = {
@@ -17,7 +20,7 @@ export const metadata: Metadata = {
 }
 
 type Props = {
-  searchParams: Promise<{ focus?: string }>
+  searchParams: Promise<{ focus?: string; picked?: string; lang?: string }>
 }
 
 export default async function RequestWebsitePage({ searchParams }: Props) {
@@ -31,10 +34,11 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
 
   let openRequestStatus: 'submitted' | 'in_review' | null = null
   let defaultValues: RequestWebsiteFormValues | undefined
+  let templatePick: TemplateCardPick | null = null
   if (user) {
     const { data: open } = await supabase
       .from('website_requests')
-      .select('status, business_name, contact_phone, google_business_url, notes')
+      .select('id, status, business_name, contact_phone, google_business_url, notes, template_choice, envato_item_id, pasted_template_url, template_locked_at')
       .eq('user_id', user.id)
       .in('status', ['submitted', 'in_review'])
       .maybeSingle()
@@ -46,6 +50,25 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
         contact_phone: open.contact_phone ?? '',
         google_business_url: open.google_business_url ?? '',
         notes: open.notes ?? '',
+      }
+      let itemName: string | null = null
+      let thumb: string | null = null
+      if (open.template_choice === 'envato_catalog' && open.envato_item_id != null) {
+        try {
+          const item = await getCatalogItem(Number(open.envato_item_id))
+          itemName = item?.name ?? null
+          thumb = item?.previewImageUrl ?? null
+        } catch {
+          // card still shows; the name is just missing
+        }
+      }
+      templatePick = {
+        requestId: open.id,
+        choice: open.template_choice ?? null,
+        itemName,
+        thumb,
+        pastedUrl: open.pasted_template_url ?? null,
+        locked: open.template_locked_at != null,
       }
     }
   }
@@ -127,6 +150,9 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
             <CloseOpenRequestButton status={openRequestStatus} />
           )}
         </div>
+      ) : null}
+      {templatePick ? (
+        <TemplateCard pick={templatePick} lang={pickLang(q.lang)} showDone={q.picked === '1'} />
       ) : null}
       <RequestWebsiteForm
         focusMaintenance={focusMaintenance}
