@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPortal: vi.fn() }))
 
 import { HostingCheckoutCard } from './HostingCheckoutCard'
-import { AddonsBlock } from './AddonsBlock'
+import { AddonsBlock, CONFIRM_SCROLL_FALLBACK_MS } from './AddonsBlock'
 import { ADDONS, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
 import type { AddonPreviewResponse, ChangeAddonResponse, PlanPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 import { addonChargeNote, addonPerkLine, BIG_CHANGE_BIGGER_NOTE, TIP_SLIDER_LABEL } from '@/lib/plans/ladder-copy'
@@ -530,7 +530,10 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
       card()
       fireEvent.click(sw('small_edit'))
       const actions = await screen.findByTestId('addon-confirm-actions')
+      // No resize ever happens here: the fallback timer scrolls, exactly once, smooth.
       await waitFor(() => expect(scroll.mock.contexts).toContain(actions))
+      await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
+      expect(scroll.mock.contexts.filter((c) => c === actions)).toHaveLength(1)
       expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' })
       expect(actions.className).toMatch(/max-sm:scroll-mb-\[var\(--sticky-bar-h,90px\)\]/)
       expect(within(actions).getByTestId('addon-confirm-button')).toBeInTheDocument()
@@ -541,7 +544,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     }
   })
 
-  it('Vera 375: the bar grows after the confirm opens (49 -> 73px); a second scroll runs once the new height is published', async () => {
+  it('Vera 375 + Lina: the bar grows after the confirm opens (49 -> 73px); ONE smooth scroll, after the new height is published', async () => {
     const observers: Array<() => void> = []
     const origRO = globalThis.ResizeObserver
     const origRect = Element.prototype.getBoundingClientRect
@@ -561,21 +564,27 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     }
     // Record the published --sticky-bar-h (the scroll margin's value) at each scroll.
     const offsets: string[] = []
-    Element.prototype.scrollIntoView = function (this: Element) {
-      if (this.getAttribute('data-testid') === 'addon-confirm-actions') offsets.push(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h'))
+    const opts: unknown[] = []
+    Element.prototype.scrollIntoView = function (this: Element, o?: unknown) {
+      if (this.getAttribute('data-testid') === 'addon-confirm-actions') {
+        offsets.push(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h'))
+        opts.push(o)
+      }
     }
     try {
       card()
       expect(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h')).toBe('49px')
       fireEvent.click(sw('small_edit'))
       await screen.findByTestId('sticky-addon-today')
-      expect(offsets).toEqual(['49px']) // first scroll, before the bar has grown
+      expect(offsets).toEqual([]) // no scroll yet: waiting for the bar's new height
       act(() => observers.forEach((fire) => fire())) // the ResizeObserver reports the taller bar
-      await waitFor(() => expect(offsets).toEqual(['49px', '73px']))
+      await waitFor(() => expect(offsets).toEqual(['73px']))
+      expect(opts).toEqual([{ block: 'nearest', behavior: 'smooth' }])
       expect(screen.getByTestId('addon-confirm-actions').className).toMatch(/max-sm:scroll-mb-\[var\(--sticky-bar-h,90px\)\]/)
-      // No further scroll without a height change.
+      // Exactly one: neither another resize nor the fallback timer scrolls again.
       act(() => observers.forEach((fire) => fire()))
-      expect(offsets).toHaveLength(2)
+      await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
+      expect(offsets).toEqual(['73px'])
     } finally {
       globalThis.ResizeObserver = origRO
       Element.prototype.getBoundingClientRect = origRect

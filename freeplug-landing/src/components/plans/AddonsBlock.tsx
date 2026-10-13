@@ -99,6 +99,9 @@ type LiveProps = {
   onConfirmTotals?: (totals: ConfirmTotals | null) => void
 }
 
+/** Fallback: scroll the open confirm into view this long after it opens if the bar's height never changes. */
+export const CONFIRM_SCROLL_FALLBACK_MS = 150
+
 type Props = {
   stepId: PlanStepId
   className?: string
@@ -183,19 +186,28 @@ export function AddonsBlock(props: Props) {
 
   const pendingKind = pending?.kind ?? null
   const pendingId = pending?.id ?? null
-  // Vera (375, ce0af86): opening the confirm adds the "today" line, so the bar grows (49 -> 73px) AFTER the
-  // first scroll. Once the new height is measured and published (--sticky-bar-h, the scroll margin), scroll
-  // again so Turn on/Cancel end up above the taller bar.
+  // Vera (375, ce0af86) + Lina (Oct 13): opening the confirm adds the "today" line, so the bar grows
+  // (49 -> 73px). Scroll ONCE, smooth, after the new height is measured and published (--sticky-bar-h, the
+  // scroll margin). If the height never changes, a short fallback timer still scrolls once.
   const stickyBarHeight = props.stickyBarHeight
   const stickyBarHeightRef = useRef(stickyBarHeight)
   stickyBarHeightRef.current = stickyBarHeight
-  const scrolledForBarHeight = useRef<number | undefined>(undefined)
-  useEffect(() => {
-    if (pendingKind !== 'confirm' || stickyBarHeight === undefined) return
-    if (scrolledForBarHeight.current === stickyBarHeight) return
-    scrolledForBarHeight.current = stickyBarHeight
+  const scrollWait = useRef<{ baseline: number; timer: ReturnType<typeof setTimeout> } | null>(null)
+  const scrollConfirmOnce = useCallback(() => {
+    if (scrollWait.current) clearTimeout(scrollWait.current.timer)
+    scrollWait.current = null
     confirmActionsRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
-  }, [pendingKind, stickyBarHeight])
+  }, [])
+  useEffect(() => {
+    const wait = scrollWait.current
+    if (wait && stickyBarHeight !== undefined && stickyBarHeight !== wait.baseline) scrollConfirmOnce()
+  }, [stickyBarHeight, scrollConfirmOnce])
+  useEffect(
+    () => () => {
+      if (scrollWait.current) clearTimeout(scrollWait.current.timer)
+    },
+    []
+  )
 
   // Focus + Esc in the same commit that shows the confirm (Vera, aaec23d finding 2 pattern).
   useLayoutEffect(() => {
@@ -203,15 +215,18 @@ export function AddonsBlock(props: Props) {
     if (pendingKind === 'confirm') {
       // Lina: bring the Activate/Cancel buttons into view (above the phone sticky bar: scroll margin = its measured height, --sticky-bar-h).
       turnOnRef.current?.focus({ preventScroll: true })
-      confirmActionsRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
-      scrolledForBarHeight.current = stickyBarHeightRef.current
+      if (stickyBarHeightRef.current === undefined) scrollConfirmOnce() // no sticky bar: nothing to wait for
+      else {
+        if (scrollWait.current) clearTimeout(scrollWait.current.timer)
+        scrollWait.current = { baseline: stickyBarHeightRef.current, timer: setTimeout(scrollConfirmOnce, CONFIRM_SCROLL_FALLBACK_MS) }
+      }
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close(pendingId ?? undefined)
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [pendingKind, pendingId, close])
+  }, [pendingKind, pendingId, close, scrollConfirmOnce])
 
   const withIncludedEdit = entitlementsFor({ stepId }).includedEditsPerMonth >= 1
   const submitting = pending?.kind === 'submitting' || keeping !== null
