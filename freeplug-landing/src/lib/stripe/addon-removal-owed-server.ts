@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendMail } from '@/lib/email/mailer'
 import { sendWebhookEmailOnce } from '@/lib/email/webhook-email-ledger'
 import { SUPPORT_EMAIL } from '@/lib/site'
+import type { PendingRestoreFailed } from './change-plan'
 import { parseAddonIds } from '@/lib/plans/addons'
 import type { AddonId } from '@/lib/plans/ladder'
 import { recordRemovalOwed, removalOwedAlert, removalOwedUnrecordedAlert, type RemovalOwed, type RemovalOwedInput, type RemovalOwedStore, type RemovalOwedUnrecorded } from './addon-removal-owed'
@@ -128,3 +129,33 @@ export async function sendRemovalOwedUnrecordedAlert(o: RemovalOwedUnrecorded): 
 /** For changePlanStep / resume: save the flag, then alert us. */
 export const recordRemovalOwedNow = (source: 'upgrade' | 'resume') => (o: RemovalOwedInput) =>
   recordRemovalOwed({ store: removalOwedStore(source), alert: sendRemovalOwedAlert }, o)
+
+/**
+ * Phase 4 M-1: an upgrade failed after releasing a pending downgrade / add-on removal and the put-back failed too.
+ * Internal alert to the support inbox, sent directly (no email ledger: the database may be what failed);
+ * Resend's idempotency key keeps it to one per subscription + effective time in 24 h.
+ */
+export function pendingRestoreFailedAlert(o: PendingRestoreFailed): { subject: string; text: string } {
+  return {
+    subject: `[Freeplug billing] Pending plan change lost on ${o.subscriptionId} (fix by hand)`,
+    text: [
+      'An upgrade did not go through after the pending change was released, and putting the change back failed.',
+      `Subscription: ${o.subscriptionId}`,
+      `Customer: ${o.customerId ?? 'unknown'}`,
+      `User: ${o.userId ?? 'unknown'}`,
+      `Pending step: ${o.pendingStep}`,
+      `Add-ons the customer turned off: ${o.addonsTurnedOff.join(', ') || 'none'}`,
+      `Should take effect: ${o.effectiveAt}`,
+      `Upgrade error: ${o.upgradeError}`,
+      `Add-on removal saved as owed: ${o.removalOwedSaved === null ? 'n/a' : o.removalOwedSaved ? 'yes' : 'NO'}`,
+      '',
+      `Re-create the change in Stripe: a subscription schedule whose next phase (from ${o.effectiveAt}) is ${o.pendingStep} with the add-ons left, proration none.`,
+    ].join('\n'),
+  }
+}
+
+export async function sendPendingRestoreFailedAlert(o: PendingRestoreFailed): Promise<void> {
+  const { subject, text } = pendingRestoreFailedAlert(o)
+  const r = await sendMail({ to: SUPPORT_EMAIL, subject, text, template: 'pending-restore-failed-alert', idempotencyKey: `pending-restore-failed:${o.subscriptionId}:${Math.floor(Date.parse(o.effectiveAt) / 1000)}` })
+  if (!r.success) throw new Error(`pending-restore-failed alert not sent: ${r.reason}`)
+}
