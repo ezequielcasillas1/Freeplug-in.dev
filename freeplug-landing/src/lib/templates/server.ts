@@ -25,7 +25,7 @@ export async function pickDeps(): Promise<PickDeps> {
     loadRequest: async (id) => {
       const { data, error } = await db
         .from('website_requests')
-        .select('id, user_id, status, business_type, template_locked_at')
+        .select('id, user_id, status, business_type, template_locked_at, template_choice, envato_item_id')
         .eq('id', id)
         .maybeSingle()
       if (error) throw new Error('load failed')
@@ -36,6 +36,16 @@ export async function pickDeps(): Promise<PickDeps> {
       const { data, error } = await db.from('template_widen_log').select('id, niche, request_id, actor_role').eq('id', id).maybeSingle()
       if (error) throw new Error('widen lookup failed')
       return data ? ({ ...(data as WidenRow), id: Number((data as WidenRow).id) }) : null
+    },
+    findWidens: async (requestId, niche) => {
+      const { data, error } = await db
+        .from('template_widen_log')
+        .select('id, niche, request_id, actor_role')
+        .eq('niche', niche)
+        .or(`request_id.eq.${requestId},request_id.is.null`)
+        .limit(50)
+      if (error) throw new Error('widen lookup failed')
+      return ((data ?? []) as WidenRow[]).map((w) => ({ ...w, id: Number(w.id) }))
     },
     // Conditional write: re-checks owner + editable in the same UPDATE so a lock/close can't race the save.
     write: async (id, patch) => {

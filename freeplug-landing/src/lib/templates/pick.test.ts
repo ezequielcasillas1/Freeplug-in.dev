@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { isFresh, type CatalogCard } from './catalog-lookup'
-import { isPickEditable, isValidPastedUrl, savePickCore, widenApplies, type PickDeps, type PickRequestRow, type WidenRow } from './pick'
+import { changeBusinessTypeCore, isGeneralTemplate, isPickEditable, isValidPastedUrl, savePickCore, widenApplies, type PickDeps, type PickRequestRow, type WidenRow } from './pick'
 
 const NOW = new Date('2026-10-12T20:00:00Z')
 const RID = '00000000-0000-4000-8000-00000000c0de'
@@ -11,7 +11,7 @@ function item(over: Partial<CatalogCard> = {}): CatalogCard {
   return { id: 101, name: 'Sparkle', previewImageUrl: null, livePreviewUrl: null, url: null, autoNiches: ['cleaning'], lastSeenAt: hoursAgo(1), status: 'active', ...over }
 }
 
-function deps(opts: { uid?: string | null; req?: Partial<PickRequestRow> | null; item?: CatalogCard | null; widen?: WidenRow | null; write?: boolean } = {}) {
+function deps(opts: { uid?: string | null; req?: Partial<PickRequestRow> | null; item?: CatalogCard | null; widen?: WidenRow | null; widens?: WidenRow[]; write?: boolean } = {}) {
   const req: PickRequestRow | null =
     opts.req === null ? null : { id: RID, user_id: OWNER, status: 'submitted', business_type: 'cleaning', template_locked_at: null, ...opts.req }
   const write = vi.fn(async () => opts.write ?? true)
@@ -20,6 +20,7 @@ function deps(opts: { uid?: string | null; req?: Partial<PickRequestRow> | null;
     loadRequest: async () => req,
     lookupItem: async () => (opts.item === undefined ? item() : opts.item),
     loadWiden: async () => opts.widen ?? null,
+    findWidens: async () => opts.widens ?? [],
     write,
     now: () => NOW,
   }
@@ -96,16 +97,35 @@ describe('savePickCore: catalog picks', () => {
       expect((await savePickCore(deps().d, RID, { choice: 'envato_catalog', envatoItemId: id as number })).ok).toBe(false)
     }
   })
-  it('widen exception: a logged widen for this type lets a non-matching item through', async () => {
+  it('widen exception: a logged widen for this type lets a GENERAL template through', async () => {
     const team: WidenRow = { id: 7, niche: 'cleaning', request_id: null, actor_role: 'team' }
     const mine: WidenRow = { id: 8, niche: 'cleaning', request_id: RID, actor_role: 'client' }
     for (const w of [team, mine]) {
-      const { d, write } = deps({ item: item({ autoNiches: ['dental'] }), widen: w })
-      expect(await savePickCore(d, RID, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: w.id })).toEqual({ ok: true })
-      expect(write).toHaveBeenCalledOnce()
+      for (const niches of [[], ['other_local']]) {
+        const { d, write } = deps({ item: item({ autoNiches: niches }), widen: w })
+        expect(await savePickCore(d, RID, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: w.id })).toEqual({ ok: true })
+        expect(write).toHaveBeenCalledOnce()
+      }
     }
   })
-  it('widen exception does not apply for another type, another request, a missing log, or a stale item', async () => {
+  it('a team widen with no request id applies to every request of that type', async () => {
+    const team: WidenRow = { id: 7, niche: 'cleaning', request_id: null, actor_role: 'team' }
+    const other = '00000000-0000-4000-8000-000000000777'
+    const { d } = deps({ req: { id: other }, item: item({ autoNiches: [] }), widen: team })
+    expect(await savePickCore(d, other, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: 7 })).toEqual({ ok: true })
+  })
+  it("a widen never admits another niche's template", async () => {
+    const team: WidenRow = { id: 7, niche: 'cleaning', request_id: null, actor_role: 'team' }
+    for (const niches of [['dental'], ['dental', 'other_local']]) {
+      const { d, write } = deps({ item: item({ autoNiches: niches }), widen: team })
+      expect(await savePickCore(d, RID, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: 7 })).toEqual({ ok: false, error: 'stale' })
+      expect(write).not.toHaveBeenCalled()
+    }
+  })
+  it('general template without an applicable widen is refused', async () => {
+    expect(await savePickCore(deps({ item: item({ autoNiches: [] }) }).d, RID, { choice: 'envato_catalog', envatoItemId: 101 })).toEqual({ ok: false, error: 'stale' })
+  })
+  it('widen exception does not apply for another type, another request, a client widen without request, a missing log, or a stale item', async () => {
     const bad: Array<WidenRow | null> = [
       { id: 7, niche: 'dental', request_id: null, actor_role: 'team' },
       { id: 7, niche: 'cleaning', request_id: '00000000-0000-4000-8000-000000000999', actor_role: 'client' },
@@ -113,11 +133,17 @@ describe('savePickCore: catalog picks', () => {
       null,
     ]
     for (const w of bad) {
-      expect(await savePickCore(deps({ item: item({ autoNiches: ['dental'] }), widen: w }).d, RID, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: 7 })).toEqual({ ok: false, error: 'stale' })
+      expect(await savePickCore(deps({ item: item({ autoNiches: [] }), widen: w }).d, RID, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: 7 })).toEqual({ ok: false, error: 'stale' })
     }
-    const staleWiden = deps({ item: item({ autoNiches: ['dental'], lastSeenAt: hoursAgo(7) }), widen: { id: 7, niche: 'cleaning', request_id: null, actor_role: 'team' } })
+    const staleWiden = deps({ item: item({ autoNiches: [], lastSeenAt: hoursAgo(7) }), widen: { id: 7, niche: 'cleaning', request_id: null, actor_role: 'team' } })
     expect(await savePickCore(staleWiden.d, RID, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: 7 })).toEqual({ ok: false, error: 'stale' })
     expect(widenApplies(null, RID, 'cleaning')).toBe(false)
+  })
+  it('isGeneralTemplate: empty or only other_local', () => {
+    expect(isGeneralTemplate({ autoNiches: [] })).toBe(true)
+    expect(isGeneralTemplate({ autoNiches: ['other_local'] })).toBe(true)
+    expect(isGeneralTemplate({ autoNiches: ['cleaning'] })).toBe(false)
+    expect(isGeneralTemplate({ autoNiches: ['other_local', 'dental'] })).toBe(false)
   })
 })
 
@@ -183,5 +209,61 @@ describe('isFresh', () => {
     expect(isFresh({ status: 'active', lastSeenAt: hoursAgo(6) }, n)).toBe(false)
     expect(isFresh({ status: 'active', lastSeenAt: new Date(n + 3600_000).toISOString() }, n)).toBe(false)
     expect(isFresh({ status: 'active', lastSeenAt: 'garbage' }, n)).toBe(false)
+  })
+})
+
+describe('changeBusinessTypeCore', () => {
+  const catalogReq = { business_type: 'cleaning', template_choice: 'envato_catalog', envato_item_id: 101 }
+  it('refuses anon, other user, bad type', async () => {
+    expect(await changeBusinessTypeCore(deps({ uid: null }).d, RID, 'dental')).toEqual({ ok: false, error: 'save' })
+    expect(await changeBusinessTypeCore(deps({ uid: 'x' }).d, RID, 'dental')).toEqual({ ok: false, error: 'save' })
+    expect(await changeBusinessTypeCore(deps().d, RID, 'bakery')).toEqual({ ok: false, error: 'save' })
+  })
+  it.each([
+    ['locked', { template_locked_at: hoursAgo(1) }],
+    ['closed', { status: 'closed' }],
+  ])('refused when %s', async (_l, req) => {
+    const { d, write } = deps({ req })
+    expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: false, error: 'locked' })
+    expect(write).not.toHaveBeenCalled()
+  })
+  it.each(['submitted', 'in_review'])('editable while %s and unlocked', async (status) => {
+    const { d, write } = deps({ req: { status } })
+    expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: true, cleared: false })
+    expect(write).toHaveBeenCalledWith(RID, { business_type: 'dental' })
+  })
+  it('clears a catalog pick that does not fit the new type', async () => {
+    const { d, write } = deps({ req: catalogReq, item: item({ autoNiches: ['cleaning'] }) })
+    expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: true, cleared: true })
+    expect(write).toHaveBeenCalledWith(RID, { business_type: 'dental', template_choice: null, envato_item_id: null, pasted_template_url: null, template_picked_at: null })
+  })
+  it('keeps a catalog pick tagged for the new type', async () => {
+    const { d, write } = deps({ req: catalogReq, item: item({ autoNiches: ['cleaning', 'dental'] }) })
+    expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: true, cleared: false })
+    expect(write).toHaveBeenCalledWith(RID, { business_type: 'dental' })
+  })
+  it('keeps a general catalog pick when a widen for the new type covers it; clears without one', async () => {
+    const team: WidenRow = { id: 7, niche: 'dental', request_id: null, actor_role: 'team' }
+    expect(await changeBusinessTypeCore(deps({ req: catalogReq, item: item({ autoNiches: [] }), widens: [team] }).d, RID, 'dental')).toEqual({ ok: true, cleared: false })
+    expect(await changeBusinessTypeCore(deps({ req: catalogReq, item: item({ autoNiches: [] }) }).d, RID, 'dental')).toEqual({ ok: true, cleared: true })
+    // a widen never admits another niche's template
+    expect(await changeBusinessTypeCore(deps({ req: catalogReq, item: item({ autoNiches: ['cleaning'] }), widens: [team] }).d, RID, 'dental')).toEqual({ ok: true, cleared: true })
+  })
+  it('clears when the picked item is gone from the catalog', async () => {
+    expect(await changeBusinessTypeCore(deps({ req: catalogReq, item: null }).d, RID, 'dental')).toEqual({ ok: true, cleared: true })
+  })
+  it.each([
+    ['client_pasted', { template_choice: 'client_pasted', envato_item_id: null }],
+    ['team_pick', { template_choice: 'team_pick', envato_item_id: null }],
+  ])('%s stays', async (_l, req) => {
+    const { d, write } = deps({ req })
+    expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: true, cleared: false })
+    expect(write).toHaveBeenCalledWith(RID, { business_type: 'dental' })
+  })
+  it('lost race / DB error = generic save error', async () => {
+    expect(await changeBusinessTypeCore(deps({ write: false }).d, RID, 'dental')).toEqual({ ok: false, error: 'save' })
+    const { d } = deps({ req: catalogReq })
+    d.lookupItem = async () => { throw new Error('detail') }
+    expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: false, error: 'save' })
   })
 })
