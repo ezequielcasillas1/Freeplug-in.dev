@@ -87,7 +87,7 @@ Never translated: Starter, Priority, Fast lane, Leads, Get found, Growth partner
 - **+1 small edit**: "con el complemento +1 small edit" is the worst one. A Spanish speaker can't parse it without the gloss, which is why the perk lines spell out "un cambio pequeño".
 - **Leads / Growth partner** are fine as names, though "Leads" means nothing to a non-English reader.
 - My suggestion, not applied: keep the names but add a short Spanish gloss once, on the plan cards only, e.g. "Get found (te encuentran en Google)". Your call or Aria's.
-- **Legacy names**: "{tier} add-on" becomes "Add-on {tier}" ("Hospedaje + Add-on Pro"; Sable, Oct 13: "Add-on Pro" is a real tier name and stays English). grandfatheredAlertName builds "hosting plan and Pro add-on" from English pieces in code, so it needs the Spanish pieces ("plan de hosting y complemento Pro").
+- **Legacy names**: "{tier} add-on" stays exactly as in English ("Hospedaje + Pro add-on"; Sable, Oct 13: the tier name is kept as-is). "Complemento" is only for the unnamed fallback ("Complemento ($15)"). grandfatheredAlertName builds "hosting plan and Pro add-on" from English pieces in code, so it needs the Spanish pieces ("plan de hosting y complemento Pro").
 
 ## Stale or wrong English (for you to fix; Spanish follows the English as written)
 - **Approved Sep 24/25 lock lines that never landed:**

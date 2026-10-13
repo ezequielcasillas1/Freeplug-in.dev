@@ -648,7 +648,7 @@
     "chooseStepButton": "Elegir {name}",
     "grandfatheredHostingOnlyName": "Plan de hosting",
     "grandfatheredHostingShort": "Hospedaje",
-    "legacyAddonName": "Add-on {tier}",
+    "legacyAddonName": "{tier} add-on",
     "genericAddonLabel": "Complemento",
     "totalBreakdown": {
       "addons": "Complementos {amount}",

@@ -48,11 +48,11 @@ describe('grandfathered display name (Sable 6:19 PM; Vera copy-c4f9940 lows)', (
     // the add-on product by id (freeplug_addon_<tier>_monthly), whatever its name
     expect(planDisplayName([hosting, { lookupKey: null, productName: 'Old add-on', productId: 'freeplug_addon_plus_monthly' }])).toBe('Hosting + Plus add-on')
   })
-  it('Sable: in Spanish the legacy tier stays its English name: "Hospedaje + Add-on Pro" (never "Complemento Pro")', () => {
+  it('Sable: in Spanish the legacy add-on keeps its English name as-is: "Hospedaje + Pro add-on" (never "Complemento Pro")', () => {
     vi.stubEnv('FREEPLUG_I18N_ES_ALLOW_PENDING', '1') // Spanish catalog while it is pending (as ladder-copy-es-base.test)
-    expect(planDisplayName([hosting, pro], 'es')).toBe('Hospedaje + Add-on Pro')
-    expect(planDisplayName([pro, hosting], 'es')).toBe('Hospedaje + Add-on Pro')
-    expect(planDisplayName([hosting, { lookupKey: null, productName: 'Old add-on', productId: 'freeplug_addon_plus_monthly' }], 'es')).toBe('Hospedaje + Add-on Plus')
+    expect(planDisplayName([hosting, pro], 'es')).toBe('Hospedaje + Pro add-on')
+    expect(planDisplayName([pro, hosting], 'es')).toBe('Hospedaje + Pro add-on')
+    expect(planDisplayName([hosting, { lookupKey: null, productName: 'Old add-on', productId: 'freeplug_addon_plus_monthly' }], 'es')).toBe('Hospedaje + Plus add-on')
     expect(planDisplayName([hosting, pro], 'es')).not.toMatch(/Complemento/)
     expect(planDisplayName([hosting, pro])).toBe('Hosting + Pro add-on') // English unchanged
     vi.unstubAllEnvs()
