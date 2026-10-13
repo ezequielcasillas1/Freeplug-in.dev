@@ -1,12 +1,11 @@
--- Four Lows (approved by Aria, Oct 13; (c) and (d) per Vera's phase 5). Each check is added NOT VALID and is NOT validated here: new and updated rows
+-- Lows (approved by Aria, Oct 13; (c) and (d) per Vera's phase 5; (a) dropped as covered by an existing check). Each check is added NOT VALID and is NOT validated here: new and updated rows
 -- are checked from now on; existing rows are not scanned. Count existing violations first with
 -- supabase/checks/count-bad-rows-20261013091000.sql (read-only) before any VALIDATE CONSTRAINT in a later migration.
 -- Idempotent: drop-if-exists, then add. Not applied to any hosted project by this change.
 
--- (a) addon_removals_owed: a cleared row must say how (cleared_how non-empty once cleared_at is set).
-alter table public.addon_removals_owed drop constraint if exists addon_removals_owed_cleared_how_nonempty_check;
-alter table public.addon_removals_owed add constraint addon_removals_owed_cleared_how_nonempty_check
-  check (cleared_at is null or (cleared_how is not null and pg_catalog.btrim(cleared_how) <> '')) not valid;
+-- (a) addon_removals_owed cleared_how: dropped (Aria, Oct 13). The existing addon_removals_owed_cleared_check
+--     (20261004092000) already requires cleared_how in ('refunded', 'not_billed', 'kept') once cleared_at is
+--     set, so a blank or whitespace-only cleared_how is already refused.
 
 -- (b) profiles.plan_addons: a 1-D array only ('{}' has no dimensions, so array_ndims is null and passes).
 alter table public.profiles drop constraint if exists profiles_plan_addons_one_dim_check;
