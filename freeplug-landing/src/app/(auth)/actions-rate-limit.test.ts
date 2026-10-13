@@ -164,26 +164,37 @@ describe('signUp per-IP limit', () => {
   })
 })
 
-describe('per-email cap across IPs (Aria a)', () => {
-  it('20 failures from different IPs lock the email (same message), other emails unaffected, admin alerted', async () => {
-    for (let i = 0; i < 20; i++) {
+describe('per-IP cap (Cheke, no email-wide lock)', () => {
+  it('failures for one email spread over many IPs never lock the email; a correct password still works', async () => {
+    for (let i = 0; i < 30; i++) {
       ip = `203.0.113.${i + 1}`
       expect(await login()).not.toBe(blocked)
     }
     ip = '198.51.100.7'
-    expect(await login()).toBe(blocked)
-    expect(signInSpy).toHaveBeenCalledTimes(20)
-    expect(mailSpy).toHaveBeenCalledTimes(1)
-    expect(await login('other@example.com')).not.toBe(blocked)
-  })
-  it('a successful sign-in clears the per-email count', async () => {
-    for (let i = 0; i < 19; i++) {
-      ip = `203.0.113.${i + 1}`
-      await login()
-    }
     signInSpy.mockResolvedValueOnce({ error: null })
     expect(await login()).toBe('/dashboard')
-    expect(hits.get('signin_fail_email:a@example.com')).toBeUndefined()
+  })
+  it('20 failed sign-ins from one IP across many emails blocks that IP (same message), other IPs unaffected, admin alerted', async () => {
+    ip = '203.0.113.50'
+    for (let i = 0; i < 20; i++) expect(await login(`u${i}@example.com`)).not.toBe(blocked)
+    expect(await login('fresh@example.com')).toBe(blocked)
+    expect(signInSpy).toHaveBeenCalledTimes(20)
+    expect(mailSpy).toHaveBeenCalledTimes(1)
+    ip = '203.0.113.51'
+    expect(await login('fresh@example.com')).not.toBe(blocked)
+  })
+  it('19 failures from one IP are still allowed', async () => {
+    ip = '203.0.113.60'
+    for (let i = 0; i < 19; i++) await login(`u${i}@example.com`)
+    expect(await login('fresh@example.com')).not.toBe(blocked)
+  })
+  it('a success clears email+IP but not the per-IP count', async () => {
+    ip = '203.0.113.70'
+    for (let i = 0; i < 3; i++) await login()
+    signInSpy.mockResolvedValueOnce({ error: null })
+    expect(await login()).toBe('/dashboard')
+    expect(hits.get('signin_fail_email_ip:a@example.com|203.0.113.70')).toBeUndefined()
+    expect(hits.get('signin_fail_ip:ip|203.0.113.70')).toBe(3)
   })
 })
 

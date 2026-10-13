@@ -68,8 +68,11 @@ const LIMITER_DOWN_MESSAGE = 'Something went wrong on our end. Please try again 
  */
 const AUTH_LIMITS = {
   signInFailures: { bucket: 'signin_fail_email_ip', limit: 5, windowSeconds: 900 } satisfies RateRule,
-  /** Aria (a): 20 failures per email per rolling hour across ALL IPs locks that email (no Turnstile on sign-in). */
-  signInFailuresPerEmail: { bucket: 'signin_fail_email', limit: 20, windowSeconds: 3600 } satisfies RateRule,
+  /**
+   * Cheke (Oct 12, 9:30 PM): no email-wide lock. Instead, 20 failed sign-ins per client IP per 15 minutes
+   * (any emails) blocks that IP, so one address can't spray many accounts. A success does NOT clear it.
+   */
+  signInFailuresPerIp: { bucket: 'signin_fail_ip', limit: 20, windowSeconds: 900 } satisfies RateRule,
   signUpPerIp: { bucket: 'signup_ip', limit: 5, windowSeconds: 3600 } satisfies RateRule,
 }
 
@@ -119,27 +122,27 @@ async function clearSignInFailures(key: string, rule: RateRule = AUTH_LIMITS.sig
 
 const LIMITER_ALERT_INTERVAL_MS = 10 * 60 * 1000
 let lastLimiterAlertAt = 0
-let lastEmailCapAlertAt = 0
+let lastIpCapAlertAt = 0
 
-/** Admin alert when an email hits the 20-failures/hour cap. Same path and throttle; no address in the mail. */
-function alertEmailCapHit(): void {
+/** Admin alert when an IP hits the 20-failures/15-min cap. Same path and throttle; no IP or email in the mail. */
+function alertIpCapHit(): void {
   const now = Date.now()
-  if (now - lastEmailCapAlertAt < LIMITER_ALERT_INTERVAL_MS) return
-  lastEmailCapAlertAt = now
+  if (now - lastIpCapAlertAt < LIMITER_ALERT_INTERVAL_MS) return
+  lastIpCapAlertAt = now
   const to = adminAlertRecipients()
   if (to.length === 0) {
-    console.error('[signin-rate] email-cap alert not sent: ADMIN_EMAILS is empty')
+    console.error('[signin-rate] ip-cap alert not sent: ADMIN_EMAILS is empty')
     return
   }
-  void runAfterResponse('signin-email-cap-alert', async () => {
+  void runAfterResponse('signin-ip-cap-alert', async () => {
     const res = await sendMail({
       to,
-      subject: 'Sign-in: an account hit the 20 failed attempts/hour cap',
-      text: 'An email address reached 20 failed sign-ins in an hour across all IPs and is locked for up to an hour (possible credential stuffing). A successful sign-in clears it.',
+      subject: 'Sign-in: one IP hit the 20 failed attempts per 15 minutes cap',
+      text: 'One client IP reached 20 failed sign-ins in 15 minutes (possibly trying many accounts) and is blocked from signing in until its failures age out of the 15-minute window.',
       replyTo: null,
-      template: 'signin-email-cap',
+      template: 'signin-ip-cap',
     })
-    if (!res.success) console.error('[signin-rate] email-cap alert not sent', res.reason)
+    if (!res.success) console.error('[signin-rate] ip-cap alert not sent', res.reason)
   })
 }
 
@@ -178,15 +181,16 @@ export async function signIn(formData: FormData) {
     redirect('/login?error=' + encodeURIComponent('Email and password are required.'))
   }
 
-  const rateKey = signInKey(email, await clientIp())
-  const emailKey = email.trim().toLowerCase()
+  const ip = await clientIp()
+  const rateKey = signInKey(email, ip)
+  const ipKey = `ip|${ip}`
   const lock = await signInLockState(rateKey)
-  const emailLock = lock === 'locked' ? 'ok' : await signInLockState(emailKey, AUTH_LIMITS.signInFailuresPerEmail)
-  if (emailLock === 'locked') alertEmailCapHit()
-  if (lock === 'locked' || emailLock === 'locked') {
+  const ipLock = lock === 'locked' ? 'ok' : await signInLockState(ipKey, AUTH_LIMITS.signInFailuresPerIp)
+  if (ipLock === 'locked') alertIpCapHit()
+  if (lock === 'locked' || ipLock === 'locked') {
     redirect('/login?error=' + encodeURIComponent(TOO_MANY_ATTEMPTS_MESSAGE))
   }
-  if (lock === 'error' || emailLock === 'error') {
+  if (lock === 'error' || ipLock === 'error') {
     console.error('[signin-rate] limiter database unavailable; allowing sign-in (fail open)')
     alertLimiterDown()
   }
@@ -196,12 +200,11 @@ export async function signIn(formData: FormData) {
   if (error) {
     // Record the failure (rate_check inserts a hit while under the limit).
     await rateCheck(AUTH_LIMITS.signInFailures, rateKey)
-    await rateCheck(AUTH_LIMITS.signInFailuresPerEmail, emailKey)
+    await rateCheck(AUTH_LIMITS.signInFailuresPerIp, ipKey)
     redirect('/login?error=' + encodeURIComponent(SIGN_IN_FAILED_MESSAGE))
   }
 
   await clearSignInFailures(rateKey)
-  await clearSignInFailures(emailKey, AUTH_LIMITS.signInFailuresPerEmail)
   revalidatePath('/', 'layout')
   redirect(next)
 }
