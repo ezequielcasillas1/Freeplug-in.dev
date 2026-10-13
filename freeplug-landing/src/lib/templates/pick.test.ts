@@ -267,3 +267,32 @@ describe('changeBusinessTypeCore', () => {
     expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: false, error: 'save' })
   })
 })
+
+describe('fix round: M1 widened grid + L3 other_local', () => {
+  it('mergeWidenedItems lists niche cards first, then only general templates flagged general', async () => {
+    const { mergeWidenedItems } = await import('./pick')
+    const tagged = [item({ id: 1 }), item({ id: 2 })]
+    const general = [item({ id: 2, autoNiches: [] }), item({ id: 3, autoNiches: [] }), item({ id: 4, autoNiches: ['other_local'] }), item({ id: 5, autoNiches: ['legal'] })]
+    const out = mergeWidenedItems(tagged, general)
+    expect(out.map((i) => i.id)).toEqual([1, 2, 3, 4])
+    expect(out.map((i) => i.general)).toEqual([false, false, true, true])
+  })
+  it('savePickCore accepts a general item with the widen id the grid passes (team widen, no request id)', async () => {
+    const w: WidenRow = { id: 7, niche: 'cleaning', request_id: null, actor_role: 'team' }
+    const { d } = deps({ item: item({ autoNiches: [] }), widen: w })
+    expect(await savePickCore(d, RID, { choice: 'envato_catalog', envatoItemId: 101, widenLogId: 7 })).toEqual({ ok: true })
+    expect(await savePickCore(deps({ item: item({ autoNiches: [] }) }).d, RID, { choice: 'envato_catalog', envatoItemId: 101 })).toEqual({ ok: false, error: 'stale' })
+  })
+  it('L3: other_local accepts any general template without a widen, never another niche item', async () => {
+    const r = { business_type: 'other_local' }
+    expect(await savePickCore(deps({ req: r, item: item({ autoNiches: [] }) }).d, RID, { choice: 'envato_catalog', envatoItemId: 101 })).toEqual({ ok: true })
+    expect(await savePickCore(deps({ req: r, item: item({ autoNiches: ['legal'] }) }).d, RID, { choice: 'envato_catalog', envatoItemId: 101 })).toEqual({ ok: false, error: 'stale' })
+  })
+  it('L3: changing to other_local keeps a general catalog pick', async () => {
+    const { d } = deps({ req: { template_choice: 'envato_catalog', envato_item_id: 101 }, item: item({ autoNiches: [] }) })
+    expect(await changeBusinessTypeCore(d, RID, 'other_local')).toEqual({ ok: true, cleared: false })
+  })
+  it('isGeneralTemplate still treats only empty/other_local as general', () => {
+    expect(isGeneralTemplate({ autoNiches: ['other_local', 'legal'] })).toBe(false)
+  })
+})

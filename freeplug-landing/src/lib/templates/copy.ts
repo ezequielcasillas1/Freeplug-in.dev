@@ -3,11 +3,11 @@ import { NICHES, type Niche } from '@/lib/envato/niche-tags'
 /**
  * Customer template picker copy. Sable, Oct 12 2026: /workspace/copy/freeplug-template-picker-copy-2026-10-12.md
  * (EN + ES, tú, es-US). This branch has no app i18n files, so (like change-requests/copy.ts) the strings live
- * here keyed by Sable's i18n keys. Spanish renders only when NEXT_PUBLIC_FREEPLUG_I18N_ES === 'true' and the
+ * here keyed by Sable's i18n keys. Spanish renders only when NEXT_PUBLIC_FREEPLUG_I18N_ES is 'true' or 'on' and the
  * page gets ?lang=es (local review), otherwise English.
  *
  * Card/back/retry/continue/unavailable/cleared/showmore keys: Sable, 'Added 11:30 PM' in the same file.
- * picker.showmore.aria.rest (batch < 12) is not in Sable's file yet. Open: picker.confirm.body "[ask Cheke]".
+ * picker.showmore.aria.rest (fewer than 12 left): Sable, 'Added 11:30 PM'. picker.confirm.title.link/.teampick and picker.card.general(.aria): Sable, same file (Jace-approved additions). Open: picker.confirm.body "[ask Cheke]".
  */
 export type Lang = 'en' | 'es'
 
@@ -22,6 +22,8 @@ const EN = {
   'picker.card.selected': 'Selected',
   'picker.card.alt': 'Preview of the {name} template',
   'picker.confirm.title': 'Use {name} for your site?',
+  'picker.confirm.title.link': 'Use the template from your link?',
+  'picker.confirm.title.teampick': 'Let 72 After pick your template?',
   'picker.confirm.body': 'You can change it until we start building.',
   'picker.confirm.yes': 'Yes, use this template',
   'picker.confirm.back': 'Keep looking',
@@ -51,6 +53,8 @@ const EN = {
   'picker.card.change': 'Change',
   'picker.card.teampick': '72 After will pick',
   'picker.card.unavailable': 'Not available',
+  'picker.card.general': 'General',
+  'picker.card.general.aria': 'General template, not made for one type of business',
   'picker.retry': 'Retry',
   'picker.back': 'Back to your request',
   'picker.continue': 'Continue',
@@ -73,6 +77,8 @@ const ES: Record<CopyKey, string> = {
   'picker.card.selected': 'Seleccionada',
   'picker.card.alt': 'Vista previa de la plantilla {name}',
   'picker.confirm.title': '¿Usar {name} para tu sitio?',
+  'picker.confirm.title.link': '¿Usar la plantilla de tu enlace?',
+  'picker.confirm.title.teampick': '¿Dejar que 72 After elija tu plantilla?',
   'picker.confirm.body': 'Puedes cambiarla hasta que empecemos a construir tu sitio.',
   'picker.confirm.yes': 'Sí, usar esta plantilla',
   'picker.confirm.back': 'Seguir viendo',
@@ -102,6 +108,8 @@ const ES: Record<CopyKey, string> = {
   'picker.card.change': 'Cambiar',
   'picker.card.teampick': '72 After la elegirá',
   'picker.card.unavailable': 'No disponible',
+  'picker.card.general': 'General',
+  'picker.card.general.aria': 'Plantilla general, no hecha para un solo tipo de negocio',
   'picker.retry': 'Reintentar',
   'picker.back': 'Volver a tu solicitud',
   'picker.continue': 'Continuar',
@@ -131,9 +139,15 @@ export const TYPE_LABELS: Record<Lang, Record<Niche, string>> = {
 
 export const COPY: Record<Lang, Record<CopyKey, string>> = { en: EN, es: ES }
 
+/** M2: the flag is on for 'true' or 'on' (case/space-insensitive). */
+export function esEnabled(flag: string | undefined): boolean {
+  const f = (flag ?? '').trim().toLowerCase()
+  return f === 'true' || f === 'on'
+}
+
 export function pickLang(param: string | string[] | undefined): Lang {
   const v = Array.isArray(param) ? param[0] : param
-  return v === 'es' && process.env.NEXT_PUBLIC_FREEPLUG_I18N_ES === 'true' ? 'es' : 'en'
+  return v === 'es' && esEnabled(process.env.NEXT_PUBLIC_FREEPLUG_I18N_ES) ? 'es' : 'en'
 }
 
 export function t(lang: Lang, key: CopyKey, vars: Record<string, string | number> = {}): string {

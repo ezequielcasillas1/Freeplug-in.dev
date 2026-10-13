@@ -57,6 +57,18 @@ export async function lookupCatalogItem(db: SupabaseClient, id: number): Promise
   return data ? toCard(data as Row) : null
 }
 
+function dedupe(rows: Row[]): CatalogCard[] {
+  const seen = new Set<number>()
+  const out: CatalogCard[] = []
+  for (const r of rows) {
+    const c = toCard(r)
+    if (seen.has(c.id)) continue
+    seen.add(c.id)
+    out.push(c)
+  }
+  return out
+}
+
 /** Active items tagged for a business type, best sellers first, each id once. */
 export async function listCatalogForType(db: SupabaseClient, niche: string, limit = 60): Promise<CatalogCard[]> {
   const { data, error } = await db
@@ -68,13 +80,22 @@ export async function listCatalogForType(db: SupabaseClient, niche: string, limi
     .order('id', { ascending: true })
     .limit(limit)
   if (error) throw new Error('catalog list failed')
-  const seen = new Set<number>()
-  const out: CatalogCard[] = []
-  for (const r of (data ?? []) as Row[]) {
-    const c = toCard(r)
-    if (seen.has(c.id)) continue
-    seen.add(c.id)
-    out.push(c)
-  }
-  return out
+  return dedupe((data ?? []) as Row[])
+}
+
+/**
+ * Active "general" items (Aria rule 1: no specific niche, i.e. auto_niches null/empty or only
+ * other_local), best sellers first. Shown to the customer only when a widen applies to the request.
+ */
+export async function listGeneralCatalog(db: SupabaseClient, limit = 60): Promise<CatalogCard[]> {
+  const { data, error } = await db
+    .from('envato_items')
+    .select(COLS)
+    .eq('status', 'active')
+    .or('auto_niches.is.null,auto_niches.eq.{},auto_niches.eq.{other_local}')
+    .order('sales', { ascending: false, nullsFirst: false })
+    .order('id', { ascending: true })
+    .limit(limit)
+  if (error) throw new Error('catalog list failed')
+  return dedupe((data ?? []) as Row[])
 }

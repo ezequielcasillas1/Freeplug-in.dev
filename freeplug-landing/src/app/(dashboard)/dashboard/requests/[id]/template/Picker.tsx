@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ExternalLink, Link2, Sparkles } from 'lucide-react'
 import type { Niche } from '@/lib/envato/niche-tags'
 import { TYPE_LABELS, t, type Lang } from '@/lib/templates/copy'
 import { isValidPastedUrl, type PickInput, type PickResult } from '@/lib/templates/pick'
 
-export type PickerItem = { id: number; name: string; thumb: string | null; preview: string | null; available: boolean }
+export type PickerItem = { id: number; name: string; thumb: string | null; preview: string | null; available: boolean; general?: boolean }
 export type Selection = { kind: 'team' } | { kind: 'paste'; url: string } | { kind: 'item'; id: number }
 
 type Props = {
@@ -15,6 +15,8 @@ type Props = {
   requestId: string
   type: Niche
   repick?: boolean
+  /** M1: applicable widen (from the server) sent with a catalog pick so general templates are accepted. */
+  widenLogId?: number | null
   changeTypeHref: string
   items: PickerItem[]
   initial: Selection | null
@@ -27,7 +29,7 @@ export const PAGE_SIZE = 12
 const RED_BTN = 'min-h-[44px] rounded-lg bg-[#ba3d3d] px-4 text-white font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d]'
 const OUTLINE_BTN = 'min-h-[44px] rounded-lg border border-[#ba3d3d] px-4 text-[#ba3d3d] font-semibold inline-flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d]'
 
-export function Picker({ lang, requestId, type, repick, changeTypeHref, items, initial, save }: Props) {
+export function Picker({ lang, requestId, type, repick, widenLogId = null, changeTypeHref, items, initial, save }: Props) {
   const router = useRouter()
   const [sel, setSel] = useState<Selection | null>(initial)
   const [pasteOpen, setPasteOpen] = useState(initial?.kind === 'paste')
@@ -42,10 +44,23 @@ export function Picker({ lang, requestId, type, repick, changeTypeHref, items, i
     return Math.max(PAGE_SIZE, Math.ceil((idx + 1) / PAGE_SIZE) * PAGE_SIZE)
   })
   const remaining = Math.max(0, items.length - shown)
+  // Lina: after Show more, focus moves to the first new card.
+  const focusIdx = useRef<number | null>(null)
+  const cardRefs = useRef<Map<number, HTMLLIElement>>(new Map())
+  useEffect(() => {
+    if (focusIdx.current == null) return
+    const item = items[focusIdx.current]
+    focusIdx.current = null
+    if (item) cardRefs.current.get(item.id)?.focus()
+  }, [shown, items])
+  const showMore = () => {
+    focusIdx.current = shown
+    setShown((n) => n + PAGE_SIZE)
+  }
 
   const selItem = sel?.kind === 'item' ? items.find((i) => i.id === sel.id) ?? null : null
   const selName =
-    sel?.kind === 'team' ? t(lang, 'picker.teampick.title') : sel?.kind === 'paste' ? t(lang, 'picker.paste.label') : selItem?.name ?? ''
+    sel?.kind === 'team' ? t(lang, 'picker.teampick.title') : sel?.kind === 'paste' ? sel.url : selItem?.name ?? ''
   const usePaste = () => {
     if (!isValidPastedUrl(pasteText)) return setPasteErr(true)
     setPasteErr(false)
@@ -60,7 +75,7 @@ export function Picker({ lang, requestId, type, repick, changeTypeHref, items, i
           ? { choice: 'team_pick', businessType: type }
           : sel.kind === 'paste'
             ? { choice: 'client_pasted', pastedUrl: sel.url, businessType: type }
-            : { choice: 'envato_catalog', envatoItemId: sel.id, businessType: type }
+            : { choice: 'envato_catalog', envatoItemId: sel.id, businessType: type, ...(widenLogId != null ? { widenLogId } : {}) }
       const r = await save(requestId, input)
       if (r.ok) {
         router.push(`/dashboard/request-website?picked=1${lang === 'es' ? '&lang=es' : ''}`)
@@ -81,7 +96,10 @@ export function Picker({ lang, requestId, type, repick, changeTypeHref, items, i
             <img src={selItem.thumb} alt={t(lang, 'picker.card.alt', { name: selItem.name })} className="h-full w-full object-cover" />
           ) : sel.kind === 'paste' ? <Link2 aria-hidden className="h-16 w-16 text-gray-500" /> : <Sparkles aria-hidden className="h-16 w-16 text-gray-500" />}
         </div>
-        <h1 className="mt-4 text-2xl font-bold text-gray-900 break-words">{t(lang, 'picker.confirm.title', { name: selName })}</h1>
+        {/* L2: fixed titles for link / team picks (Sable); catalog picks keep the name-based title. */}
+        <h1 data-testid="confirm-title" className="mt-4 text-2xl font-bold text-gray-900 break-words">
+          {sel.kind === 'paste' ? t(lang, 'picker.confirm.title.link') : sel.kind === 'team' ? t(lang, 'picker.confirm.title.teampick') : t(lang, 'picker.confirm.title', { name: selName })}
+        </h1>
         {sel.kind === 'paste' ? <p className="mt-1 text-sm text-gray-600 break-all">{sel.url}</p> : null}
         <p className="mt-2 text-gray-600">{t(lang, 'picker.confirm.body')}</p>
         {saveErr ? <p role="alert" data-testid="save-error" className="mt-4 text-sm text-red-700">{saveErr}</p> : null}
@@ -154,11 +172,22 @@ export function Picker({ lang, requestId, type, repick, changeTypeHref, items, i
           {items.slice(0, shown).map((i) => {
             const on = sel?.kind === 'item' && sel.id === i.id
             return (
-              <li key={i.id} data-testid={`card-${i.id}`} className={`relative flex flex-col rounded-lg bg-white overflow-hidden ${on ? 'border-2 border-[#ba3d3d]' : 'border border-gray-200'}`}>
+              <li
+                key={i.id}
+                data-testid={`card-${i.id}`}
+                tabIndex={-1}
+                aria-label={i.name}
+                ref={(el) => { if (el) cardRefs.current.set(i.id, el); else cardRefs.current.delete(i.id) }}
+                className={`relative flex flex-col rounded-lg bg-white overflow-hidden ${on ? 'border-2 border-[#ba3d3d]' : 'border border-gray-200'}`}>
                 <div className="relative aspect-[4/3] w-full bg-gray-100">
                   {i.thumb ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={i.thumb} alt={t(lang, 'picker.card.alt', { name: i.name })} loading="lazy" className="h-full w-full object-cover" />
+                  ) : null}
+                  {i.general ? (
+                    <span data-testid="general-tag" aria-label={t(lang, 'picker.card.general.aria')} className="absolute left-2 top-2 z-10 rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                      <span aria-hidden>{t(lang, 'picker.card.general')}</span>
+                    </span>
                   ) : null}
                   {on ? <SelectedBadge /> : null}
                   {!i.available ? (
@@ -167,7 +196,7 @@ export function Picker({ lang, requestId, type, repick, changeTypeHref, items, i
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <h3 className="font-semibold text-gray-900 break-words">{i.name}</h3>
-                  <p className="mt-1 truncate text-sm text-gray-600">{TYPE_LABELS[lang][type]}</p>
+                  {i.general ? null : <p className="mt-1 truncate text-sm text-gray-600">{TYPE_LABELS[lang][type]}</p>}
                   <div className="mt-3 flex flex-col sm:flex-row gap-2">
                     {i.preview ? (
                       <a href={i.preview} target="_blank" rel="noopener noreferrer" className={`${OUTLINE_BTN} w-full sm:flex-1`}>
@@ -193,7 +222,7 @@ export function Picker({ lang, requestId, type, repick, changeTypeHref, items, i
         <button
           type="button"
           data-testid="show-more"
-          onClick={() => setShown((n) => n + PAGE_SIZE)}
+          onClick={showMore}
           aria-label={t(lang, remaining >= PAGE_SIZE ? 'picker.showmore.aria' : 'picker.showmore.aria.rest')}
           className={`${OUTLINE_BTN} mt-4 w-full`}
         >

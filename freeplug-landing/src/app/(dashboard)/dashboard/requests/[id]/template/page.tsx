@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { isNiche } from '@/lib/envato/niche-tags'
 import { isFresh, type CatalogCard } from '@/lib/templates/catalog-lookup'
-import { getCatalogItem, listTemplatesForType } from '@/lib/templates/server'
+import { getCatalogItem, listPickerTemplates } from '@/lib/templates/server'
+import { repickCookieName, showTypeCleared } from '@/lib/templates/repick'
 import { pickLang, t, TYPE_LABELS } from '@/lib/templates/copy'
 import { isPickEditable } from '@/lib/templates/pick'
 import { changeBusinessType, saveTemplatePick } from './actions'
@@ -21,8 +23,8 @@ type Props = {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-function toItem(c: CatalogCard, now: number): PickerItem {
-  return { id: c.id, name: c.name, thumb: c.previewImageUrl, preview: c.livePreviewUrl ?? c.url, available: isFresh(c, now) }
+function toItem(c: CatalogCard & { general?: boolean }, now: number): PickerItem {
+  return { id: c.id, name: c.name, thumb: c.previewImageUrl, preview: c.livePreviewUrl ?? c.url, available: isFresh(c, now), general: c.general === true }
 }
 
 export default async function TemplatePickerPage({ params, searchParams }: Props) {
@@ -81,9 +83,12 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
   }
 
   let items: PickerItem[] | null = null
+  let widenLogId: number | null = null
   try {
     const now = Date.now()
-    items = (await listTemplatesForType(type)).map((c) => toItem(c, now))
+    const r = await listPickerTemplates(id, type)
+    items = r.items.map((c) => toItem(c, now))
+    widenLogId = r.widenLogId
   } catch {
     items = null
   }
@@ -110,7 +115,8 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
         lang={lang}
         requestId={id}
         type={type}
-        repick={q.repick === '1'}
+        repick={showTypeCleared(q.repick, (await cookies()).get(repickCookieName(id))?.value, req.template_choice)}
+        widenLogId={widenLogId}
         changeTypeHref={`${basePath}?${changeQ}`}
         items={items}
         initial={initial}

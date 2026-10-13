@@ -151,3 +151,45 @@ describe('TypeStep change mode (type already saved)', () => {
     await waitFor(() => expect(screen.getByTestId('type-save-error').textContent).toContain('support@freeplug-in.dev'))
   })
 })
+
+describe('Picker fix round', () => {
+  const many: PickerItem[] = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: `T ${i + 1}`, thumb: null, preview: null, available: true }))
+  it('Show more moves focus to the first new card, uses the .rest aria under 12 left, and hides at the end', async () => {
+    render(<Picker {...base} items={many} save={vi.fn()} />)
+    const btn = screen.getByTestId('show-more')
+    expect(btn.getAttribute('aria-label')).toBe('Show 12 more templates')
+    fireEvent.click(btn)
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('card-13')))
+    expect(screen.getByTestId('show-more').getAttribute('aria-label')).toBe('Show more templates')
+    fireEvent.click(screen.getByTestId('show-more'))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('card-25')))
+    expect(screen.queryByTestId('show-more')).toBeNull()
+  })
+  it('M1: general cards carry the General tag and the widen id goes with a catalog pick', async () => {
+    const save = vi.fn(async () => ({ ok: true as const }))
+    const mixed: PickerItem[] = [{ ...items[0] }, { id: 50, name: 'Gen', thumb: null, preview: null, available: true, general: true }]
+    render(<Picker {...base} items={mixed} widenLogId={7} save={save} />)
+    expect(within(screen.getByTestId('card-1')).queryByTestId('general-tag')).toBeNull()
+    const tag = within(screen.getByTestId('card-50')).getByTestId('general-tag')
+    expect(tag.textContent).toBe('General')
+    expect(tag.getAttribute('aria-label')).toBe('General template, not made for one type of business')
+    fireEvent.click(within(screen.getByTestId('card-50')).getByRole('button', { name: 'Choose this one' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, use this template' }))
+    await waitFor(() => expect(save).toHaveBeenCalledWith(base.requestId, { choice: 'envato_catalog', envatoItemId: 50, businessType: 'cleaning', widenLogId: 7 }))
+  })
+  it('L2: fixed confirm titles for a pasted link and a team pick', () => {
+    const { unmount } = render(<Picker {...base} initial={{ kind: 'paste', url: 'https://themeforest.net/item/x/1' }} save={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(screen.getByTestId('confirm-title').textContent).toBe('Use the template from your link?')
+    unmount()
+    render(<Picker {...base} lang="es" initial={{ kind: 'team' }} save={vi.fn()} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    expect(screen.getByTestId('confirm-title').textContent).toBe('¿Dejar que 72 After elija tu plantilla?')
+  })
+  it('L1: banner renders when repick is true', () => {
+    render(<Picker {...base} repick save={vi.fn()} />)
+    expect(screen.getByTestId('type-cleared').getAttribute('role')).toBe('status')
+  })
+})
+
