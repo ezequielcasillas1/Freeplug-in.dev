@@ -262,6 +262,12 @@ export const GRANDFATHERED_HOSTING_ONLY_NAME = 'Hosting plan'
 export const GRANDFATHERED_HOSTING_SHORT = 'Hosting'
 /** [Sable 6:19 PM] A retired add-on by its tier name: "Pro add-on". */
 export const LEGACY_ADDON_NAME = (tierName: string) => `${tierName} add-on`
+/**
+ * L-1 (base QA phase 3): an extra grandfathered item that is not a known retired add-on is named generically,
+ * with its own price when known ("add-on ($15)"), so the name never says "Hosting plan" next to a total
+ * that includes it.
+ */
+export const GENERIC_ADDON_NAME = (price?: string) => (price ? `add-on (${price})` : 'add-on')
 
 /**
  * Help "How do I update my payment method?" (help page b-2 and the help chat 'payment-method'): the
