@@ -417,7 +417,7 @@ export function AddonsBlock(props: Props) {
             {l}
           </p>
         ))}
-        <div ref={confirmActionsRef} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center max-sm:scroll-mb-[var(--sticky-bar-h,0px)]" data-testid="addon-confirm-actions">
+        <div ref={confirmActionsRef} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center max-sm:scroll-mb-[var(--sticky-bar-h,90px)]" data-testid="addon-confirm-actions">
           <Button
             ref={turnOnRef}
             size="sm"

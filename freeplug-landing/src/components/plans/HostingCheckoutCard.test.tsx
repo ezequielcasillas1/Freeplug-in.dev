@@ -167,7 +167,7 @@ describe('checkout and claim modes', () => {
     const bar = screen.getByTestId('sticky-totals')
     expect(bar.className).toMatch(/sticky bottom-0/)
     expect(bar.className).toMatch(/sm:static/)
-    expect(bar.className).toMatch(/max-sm:max-h-\[90px\]/)
+    expect(bar.className).not.toMatch(/max-h-|overflow-hidden/) // Vera: no height cap, grows to fit
     expect(bar.contains(note)).toBe(false)
     expect(bar.contains(btn)).toBe(false)
     expect(bar.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -281,8 +281,7 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     try {
       switching()
       const shell = screen.getByTestId('checkout-card-shell')
-      expect(shell.className).toMatch(/max-sm:pb-\[var\(--sticky-bar-h,0px\)\]/)
-      expect(shell.className).not.toMatch(/\[90px\]/)
+      expect(shell.className).toMatch(/max-sm:pb-\[var\(--sticky-bar-h,90px\)\]/)
       expect(shell.style.getPropertyValue('--sticky-bar-h')).toBe('74px')
       height = 82
       act(() => observers.forEach((fire) => fire()))
@@ -294,6 +293,29 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
       expect(plain.style.getPropertyValue('--sticky-bar-h')).toBe('')
     } finally {
       globalThis.ResizeObserver = origRO
+      Element.prototype.getBoundingClientRect = origRect
+    }
+  })
+
+  it('Vera: before the first measurement (server render) the padding falls back to 90px, not 0px', async () => {
+    const { renderToString } = await import('react-dom/server')
+    const html = renderToString(
+      <HostingCheckoutCard currentPlanLines={['Freeplug Hosting: Starter · $35.00/month']} currentStepId="starter" renewalDate="November 3, 2026" onChangePlan={vi.fn()} onPreviewChange={vi.fn()} stickyOnPhone />
+    )
+    expect(html).toContain('max-sm:pb-[var(--sticky-bar-h,90px)]')
+    expect(html).not.toMatch(/--sticky-bar-h:\s*0px/)
+  })
+
+  it('Vera: a taller bar (e.g. Spanish copy) is measured at its full height, not clipped at 90px', () => {
+    const origRect = Element.prototype.getBoundingClientRect
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const h = this.getAttribute('data-testid') === 'sticky-totals' ? 128 : 0
+      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: h, width: 0, height: h, toJSON: () => ({}) } as DOMRect
+    }
+    try {
+      switching()
+      expect(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h')).toBe('128px')
+    } finally {
       Element.prototype.getBoundingClientRect = origRect
     }
   })

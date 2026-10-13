@@ -79,19 +79,19 @@ export const CONFIRM_OPEN_MS = (PRORATION_DATE_MAX_AGE_SECONDS - 30) * 1000
 
 /**
  * Phones (< sm): only the totals stick to the bottom of the screen while the card is in view (M-1). The bar
- * is capped at ~90px, its lines never wrap, and it sits directly above the action/confirm buttons in the
+ * grows to fit its content (no height cap, so longer Spanish copy is not clipped), its lines never wrap, and it sits directly above the action/confirm buttons in the
  * flow, so it is released before it can cover them. From sm up it is a plain static block (unchanged).
  */
 const STICKY_BAR =
-  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:max-h-[90px] max-sm:overflow-hidden max-sm:[&_*]:mb-0 max-sm:[&_p]:truncate sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
+  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:[&_*]:mb-0 max-sm:[&_p]:truncate sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
 
 /**
  * Lina (Oct 13): the sticky bar's MEASURED height (ResizeObserver) is published on the card as
  * --sticky-bar-h; on phones the card pads its bottom by it and the add-on confirm uses it as scroll margin.
  */
 export const STICKY_BAR_HEIGHT_VAR = '--sticky-bar-h'
-export const STICKY_BAR_PAGE_PAD = 'max-sm:pb-[var(--sticky-bar-h,0px)]'
-export const STICKY_BAR_SCROLL_MARGIN = 'max-sm:scroll-mb-[var(--sticky-bar-h,0px)]'
+export const STICKY_BAR_PAGE_PAD = 'max-sm:pb-[var(--sticky-bar-h,90px)]'
+export const STICKY_BAR_SCROLL_MARGIN = 'max-sm:scroll-mb-[var(--sticky-bar-h,90px)]'
 
 /** Measures an element's height as it changes; 0 when it is not mounted. */
 function useMeasuredHeight(): [(el: HTMLElement | null) => void, number] {
@@ -771,10 +771,10 @@ export function HostingCheckoutCard({
   )
 
   return (
-    // Lina: on phones the page keeps room under its content for the sticky bar (max 90px), so nothing sits under it.
+    // Lina: on phones the page keeps room under its content for the sticky bar (its measured height; 90px until the first measurement, e.g. server-rendered), so nothing sits under it.
     <div
       className={cn(shell, stickyOnPhone && STICKY_BAR_PAGE_PAD)}
-      style={stickyOnPhone ? ({ [STICKY_BAR_HEIGHT_VAR]: `${stickyBarHeight}px` } as React.CSSProperties) : undefined}
+      style={stickyOnPhone && stickyBarHeight > 0 ? ({ [STICKY_BAR_HEIGHT_VAR]: `${stickyBarHeight}px` } as React.CSSProperties) : undefined}
       data-testid="checkout-card-shell"
     >
       <RemovalOwedBox addons={removalOwedAddons} focus={focusRemovalOwed} />
