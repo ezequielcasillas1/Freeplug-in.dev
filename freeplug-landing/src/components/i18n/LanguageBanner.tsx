@@ -51,15 +51,15 @@ export function LanguageBanner({ pageLocale, strings }: { pageLocale: AppLocale;
       role="region"
       aria-label={strings.prompt}
       data-testid="language-banner"
-      className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-3 text-sm shadow-lg"
+      className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm shadow-lg"
     >
       {/* One row at 375 (Lina): the prompt stays on one line; buttons keep their size. */}
       <span data-testid="language-banner-prompt" className="min-w-0 whitespace-nowrap text-gray-800">{strings.prompt}</span>
       <span className="flex shrink-0 items-center gap-1">
-        <button type="button" onClick={switchToSpanish} className="rounded-lg bg-[#ba3d3d] px-3 py-1.5 font-medium text-white hover:bg-[#a53434]">
+        <button type="button" onClick={switchToSpanish} className="inline-flex min-h-[44px] items-center rounded-lg bg-[#ba3d3d] px-3 font-medium text-white hover:bg-[#a53434]">
           {LOCALE_LABELS.es}
         </button>
-        <button type="button" onClick={dismiss} className="rounded-lg px-2 py-1.5 text-gray-600 hover:text-gray-900">
+        <button type="button" onClick={dismiss} className="inline-flex min-h-[44px] items-center px-2 text-gray-600 hover:text-gray-900">
           {strings.dismiss}
         </button>
       </span>
