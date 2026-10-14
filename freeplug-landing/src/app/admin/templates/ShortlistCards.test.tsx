@@ -25,7 +25,7 @@ describe('Shortlist at 375 px (Lina): stacked cards like Needs Lina; table stays
     expect(within(card).getByRole('link', { name: 'Sparkle Clean' }).getAttribute('href')).toBe(pick.url)
     const meta = within(card).getByTestId('card-meta')
     expect(meta.className).toContain('text-zinc-500')
-    expect(meta.textContent).toMatch(/^WP · Regular \$59(\.00)? · Extended \$2,?950(\.00)?$/)
+    expect(meta.textContent).toMatch(/^WP · Regular \$59 · Extended \$2,950$/)
     expect(within(card).getByTestId('card-status').textContent).toBe('Status: confirmedchecked demo')
   })
 
@@ -34,5 +34,14 @@ describe('Shortlist at 375 px (Lina): stacked cards like Needs Lina; table stays
     expect(page).toContain('<ShortlistCards picks={picks} />')
     expect(page).toMatch(/<div className="hidden sm:block">\s*<ScrollX testId="shortlist-scroll">/)
     expect(page).toContain('<th>Platform</th><th>Regular</th><th>Extended</th><th>Status</th><th>Build note</th><th>Demo</th>')
+  })
+
+  it('prices use thousands separators in the cards and the table formatter', async () => {
+    const { formatCents } = await import('./view')
+    expect(formatCents(180000)).toBe('$1,800')
+    expect(formatCents(5950)).toBe('$59.50')
+    expect(formatCents(null)).toBe('—')
+    render(<ShortlistCards picks={[{ ...pick, envato_item_id: 2, extended_price_cents: 180000 }]} />)
+    expect(screen.getAllByTestId('card-meta').at(-1)!.textContent).toContain('Extended $1,800')
   })
 })

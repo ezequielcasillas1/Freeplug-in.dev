@@ -1,3 +1,4 @@
+import { formatBuyoutPrice } from '@/lib/buyout/buyout'
 import { isNiche, type Niche } from '@/lib/envato/niche-tags'
 
 export const FRESH_HOURS = 6
@@ -52,8 +53,9 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>):
   }
 }
 
+/** "$1,800" / "$59.50", or "—" when unknown. Same admin money format as the buyout price (thousands separators). */
 export function formatCents(c: number | null | undefined): string {
-  return c == null ? '—' : `$${(c / 100).toFixed(c % 100 === 0 ? 0 : 2)}`
+  return c == null ? '—' : formatBuyoutPrice(c)
 }
 
 export function isoHoursAgo(hours: number, now: number = Date.now()): string {
