@@ -7,6 +7,9 @@ import { describe, expect, it } from 'vitest'
 // the first screen at 375px and desktop. Not re-encoded / WebP until Jace's speed check on the preview.
 const root = path.join(__dirname, '../../../..')
 const source = readFileSync(path.join(__dirname, 'OutreachSection.tsx'), 'utf8')
+
+// Texas city photos are Wikimedia Commons files (Oct 2026): new names so no cached old file is reused, and each
+// card must show its CC credit (author + license link + source).
 const photoDir = path.join(root, 'public/images/outreach')
 
 function jpegSize(buf: Buffer): { width: number; height: number } {
@@ -40,5 +43,24 @@ describe('OutreachSection city photos', () => {
     expect(referenced).toEqual(onDisk)
     expect(onDisk).toHaveLength(7)
     for (const f of onDisk) expect(jpegSize(readFileSync(path.join(root, 'public', f)))).toEqual({ width: 800, height: 600 })
+  })
+})
+
+describe('OutreachSection Texas city photo credits', () => {
+  const files = ['san-marcos', 'kyle', 'new-braunfels', 'san-antonio', 'austin'].map((n) => `/images/outreach/${n}-2026-10.jpg`)
+
+  it('uses the new 2026-10 Commons files, not the old stock photos', () => {
+    for (const f of files) expect(source).toContain(f)
+    expect(source).not.toMatch(/\/images\/outreach\/(san-marcos|kyle|new-braunfels|san-antonio|austin)\.jpg/)
+  })
+
+  it('every city has an author, a CC license with link, and a Commons source, and the card renders them', () => {
+    expect(source.match(/author: '/g)).toHaveLength(5)
+    expect(source.match(/licenseUrl: 'https:\/\/creativecommons\.org\/licenses\//g)).toHaveLength(5)
+    expect(source.match(/source: 'https:\/\/commons\.wikimedia\.org\/wiki\/File:/g)).toHaveLength(5)
+    expect(source).toContain('Photo: {city.credit.author}')
+    expect(source).toContain('{city.credit.license}')
+    const credits = readFileSync(path.join(photoDir, 'CREDITS.md'), 'utf8')
+    for (const f of files) expect(credits).toContain(path.basename(f))
   })
 })
