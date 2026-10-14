@@ -140,6 +140,7 @@ function card(s: Suggestion): string {
 export function shortfallLine(n: number, businessType: string): string {
   if (n >= 3) return ''
   if (n === 0) return `No Elements matches for '${businessType}'. Lina will hand-pick suggestions.`
+  if (n === 1) return `Only 1 Elements match for '${businessType}'. Lina will hand-pick the rest.`
   return `Only ${n} Elements matches for '${businessType}'. Lina will hand-pick the rest.`
 }
 

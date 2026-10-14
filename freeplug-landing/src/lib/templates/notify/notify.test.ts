@@ -7,6 +7,7 @@ import { PickNotifyAlarm, type DoState } from './do'
 import { ITEMS, REQ_ID, item, request } from './fixtures'
 import { SCORE, shortlistPoints, suggestTemplates } from './score'
 import { escapeHtml, headerSafe } from './escape'
+import { shortfallLine } from './emails'
 import { savePickCore, type PickDeps } from '../pick'
 
 const T0 = new Date('2026-10-14T15:00:00Z')
@@ -195,9 +196,16 @@ describe('team pick suggestions', () => {
     const { deps, state } = setup(request({ choice: 'team_pick', businessType: 'dental' }), [ITEMS[5], item({ id: 9, name: 'TF only', autoNiches: [], onElements: false })])
     await onPickSaved(deps, REQ_ID)
     expect(state.sent).toHaveLength(1)
-    expect(state.sent[0].html).toContain('Only 1 Elements matches for &#39;Dental&#39;. Lina will hand-pick the rest.')
-    expect(state.sent[0].text).toContain("Only 1 Elements matches for 'Dental'. Lina will hand-pick the rest.")
+    expect(state.sent[0].html).toContain('Only 1 Elements match for &#39;Dental&#39;. Lina will hand-pick the rest.')
+    expect(state.sent[0].text).toContain("Only 1 Elements match for 'Dental'. Lina will hand-pick the rest.")
     expect(state.sent[0].html).not.toContain('TF only')
+  })
+
+  it('shortfall copy: 0, 1 (singular), 2, and none at 3', () => {
+    expect(shortfallLine(0, 'HVAC')).toBe("No Elements matches for 'HVAC'. Lina will hand-pick suggestions.")
+    expect(shortfallLine(1, 'HVAC')).toBe("Only 1 Elements match for 'HVAC'. Lina will hand-pick the rest.")
+    expect(shortfallLine(2, 'HVAC')).toBe("Only 2 Elements matches for 'HVAC'. Lina will hand-pick the rest.")
+    expect(shortfallLine(3, 'HVAC')).toBe('')
   })
 
   it('0 Elements matches still sends an email', async () => {
