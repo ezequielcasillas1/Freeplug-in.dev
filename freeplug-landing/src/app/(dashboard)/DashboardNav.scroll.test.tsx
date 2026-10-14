@@ -41,7 +41,7 @@ describe('dashboard tabs at 375 px: right-edge fade + active tab in view (Oct 13
     rerender(<DashboardNav />)
     act(() => { nav.scrollLeft = 0; fireEvent.scroll(nav) })
     expect(screen.getByTestId('dash-nav-fade').getAttribute('aria-hidden')).toBe('true')
-    expect(screen.getByTestId('dash-nav-fade').className).toMatch(/pointer-events-none .*bg-gradient-to-l from-white/)
+    expect(screen.getByTestId('dash-nav-fade').className).toMatch(/pointer-events-none .*bg-gradient-to-l from-zinc-50/)
     act(() => { nav.scrollLeft = 257; fireEvent.scroll(nav) })
     expect(screen.queryByTestId('dash-nav-fade')).toBeNull()
   })
