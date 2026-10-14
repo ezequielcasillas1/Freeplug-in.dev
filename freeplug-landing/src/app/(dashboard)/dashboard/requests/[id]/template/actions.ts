@@ -5,6 +5,9 @@ import { cookies } from 'next/headers'
 import { changeBusinessTypeCore, savePickCore, type PickDeps, type PickInput, type PickResult, type TypeChangeResult } from '@/lib/templates/pick'
 import { pickDeps } from '@/lib/templates/server'
 import { repickCookieName } from '@/lib/templates/repick'
+import { scheduleAfterResponse } from '@/lib/background'
+import { onPickSaved } from '@/lib/templates/notify/notify'
+import { notifyDeps } from '@/lib/templates/notify/server'
 
 /** Save the customer's template pick (and business type when still empty). Generic errors only. */
 export async function saveTemplatePick(requestId: string, input: PickInput): Promise<PickResult> {
@@ -16,6 +19,8 @@ export async function saveTemplatePick(requestId: string, input: PickInput): Pro
   }
   const r = await savePickCore(deps, requestId, input)
   if (r.ok) {
+    // Admin notify (Aria scope, Oct 14): after the response, never blocks or undoes the saved pick.
+    scheduleAfterResponse('picker-notify', () => onPickSaved(notifyDeps(), requestId))
     // L1: a new pick ends the "type changed" banner.
     try { (await cookies()).delete({ name: repickCookieName(requestId), path: `/dashboard/requests/${requestId}` }) } catch {}
     revalidatePath('/dashboard/request-website')

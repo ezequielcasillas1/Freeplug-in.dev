@@ -63,3 +63,6 @@ next-env.d.ts
 .dev.vars
 .dev.vars.*
 !.dev.vars.example
+
+# picker-notify dev outbox (local only)
+.notify-outbox/

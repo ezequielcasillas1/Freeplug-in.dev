@@ -94,3 +94,20 @@ export function autoNiches(input: { name: string; tags: string[] }): Niche[] {
   if (classifyCleaning(input).kind !== 'none') out.push('cleaning')
   return out
 }
+
+/**
+ * The whole-word term that tags `text` for `niche` (same rules as autoNiches, cleaning rule included),
+ * or null. Used by the admin team-pick notify score to explain a match. other_local never matches.
+ */
+export function matchedNicheTerm(niche: Niche, input: { name: string; tags: string[] }): string | null {
+  if (niche === 'other_local') return null
+  if (niche === 'cleaning') {
+    const c = classifyCleaning(input)
+    return c.kind === 'none' ? null : c.matchedTag
+  }
+  const words = NICHE_WORDS[niche]
+  for (const t of [input.name, ...input.tags]) {
+    for (const w of words) if (wordRe([w]).test(t)) return w
+  }
+  return null
+}
