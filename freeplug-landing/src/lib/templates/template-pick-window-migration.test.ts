@@ -46,3 +46,23 @@ describe('20261013200000_template_pick_window.sql', () => {
     expect(code).toContain("insert into public.template_pick_audit (request_id, action, actor_email, unlocked_until)")
   })
 })
+
+const sql2 = readFileSync(path.resolve(__dirname, '../../../supabase/migrations/20261013210000_template_pick_backfill_lock_audit.sql'), 'utf8').toLowerCase()
+const code2 = sql2.replace(/--.*$/gm, '')
+
+describe('20261013210000_template_pick_backfill_lock_audit.sql', () => {
+  it('backfills first_picked_at from picked_at for existing picks only', () => {
+    expect(code2).toMatch(/update public\.website_requests\s+set template_first_picked_at = template_picked_at\s+where template_first_picked_at is null\s+and template_choice is not null\s+and template_picked_at is not null;/)
+  })
+  it('a pick with NULL first-pick time is closed; same 65 minutes', () => {
+    expect(code2).toContain('(p_first_picked_at is null and p_template_choice is null)')
+    expect(new Set([...code2.matchAll(/interval '(\d+) minutes'/g)].map((m) => Number(m[1])))).toEqual(new Set([PICK_WINDOW_SERVER_MIN]))
+    expect(code2).toMatch(/old\.template_unlocked_until, now\(\),\s+old\.template_choice\)/)
+  })
+  it('lock is audited atomically and service-role only', () => {
+    expect(code2).toContain("check (action in ('unlock', 'lock'))")
+    expect(code2).toContain("insert into public.template_pick_audit (request_id, action, actor_email)\n  values (p_request_id, 'lock', p_actor_email)")
+    expect(code2).toContain('revoke execute on function public.template_pick_admin_lock(uuid, text) from public, anon, authenticated')
+    expect(code2).toContain('grant execute on function public.template_pick_admin_lock(uuid, text) to service_role')
+  })
+})
