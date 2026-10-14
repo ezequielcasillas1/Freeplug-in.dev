@@ -23,3 +23,17 @@ export async function lockTemplatePickAction(form: FormData): Promise<void> {
   if (error) throw new Error('lock failed')
   revalidatePath('/admin/templates/picks')
 }
+
+/**
+ * "Unlock for 1 hour" (Aria/Cheke, Oct 13): reopens the customer's pick window. The server window is
+ * PICK_WINDOW_SERVER_MIN (65) minutes from the db clock, set atomically with an audit row by
+ * public.template_pick_admin_unlock (no-op on a locked or closed request: locked always wins).
+ */
+export async function unlockTemplatePickAction(form: FormData): Promise<void> {
+  const actor = await assertTemplatesAccess()
+  const id = String(form.get('request_id') ?? '')
+  if (!UUID_RE.test(id)) throw new Error('bad request id')
+  const { error } = await createAdminClient().rpc('template_pick_admin_unlock', { p_request_id: id, p_actor_email: actor })
+  if (error) throw new Error('unlock failed')
+  revalidatePath('/admin/templates/picks')
+}

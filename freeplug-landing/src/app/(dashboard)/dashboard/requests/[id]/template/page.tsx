@@ -5,7 +5,9 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { isNiche } from '@/lib/envato/niche-tags'
 import { isFresh, type CatalogCard } from '@/lib/templates/catalog-lookup'
-import { getCatalogItem, listPickerTemplates } from '@/lib/templates/server'
+import { getCatalogItem, listPickerTemplates, pickDbNow } from '@/lib/templates/server'
+import { isPickWindowOpen, pickCountdownMs } from '@/lib/templates/window'
+import { ReadOnlyPick, type ReadOnlyCard } from './ReadOnlyPick'
 import { repickCookieName, showTypeCleared } from '@/lib/templates/repick'
 import { pickLang, t, TYPE_LABELS } from '@/lib/templates/copy'
 import { isPickEditable } from '@/lib/templates/pick'
@@ -39,7 +41,7 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
   // Owner read through RLS (website_requests_select_own): another user's id is simply not found.
   const { data: req } = await supabase
     .from('website_requests')
-    .select('id, status, business_type, template_choice, envato_item_id, pasted_template_url, template_locked_at')
+    .select('id, status, business_type, template_choice, envato_item_id, pasted_template_url, template_locked_at, template_first_picked_at, template_unlocked_until')
     .eq('id', id)
     .eq('user_id', user.id)
     .maybeSingle()
@@ -69,6 +71,29 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
       </div>
     )
   }
+
+  // Pick window on the db clock (same clock as the server action and the trigger).
+  let dbNow: Date
+  try { dbNow = await pickDbNow() } catch { dbNow = new Date() }
+  if (!isPickWindowOpen(req, dbNow)) {
+    let card: ReadOnlyCard | null = null
+    if (req.template_choice === 'team_pick') card = { kind: 'team' }
+    else if (req.template_choice === 'client_pasted' && req.pasted_template_url) card = { kind: 'paste', url: req.pasted_template_url }
+    else if (req.template_choice === 'envato_catalog' && req.envato_item_id != null) {
+      let c: CatalogCard | null = null
+      try { c = await getCatalogItem(Number(req.envato_item_id)) } catch { c = null }
+      card = { kind: 'item', name: c?.name ?? `#${req.envato_item_id}`, thumb: c?.previewImageUrl ?? null }
+    }
+    return (
+      <div className="px-0 overflow-x-hidden" data-testid="picker-window-closed">
+        {back}
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t(lang, 'picker.title')}</h1>
+        <ReadOnlyPick lang={lang} requestId={id} card={card} />
+      </div>
+    )
+  }
+  // Countdown to the 60-minute display mark (null after it: the silent 5-minute grace).
+  const countdownMs = pickCountdownMs(req, dbNow)
 
   const queryType = isNiche(q.type) ? q.type : null
   const type = savedType ?? queryType
@@ -121,6 +146,7 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
         items={items}
         initial={initial}
         save={saveTemplatePick}
+        countdownMs={countdownMs}
       />
     </div>
   )

@@ -1,5 +1,6 @@
 import { isNiche, type Niche } from '@/lib/envato/niche-tags'
 import { isFresh, type CatalogCard } from './catalog-lookup'
+import { isPickWindowOpen } from './window'
 
 export const TEMPLATE_CHOICES = ['envato_catalog', 'client_pasted', 'team_pick'] as const
 export type TemplateChoice = (typeof TEMPLATE_CHOICES)[number]
@@ -18,6 +19,8 @@ export type PickRequestRow = {
   template_locked_at: string | null
   template_choice?: string | null
   envato_item_id?: number | string | null
+  template_first_picked_at?: string | null
+  template_unlocked_until?: string | null
 }
 
 /**
@@ -61,7 +64,8 @@ export type PickDeps = {
   /** Widen log rows for this business type that name this request or have no request id. */
   findWidens: (requestId: string, niche: Niche) => Promise<WidenRow[]>
   write: (id: string, patch: Record<string, unknown>) => Promise<boolean>
-  now: () => Date
+  /** DB clock in production (template_pick_db_now), so app-server skew can't widen the window. */
+  now: () => Date | Promise<Date>
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -120,6 +124,8 @@ export async function savePickCore(deps: PickDeps, requestId: unknown, input: Pi
     const req = await deps.loadRequest(requestId)
     if (!req || req.user_id !== uid) return fail('save')
     if (!isPickEditable(req)) return fail('locked')
+    const now = await deps.now()
+    if (!isPickWindowOpen(req, now)) return fail('locked')
 
     // business_type: saved with the pick only when empty; never inferred from the template.
     let type: Niche
@@ -135,7 +141,6 @@ export async function savePickCore(deps: PickDeps, requestId: unknown, input: Pi
       patch.business_type = type
     }
 
-    const now = deps.now()
     if (input.choice === 'envato_catalog') {
       const id = Number(input.envatoItemId)
       if (!Number.isSafeInteger(id) || id <= 0) return fail('save')
@@ -154,6 +159,8 @@ export async function savePickCore(deps: PickDeps, requestId: unknown, input: Pi
       Object.assign(patch, { template_choice: 'team_pick', envato_item_id: null, pasted_template_url: null })
     }
     patch.template_picked_at = now.toISOString()
+    // The window starts at the first pick and is never moved by a re-pick (the trigger refuses a change).
+    if (req.template_first_picked_at == null) patch.template_first_picked_at = now.toISOString()
     return (await deps.write(requestId, patch)) ? { ok: true } : fail('save')
   } catch {
     return fail('save')
@@ -163,7 +170,8 @@ export async function savePickCore(deps: PickDeps, requestId: unknown, input: Pi
 export type TypeChangeResult = { ok: true; cleared: boolean } | { ok: false; error: PickError }
 
 /**
- * Change business type (Aria ruling 2): allowed whenever the pick is editable. A catalog pick that
+ * Change business type (Aria ruling 2): allowed whenever the pick is editable and the window is open
+ * (template_first_picked_at is left as is, so clearing a pick doesn't restart the window). A catalog pick that
  * doesn't fit the new type (not tagged for it, and not a general template under an applicable widen)
  * is cleared so the customer chooses again; client_pasted and team_pick stay.
  */
@@ -177,6 +185,7 @@ export async function changeBusinessTypeCore(deps: PickDeps, requestId: unknown,
     const req = await deps.loadRequest(requestId)
     if (!req || req.user_id !== uid) return fail('save')
     if (!isPickEditable(req)) return fail('locked')
+    if (!isPickWindowOpen(req, await deps.now())) return fail('locked')
     const patch: Record<string, unknown> = { business_type: newType }
     let cleared = false
     if (req.template_choice === 'envato_catalog' && req.envato_item_id != null) {

@@ -75,7 +75,7 @@ describe('savePickCore: catalog picks', () => {
   it('saves a fresh, matching item with template_picked_at = now', async () => {
     const { d, write } = deps()
     expect(await savePickCore(d, RID, { choice: 'envato_catalog', envatoItemId: 101 })).toEqual({ ok: true })
-    expect(write).toHaveBeenCalledWith(RID, { template_choice: 'envato_catalog', envato_item_id: 101, pasted_template_url: null, template_picked_at: NOW.toISOString() })
+    expect(write).toHaveBeenCalledWith(RID, { template_choice: 'envato_catalog', envato_item_id: 101, pasted_template_url: null, template_picked_at: NOW.toISOString(), template_first_picked_at: NOW.toISOString() })
   })
   it('refuses the wrong business type', async () => {
     const { d, write } = deps({ item: item({ autoNiches: ['dental'] }) })

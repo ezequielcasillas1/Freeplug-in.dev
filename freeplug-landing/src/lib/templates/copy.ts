@@ -7,7 +7,11 @@ import { NICHES, type Niche } from '@/lib/envato/niche-tags'
  * page gets ?lang=es (local review), otherwise English.
  *
  * Card/back/retry/continue/unavailable/cleared/showmore keys: Sable, 'Added 11:30 PM' in the same file.
- * picker.showmore.aria.rest (fewer than 12 left): Sable, 'Added 11:30 PM'. picker.confirm.title.link/.teampick and picker.card.general(.aria): Sable, same file (Jace-approved additions). Open: picker.confirm.body "[ask Cheke]".
+ * picker.showmore.aria.rest (fewer than 12 left): Sable, 'Added 11:30 PM'. picker.confirm.title.link/.teampick and picker.card.general(.aria): Sable, same file (Jace-approved additions). picker.confirm.body:
+ * Sable, Oct 13 (1-hour window).
+ * 1-hour window keys (Sable, Oct 13, 8:23 PM steering): picker.window.countdown/.one (Sable's ICU plural
+ * split into .one / other keys, this file's plural style), picker.window.readonly, picker.window.change,
+ * picker.window.mailto.subject. The read-only state reuses picker.card.selected for the Selected tag.
  */
 export type Lang = 'en' | 'es'
 
@@ -24,7 +28,12 @@ const EN = {
   'picker.confirm.title': 'Use {name} for your site?',
   'picker.confirm.title.link': 'Use the template from your link?',
   'picker.confirm.title.teampick': 'Let 72 After pick your template?',
-  'picker.confirm.body': 'You can change it until we start building.',
+  'picker.confirm.body': 'You can change it for 1 hour after you pick it.',
+  'picker.window.countdown': 'You can change your template for {minutes} more minutes.',
+  'picker.window.countdown.one': 'You can change your template for 1 more minute.',
+  'picker.window.readonly': 'Your template is set. Want a different one? Send us a change request.',
+  'picker.window.change': 'Request a change',
+  'picker.window.mailto.subject': 'Template change, request {id}',
   'picker.confirm.yes': 'Yes, use this template',
   'picker.confirm.back': 'Keep looking',
   'picker.done': "Got it. We'll build your site with {name}.",
@@ -79,7 +88,12 @@ const ES: Record<CopyKey, string> = {
   'picker.confirm.title': '¿Usar {name} para tu sitio?',
   'picker.confirm.title.link': '¿Usar la plantilla de tu enlace?',
   'picker.confirm.title.teampick': '¿Dejar que 72 After elija tu plantilla?',
-  'picker.confirm.body': 'Puedes cambiarla hasta que empecemos a construir tu sitio.',
+  'picker.confirm.body': 'Puedes cambiarla durante 1 hora después de elegirla.',
+  'picker.window.countdown': 'Puedes cambiar tu plantilla durante {minutes} minutos más.',
+  'picker.window.countdown.one': 'Puedes cambiar tu plantilla durante 1 minuto más.',
+  'picker.window.readonly': 'Tu plantilla ya está elegida. ¿Quieres otra? Envíanos una solicitud de cambio.',
+  'picker.window.change': 'Pedir un cambio',
+  'picker.window.mailto.subject': 'Cambio de plantilla, solicitud {id}',
   'picker.confirm.yes': 'Sí, usar esta plantilla',
   'picker.confirm.back': 'Seguir viendo',
   'picker.done': 'Listo. Construiremos tu sitio con {name}.',
@@ -152,6 +166,18 @@ export function pickLang(param: string | string[] | undefined): Lang {
 
 export function t(lang: Lang, key: CopyKey, vars: Record<string, string | number> = {}): string {
   return COPY[lang][key].replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m))
+}
+
+export const SUPPORT_EMAIL = 'support@freeplug-in.dev'
+
+/** Countdown line, whole minutes (already rounded up by pickCountdownMinutes). */
+export function countdownText(lang: Lang, minutes: number): string {
+  return minutes === 1 ? t(lang, 'picker.window.countdown.one') : t(lang, 'picker.window.countdown', { minutes })
+}
+
+/** "Request a change" link: mailto with an encodeURIComponent subject (accents and comma survive). */
+export function changeRequestMailto(lang: Lang, requestId: string): string {
+  return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t(lang, 'picker.window.mailto.subject', { id: requestId }))}`
 }
 
 /** Lina: Cleaning first, the rest alphabetical by label in the current language, other_local last. */

@@ -55,7 +55,7 @@ export async function pickDeps(): Promise<PickDeps> {
     loadRequest: async (id) => {
       const { data, error } = await db
         .from('website_requests')
-        .select('id, user_id, status, business_type, template_locked_at, template_choice, envato_item_id')
+        .select('id, user_id, status, business_type, template_locked_at, template_choice, envato_item_id, template_first_picked_at, template_unlocked_until')
         .eq('id', id)
         .maybeSingle()
       if (error) throw new Error('load failed')
@@ -82,7 +82,22 @@ export async function pickDeps(): Promise<PickDeps> {
         .select('id')
       return !error && (data?.length ?? 0) === 1
     },
-    now: () => new Date(),
+    // The trigger is the backstop for the window (it uses the db now() too); this keeps the action's check on that clock.
+    now: () => templateDbNow(db),
   }
+}
+
+/** DB clock for server pages (the picker page can't import the service-role client itself). */
+export function pickDbNow(): Promise<Date> {
+  return templateDbNow(createAdminClient())
+}
+
+/** DB clock via public.template_pick_db_now() (service role only). */
+export async function templateDbNow(db: ReturnType<typeof createAdminClient>): Promise<Date> {
+  const { data, error } = await db.rpc('template_pick_db_now')
+  if (error || typeof data !== 'string') throw new Error('db clock failed')
+  const d = new Date(data)
+  if (!Number.isFinite(d.getTime())) throw new Error('db clock failed')
+  return d
 }
 

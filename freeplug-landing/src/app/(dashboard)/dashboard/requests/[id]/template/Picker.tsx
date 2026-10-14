@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ExternalLink, Link2, Sparkles } from 'lucide-react'
 import type { Niche } from '@/lib/envato/niche-tags'
-import { TYPE_LABELS, t, type Lang } from '@/lib/templates/copy'
+import { TYPE_LABELS, countdownText, t, type Lang } from '@/lib/templates/copy'
+import { ReadOnlyPick, type ReadOnlyCard } from './ReadOnlyPick'
 import { isValidPastedUrl, type PickInput, type PickResult } from '@/lib/templates/pick'
 
 export type PickerItem = { id: number; name: string; thumb: string | null; preview: string | null; available: boolean; general?: boolean }
@@ -21,6 +22,24 @@ type Props = {
   items: PickerItem[]
   initial: Selection | null
   save: (requestId: string, input: PickInput) => Promise<PickResult>
+  /**
+   * Countdown (Lina/Vera, Oct 13): ms until the 60-minute display mark, measured on the db clock when the
+   * page rendered; null = no countdown (no pick yet, or the silent 60-65 grace). Ticks in whole minutes, rounded up.
+   */
+  countdownMs?: number | null
+}
+
+function useCountdown(ms: number | null | undefined): number | null {
+  const [start] = useState(() => Date.now())
+  const [now, setNow] = useState(start)
+  useEffect(() => {
+    if (ms == null) return
+    const h = setInterval(() => setNow(Date.now()), 10_000)
+    return () => clearInterval(h)
+  }, [ms])
+  if (ms == null) return null
+  const left = ms - (now - start)
+  return left > 0 ? Math.ceil(left / 60_000) : null
 }
 
 /** Lina: first 12 cards, then Show more loads 12 per tap. */
@@ -29,8 +48,11 @@ export const PAGE_SIZE = 12
 const RED_BTN = 'min-h-[44px] rounded-lg bg-[#ba3d3d] px-4 text-white font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d]'
 const OUTLINE_BTN = 'min-h-[44px] rounded-lg border border-[#ba3d3d] px-4 text-[#ba3d3d] font-semibold inline-flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ba3d3d]'
 
-export function Picker({ lang, requestId, type, repick, widenLogId = null, changeTypeHref, items, initial, save }: Props) {
+export function Picker({ lang, requestId, type, repick, widenLogId = null, changeTypeHref, items, initial, save, countdownMs = null }: Props) {
   const router = useRouter()
+  const minutes = useCountdown(countdownMs)
+  // Vera: when the server says the window is closed, go straight to the read-only view.
+  const [closed, setClosed] = useState(false)
   const [sel, setSel] = useState<Selection | null>(initial)
   const [pasteOpen, setPasteOpen] = useState(initial?.kind === 'paste')
   const [pasteText, setPasteText] = useState(initial?.kind === 'paste' ? initial.url : '')
@@ -82,10 +104,28 @@ export function Picker({ lang, requestId, type, repick, widenLogId = null, chang
         router.refresh()
         return
       }
-      setSaveErr(
-        t(lang, r.error === 'stale' ? 'picker.stale' : r.error === 'locked' ? 'picker.locked' : r.error === 'paste' ? 'picker.paste.error' : 'picker.save.error'),
-      )
+      if (r.error === 'locked') {
+        setConfirming(false)
+        setClosed(true)
+        router.refresh()
+        return
+      }
+      setSaveErr(t(lang, r.error === 'stale' ? 'picker.stale' : r.error === 'paste' ? 'picker.paste.error' : 'picker.save.error'))
     })
+
+  if (closed) {
+    const saved: ReadOnlyCard | null =
+      initial?.kind === 'team' ? { kind: 'team' }
+        : initial?.kind === 'paste' ? { kind: 'paste', url: initial.url }
+          : initial?.kind === 'item' ? (() => { const it = items.find((i) => i.id === initial.id); return { kind: 'item' as const, name: it?.name ?? `#${initial.id}`, thumb: it?.thumb ?? null } })()
+            : null
+    return (
+      <section data-testid="picker">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t(lang, 'picker.title')}</h1>
+        <ReadOnlyPick lang={lang} requestId={requestId} card={saved} />
+      </section>
+    )
+  }
 
   if (confirming && sel) {
     return (
@@ -118,6 +158,7 @@ export function Picker({ lang, requestId, type, repick, widenLogId = null, chang
       <div className="order-1">
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t(lang, 'picker.title')}</h1>
       <p className="mt-2 text-gray-600">{t(lang, 'picker.intro')}</p>
+      {minutes != null ? <p data-testid="pick-countdown" className="mt-2 text-sm text-gray-500">{countdownText(lang, minutes)}</p> : null}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <span data-testid="type-chip" className="inline-flex min-h-[32px] items-center rounded-full bg-gray-100 px-3 text-sm font-medium text-gray-900">{TYPE_LABELS[lang][type]}</span>
         <a href={changeTypeHref} className="inline-flex min-h-[44px] items-center text-sm text-[#ba3d3d] underline">{t(lang, 'picker.type.change')}</a>

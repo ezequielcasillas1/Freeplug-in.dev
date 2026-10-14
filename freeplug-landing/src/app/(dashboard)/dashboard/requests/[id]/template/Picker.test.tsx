@@ -213,3 +213,35 @@ describe('Picker fix round', () => {
   })
 })
 
+
+describe('Picker pick window', () => {
+  it('shows the gray countdown under the heading, rounded up', () => {
+    render(<Picker {...base} save={vi.fn()} countdownMs={12 * 60_000 + 1} />)
+    const cd = screen.getByTestId('pick-countdown')
+    expect(cd.textContent).toBe('You can change your template for 13 more minutes.')
+    expect(cd.className).toContain('text-gray-500')
+    expect(cd.className).not.toMatch(/red/)
+  })
+  it('at 61 (grace): no countdown, picker still works', () => {
+    render(<Picker {...base} save={vi.fn()} countdownMs={null} />)
+    expect(screen.queryByTestId('pick-countdown')).toBeNull()
+    fireEvent.click(within(screen.getByTestId('card-2')).getByRole('button', { name: 'Choose this one' }))
+    expect(screen.getByTestId('confirm-bar')).toBeTruthy()
+  })
+  it("server says closed: straight to read-only, only the chosen card + Selected tag + note + link", async () => {
+    const save = vi.fn(async () => ({ ok: false as const, error: 'locked' as const }))
+    render(<Picker {...base} lang="es" initial={{ kind: 'item', id: 2 }} save={save} />)
+    fireEvent.click(within(screen.getByTestId('card-3')).getByRole('button', { name: 'Elegir esta' }))
+    fireEvent.click(screen.getByRole('button', { name: /Continuar/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sí, usar esta plantilla' }))
+    await waitFor(() => expect(screen.getByTestId('picker-readonly')).toBeTruthy())
+    expect(screen.queryByTestId('grid')).toBeNull()
+    expect(screen.getByTestId('readonly-card').textContent).toContain('Clean 2')
+    expect(screen.getByTestId('selected-tag').textContent).toBe('Seleccionada')
+    expect(screen.getByTestId('readonly-note').textContent).toBe('Tu plantilla ya está elegida. ¿Quieres otra? Envíanos una solicitud de cambio.')
+    const link = screen.getByTestId('change-request-link')
+    expect(link.textContent).toBe('Pedir un cambio')
+    expect(link.getAttribute('href')).toBe(`mailto:support@freeplug-in.dev?subject=Cambio%20de%20plantilla%2C%20solicitud%20${base.requestId}`)
+    expect(link.className).toMatch(/min-h-\[44px\].*w-full/)
+  })
+})

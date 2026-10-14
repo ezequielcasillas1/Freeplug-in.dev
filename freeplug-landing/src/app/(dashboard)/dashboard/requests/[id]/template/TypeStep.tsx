@@ -30,7 +30,9 @@ export function TypeStep({ lang, basePath, initial, change }: Props) {
       setErr(null)
       const r = await change.save(change.requestId, type)
       setBusy(false)
-      if (!r.ok) return setErr(t(lang, r.error === 'locked' ? 'picker.locked' : 'picker.save.error'))
+      // Window closed / locked: show the line and re-render the server page, which shows the read-only view.
+      if (!r.ok && r.error === 'locked') { setErr(t(lang, 'picker.locked')); router.refresh(); return }
+      if (!r.ok) return setErr(t(lang, 'picker.save.error'))
       if (r.cleared) q.set('repick', '1')
     } else {
       q.set('type', type)
