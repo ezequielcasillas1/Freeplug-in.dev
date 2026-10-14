@@ -9,3 +9,4 @@
 - npm's suggested fix downgrades eslint-config-next to 14.2.35 (a semver-major step back). We are not downgrading.
 - Ruling: Aria, Oct 13 2026.
 - revisit when eslint-config-next 16.x ships a fix.
+- 2026-10-13 (Owen): Arkitect MCP servers arkitect-mcp/arkitect-box inherited secret env NAMES (Stripe, Supabase service role/DB/access, Resend, SMTP, Cloudflare, Envato) and ran `next build` with them in earlier verify runs; every .next scan of those builds was clean (only the public local anon JWT), nothing left the box, and nothing needs rotating. Builds now run via arkitect-clean (no secret names in its env) or scripts/clean-env.sh.
