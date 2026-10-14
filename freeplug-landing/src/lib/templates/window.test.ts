@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { changeBusinessTypeCore, savePickCore, type PickDeps, type PickRequestRow } from './pick'
-import { isPickWindowOpen, pickCountdownMinutes, PICK_WINDOW_DISPLAY_MIN, PICK_WINDOW_SERVER_MIN, unlockUntil } from './window'
+import { isPickWindowOpen, pickCountdownMinutes, pickIsReadOnly, PICK_WINDOW_DISPLAY_MIN, PICK_WINDOW_SERVER_MIN, unlockUntil } from './window'
 import { changeRequestMailto, countdownText } from './copy'
 
 /** Mocked clock: FIRST is the first pick; at(m, s) is m:s after it. */
@@ -147,5 +147,27 @@ describe('older picks (Aria ruling 1)', () => {
   })
   it('no pick yet still opens normally', async () => {
     expect(await pick(deps({ template_first_picked_at: null, template_choice: null }, { now: at(0) }).d)).toEqual({ ok: true })
+  })
+})
+
+describe('admin Lock shows the read-only card (Vera Low 1)', () => {
+  const base = { status: 'submitted', template_choice: 'team_pick', template_first_picked_at: FIRST.toISOString(), template_unlocked_until: null as string | null }
+  it('locked inside the window, and locked during an unlock, are read-only', () => {
+    expect(pickIsReadOnly({ ...base, template_locked_at: at(1).toISOString() }, at(5))).toBe(true)
+    expect(pickIsReadOnly({ ...base, template_locked_at: at(1).toISOString(), template_unlocked_until: unlockUntil(at(2)).toISOString() }, at(5))).toBe(true)
+  })
+  it('closed status is read-only; in-window and unlocked are not', () => {
+    expect(pickIsReadOnly({ ...base, status: 'closed', template_locked_at: null }, at(5))).toBe(true)
+    expect(pickIsReadOnly({ ...base, template_locked_at: null }, at(5))).toBe(false)
+    expect(pickIsReadOnly({ ...base, template_locked_at: null }, at(65, 1))).toBe(true)
+  })
+  it('the page has a single read-only path (ReadOnlyPick), no old locked view', async () => {
+    const { readFileSync } = await import('node:fs')
+    const path = await import('node:path')
+    const src = readFileSync(path.resolve(__dirname, '../../app/(dashboard)/dashboard/requests/[id]/template/page.tsx'), 'utf8')
+    expect(src).not.toContain('picker-locked')
+    expect(src).not.toContain("'picker.locked'")
+    expect(src.match(/<ReadOnlyPick\b/g)).toHaveLength(1)
+    expect(src).toContain('if (pickIsReadOnly(req, dbNow))')
   })
 })

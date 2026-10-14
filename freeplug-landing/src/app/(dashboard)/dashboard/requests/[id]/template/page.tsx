@@ -6,11 +6,10 @@ import { createClient } from '@/lib/supabase/server'
 import { isNiche } from '@/lib/envato/niche-tags'
 import { isFresh, type CatalogCard } from '@/lib/templates/catalog-lookup'
 import { getCatalogItem, listPickerTemplates, pickDbNow } from '@/lib/templates/server'
-import { isPickWindowOpen, pickCountdownMs } from '@/lib/templates/window'
+import { pickIsReadOnly, pickCountdownMs } from '@/lib/templates/window'
 import { ReadOnlyPick, type ReadOnlyCard } from './ReadOnlyPick'
 import { repickCookieName, showTypeCleared } from '@/lib/templates/repick'
 import { pickLang, t, TYPE_LABELS } from '@/lib/templates/copy'
-import { isPickEditable } from '@/lib/templates/pick'
 import { changeBusinessType, saveTemplatePick } from './actions'
 import { Picker, type PickerItem, type Selection } from './Picker'
 import { TypeStep } from './TypeStep'
@@ -56,26 +55,12 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
   )
   const savedType = isNiche(req.business_type) ? req.business_type : null
 
-  if (!isPickEditable(req)) {
-    let name: string | null = null
-    if (req.template_choice === 'envato_catalog' && req.envato_item_id != null) {
-      try { name = (await getCatalogItem(Number(req.envato_item_id)))?.name ?? `#${req.envato_item_id}` } catch { name = `#${req.envato_item_id}` }
-    }
-    const pickLine = req.template_choice === 'team_pick' ? t(lang, 'picker.card.teampick') : req.template_choice === 'client_pasted' ? req.pasted_template_url : name
-    return (
-      <div className="px-0 overflow-x-hidden" data-testid="picker-locked">
-        {back}
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t(lang, 'picker.title')}</h1>
-        {pickLine ? <p className={`mt-4 font-medium text-gray-900 ${req.template_choice === 'client_pasted' ? 'break-all' : 'break-words'}`}>{pickLine}</p> : null}
-        <p className="mt-4 flex items-start gap-2 text-sm text-gray-600"><span aria-hidden>🔒</span>{t(lang, 'picker.locked')}</p>
-      </div>
-    )
-  }
-
   // Pick window on the db clock (same clock as the server action and the trigger).
   let dbNow: Date
   try { dbNow = await pickDbNow() } catch { dbNow = new Date() }
-  if (!isPickWindowOpen(req, dbNow)) {
+  // One read-only view (Vera Low 1): admin Lock, closed status and the closed window all show the chosen
+  // card with the Selected tag, the note and the Request a change link.
+  if (pickIsReadOnly(req, dbNow)) {
     let card: ReadOnlyCard | null = null
     if (req.template_choice === 'team_pick') card = { kind: 'team' }
     else if (req.template_choice === 'client_pasted' && req.pasted_template_url) card = { kind: 'paste', url: req.pasted_template_url }
@@ -110,7 +95,7 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
   let items: PickerItem[] | null = null
   let widenLogId: number | null = null
   try {
-    const now = Date.now()
+    const now = dbNow.getTime()
     const r = await listPickerTemplates(id, type)
     items = r.items.map((c) => toItem(c, now))
     widenLogId = r.widenLogId

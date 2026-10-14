@@ -47,6 +47,14 @@ export function isPickWindowOpen(r: PickWindowRow, now: Date): boolean {
   return nowMs < first + PICK_WINDOW_SERVER_MIN * MIN_MS
 }
 
+/**
+ * Customer page shows the read-only card (Vera Low 1): admin-locked, closed status, or window closed.
+ * isPickWindowOpen already returns false for a lock or a closed status; this is the one name the page uses.
+ */
+export function pickIsReadOnly(r: PickWindowRow, now: Date): boolean {
+  return r.template_locked_at != null || !isPickWindowOpen(r, now)
+}
+
 /** Ms until the countdown ends (60-minute mark, or an unlock's end minus the grace); null when hidden. */
 export function pickCountdownMs(r: PickWindowRow, now: Date): number | null {
   if (!isPickWindowOpen(r, now)) return null
