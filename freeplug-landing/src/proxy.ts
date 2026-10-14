@@ -3,7 +3,7 @@ import createIntlMiddleware from 'next-intl/middleware'
 import { updateSession } from '@/lib/supabase/middleware'
 import { oversizedActionResponse } from '@/lib/outreach/body-limit'
 import { withTerminalResponseHeaders } from '@/lib/outreach/headers'
-import { routing, isLocalizedPublicPath } from '@/i18n/routing'
+import { routing, shouldRunIntlRouting } from '@/i18n/routing'
 
 const handleI18nRouting = createIntlMiddleware(routing)
 
@@ -26,7 +26,8 @@ export async function proxy(request: NextRequest) {
   const tooLarge = await oversizedActionResponse(request)
   if (tooLarge) return withTerminalResponseHeaders(tooLarge, pathname)
 
-  const intlResponse = isLocalizedPublicPath(pathname) ? handleI18nRouting(request) : undefined
+  // Not on the internal pass of next-intl's own rewrite, or '/' loops 307 -> '/' (see shouldRunIntlRouting).
+  const intlResponse = shouldRunIntlRouting(pathname, request.headers) ? handleI18nRouting(request) : undefined
   if (intlResponse && isRedirectResponse(intlResponse)) return withTerminalResponseHeaders(intlResponse, pathname)
 
   // Redirects built here skip next.config.ts headers() on OpenNext (Cloudflare port, Oct 3).

@@ -59,3 +59,21 @@ export function publicHref(href: string, locale: 'en' | 'es'): string {
   if (!(LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path)) return href
   return localizedPath(path, locale) + rest
 }
+
+/**
+ * Header next-intl puts on its own rewrite ('/' -> '/en', '/faq' -> '/en/faq'). Next re-runs the proxy
+ * on the rewritten '/en/...' path; handing that second pass to next-intl again makes it redirect the
+ * "/en" prefix back to the unprefixed URL, so '/' answered 307 -> '/' forever (Oct 13 fix).
+ */
+export const INTL_LOCALE_HEADER = 'x-next-intl-locale'
+
+/**
+ * True when next-intl should handle this proxy pass: a localized public path, and not the internal
+ * second pass of next-intl's own rewrite (a locale-prefixed path that already carries its header).
+ * A browser visiting /en/... has no such header, so it still gets redirected to the unprefixed URL.
+ */
+export function shouldRunIntlRouting(pathname: string, headers: Pick<Headers, 'has'>): boolean {
+  if (!isLocalizedPublicPath(pathname)) return false
+  const { locale } = stripLocalePrefix(pathname)
+  return !(locale !== null && headers.has(INTL_LOCALE_HEADER))
+}
