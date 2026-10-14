@@ -4,15 +4,16 @@ import { isGeneralTemplate } from '../pick'
 /**
  * Team-pick suggestions for the admin email (Aria scope, Oct 14). Deterministic, server-side, no external
  * API. Score out of 100:
- *   40 business-type whole-word match (same rules as the catalog tagger, cleaning rule included)
- *   25 services + notes keyword overlap (5 per shared keyword, max 25)
+ *   40 business-type whole-word match (same rules as the catalog tagger, cleaning rule included);
+ *      65 when the request notes are empty (the needs-fit 25 moves here, Aria ruling 4)
+ *   25 needs-fit: request NOTES keyword overlap only (5 per shared keyword, max 25)
  *   15 Lina's shortlist confirmation (shortlistPoints below)
  *   10 rating + sales (5 + 5)
  *   10 recency (last update or publish date)
  * Only templates on Elements qualify; ThemeForest-only items never do. Under 3 type matches, the rest is
  * filled from general local-business templates, marked general.
  */
-export const SCORE = { type: 40, keywords: 25, shortlist: 15, quality: 10, recency: 10 } as const
+export const SCORE = { typeNoNotes: 65, type: 40, keywords: 25, shortlist: 15, quality: 10, recency: 10 } as const
 export const SUGGESTION_COUNT = 3
 
 export type Candidate = {
@@ -95,18 +96,17 @@ const TYPE_LABEL = (t: string) => t.replace(/_/g, ' ')
 export function reasonLine(s: { general: boolean; parts: ScoreParts }, matched: string | null, overlap: number, type: string): string {
   if (s.general) {
     const bits = [`General local-business template; no match for '${TYPE_LABEL(type)}'.`]
-    if (overlap > 0) bits.push(`${overlap} service keyword${overlap === 1 ? '' : 's'} overlap.`)
+    if (overlap > 0) bits.push(`${overlap} notes keyword${overlap === 1 ? '' : 's'} overlap.`)
     return bits.join(' ')
   }
   const bits = [`Matches '${matched ?? TYPE_LABEL(type)}'`]
-  if (overlap > 0) bits.push(`${overlap} service keyword${overlap === 1 ? '' : 's'} overlap`)
+  if (overlap > 0) bits.push(`${overlap} notes keyword${overlap === 1 ? '' : 's'} overlap`)
   if (s.parts.shortlist > 0) bits.push("on Lina's shortlist")
   return bits.join('; ') + '.'
 }
 
 export type ScoreInput = {
   type: Niche
-  services: string[]
   notes: string | null
   shortlist: ShortlistRow[]
   now: Date
@@ -114,12 +114,13 @@ export type ScoreInput = {
 
 export function scoreCandidate(c: Candidate, input: ScoreInput, general: boolean): Suggestion & { overlap: number } {
   const matched = general ? null : matchedNicheTerm(input.type, { name: c.name, tags: c.tags })
-  const want = keywords([...input.services, input.notes ?? ''].join(' '))
+  const notesEmpty = !(input.notes ?? '').trim()
+  const want = keywords(input.notes ?? '')
   const have = keywords([c.name, ...c.tags].join(' '))
   let overlap = 0
   for (const w of want) if (have.has(w)) overlap++
   const parts: ScoreParts = {
-    type: matched ? SCORE.type : 0,
+    type: matched ? (notesEmpty ? SCORE.typeNoNotes : SCORE.type) : 0,
     keywords: Math.min(SCORE.keywords, overlap * 5),
     shortlist: shortlistPoints(c.id, input.type, input.shortlist),
     quality: qualityPoints(c.rating, c.sales),

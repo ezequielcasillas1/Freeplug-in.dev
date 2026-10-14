@@ -15,7 +15,7 @@ export function request(p: Partial<RequestContext> = {}): RequestContext & { ver
   return {
     id: REQ_ID, businessName: 'Rivera Plumbing', businessType: 'plumbing_electrical', choice: 'envato_catalog', envatoItemId: 101,
     pastedUrl: null, firstPickedAt: '2026-10-14T15:00:00Z', unlockedUntil: null, pickedAt: '2026-10-14T15:00:00Z',
-    notes: 'Emergency plumber, water heater repair, drain cleaning', services: [], version: 0, ...p,
+    notes: 'Emergency plumber, water heater repair, drain cleaning', version: 0, ...p,
   }
 }
 

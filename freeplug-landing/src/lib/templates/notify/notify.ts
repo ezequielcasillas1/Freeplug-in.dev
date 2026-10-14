@@ -4,18 +4,19 @@ import { pickEmail, teamPickEmail, type Email, type NotifyEvent, type PickDetail
 import { elementsSearchUrl, suggestTemplates, type Candidate, type ShortlistRow, type Suggestion } from './score'
 
 /**
- * Admin notify on a saved template pick (Aria scope, Oct 14; Cheke approved). Runs AFTER the pick is
- * saved, outside the request (scheduleAfterResponse), so nothing here can block or undo a pick.
+ * Admin notify on a saved template pick (Aria scope, Oct 14; Aria rulings on 81bce67). Runs AFTER the
+ * pick is saved (scheduleAfterResponse), so nothing here can block or undo a pick.
  *
- *   self-pick (envato_catalog / client_pasted / client_purchase): first pick -> 'picked' email now.
- *   a later change -> ONE pending 'changed' row per request, due = last change + 2 min (durable, so the
- *     debounce survives a restart); each further change moves the due time. The processor sends it.
- *   team_pick -> 'team_pick' email now with up to 3 scored suggestions, stored on the request for audit.
- * Idempotency key = request id + event + pick version (queue unique key and the Resend Idempotency-Key).
+ *   first self-pick (envato_catalog / client_pasted; client_purchase tolerated, built elsewhere) -> 'picked' now.
+ *   a later change -> the per-request alarm (a Cloudflare Durable Object alarm in production) is RESET to
+ *     now + 2 min on every change; when it fires, ONE 'changed' email with the latest state goes out.
+ *   team_pick -> 'team_pick' now with up to 3 scored suggestions (stored on the request for audit); any
+ *     pending change alarm is cancelled.
+ * Idempotency key = request id + event + pick version (also the Resend Idempotency-Key). A failed send is
+ * logged and recorded in the notify log; the admin re-sends it from /admin/notify-outbox. No alert email.
  * Times come from deps.now() (the DB clock in production; injectable in tests).
  */
 export const CHANGE_DEBOUNCE_MS = 2 * 60_000
-export const MAX_ATTEMPTS = 5
 export const SELF_PICK_CHOICES = ['envato_catalog', 'client_pasted', 'client_purchase'] as const
 
 export type RequestContext = {
@@ -29,37 +30,44 @@ export type RequestContext = {
   unlockedUntil: string | null
   pickedAt: string | null
   notes: string | null
-  services: string[]
 }
 
 export type ItemDetails = Candidate & { priceCents: number | null }
 
-export type QueueRow = { id: number; requestId: string; event: NotifyEvent; pickVersion: number; dueAt: string; attempts: number }
-
 export type OutMail = Email & { to: string; idempotencyKey: string }
 export type SendResult = { ok: true; id?: string } | { ok: false; error: string }
+
+/** Per-request debounce alarm. Production: Durable Object (do.ts). Local/tests: memory (alarm-memory.ts). */
+export interface PickAlarm {
+  /** Set (or move) this request's alarm to fireAt, remembering the latest pick version. */
+  reset(requestId: string, pickVersion: number, fireAt: Date): Promise<void>
+  cancel(requestId: string): Promise<void>
+}
+
+export type LogRow = { id: number; requestId: string; event: NotifyEvent; pickVersion: number; sentAt: string | null; attempts: number; lastError: string | null; updatedAt: string }
+
+/** Durable record of every send attempt (template_pick_notify). */
+export interface NotifyLog {
+  wasSent(requestId: string, event: NotifyEvent, pickVersion: number): Promise<boolean>
+  hasPicked(requestId: string): Promise<boolean>
+  record(r: { requestId: string; event: NotifyEvent; pickVersion: number; ok: boolean; error?: string; at: Date }): Promise<void>
+  listFailed(): Promise<LogRow[]>
+  get(id: number): Promise<LogRow | null>
+}
 
 export type NotifyDeps = {
   now: () => Date | Promise<Date>
   bumpVersion: (requestId: string) => Promise<number>
   loadContext: (requestId: string) => Promise<RequestContext | null>
   lookupItem: (id: number) => Promise<ItemDetails | null>
-  hasPickedEvent: (requestId: string) => Promise<boolean>
-  /** Insert a queue row; a duplicate (request, event, version) is ignored. */
-  enqueue: (row: { requestId: string; event: NotifyEvent; pickVersion: number; dueAt: string }) => Promise<void>
-  /** Create or move the one pending 'changed' row for the request. */
-  upsertPendingChange: (requestId: string, pickVersion: number, dueAt: string) => Promise<void>
-  cancelPendingChange: (requestId: string) => Promise<void>
-  listDue: (now: Date) => Promise<QueueRow[]>
-  markSent: (id: number, at: Date) => Promise<void>
-  markFailed: (id: number, error: string) => Promise<void>
+  alarm: PickAlarm
+  log: NotifyLog
   listCandidates: (type: string) => Promise<Candidate[]>
   listShortlist: (type: string) => Promise<ShortlistRow[]>
   saveSuggestions: (requestId: string, s: { version: number; at: string; suggestions: Suggestion[] }) => Promise<void>
   send: (m: OutMail) => Promise<SendResult>
-  alert: (message: string) => Promise<void>
   adminTo: () => string | null
-  log?: (msg: string) => void
+  logError?: (msg: string) => void
 }
 
 export function idempotencyKey(requestId: string, event: NotifyEvent, version: number): string {
@@ -74,8 +82,9 @@ export function windowClosesAt(c: Pick<RequestContext, 'firstPickedAt' | 'unlock
 }
 
 const isSelf = (c: string | null) => c != null && (SELF_PICK_CHOICES as readonly string[]).includes(c)
+const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 300)
 
-/** Call after a pick is saved. Never throws (errors are logged and alerted). */
+/** Call after a pick is saved. Never throws (errors are logged). */
 export async function onPickSaved(deps: NotifyDeps, requestId: string): Promise<void> {
   try {
     const now = await deps.now()
@@ -83,45 +92,73 @@ export async function onPickSaved(deps: NotifyDeps, requestId: string): Promise<
     if (!ctx || !ctx.choice) return
     const version = await deps.bumpVersion(requestId)
     if (ctx.choice === 'team_pick') {
-      await deps.cancelPendingChange(requestId)
-      await deps.enqueue({ requestId, event: 'team_pick', pickVersion: version, dueAt: now.toISOString() })
+      await deps.alarm.cancel(requestId)
+      await sendEvent(deps, requestId, 'team_pick', version)
     } else if (isSelf(ctx.choice)) {
-      if (await deps.hasPickedEvent(requestId)) {
-        await deps.upsertPendingChange(requestId, version, new Date(now.getTime() + CHANGE_DEBOUNCE_MS).toISOString())
+      if (await deps.log.hasPicked(requestId)) {
+        await deps.alarm.reset(requestId, version, new Date(now.getTime() + CHANGE_DEBOUNCE_MS))
       } else {
-        await deps.enqueue({ requestId, event: 'picked', pickVersion: version, dueAt: now.toISOString() })
+        await sendEvent(deps, requestId, 'picked', version)
       }
-    } else return
-    await processDue(deps)
+    }
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    deps.log?.(`[picker-notify] enqueue failed for ${requestId}: ${msg}`)
-    await safeAlert(deps, `Template pick notify could not be queued for request ${requestId}: ${msg}`)
+    deps.logError?.(`[picker-notify] notify failed for ${requestId}: ${errMsg(e)}`)
   }
 }
 
-async function safeAlert(deps: NotifyDeps, message: string) {
+/** The alarm fired (DO alarm(), or the dev "fire alarm now"): ONE 'changed' email, latest state. */
+export async function fireChangeAlarm(deps: NotifyDeps, requestId: string, pickVersion: number): Promise<SendOutcome> {
+  return sendEvent(deps, requestId, 'changed', pickVersion)
+}
+
+/** Manual re-send of a failed log row (admin outbox page). Same idempotency key. */
+export async function resendFailed(deps: NotifyDeps, logId: number): Promise<SendOutcome> {
+  const row = await deps.log.get(logId)
+  if (!row || row.sentAt) return 'skipped'
+  return sendEvent(deps, row.requestId, row.event, row.pickVersion)
+}
+
+export type SendOutcome = 'sent' | 'failed' | 'skipped'
+
+export async function sendEvent(deps: NotifyDeps, requestId: string, event: NotifyEvent, pickVersion: number): Promise<SendOutcome> {
+  let now = new Date()
   try {
-    await deps.alert(message.slice(0, 500))
-  } catch {
-    deps.log?.('[picker-notify] admin alert failed')
+    now = await deps.now()
+    if (await deps.log.wasSent(requestId, event, pickVersion)) return 'skipped'
+    const to = deps.adminTo()
+    if (!to) throw new Error('ADMIN_NOTIFY_EMAIL is not set')
+    const email = await buildEmail(deps, requestId, event, pickVersion, now)
+    if (!email) return 'skipped'
+    const res = await deps.send({ ...email, to, idempotencyKey: idempotencyKey(requestId, event, pickVersion) })
+    if (!res.ok) throw new Error(res.error)
+    await deps.log.record({ requestId, event, pickVersion, ok: true, at: now })
+    return 'sent'
+  } catch (e) {
+    const msg = errMsg(e)
+    deps.logError?.(`[picker-notify] send failed ${requestId} ${event} v${pickVersion}: ${msg}`)
+    try {
+      await deps.log.record({ requestId, event, pickVersion, ok: false, error: msg, at: now })
+    } catch (e2) {
+      deps.logError?.(`[picker-notify] could not record failure: ${errMsg(e2)}`)
+    }
+    return 'failed'
   }
 }
 
-export async function buildEmail(deps: NotifyDeps, row: QueueRow, now: Date): Promise<Email | null> {
-  const ctx = await deps.loadContext(row.requestId)
+export async function buildEmail(deps: NotifyDeps, requestId: string, event: NotifyEvent, pickVersion: number, now: Date): Promise<Email | null> {
+  const ctx = await deps.loadContext(requestId)
   if (!ctx) return null
   const closes = windowClosesAt(ctx)
   const pickedAt = ctx.pickedAt ? new Date(ctx.pickedAt) : now
-  if (row.event === 'team_pick') {
+  if (event === 'team_pick') {
     if (ctx.choice !== 'team_pick') return null
     const type = isNiche(ctx.businessType) ? ctx.businessType : 'other_local'
     const [cands, shortlist] = await Promise.all([deps.listCandidates(type), deps.listShortlist(type)])
-    const suggestions = suggestTemplates(cands, { type, services: ctx.services, notes: ctx.notes, shortlist, now })
-    await deps.saveSuggestions(row.requestId, { version: row.pickVersion, at: now.toISOString(), suggestions })
+    const suggestions = suggestTemplates(cands, { type, notes: ctx.notes, shortlist, now })
+    await deps.saveSuggestions(requestId, { version: pickVersion, at: now.toISOString(), suggestions })
     return teamPickEmail({ requestId: ctx.id, businessName: ctx.businessName, businessType: ctx.businessType, pickedAt, windowClosesAt: closes, suggestions })
   }
-  if (!isSelf(ctx.choice)) return null // changed to team_pick or cleared since; that event covers it
+  if (!isSelf(ctx.choice)) return null // moved to team_pick or cleared since; that path covers it
   const item = ctx.envatoItemId != null ? await deps.lookupItem(ctx.envatoItemId) : null
   const d: PickDetails = {
     requestId: ctx.id,
@@ -139,32 +176,5 @@ export async function buildEmail(deps: NotifyDeps, row: QueueRow, now: Date): Pr
     pickedAt,
     windowClosesAt: closes,
   }
-  return pickEmail(row.event, d)
-}
-
-/** Send every due queue row. Safe to run repeatedly (manual run, dev timer, or a production cron). */
-export async function processDue(deps: NotifyDeps): Promise<{ sent: number; failed: number; skipped: number }> {
-  const out = { sent: 0, failed: 0, skipped: 0 }
-  const now = await deps.now()
-  const to = deps.adminTo()
-  const rows = await deps.listDue(now)
-  for (const row of rows) {
-    if (row.attempts >= MAX_ATTEMPTS) { out.skipped++; continue }
-    try {
-      if (!to) throw new Error('ADMIN_NOTIFY_EMAIL is not set')
-      const email = await buildEmail(deps, row, now)
-      if (!email) { await deps.markSent(row.id, now); out.skipped++; continue }
-      const res = await deps.send({ ...email, to, idempotencyKey: idempotencyKey(row.requestId, row.event, row.pickVersion) })
-      if (!res.ok) throw new Error(res.error)
-      await deps.markSent(row.id, now)
-      out.sent++
-    } catch (e) {
-      const msg = (e instanceof Error ? e.message : String(e)).slice(0, 300)
-      out.failed++
-      deps.log?.(`[picker-notify] send failed ${row.requestId} ${row.event} v${row.pickVersion}: ${msg}`)
-      try { await deps.markFailed(row.id, msg) } catch { /* logged above */ }
-      await safeAlert(deps, `Template pick email (${row.event}) failed for request ${row.requestId}: ${msg}`)
-    }
-  }
-  return out
+  return pickEmail(event === 'changed' ? 'changed' : 'picked', d)
 }

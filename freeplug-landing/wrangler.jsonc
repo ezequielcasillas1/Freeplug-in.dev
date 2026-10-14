@@ -27,6 +27,11 @@
   // Cloudflare Images: re-encodes uploaded photos (src/lib/outreach/image-codec-cloudflare.ts)
   // and powers next/image. Free plan: 5,000 unique transformations a month, then error 9422.
   "images": { "binding": "IMAGES" },
+  // Template pick notify (Aria ruling, Oct 14): one Durable Object per website request holds the 2-minute
+  // debounce alarm for the admin "Template changed" email (src/lib/templates/notify/do.ts). CODE ONLY:
+  // added on picker-notify, nothing uploaded or deployed.
+  "durable_objects": { "bindings": [{ "name": "PICK_NOTIFY_ALARM", "class_name": "PickNotifyAlarm" }] },
+  "migrations": [{ "tag": "v1-pick-notify-alarm", "new_sqlite_classes": ["PickNotifyAlarm"] }],
   "observability": { "enabled": true },
   // Workers Paid plan (Ezequiel's decision to buy). Caps runaway CPU per request (Aria A2).
   "limits": { "cpu_ms": 10000 },
@@ -52,6 +57,7 @@
       "routes": [],
       "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "freeplug-preview" }],
       "images": { "binding": "IMAGES" },
+      "durable_objects": { "bindings": [{ "name": "PICK_NOTIFY_ALARM", "class_name": "PickNotifyAlarm" }] },
       "vars": { "TRUST_CF_CONNECTING_IP": "true" }
     }
   }

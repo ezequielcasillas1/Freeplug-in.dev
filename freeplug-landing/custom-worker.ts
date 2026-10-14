@@ -33,3 +33,7 @@ export default worker
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore generated at build time
 export { DOQueueHandler, DOShardedTagCache, BucketCachePurge } from './.open-next/worker.js'
+
+// Template pick notify (Aria ruling, Oct 14): per-request debounce alarm (binding PICK_NOTIFY_ALARM).
+// Code only, not deployed.
+export { PickNotifyAlarm } from './src/lib/templates/notify/do'

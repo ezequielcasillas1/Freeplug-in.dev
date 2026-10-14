@@ -136,6 +136,13 @@ function card(s: Suggestion): string {
   )
 }
 
+/** Sable's copy for a short team-pick list (the email always goes out, even with 0). */
+export function shortfallLine(n: number, businessType: string): string {
+  if (n >= 3) return ''
+  if (n === 0) return `No Elements matches for '${businessType}'. Lina will hand-pick suggestions.`
+  return `Only ${n} Elements matches for '${businessType}'. Lina will hand-pick the rest.`
+}
+
 export function teamPickEmail(d: TeamPickDetails): Email {
   const list = [...d.suggestions].sort((a, b) => b.score - a.score || a.id - b.id)
   const rows: [string, string][] = [
@@ -146,9 +153,7 @@ export function teamPickEmail(d: TeamPickDetails): Email {
     ['Picked at', formatCt(d.pickedAt)],
     ['Request ID', d.requestId],
   ]
-  const note = list.length < 3
-    ? `Only ${list.length} eligible Elements template${list.length === 1 ? '' : 's'} found.`
-    : ''
+  const note = shortfallLine(list.length, typeLabel(d.businessType))
   const html = wrap(
     `<div style="margin:0 0 8px 0;color:#64748b;">The customer asked the team to pick. Suggestions (on Elements only), highest score first.</div>` +
       rows.map(([k, v]) => line(k, v)).join('') +

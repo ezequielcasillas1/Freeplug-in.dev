@@ -1,31 +1,34 @@
+import { MemoryPickAlarm } from './alarm-memory'
 import type { Candidate, ShortlistRow, Suggestion } from './score'
-import type { ItemDetails, NotifyDeps, OutMail, QueueRow, RequestContext, SendResult } from './notify'
+import type { ItemDetails, LogRow, NotifyDeps, OutMail, RequestContext, SendResult } from './notify'
 
-/** In-memory NotifyDeps (tests and the sample generator). Same queue rules as the SQL table. */
+/** In-memory NotifyDeps (tests and the sample generator). Same rules as the SQL log + the DO alarm. */
 export type MemoryState = {
   clock: { now: Date }
   requests: Map<string, RequestContext & { version: number; suggestions?: unknown }>
   items: Map<number, ItemDetails>
   shortlist: ShortlistRow[]
-  queue: (QueueRow & { sentAt: string | null; lastError: string | null })[]
+  log: LogRow[]
   sent: OutMail[]
-  alerts: string[]
+  errors: string[]
   failSend: boolean
 }
 
-export function memoryNotify(init?: Partial<Pick<MemoryState, 'shortlist'>> & { items?: ItemDetails[]; now?: Date }): { deps: NotifyDeps; state: MemoryState } {
+export function memoryNotify(init?: { shortlist?: ShortlistRow[]; items?: ItemDetails[]; now?: Date; alarm?: MemoryPickAlarm }): { deps: NotifyDeps; state: MemoryState; alarm: MemoryPickAlarm } {
   const state: MemoryState = {
     clock: { now: init?.now ?? new Date('2026-10-14T15:00:00Z') },
     requests: new Map(),
     items: new Map((init?.items ?? []).map((i) => [i.id, i])),
     shortlist: init?.shortlist ?? [],
-    queue: [],
+    log: [],
     sent: [],
-    alerts: [],
+    errors: [],
     failSend: false,
   }
+  const alarm = init?.alarm ?? new MemoryPickAlarm()
   let seq = 0
   const keys = new Set<string>()
+  const find = (r: string, e: string, v: number) => state.log.find((l) => l.requestId === r && l.event === e && l.pickVersion === v)
   const deps: NotifyDeps = {
     now: () => new Date(state.clock.now),
     bumpVersion: async (id) => {
@@ -38,30 +41,22 @@ export function memoryNotify(init?: Partial<Pick<MemoryState, 'shortlist'>> & { 
       return r ? { ...r } : null
     },
     lookupItem: async (id) => state.items.get(id) ?? null,
-    hasPickedEvent: async (id) => state.queue.some((q) => q.requestId === id && q.event === 'picked'),
-    enqueue: async (row) => {
-      if (state.queue.some((q) => q.requestId === row.requestId && q.event === row.event && q.pickVersion === row.pickVersion)) return
-      state.queue.push({ ...row, id: ++seq, attempts: 0, sentAt: null, lastError: null })
-    },
-    upsertPendingChange: async (requestId, pickVersion, dueAt) => {
-      const p = state.queue.find((q) => q.requestId === requestId && q.event === 'changed' && !q.sentAt)
-      if (p) Object.assign(p, { pickVersion, dueAt })
-      else state.queue.push({ id: ++seq, requestId, event: 'changed', pickVersion, dueAt, attempts: 0, sentAt: null, lastError: null })
-    },
-    cancelPendingChange: async (requestId) => {
-      for (const q of state.queue) if (q.requestId === requestId && q.event === 'changed' && !q.sentAt) {
-        q.sentAt = state.clock.now.toISOString()
-        q.lastError = 'superseded by team_pick'
-      }
-    },
-    listDue: async (now) => state.queue.filter((q) => !q.sentAt && Date.parse(q.dueAt) <= now.getTime()).map((q) => ({ ...q })),
-    markSent: async (id, at) => {
-      const q = state.queue.find((x) => x.id === id)
-      if (q) q.sentAt = at.toISOString()
-    },
-    markFailed: async (id, error) => {
-      const q = state.queue.find((x) => x.id === id)
-      if (q) { q.attempts++; q.lastError = error }
+    alarm,
+    log: {
+      wasSent: async (r, e, v) => !!find(r, e, v)?.sentAt,
+      hasPicked: async (r) => state.log.some((l) => l.requestId === r && l.event === 'picked'),
+      record: async ({ requestId, event, pickVersion, ok, error, at }) => {
+        let row = find(requestId, event, pickVersion)
+        if (!row) {
+          row = { id: ++seq, requestId, event, pickVersion, sentAt: null, attempts: 0, lastError: null, updatedAt: at.toISOString() }
+          state.log.push(row)
+        }
+        if (ok) Object.assign(row, { sentAt: at.toISOString(), lastError: null })
+        else Object.assign(row, { attempts: row.attempts + 1, lastError: error ?? 'failed' })
+        row.updatedAt = at.toISOString()
+      },
+      listFailed: async () => state.log.filter((l) => !l.sentAt),
+      get: async (id) => state.log.find((l) => l.id === id) ?? null,
     },
     listCandidates: async () => [...state.items.values()] as Candidate[],
     listShortlist: async (type) => state.shortlist.filter((s) => s.niche === type),
@@ -76,8 +71,8 @@ export function memoryNotify(init?: Partial<Pick<MemoryState, 'shortlist'>> & { 
       state.sent.push(m)
       return { ok: true, id: `mem-${state.sent.length}` }
     },
-    alert: async (msg) => { state.alerts.push(msg) },
     adminTo: () => 'admin@example.test',
+    logError: (m) => { state.errors.push(m) },
   }
-  return { deps, state }
+  return { deps, state, alarm }
 }
