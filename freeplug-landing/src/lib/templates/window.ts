@@ -7,7 +7,8 @@
  * page only goes read-only when the server says the window is closed.
  *
  * The window starts at the FIRST pick (template_first_picked_at, set once); a re-pick never extends it.
- * An admin unlock (template_unlocked_until) reopens it until that time. template_locked_at always wins.
+ * An admin unlock (template_unlocked_until) reopens it until that time. Older picks are backfilled
+ * (first_picked_at = picked_at, 20261013210000) and so locked; a pick with a NULL first_picked_at is locked too. template_locked_at always wins.
  */
 export const PICK_WINDOW_DISPLAY_MIN = 60
 /** Must match interval '65 minutes' in the migration (template-pick-window-migration.test.ts checks it). */
@@ -20,6 +21,7 @@ export type PickWindowRow = {
   template_locked_at: string | null
   template_first_picked_at?: string | null
   template_unlocked_until?: string | null
+  template_choice?: string | null
 }
 
 function ms(ts: string | null | undefined): number | null {
@@ -38,8 +40,11 @@ export function isPickWindowOpen(r: PickWindowRow, now: Date): boolean {
   if (!(r.status === 'submitted' || r.status === 'in_review') || r.template_locked_at != null) return false
   const nowMs = now.getTime()
   const first = ms(r.template_first_picked_at)
-  if (first == null) return true // window not started: no pick yet
-  return nowMs < first + PICK_WINDOW_SERVER_MIN * MIN_MS || unlockedAt(r, nowMs)
+  if (unlockedAt(r, nowMs)) return true
+  // Aria ruling 1 (Oct 13, 8:44 PM): a pick with no first-pick time (pre-window row) counts as locked;
+  // admin Unlock is the way out. No pick yet = the window hasn't started.
+  if (first == null) return r.template_choice == null
+  return nowMs < first + PICK_WINDOW_SERVER_MIN * MIN_MS
 }
 
 /** Ms until the countdown ends (60-minute mark, or an unlock's end minus the grace); null when hidden. */

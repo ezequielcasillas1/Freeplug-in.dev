@@ -125,3 +125,27 @@ describe('change-request mailto (Vera test 6)', () => {
     expect(decodeURIComponent(es.split('subject=')[1])).toBe(`Cambio de plantilla, solicitud ${RID}`)
   })
 })
+
+describe('older picks (Aria ruling 1)', () => {
+  it('a pick with NULL first-pick time is locked (save + business type), countdown hidden', async () => {
+    const row = { template_first_picked_at: null, template_choice: 'team_pick' }
+    const { d, write } = deps(row, { now: at(1) })
+    expect(await pick(d)).toEqual({ ok: false, error: 'locked' })
+    expect(await changeBusinessTypeCore(d, RID, 'dental')).toEqual({ ok: false, error: 'locked' })
+    expect(write).not.toHaveBeenCalled()
+    expect(pickCountdownMinutes({ status: 'submitted', template_locked_at: null, ...row }, at(1))).toBeNull()
+  })
+  it('backfilled row (first = old picked_at) is locked', async () => {
+    const old = new Date(FIRST.getTime() - 3 * 86_400_000).toISOString()
+    const { d } = deps({ template_first_picked_at: old, template_picked_at: old } as Partial<PickRequestRow>, { now: FIRST })
+    expect(await pick(d)).toEqual({ ok: false, error: 'locked' })
+  })
+  it('admin Unlock is the way out for a NULL-first pick, and the re-pick then starts its window', async () => {
+    const { d, write } = deps({ template_first_picked_at: null, template_choice: 'team_pick', template_unlocked_until: unlockUntil(at(0)).toISOString() }, { now: at(10) })
+    expect(await pick(d)).toEqual({ ok: true })
+    expect(write.mock.calls[0][1]).toMatchObject({ template_first_picked_at: at(10).toISOString() })
+  })
+  it('no pick yet still opens normally', async () => {
+    expect(await pick(deps({ template_first_picked_at: null, template_choice: null }, { now: at(0) }).d)).toEqual({ ok: true })
+  })
+})

@@ -66,7 +66,7 @@ export default async function TemplatePickerPage({ params, searchParams }: Props
       <div className="px-0 overflow-x-hidden" data-testid="picker-locked">
         {back}
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t(lang, 'picker.title')}</h1>
-        {pickLine ? <p className="mt-4 font-medium text-gray-900 break-all">{pickLine}</p> : null}
+        {pickLine ? <p className={`mt-4 font-medium text-gray-900 ${req.template_choice === 'client_pasted' ? 'break-all' : 'break-words'}`}>{pickLine}</p> : null}
         <p className="mt-4 flex items-start gap-2 text-sm text-gray-600"><span aria-hidden>🔒</span>{t(lang, 'picker.locked')}</p>
       </div>
     )

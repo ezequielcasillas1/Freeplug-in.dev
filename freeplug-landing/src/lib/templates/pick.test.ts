@@ -13,7 +13,9 @@ function item(over: Partial<CatalogCard> = {}): CatalogCard {
 
 function deps(opts: { uid?: string | null; req?: Partial<PickRequestRow> | null; item?: CatalogCard | null; widen?: WidenRow | null; widens?: WidenRow[]; write?: boolean } = {}) {
   const req: PickRequestRow | null =
-    opts.req === null ? null : { id: RID, user_id: OWNER, status: 'submitted', business_type: 'cleaning', template_locked_at: null, ...opts.req }
+    opts.req === null ? null : { id: RID, user_id: OWNER, status: 'submitted', business_type: 'cleaning', template_locked_at: null,
+      // an existing pick was made "just now" (inside the window) unless a test says otherwise; see window.test.ts
+      ...(opts.req?.template_choice ? { template_first_picked_at: NOW.toISOString() } : {}), ...opts.req }
   const write = vi.fn(async () => opts.write ?? true)
   const d: PickDeps = {
     userId: async () => (opts.uid === undefined ? OWNER : opts.uid),

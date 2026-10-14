@@ -243,5 +243,9 @@ describe('Picker pick window', () => {
     expect(link.textContent).toBe('Pedir un cambio')
     expect(link.getAttribute('href')).toBe(`mailto:support@freeplug-in.dev?subject=Cambio%20de%20plantilla%2C%20solicitud%20${base.requestId}`)
     expect(link.className).toMatch(/min-h-\[44px\].*w-full/)
+    // template names wrap at word boundaries (overflow-wrap: break-word), never break-all
+    const title = within(screen.getByTestId('readonly-card')).getByRole('heading')
+    expect(title.className).toContain('break-words')
+    expect(title.className).not.toContain('break-all')
   })
 })

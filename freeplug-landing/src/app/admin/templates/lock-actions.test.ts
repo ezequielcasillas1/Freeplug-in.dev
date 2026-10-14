@@ -6,37 +6,34 @@ const guard = vi.fn()
 vi.mock('./guard', () => ({ assertTemplatesAccess: () => guard() }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: () => {
-    const q: Record<string, (...a: unknown[]) => unknown> = {}
-    for (const m of ['from', 'update', 'eq', 'is', 'not']) q[m] = (...a: unknown[]) => { calls.push([m, ...a]); return q }
-    ;(q as unknown as { then: unknown }).then = (r: (v: unknown) => void) => r({ error: null })
-    return q
-  },
+  createAdminClient: () => ({
+    rpc: async (...a: unknown[]) => { calls.push(['rpc', ...a]); return { data: null, error: null } },
+    from: (...a: unknown[]) => { calls.push(['from', ...a]); throw new Error('direct table write not allowed') },
+  }),
 }))
-import { lockTemplatePickAction } from './lock-actions'
+import { lockTemplatePickAction, unlockTemplatePickAction } from './lock-actions'
 
 const ID = '00000000-0000-4000-8000-00000000c0de'
 const form = (id: string) => { const f = new FormData(); f.set('request_id', id); return f }
 
-describe('lockTemplatePickAction', () => {
+describe.each([
+  ['lockTemplatePickAction', lockTemplatePickAction, 'template_pick_admin_lock'],
+  ['unlockTemplatePickAction', unlockTemplatePickAction, 'template_pick_admin_unlock'],
+] as const)('%s', (_n, action, rpc) => {
   beforeEach(() => { calls.length = 0; guard.mockReset() })
   it('is admin-only: a failed guard stops before any write', async () => {
     guard.mockRejectedValue(new Error('NEXT_NOT_FOUND'))
-    await expect(lockTemplatePickAction(form(ID))).rejects.toThrow('NEXT_NOT_FOUND')
+    await expect(action(form(ID))).rejects.toThrow('NEXT_NOT_FOUND')
     expect(calls).toHaveLength(0)
   })
-  it('sets template_locked_at once, only on rows with a pick', async () => {
+  it('goes through the atomic RPC that also writes the audit row, with the admin as actor', async () => {
     guard.mockResolvedValue('lina@example.test')
-    await lockTemplatePickAction(form(ID))
-    expect(calls[0]).toEqual(['from', 'website_requests'])
-    expect(Object.keys(calls[1][1] as object)).toEqual(['template_locked_at'])
-    expect(calls).toContainEqual(['eq', 'id', ID])
-    expect(calls).toContainEqual(['is', 'template_locked_at', null])
-    expect(calls).toContainEqual(['not', 'template_choice', 'is', null])
+    await action(form(ID))
+    expect(calls).toEqual([['rpc', rpc, { p_request_id: ID, p_actor_email: 'lina@example.test' }]])
   })
   it('refuses a malformed id', async () => {
     guard.mockResolvedValue('lina@example.test')
-    await expect(lockTemplatePickAction(form('x'))).rejects.toThrow()
+    await expect(action(form('x'))).rejects.toThrow()
     expect(calls).toHaveLength(0)
   })
 })

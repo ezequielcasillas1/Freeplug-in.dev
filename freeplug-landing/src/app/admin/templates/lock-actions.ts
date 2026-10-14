@@ -8,18 +8,15 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 /**
  * Lock a customer's template pick (Lina approved it, or a license was recorded). Admin + localhost
- * only (assertTemplatesAccess). Sets template_locked_at once; after that the customer can't change it.
+ * only (assertTemplatesAccess). Sets template_locked_at once (via public.template_pick_admin_lock, which also
+ * writes the template_pick_audit row); after that the customer can't change it.
  */
 export async function lockTemplatePickAction(form: FormData): Promise<void> {
-  await assertTemplatesAccess()
+  const actor = await assertTemplatesAccess()
   const id = String(form.get('request_id') ?? '')
   if (!UUID_RE.test(id)) throw new Error('bad request id')
-  const { error } = await createAdminClient()
-    .from('website_requests')
-    .update({ template_locked_at: new Date().toISOString() })
-    .eq('id', id)
-    .is('template_locked_at', null)
-    .not('template_choice', 'is', null)
+  // Aria ruling 3: lock + audit row (actor, 'lock', request id, time) in one transaction.
+  const { error } = await createAdminClient().rpc('template_pick_admin_lock', { p_request_id: id, p_actor_email: actor })
   if (error) throw new Error('lock failed')
   revalidatePath('/admin/templates/picks')
 }
