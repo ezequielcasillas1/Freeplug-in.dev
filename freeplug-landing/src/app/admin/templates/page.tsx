@@ -6,6 +6,7 @@ import { CORE_CATEGORIES } from '@/lib/envato/partitions'
 import { assertTemplatesAccess } from './guard'
 import { decideCleaningAction, importShortlistAction, syncNowAction, widenAction } from './actions'
 import { ScrollX, STICKY_FIRST_TD, STICKY_FIRST_TH } from './ScrollX'
+import { ShortlistCards } from './ShortlistCards'
 import { formatCents, isoHoursAgo, parseFilters, FRESH_HOURS, MIN_PER_TYPE } from './view'
 import { envatoTokenConfigured } from '@/lib/envato/client'
 
@@ -183,6 +184,9 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
       {f.view === 'general' ? <p className="text-sm text-amber-800">Widened to general local business (logged).</p> : null}
 
       {f.view === 'shortlist' && f.niche ? (
+        <>
+        <ShortlistCards picks={picks} />
+        <div className="hidden sm:block">
         <ScrollX testId="shortlist-scroll">
         <table className="min-w-[44rem] w-full text-sm" data-testid="shortlist-table">
           <thead><tr className="text-left bg-zinc-50"><th className={`p-2 ${STICKY_FIRST_TH}`}>Template</th><th>Platform</th><th>Regular</th><th>Extended</th><th>Status</th><th>Build note</th><th>Demo</th></tr></thead>
@@ -201,6 +205,8 @@ export default async function AdminTemplatesPage({ searchParams }: { searchParam
           </tbody>
         </table>
         </ScrollX>
+        </div>
+        </>
       ) : null}
 
       {(f.view === 'catalog' || f.view === 'general' || f.view === 'needs-lina') && (f.niche || f.view === 'needs-lina') ? (
