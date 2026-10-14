@@ -23,7 +23,7 @@ export function ReadOnlyPick({ lang, requestId, card }: { lang: Lang; requestId:
             <span data-testid="selected-tag" className="inline-flex items-center gap-1 rounded-full bg-[#ba3d3d] px-2.5 py-0.5 text-xs font-semibold text-white">
               <Check aria-hidden className="h-3.5 w-3.5" />{t(lang, 'picker.card.selected')}
             </span>
-            <h2 className="mt-2 font-semibold text-gray-900 break-all">
+            <h2 className={`mt-2 font-semibold text-gray-900 ${card.kind === 'paste' ? 'break-all' : 'break-words'}`}>
               {card.kind === 'item' ? card.name : card.kind === 'paste' ? card.url : t(lang, 'picker.teampick.title')}
             </h2>
           </div>
