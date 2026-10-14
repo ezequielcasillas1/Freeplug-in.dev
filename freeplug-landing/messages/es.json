@@ -884,7 +884,9 @@
       "homeTitle": "Sitios web gratis para negocios locales en el centro de Texas | Freeplug",
       "homeDescription": "Freeplug ayuda a dueños de negocios locales a tener un sitio web. 72 After lo construye gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
       "previewTitle": "Vista previa de tu sitio web | Freeplug",
-      "requestWebsiteTitle": "Pedir un sitio web | Freeplug"
+      "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
+      "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
+      "faqDescription": "Respuestas sobre el sitio web gratis de Freeplug, lo que pagas después del lanzamiento, los tiempos y cómo pedir tu sitio."
     },
     "notFound": {
       "heading": "Página no encontrada",
@@ -900,11 +902,13 @@
         },
         "description": {
           "freeplugFindsLocalBusinesses": "Freeplug encuentra negocios locales con un sitio web débil o sin sitio, y los invita a tener un sitio gratis.",
-          "onceSiteLivePay": "Cuando tu sitio esté en línea, pagas el hosting mensual, desde $35 al mes. Freeplug se encarga del contacto con los negocios y 72 After construye el sitio."
+          "onceSiteLivePay": "Cuando tu sitio esté en línea, pagas el hosting mensual, desde $35 al mes. Freeplug se encarga del contacto con los negocios y 72 After construye el sitio.",
+          "whenOwnerSaysYes": "Cuando un dueño dice que sí, 72 After crea el sitio con una plantilla sólida, sus servicios reales y páginas claras para pedir una cotización."
         },
         "aboutFreeplug": "Sobre Freeplug",
         "freeplugDoes": "Qué hace <span>Freeplug</span>",
-        "freeplug72AfterWorkTogether": "Freeplug y 72 After trabajan juntos: Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo."
+        "freeplug72AfterWorkTogether": "Freeplug y 72 After trabajan juntos: Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
+        "freeplugOutreachSide": "Freeplug es la parte de contacto. Buscamos negocios locales con un sitio web débil o sin sitio web y los invitamos a recibir un sitio gratis. Cuando un dueño dice que sí, 72 After crea el sitio con una plantilla sólida, sus servicios reales y páginas claras para pedir una cotización. Freeplug inicia la conversación. 72 After hace el sitio."
       },
       "cTA": {
         "freeplug72After": "Freeplug · 72 After",
@@ -924,7 +928,8 @@
           "privacyPolicy": "Aviso de privacidad",
           "cookiePolicy": "Política de cookies",
           "getStarted": "Empieza",
-          "support": "Soporte"
+          "support": "Soporte",
+          "faq": "Preguntas frecuentes"
         },
         "freeplug": "Freeplug",
         "freeplugHandlesOwnerOutreach72": "Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
@@ -990,7 +995,8 @@
         },
         "description": {
           "contactOwnersWhoNeed": "Contactamos a dueños que necesitan un sitio, o tú mismo puedes pedir uno.",
-          "reviewSiteAddPhone": "Revisas el sitio y agregas tu teléfono y tus fotos cuando quieras. Luego sale en línea y el hosting mensual lo mantiene funcionando."
+          "reviewSiteAddPhone": "Revisas el sitio y agregas tu teléfono y tus fotos cuando quieras. Luego sale en línea y el hosting mensual lo mantiene funcionando.",
+          "builds72AfterFreeMultiPage": "72 After crea un sitio gratis de varias páginas con una plantilla sólida, tus servicios reales y páginas claras para pedir una cotización."
         },
         "serviceAreas": "Zonas de servicio",
         "whereWorkTexas": "Dónde trabajamos en <span>Texas</span>",
@@ -1332,6 +1338,10 @@
   "i18n": {
     "picker": {
       "label": "Idioma"
+    },
+    "banner": {
+      "prompt": "¿Prefieres español?",
+      "dismiss": "No, gracias"
     }
   }
 }
