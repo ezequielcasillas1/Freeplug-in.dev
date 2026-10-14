@@ -47,6 +47,26 @@ describe('Picker', () => {
     expect(screen.getByTestId('confirm-bar')).toBeTruthy()
   })
 
+  it('paste: a 501-char link is not truncated; it shows the existing error and is not selected (Vera Low)', () => {
+    const save = vi.fn()
+    render(<Picker {...base} save={save} />)
+    fireEvent.click(within(screen.getByTestId('option-paste')).getByRole('button', { name: 'Template link' }))
+    const input = screen.getByLabelText('Template link') as HTMLInputElement
+    expect(input.hasAttribute('maxlength')).toBe(false)
+    const prefix = 'https://themeforest.net/item/a/'
+    const long = prefix + '1'.repeat(501 - prefix.length)
+    expect(long).toHaveLength(501)
+    fireEvent.change(input, { target: { value: long } })
+    expect(input.value).toBe(long)
+    fireEvent.click(screen.getByRole('button', { name: 'Use this link' }))
+    expect(screen.getByRole('alert').textContent).toBe('Please paste a link that starts with https://themeforest.net/item/')
+    expect(screen.queryByTestId('confirm-bar')).toBeNull()
+    expect(save).not.toHaveBeenCalled()
+    fireEvent.change(input, { target: { value: long.slice(0, 500) } })
+    fireEvent.click(screen.getByRole('button', { name: 'Use this link' }))
+    expect(screen.getByTestId('confirm-bar')).toBeTruthy()
+  })
+
   it('confirm screen saves with the business type; save error keeps the selection', async () => {
     const save = vi.fn().mockResolvedValueOnce({ ok: false, error: 'stale' }).mockResolvedValueOnce({ ok: true })
     render(<Picker {...base} save={save} />)

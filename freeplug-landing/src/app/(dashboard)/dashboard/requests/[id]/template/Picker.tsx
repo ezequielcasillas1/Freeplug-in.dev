@@ -145,7 +145,8 @@ export function Picker({ lang, requestId, type, repick, widenLogId = null, chang
                 id="paste-url"
                 type="url"
                 inputMode="url"
-                maxLength={500}
+                // No maxLength (Vera Low, Oct 13): the browser silently cut a 501-char paste and saved a
+                // different URL. isValidPastedUrl rejects > PASTE_MAX and the existing error shows instead.
                 value={pasteText}
                 onChange={(e) => setPasteText(e.target.value)}
                 placeholder={t(lang, 'picker.paste.placeholder')}
