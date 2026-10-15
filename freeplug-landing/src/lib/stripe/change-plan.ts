@@ -505,6 +505,25 @@ export async function previewPlanStepChange(
   }
 }
 
+/** Phase 4 M-1: what an upgrade released and could not put back (internal alert payload). */
+export type PendingRestoreFailed = {
+  subscriptionId: string
+  customerId: string | null
+  userId: string | null
+  /** The step the pending change would have switched to (same as the live step for an add-on removal). */
+  pendingStep: PlanStepId
+  /** Add-ons the customer had turned off (owed removals). */
+  addonsTurnedOff: AddonId[]
+  effectiveAt: string
+  /** Why the upgrade did not complete: card error, pending update, or the Stripe error message. */
+  upgradeError: string
+  /** Whether the add-on removal was saved as owed (null = no add-on removal involved). */
+  removalOwedSaved: boolean | null
+}
+
+/** Upgrades in flight in this isolate, by idempotency key: a double Confirm returns before anything is released. */
+const upgradesInFlight = new Set<string>()
+
 export async function changePlanStep(
   deps: {
     stripe: Stripe
@@ -515,6 +534,12 @@ export async function changePlanStep(
     onRemovalOwed?: (o: RemovalOwedInput) => Promise<{ saved: boolean } | unknown>
     /** Backoff between the re-schedule tries (tests). */
     sleep?: (ms: number) => Promise<void>
+    /**
+     * Phase 4 M-1: an upgrade released a pending change (downgrade or add-on removal), the upgrade did not go
+     * through, and putting the change back failed. Alert us (internal, never the customer). Never silent:
+     * without this dep the failure is still logged loudly.
+     */
+    onRestoreFailed?: (o: PendingRestoreFailed) => Promise<unknown>
   },
   sub: Sub,
   targetId: PlanStepId,
@@ -578,8 +603,15 @@ export async function changePlanStep(
       const check = checkProrationDate(opts.prorationDate, deps.now?.() ?? new Date())
       if (check !== 'ok') return { ok: false, code: 'stale_preview', message: `The previewed amount can't be used (${check}). Check it again.` }
     }
+    // Phase 4 M-1: "already in progress" answers BEFORE anything is released (the server action also holds
+    // the change-plan lock across isolates; this covers a second call in the same isolate).
+    const upgradeKey = upgradeIdempotencyKey(sub, target.id, opts)
+    if (upgradesInFlight.has(upgradeKey)) return { ok: false, code: 'in_progress', message: 'This plan change is already going through.' }
+    upgradesInFlight.add(upgradeKey)
+    try {
     const schedule = await settle()
-    // Release a pending change first (Aria, Oct 3 12:25). Remember it so a failed card puts it back.
+    // Release a pending change first (Aria, Oct 3 12:25): Stripe refuses a direct subscription update while a
+    // schedule manages it, so the release cannot wait for the upgrade. Remember it so EVERY failure puts it back.
     let restore: ScheduledPhase | null = null
     if (schedule) {
       restore = await pendingFromSchedule(stripe, schedule, now).catch(() => null)
@@ -606,6 +638,46 @@ export async function changePlanStep(
         return false
       }
     }
+    // Phase 4 M-1: put the change back; if that fails, the add-on removal is recorded as OWED (flag + alert)
+    // and an internal alert names what was lost (a downgrade has no owed store), so it is never silent.
+    const putBackOrRecord = async (why: string): Promise<boolean | null> => {
+      const r = await putBack()
+      if (r !== false || !restore) return r
+      const liveNow = addonIdsOfItems(sub.items.data)
+      const turnedOff = liveNow.filter((a) => !restore!.addons.includes(a))
+      let removalOwedSaved: boolean | null = null
+      if (turnedOff.length > 0) {
+        const owed: RemovalOwedInput = { subscriptionId: sub.id, customerId: idOf(sub.customer ?? null), userId: opts.userId ?? null, addons: turnedOff, effectiveAt: restore.effectiveAt }
+        log(`[change-plan] REMOVAL OWED on ${sub.id} (upgrade failed: ${why}): ${turnedOff.join(',')} from ${restore.effectiveAt}`)
+        if (deps.onRemovalOwed) {
+          const o = await deps.onRemovalOwed(owed).catch((e: unknown) => {
+            log(`[change-plan] REMOVAL OWED NOT SAVED on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`)
+            return { saved: false }
+          })
+          removalOwedSaved = !(o && typeof o === 'object' && 'saved' in o && o.saved === false)
+        } else {
+          log(`[change-plan] REMOVAL OWED NOT SAVED on ${sub.id}: no store`)
+          removalOwedSaved = false
+        }
+      }
+      const lost: PendingRestoreFailed = {
+        subscriptionId: sub.id,
+        customerId: idOf(sub.customer ?? null),
+        userId: opts.userId ?? null,
+        pendingStep: restore.step,
+        addonsTurnedOff: turnedOff,
+        effectiveAt: restore.effectiveAt,
+        upgradeError: why,
+        removalOwedSaved,
+      }
+      log(`[change-plan] PENDING CHANGE LOST on ${sub.id}: step ${restore.step}, add-ons off ${turnedOff.join(',') || 'none'}, from ${restore.effectiveAt} (upgrade failed: ${why})`)
+      if (deps.onRestoreFailed) {
+        await deps.onRestoreFailed(lost).catch((e: unknown) => log(`[change-plan] PENDING CHANGE LOST ALERT FAILED on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`))
+      } else {
+        log(`[change-plan] PENDING CHANGE LOST on ${sub.id}: no alert configured`)
+      }
+      return false
+    }
     let updated: Stripe.Subscription
     try {
       updated = await stripe.subscriptions.update(
@@ -620,14 +692,28 @@ export async function changePlanStep(
         // user + step + proration_date (Aria 1:34 PM): a double Confirm sends the same key, so Stripe
         // runs the update once. The subscription's prices and latest invoice id keep a retry after a
         // failed card a NEW request (a reused key would replay the failed response for 24 hours).
-        { idempotencyKey: upgradeIdempotencyKey(sub, target.id, opts) }
+        { idempotencyKey: upgradeKey }
       )
     } catch (e) {
-      // A double Confirm (same user + step + proration_date) while the first is still running: the
-      // first one charges; this one changes nothing and must not put a pending downgrade back.
-      if (isKeyInUse(e)) return { ok: false, code: 'in_progress', message: 'This plan change is already going through.' }
+      const why = e instanceof Error ? e.message : String(e)
+      if (isKeyInUse(e)) {
+        // Another isolate is running the same upgrade (the lock should make this unreachable). That request
+        // captured the same pending change before it released it and owns the put-back; restoring here could
+        // re-add a downgrade over its successful upgrade. Not silent: logged and alerted if we released one.
+        if (restore) {
+          log(`[change-plan] in_progress after releasing the pending change on ${sub.id}; the other request owns the put-back`)
+          await deps.onRestoreFailed?.({
+            subscriptionId: sub.id, customerId: idOf(sub.customer ?? null), userId: opts.userId ?? null, pendingStep: restore.step,
+            addonsTurnedOff: addonIdsOfItems(sub.items.data).filter((a) => !restore!.addons.includes(a)), effectiveAt: restore.effectiveAt,
+            upgradeError: `idempotency_key_in_use (check the other request restored it): ${why}`, removalOwedSaved: null,
+          }).catch((err: unknown) => log(`[change-plan] PENDING CHANGE ALERT FAILED on ${sub.id}: ${err instanceof Error ? err.message : String(err)}`))
+        }
+        return { ok: false, code: 'in_progress', message: 'This plan change is already going through.' }
+      }
+      // EVERY other failure puts the pending change back first (card error, API error, connection, rate limit).
+      const pendingRestored = await putBackOrRecord(why)
       if (!isCardError(e)) throw e
-      return { ok: false, code: 'payment_failed', message: PAYMENT_FAILED, pendingRestored: await putBack() }
+      return { ok: false, code: 'payment_failed', message: PAYMENT_FAILED, pendingRestored }
     }
     if (updated.pending_update) {
       // Not applied. Void the open invoice so a later retry or card update can't apply it.
@@ -637,7 +723,7 @@ export async function changePlanStep(
       if (invId && (invStatus === 'open' || invStatus === null)) {
         await stripe.invoices.voidInvoice(invId).catch((e) => log(`[change-plan] could not void ${invId}: ${e instanceof Error ? e.message : String(e)}`))
       }
-      return { ok: false, code: 'payment_failed', message: PAYMENT_FAILED, pendingRestored: await putBack() }
+      return { ok: false, code: 'payment_failed', message: PAYMENT_FAILED, pendingRestored: await putBackOrRecord('payment pending (pending_update)') }
     }
     const inv = updated.latest_invoice
     // An add-on removal that was pending stays pending on the new step (its next phase = the new step
@@ -699,6 +785,9 @@ export async function changePlanStep(
       invoiceStatus: inv && typeof inv !== 'string' ? (inv.status ?? null) : null,
       ...(addonRemovalKept !== null ? { addonRemovalKept } : {}),
       ...(removalOwed !== undefined ? { removalOwed } : {}),
+    }
+    } finally {
+      upgradesInFlight.delete(upgradeKey)
     }
   }
 

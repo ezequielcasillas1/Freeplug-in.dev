@@ -48,6 +48,17 @@ describe('grandfathered display name (Sable 6:19 PM; Vera copy-c4f9940 lows)', (
     // the add-on product by id (freeplug_addon_<tier>_monthly), whatever its name
     expect(planDisplayName([hosting, { lookupKey: null, productName: 'Old add-on', productId: 'freeplug_addon_plus_monthly' }])).toBe('Hosting + Plus add-on')
   })
+  it('L-1: an unknown grandfathered add-on gets a generic label with its own price, not "Hosting plan"', () => {
+    const items = [
+      { lookupKey: null, productName: 'Hosting plan (monthly)', productId: 'freeplug_hosting_monthly', unitAmountCents: 3500, quantity: 1 },
+      { lookupKey: null, productName: 'Something else', productId: 'prod_unknown', unitAmountCents: 1500, quantity: 1 },
+    ]
+    expect(planDisplayName(items)).toBe('Hosting + Add-on ($15)')
+    expect(planStripLine(items, 'month', 'active')).toBe('Hosting + Add-on ($15) · $50/month')
+    expect(planDisplayName([...items].reverse())).toBe('Hosting + Add-on ($15)')
+    expect(planDisplayName([hosting, { lookupKey: null, productName: 'Something else' }])).toBe('Hosting + Add-on')
+    expect(planDisplayName([hosting, pro, { lookupKey: null, productName: 'Mystery', unitAmountCents: 250, quantity: 2 }])).toBe('Hosting + Pro add-on + Add-on ($5)')
+  })
   it('add-on with a tip: "Hosting + Pro add-on + $4 tip" (the real tip amount)', () => {
     expect(subscriptionListName(planDisplayName([hosting, pro]), 4)).toBe('Hosting + Pro add-on + $4 tip')
     expect(subscriptionListName(planDisplayName([hosting, pro]), 11)).toBe('Hosting + Pro add-on + $11 tip')

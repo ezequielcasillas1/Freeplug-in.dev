@@ -61,14 +61,16 @@ import {
   planTotalBreakdown,
   planTotalLine,
   addonTodayTotal,
+  CHANGE_PLAN_SWITCHING,
 } from '@/lib/plans/ladder-copy'
+import { formatAmount, formatAmountCents } from '@/lib/format/keep-together'
 
 function formatDollars(cents: number): string {
-  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
+  return formatAmount(cents)
 }
 /** The amount charged today always shows cents ("$12.34", "$0.00"). */
 function formatCharge(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
+  return formatAmountCents(cents)
 }
 
 const LOGIN_THEN_REQUEST = `/login?next=${encodeURIComponent('/dashboard/request-website')}`
@@ -76,9 +78,42 @@ const LOGIN_THEN_REQUEST = `/login?next=${encodeURIComponent('/dashboard/request
 /** The confirm closes this long after the preview arrived, before the server's 10-minute limit. */
 export const CONFIRM_OPEN_MS = (PRORATION_DATE_MAX_AGE_SECONDS - 30) * 1000
 
-/** Phones (< sm): the action area sticks to the bottom of the screen while the card is in view. */
+/**
+ * Phones (< sm): only the totals stick to the bottom of the screen while the card is in view (M-1). The bar
+ * grows to fit its content (no height cap), its lines wrap in both languages (Lina, Oct 13: no ellipsis; amounts
+ * and dates are kept whole with U+00A0 by lib/format/keep-together), and it sits directly above the
+ * action/confirm buttons in the flow, so it is released before it can cover them. From sm up it is a plain static block (unchanged).
+ */
 const STICKY_BAR =
-  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
+  'sticky bottom-0 z-10 -mx-6 border-t border-zinc-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] max-sm:mb-3 max-sm:[&_*]:mb-0 max-sm:[&_p]:whitespace-normal sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none'
+
+/**
+ * Lina (Oct 13): the sticky bar's MEASURED height (ResizeObserver) is published on the card as
+ * --sticky-bar-h; on phones the card pads its bottom by it and the add-on confirm uses it as scroll margin.
+ */
+export const STICKY_BAR_HEIGHT_VAR = '--sticky-bar-h'
+export const STICKY_BAR_PAGE_PAD = 'max-sm:pb-[var(--sticky-bar-h,90px)]'
+
+/** Measures an element's height as it changes; 0 when it is not mounted. */
+function useMeasuredHeight(): [(el: HTMLElement | null) => void, number] {
+  const [height, setHeight] = useState(0)
+  const observer = useRef<ResizeObserver | null>(null)
+  const ref = useCallback((el: HTMLElement | null) => {
+    observer.current?.disconnect()
+    observer.current = null
+    if (!el) {
+      setHeight(0)
+      return
+    }
+    const measure = () => setHeight(Math.ceil(el.getBoundingClientRect().height))
+    measure()
+    if (typeof ResizeObserver !== 'undefined') {
+      observer.current = new ResizeObserver(measure)
+      observer.current.observe(el)
+    }
+  }, [])
+  return [ref, height]
+}
 
 const COLS: Record<number, string> = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6' }
 
@@ -212,6 +247,7 @@ export function HostingCheckoutCard({
   const [soonOpen, setSoonOpen] = useState(false)
   const soonId = useId()
   const switchRef = useRef<HTMLButtonElement>(null)
+  const [stickyBarRef, stickyBarHeight] = useMeasuredHeight()
   const confirmRef = useRef<HTMLButtonElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Stale-request guard for the upgrade preview: every preview takes a number, and closing (Esc, Not
@@ -553,6 +589,7 @@ export function HostingCheckoutCard({
   // Downgrades have no confirm, so the tip line sits under the downgrade button, with the "what
   // happens" line (Lina §3a pattern), and again in the pending box once the switch is planned.
   const downgradeTipLine = direction === 'downgrade' && tipText && renewalDate ? PLAN_CHANGE_TIP_ENDS_ON(tipText, renewalDate) : null
+  const noRealSwitch = direction === 'same' || !pickable(selected.id)
   const switchDisabled = loading || keeping || direction === 'same' || !pickable(selected.id) || confirm.phase !== 'idle'
 
   const messages = (
@@ -590,7 +627,7 @@ export function HostingCheckoutCard({
       : totalParts
   const totalBlock = totalParts && shownParts ? (
     <div className="mb-3" data-testid="plan-total">
-      <p className="text-sm text-gray-600" data-testid="plan-total-breakdown">
+      <p className={cn('text-sm text-gray-600', stickyOnPhone && 'max-sm:hidden')} data-testid="plan-total-breakdown">
         {planTotalBreakdown(selected.name, selected.monthlyCents, shownParts.addons, shownParts.tip)}
       </p>
       <p className="text-base font-bold text-gray-900" data-testid="plan-total-amount" data-totals={confirmTotals ? 'after' : 'current'}>
@@ -618,10 +655,23 @@ export function HostingCheckoutCard({
     </p>
   ) : null
 
+  const totals = totalBlock ?? phoneSummary
+  // Lina (Oct 4): the sticky bar is a direct child of the card's content (no wrapper), so it sticks while the
+  // card is on screen and releases once the card scrolls off. M-1: it holds the totals only; the buttons
+  // follow it in the normal flow. During the confirm the totals stay hidden from sm up, as before.
+  const stickyTotals = (hideFromSm: boolean) =>
+    stickyOnPhone && totals ? (
+      <div ref={stickyBarRef} className={cn(STICKY_BAR, hideFromSm && 'sm:hidden')} data-testid="sticky-totals">
+        {totals}
+      </div>
+    ) : null
+  const inlineTotals = stickyOnPhone ? null : totals
+  const inConfirm = confirm.phase === 'confirm' || confirm.phase === 'submitting'
+
   const switchArea = (
-    // Lina (Oct 4): a direct child of the card's content (no wrapper), so it sticks while the card is on
-    // screen and releases once the card scrolls off.
-    <div className={cn('mb-3 flex flex-col', stickyOnPhone ? STICKY_BAR : '')} data-testid="switch-area">
+    <>
+    {stickyTotals(inConfirm)}
+    <div className="mb-3 flex flex-col" data-testid="switch-area">
       {messages}
       {/* Live region: "Calculating…" and the confirm line are read out (Lina §3a). */}
       <p role="status" aria-live="polite" className="sr-only" data-testid="confirm-live">
@@ -633,7 +683,7 @@ export function HostingCheckoutCard({
       </p>
       {confirm.phase === 'loading' ? (
         <div data-testid="upgrade-calculating">
-          {totalBlock ?? phoneSummary}
+          {inlineTotals}
           <Button className="w-full" size="lg" disabled aria-disabled="true">
             <Loader2 className="mr-2 animate-spin" size={20} aria-hidden="true" />
             {UPGRADE_CALCULATING}
@@ -660,9 +710,27 @@ export function HostingCheckoutCard({
         </div>
       ) : (
         <div>
-          {totalBlock ?? phoneSummary}
-          <Button ref={switchRef} className="w-full" size="lg" onClick={onSwitch} disabled={switchDisabled}>
-            {loading ? <Loader2 className="animate-spin" size={22} /> : switchLabel}
+          {inlineTotals}
+          {/* M-1 (Lina): on phones a disabled switch button is hidden, whatever the reason; only an enabled one shows. */}
+          {/* Lina (Oct 13): while a switch submits it stays visible, busy ("Switching…" + spinner); on phones it is
+              hidden only when there is no real switch to make (same plan, or a plan that can't be picked). */}
+          <Button
+            ref={switchRef}
+            className={cn('w-full', noRealSwitch && 'max-sm:hidden')}
+            size="lg"
+            onClick={onSwitch}
+            disabled={switchDisabled}
+            aria-busy={loading || undefined}
+            data-testid="switch-button"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 animate-spin" size={22} aria-hidden="true" />
+                {CHANGE_PLAN_SWITCHING}
+              </>
+            ) : (
+              switchLabel
+            )}
           </Button>
           {switchHelp ? (
             <p className="mt-2 text-sm text-gray-500" data-testid="switch-help">
@@ -682,25 +750,34 @@ export function HostingCheckoutCard({
         </div>
       )}
     </div>
+    </>
   )
 
   const chooseText = onChoosePlan ? (chooseLabelFor ? chooseLabelFor(selected.name) : (chooseLabel ?? 'Continue')) : CONTINUE_TO_PAYMENT
   const payArea = (
-    <div className={cn('flex flex-col', stickyOnPhone ? STICKY_BAR : '')} data-testid="pay-area">
+    <>
+    {/* Phone bar (Lina §0/§2): "<Name> · $<price>/month"; the grey note sits directly above the button. */}
+    {stickyTotals(false)}
+    <div className="flex flex-col" data-testid="pay-area">
       {messages}
       <div>
-        {/* Phone bar (Lina §0/§2): "<Name> · $<price>/month", then the grey note directly above the button. */}
-        {totalBlock ?? phoneSummary}
+        {inlineTotals}
         {onChoosePlan && noteAboveButton ? <p className="mb-3 text-sm text-gray-500">{noteAboveButton}</p> : null}
         <Button className="w-full" size="lg" onClick={startHostingCheckout} disabled={loading || !pickable(planStep)}>
           {loading ? <Loader2 className="animate-spin" size={22} /> : chooseText}
         </Button>
       </div>
     </div>
+    </>
   )
 
   return (
-    <div className={shell}>
+    // Lina: on phones the page keeps room under its content for the sticky bar (its measured height; 90px until the first measurement, e.g. server-rendered), so nothing sits under it.
+    <div
+      className={cn(shell, stickyOnPhone && STICKY_BAR_PAGE_PAD)}
+      style={stickyOnPhone && stickyBarHeight > 0 ? ({ [STICKY_BAR_HEIGHT_VAR]: `${stickyBarHeight}px` } as React.CSSProperties) : undefined}
+      data-testid="checkout-card-shell"
+    >
       <RemovalOwedBox addons={removalOwedAddons} focus={focusRemovalOwed} />
       {hasLivePlan ? (
         <div className="mb-6 space-y-3" data-testid="plan-strip">
@@ -776,6 +853,7 @@ export function HostingCheckoutCard({
       </fieldset>
       {checkoutAddons ? (
         <AddonsBlock
+          stickyBarHeight={stickyOnPhone ? stickyBarHeight : undefined}
           mode="checkout"
           stepId={selected.id}
           selected={addonPicks}
@@ -789,6 +867,7 @@ export function HostingCheckoutCard({
         />
       ) : liveAddons ? (
         <AddonsBlock
+          stickyBarHeight={stickyOnPhone ? stickyBarHeight : undefined}
           mode="live"
           // Sable (L-2, Oct 4 9:29): the live block follows the plan the customer is ON, not the row
           // they're looking at (the switch acts on the current subscription).

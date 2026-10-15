@@ -14,6 +14,14 @@ vi.mock('@/lib/stripe/server', () => ({ getStripe: () => ({ webhooks: { construc
 vi.mock('@/lib/outreach/server', () => ({ handleOutreachInvoicePaid: async () => false, handleOutreachSetupSession: async () => false }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
+    rpc: async (fn: string, args: RecordArgs) => {
+      if (fn !== 'record_invoice_paid') throw new Error(`unexpected rpc ${fn}`)
+      return recordInvoicePaidRpc(
+        args,
+        async (row) => (h.inserts.push(row), { error: h.insertErrors.shift() ?? null }),
+        () => undefined
+      )
+    },
     from: (table: string) => {
       if (table === 'profiles') {
         const q = {
@@ -38,6 +46,7 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import { POST } from './route'
+import { recordInvoicePaidRpc, type RecordArgs } from '../../../../../test/record-invoice-paid-rpc'
 
 const T = (iso: string) => Math.floor(Date.parse(iso) / 1000)
 const OCT3 = '2026-10-03T19:03:30.000Z'
@@ -90,10 +99,12 @@ describe('webhook invoice.paid: billing_ledger.created_at is the payment time (V
     expect(h.inserts[0]).not.toHaveProperty('created_at')
   })
 
-  it('the pre-tip-migration retry keeps the payment time too', async () => {
-    h.insertErrors.push({ code: '42703' })
-    await deliver({ created: T(OCT3), status_transitions: { paid_at: T(OCT3) } })
+  it('phase 4 L-2/L-1: a failed record answers 500 and the Stripe retry still carries the payment time', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    h.insertErrors.push({ code: '08006' })
+    expect(await deliver({ created: T(OCT3), status_transitions: { paid_at: T(OCT3) } })).toBe(500)
+    expect(await deliver({ created: T(OCT3), status_transitions: { paid_at: T(OCT3) } })).toBe(200)
     expect(h.inserts).toHaveLength(2)
-    expect(h.inserts[1]).toEqual({ profile_id: 'p1', stripe_invoice_id: 'in_1', amount_cents: 6500, created_at: OCT3 })
+    expect(h.inserts[1]).toEqual({ profile_id: 'p1', stripe_invoice_id: 'in_1', amount_cents: 6500, tip_cents: 0, created_at: OCT3 })
   })
 })
