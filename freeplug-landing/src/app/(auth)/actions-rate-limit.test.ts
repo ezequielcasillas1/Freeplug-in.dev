@@ -197,3 +197,42 @@ describe('per-IP cap (Cheke, no email-wide lock)', () => {
     expect(hits.get('signin_fail_ip:ip|203.0.113.70')).toBe(3)
   })
 })
+
+describe('generic auth messages (no raw Supabase text, no account-existence hint)', () => {
+  beforeEach(() => {
+    hits.clear()
+    signInSpy.mockReset()
+    signUpSpy.mockReset()
+  })
+  it('wrong password and unknown email read identically', async () => {
+    signInSpy.mockResolvedValueOnce({ error: { message: 'Invalid login credentials' } })
+    const a = await login('known@example.com')
+    signInSpy.mockResolvedValueOnce({ error: { message: 'Email not confirmed' } })
+    const b = await login('unknown@example.com')
+    expect(a).toBe('/login?error=' + encodeURIComponent('Email or password is incorrect.'))
+    expect(b).toBe(a)
+  })
+  it('sign-up error and new-account success answer the same way', async () => {
+    const f = () => form({ email: 'n@example.com', password: 'secret123', confirm: 'secret123' })
+    signUpSpy.mockResolvedValueOnce({ data: { user: null, session: null }, error: { message: 'User already registered' } })
+    const a = await url(signUp(f()))
+    signUpSpy.mockResolvedValueOnce({ data: { user: { id: 'u' }, session: null }, error: null })
+    const b = await url(signUp(f()))
+    expect(a).toBe('/login?message=' + encodeURIComponent("If that email can be used, we've sent next steps. Check your inbox."))
+    expect(b).toBe(a)
+  })
+})
+
+describe('sign-up weak password (gap 3)', () => {
+  it('Supabase weak_password shows the password message, not the check-your-inbox line', async () => {
+    signUpSpy.mockResolvedValueOnce({ data: { user: null, session: null }, error: { code: 'weak_password', name: 'AuthWeakPasswordError', message: 'Password should contain at least one character of each: ...' } })
+    expect(await url(signUp(signupForm()))).toBe(
+      '/signup?error=' + encodeURIComponent("That password isn't strong enough. Please try a different one.")
+    )
+  })
+  it('too-short password keeps the existing form wording', async () => {
+    expect(await url(signUp(signupForm({ password: 'abc', confirm: 'abc' })))).toBe(
+      '/signup?error=' + encodeURIComponent('Password must be at least 6 characters.')
+    )
+  })
+})

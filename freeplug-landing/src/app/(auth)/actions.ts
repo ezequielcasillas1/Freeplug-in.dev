@@ -28,6 +28,28 @@ import {
 } from '@/lib/email/reset-fallback'
 
 /** Same message for sign-in and sign-up whether or not the email has an account. */
+/**
+ * Fixed auth messages (Oct 12): raw Supabase error text never reaches ?error=, and nothing says whether an
+ * account exists. No i18n catalog yet. ES strings (Sable) go here when one exists:
+ *   SIGN_IN_FAILED_MESSAGE      es: 'El correo o la contraseña no son correctos.'
+ *   CHECK_INBOX_MESSAGE         es: 'Si ese correo se puede usar, te enviamos los siguientes pasos. Revisa tu bandeja de entrada.'
+ *   GENERIC_ERROR_MESSAGE       es: 'Algo salió mal. Inténtalo de nuevo.'
+ */
+const SIGN_IN_FAILED_MESSAGE = 'Email or password is incorrect.'
+const CHECK_INBOX_MESSAGE = "If that email can be used, we've sent next steps. Check your inbox."
+const GENERIC_ERROR_MESSAGE = 'Something went wrong. Please try again.'
+/** Weak/invalid password from Supabase on sign-up (gap 3). ES in comment below (Sable). */
+// ES: "Esa contraseña no es lo bastante segura. Prueba con otra."
+const WEAK_PASSWORD_MESSAGE = "That password isn't strong enough. Please try a different one."
+
+/**
+ * Supabase's password-strength rejection (AuthWeakPasswordError, code weak_password; older servers only
+ * a 422 "Password should be ..." message). It says nothing about whether the account exists.
+ */
+function isWeakPasswordError(error: { code?: string; name?: string; message?: string }): boolean {
+  return error.code === 'weak_password' || error.name === 'AuthWeakPasswordError' || /^password should/i.test(error.message ?? '')
+}
+
 const TOO_MANY_ATTEMPTS_MESSAGE = 'Too many attempts. Please try again later.'
 /** Sign-up when the limiter database errors. ES (Sable, pending): 'Algo falló de nuestro lado. Inténtalo de nuevo en un minuto.' */
 const LIMITER_DOWN_MESSAGE = 'Something went wrong on our end. Please try again in a minute.'
@@ -179,7 +201,7 @@ export async function signIn(formData: FormData) {
     // Record the failure (rate_check inserts a hit while under the limit).
     await rateCheck(AUTH_LIMITS.signInFailures, rateKey)
     await rateCheck(AUTH_LIMITS.signInFailuresPerIp, ipKey)
-    redirect('/login?error=' + encodeURIComponent(error.message))
+    redirect('/login?error=' + encodeURIComponent(SIGN_IN_FAILED_MESSAGE))
   }
 
   await clearSignInFailures(rateKey)
@@ -248,14 +270,16 @@ export async function signUp(formData: FormData) {
     },
   })
 
-  if (error) {
-    redirect(signupPath + 'error=' + encodeURIComponent(error.message))
+  // A weak/invalid password gets its own message (it can't reveal an account); every other error and
+  // "confirm your email" answer identically, so the response never says whether the email has an account.
+  if (error && isWeakPasswordError(error)) {
+    redirect(signupPath + 'error=' + encodeURIComponent(WEAK_PASSWORD_MESSAGE))
   }
-
-  if (data.user && !data.session) {
+  if (error || (data.user && !data.session)) {
+    if (error) console.error('[signup]', error.message)
     redirect(
       '/login?message=' +
-        encodeURIComponent('Check your email to confirm your account.') +
+        encodeURIComponent(CHECK_INBOX_MESSAGE) +
         (next ? `&next=${encodeURIComponent(next)}` : '')
     )
   }
@@ -297,7 +321,8 @@ export async function signInWithGoogle(formData?: FormData) {
   })
 
   if (error) {
-    redirect('/login?error=' + encodeURIComponent(error.message))
+    console.error('[google-sign-in]', error.message)
+    redirect('/login?error=' + encodeURIComponent(GENERIC_ERROR_MESSAGE))
   }
 
   if (data.url) {
@@ -443,7 +468,8 @@ export async function updatePassword(formData: FormData) {
 
   const { error } = await supabase.auth.updateUser({ password })
   if (error) {
-    redirect('/reset-password?error=' + encodeURIComponent(error.message))
+    console.error('[update-password]', error.message)
+    redirect('/reset-password?error=' + encodeURIComponent(GENERIC_ERROR_MESSAGE))
   }
 
   jar.delete(RESET_COOKIE_NAME)

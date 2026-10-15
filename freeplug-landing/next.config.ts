@@ -5,7 +5,11 @@ import {
   PREVIEW_RESPONSE_HEADERS,
   SITE_SECURITY_HEADER_SOURCE,
   SITE_SECURITY_HEADERS,
+  assertCspSupabaseUrl,
 } from "./src/lib/outreach/headers";
+
+// The CSP's connect-src needs the Supabase project: fail a production build without it (Aria nit).
+if (process.env.NODE_ENV === "production") assertCspSupabaseUrl();
 
 const nextConfig: NextConfig = {
   turbopack: {
