@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { fadeIn } from '../animations/landing.variants'
+import { LaunchMarquee } from './LaunchMarquee'
 
 const navLinks = [
   { label: 'Home', href: '/#hero' },
@@ -54,7 +55,7 @@ export function Navigation() {
         className="absolute bottom-0 left-0 right-0 h-px bg-gray-200"
         style={{ opacity: borderOpacity }}
       />
-      
+      <LaunchMarquee />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           <Link href="/" className="flex items-center gap-2 group">

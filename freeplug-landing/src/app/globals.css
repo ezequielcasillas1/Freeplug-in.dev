@@ -126,3 +126,27 @@ body {
 .card-shine:hover::before {
   left: 100%;
 }
+
+/* Launch marquee (public pages). Pauses on hover/focus; static under reduced motion. */
+@keyframes launch-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.launch-marquee__track {
+  animation: launch-marquee-scroll 40s linear infinite;
+}
+.launch-marquee:hover .launch-marquee__track,
+.launch-marquee:focus-within .launch-marquee__track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .launch-marquee__track {
+    animation: none;
+    width: 100%;
+    justify-content: center;
+  }
+  .launch-marquee__group + .launch-marquee__group,
+  .launch-marquee__group span + span {
+    display: none;
+  }
+}
