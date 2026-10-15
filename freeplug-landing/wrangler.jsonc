@@ -49,7 +49,12 @@
       "routes": [],
       "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "freeplug-preview" }],
       "images": { "binding": "IMAGES" },
-      "vars": { "TRUST_CF_CONNECTING_IP": "true" }
+      // Wrangler does not inherit top-level "vars" into envs: repeat every one here.
+      // The admin route stays off on the preview Worker (src/lib/admin/guard.ts returns 404).
+      "vars": {
+        "TRUST_CF_CONNECTING_IP": "true",
+        "ADMIN_ROUTE_ENABLED": "false"
+      }
     }
   }
   // Email: Resend is the only app sender (src/lib/email/mailer.ts sendMail(); nodemailer removed).
