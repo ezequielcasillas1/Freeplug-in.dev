@@ -1,16 +1,30 @@
+import { createHash } from 'node:crypto'
+import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
 import { NextResponse } from 'next/server'
-import type Stripe from 'stripe'
 import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
+import { resolvePlanStep } from '@/lib/plans/ladder'
+import { getAddonPriceId, getStepPriceId, getTipPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
+import { parseTipDollars, tipLineItems } from '@/lib/plans/tips'
+import { addonCapCheck, addonConfigCents, parseAddonIds } from '@/lib/plans/addons'
+import { addonById } from '@/lib/plans/ladder'
 import {
-  ADDON_MONTHLY_CENTS,
-  clampHostingCents,
-} from '@/lib/stripe/config'
+  ALREADY_HAS_PLAN_MESSAGE,
+  listLiveSubscriptions,
+} from '@/lib/stripe/active-subscription'
+import {
+  createCheckoutCustomer,
+  findCustomersToCheck,
+  saveProfileCustomerId,
+} from '@/lib/stripe/checkout-customer'
 import {
   applyUserToCheckoutSession,
   getCheckoutSessionContext,
 } from '@/lib/stripe/checkout-context'
+import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
+import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
+import { ADDON_TURN_OFF_FIRST, STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
 
 export const runtime = 'nodejs'
 
@@ -36,59 +50,203 @@ export async function POST(request: Request) {
       )
     }
 
-    const body = (await request.json()) as {
-      hostingMonthlyCents?: unknown
-      includeAddon?: unknown
-    }
-    const hostingCents = clampHostingCents(body.hostingMonthlyCents)
-    if (hostingCents === null) {
+    const body = (await request.json()) as Record<string, unknown> | null
+    // The slider and the Basic/Plus/Pro add-ons are retired for new sales (hosting ladder, Oct 3).
+    // Old clients that still send them get a clear 400 instead of a silent step.
+    if (
+      body &&
+      typeof body === 'object' &&
+      ('addonTier' in body || 'includeAddon' in body || 'hostingMonthlyCents' in body)
+    ) {
       return NextResponse.json(
-        { error: 'Invalid hosting amount. Use $20–$50 (whole dollars).' },
+        { error: 'Add-ons and custom amounts are no longer offered. Choose a hosting plan.' },
         { status: 400 }
       )
     }
-    const includeAddon = Boolean(body.includeAddon)
+    const step = resolvePlanStep(body?.planStep)
+    if (!step) {
+      return NextResponse.json({ error: 'Invalid hosting plan.' }, { status: 400 })
+    }
+    // Not sold yet ("coming soon", ladder.ts sellable=false): refused here, whatever the UI sent.
+    if (!step.sellable) {
+      return NextResponse.json({ error: STEP_NOT_SELLABLE_MESSAGE(step.name), code: 'not_sellable' }, { status: 400 })
+    }
+
+    // Add-ons (Oct 4): known ids, each at most once; the step's cap (Starter $15) from the add-on
+    // prices, which getAddonPriceId below validates against the same amounts (fails closed).
+    const addons = parseAddonIds(body?.addons)
+    if (!addons) {
+      return NextResponse.json({ error: 'Invalid add-ons.', code: 'invalid_addons' }, { status: 400 })
+    }
+    if (!addonCapCheck(step.id, addons.map((id) => ({ id, cents: addonById(id)!.monthlyCents }))).ok) {
+      return NextResponse.json({ error: ADDON_TURN_OFF_FIRST, code: 'addons_over_cap' }, { status: 400 })
+    }
+    const addonCents = addonConfigCents(addons)
+
+    // The tipping system: optional whole-dollar tip inside the step's range (ladder.ts). Refused here,
+    // whatever the slider sent; 0 / missing = no tip item. Starter: the add-ons lower the max
+    // (plan + add-ons + tip <= $54).
+    const tip = parseTipDollars(step, body?.tipDollars, undefined, addonCents)
+    if (!tip.ok) {
+      return NextResponse.json({ error: TIP_OUT_OF_RANGE, code: 'tip_out_of_range' }, { status: 400 })
+    }
+    const tipDollars = tip.tipDollars
 
     const ctx = await getCheckoutSessionContext()
     const stripe = getStripe()
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'Hosting plan (monthly)' },
-          recurring: { interval: 'month' },
-          unit_amount: hostingCents,
-        },
-        quantity: 1,
-      },
-    ]
-
-    if (includeAddon) {
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: { name: 'Hosting add-on (monthly)' },
-          recurring: { interval: 'month' },
-          unit_amount: ADDON_MONTHLY_CENTS,
-        },
-        quantity: 1,
-      })
+    // One line item: the Stripe price behind the step's lookup key. Resolved before any open session is
+    // expired, and fails closed (503) if the price is missing or doesn't match the ladder amount.
+    let priceId: string
+    let tipPriceId: string | null = null
+    const addonPriceIds: string[] = []
+    try {
+      priceId = await getStepPriceId(step.id, stripe)
+      if (tipDollars > 0) tipPriceId = await getTipPriceId(stripe)
+      for (const id of addons) addonPriceIds.push(await getAddonPriceId(id, stripe))
+    } catch (e) {
+      console.error(
+        '[checkout/hosting] step price unavailable',
+        e instanceof PriceNotConfiguredError ? e.message : e
+      )
+      return NextResponse.json(
+        { error: "We couldn't load hosting prices. Try again in a moment." },
+        { status: 503 }
+      )
     }
+
+    // One hosting plan per customer: refuse while any subscription is still live/billable.
+    // Canceled and ended subscriptions don't count, so a customer whose hosting ended can sign up
+    // again. Runs for first-time buyers too (see lib/stripe/checkout-customer.ts). Fails closed
+    // (503) if Stripe can't be checked, rather than risk a second plan.
+    const expiredSessionIds: string[] = []
+    const checkoutUser = ctx.user ?? { id: user.id, email: user.email }
+    let customerId: string | null = ctx.stripeCustomerId
+    try {
+      // Outreach claim: a saved card waiting for publish is already this customer's plan.
+      if (await hasOutreachPlanWaitingForPublish(user.id)) {
+        return NextResponse.json(
+          { error: PLAN_WAITING_FOR_PUBLISH_MESSAGE, code: 'plan_waiting_for_publish' },
+          { status: 409 }
+        )
+      }
+      const { customerIds, ownCustomerId } = await findCustomersToCheck(
+        stripe,
+        checkoutUser,
+        ctx.stripeCustomerId
+      )
+      const live = (
+        await Promise.all(customerIds.map((id) => listLiveSubscriptions(id)))
+      ).flat()
+      if (live.length > 0) {
+        // A plan that is canceled but still running ('ending') is resumed from the dashboard
+        // ("Restart hosting"), never sold a second time.
+        const ending = live.every((s) => s.cancel_at_period_end === true || s.cancel_at != null)
+        return NextResponse.json(
+          { error: ALREADY_HAS_PLAN_MESSAGE, code: ending ? 'plan_ending' : 'already_has_plan' },
+          { status: 409 }
+        )
+      }
+      if (!customerId) {
+        customerId = ownCustomerId
+        if (customerId) await saveProfileCustomerId(checkoutUser.id, customerId)
+        else customerId = await createCheckoutCustomer(stripe, checkoutUser)
+      }
+    } catch (e) {
+      console.error('[checkout/hosting] plan check failed', e)
+      return NextResponse.json(
+        {
+          error:
+            "We couldn't check your current plan. Try again in a moment.",
+        },
+        { status: 503 }
+      )
+    }
+    if (customerId) {
+      // Race guard: at most one open hosting checkout per customer. Reuse an open session for the
+      // same plan; expire open sessions for a different plan so two tabs can't both be paid.
+      try {
+        const open = await stripe.checkout.sessions.list({
+          customer: customerId,
+          status: 'open',
+          limit: 10,
+        })
+        const hostingOpen = open.data.filter(
+          (s) => s.mode === 'subscription' && s.metadata?.type === 'hosting'
+        )
+        // Same plan AND same tip: a session for another tip amount is expired below, never reused.
+        const samePlan = hostingOpen.find(
+          (s) =>
+            s.url &&
+            s.metadata?.plan_step === step.id &&
+            (s.metadata?.tip_dollars ?? '0') === String(tipDollars) &&
+            (s.metadata?.addons ?? '') === addons.join(',')
+        )
+        if (samePlan?.url) {
+          return NextResponse.json({ url: samePlan.url })
+        }
+        for (const s of hostingOpen) {
+          await stripe.checkout.sessions.expire(s.id)
+          expiredSessionIds.push(s.id)
+        }
+      } catch (e) {
+        console.error('[checkout/hosting] could not check open sessions', e)
+      }
+    }
+
+    // Every session expires an hour after it is created (Aria, Oct 3 12:56).
+    const expiresAt = checkoutSessionExpiresAt()
+    // Double-click guard: concurrent requests for the same user + plan (same minute, so the same
+    // expires_at, and the same set of just-expired sessions) get the same Checkout Session.
+    const idempotencyKey =
+      'hosting-checkout:' +
+      createHash('sha256')
+        .update(
+          [
+            user.id,
+            customerId ?? 'new',
+            step.id,
+            String(tipDollars),
+            addons.join(','),
+            expiresAt,
+            expiredSessionIds.join(','),
+          ].join('|')
+        )
+        .digest('hex')
 
     const session = await stripe.checkout.sessions.create(
       applyUserToCheckoutSession(
         {
           mode: 'subscription',
-          line_items: lineItems,
+          expires_at: expiresAt,
+          // The step price (quantity 1) + one line per add-on (quantity 1) + the tip price with
+          // quantity = tip dollars (none for $0).
+          line_items: [
+            { price: priceId, quantity: 1 },
+            ...addonPriceIds.map((price) => ({ price, quantity: 1 })),
+            ...tipLineItems(tipPriceId, tipDollars),
+          ],
+          // The subscription carries the step too (webhook + entitlements read it as a fallback
+          // to the price's lookup key).
+          subscription_data: {
+            metadata: {
+              type: 'hosting',
+              plan_step: step.id,
+              tip_dollars: String(tipDollars),
+              ...(addons.length > 0 ? { addons: addons.join(',') } : {}),
+              supabase_user_id: checkoutUser.id,
+            },
+          },
         },
-        ctx,
+        { ...ctx, stripeCustomerId: customerId },
         {
           type: 'hosting',
-          hosting_monthly_cents: String(hostingCents),
-          include_addon: includeAddon ? 'true' : 'false',
+          plan_step: step.id,
+          tip_dollars: String(tipDollars),
+          ...(addons.length > 0 ? { addons: addons.join(',') } : {}),
         }
-      )
+      ),
+      { idempotencyKey }
     )
 
     if (!session.url) {

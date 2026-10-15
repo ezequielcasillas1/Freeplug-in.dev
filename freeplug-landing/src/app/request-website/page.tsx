@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+
+// Pattern title (no locked title yet); pending Sable's review.
+export const metadata: Metadata = {
+  title: 'Request a website | Freeplug',
+}
 
 type Props = {
   searchParams: Promise<{ focus?: string }>

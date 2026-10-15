@@ -8,7 +8,17 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "verify": "tsc --noEmit && eslint && vitest run && next build",
+    "cf:build": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "upload": "echo 'Refused: pick a target: npm run upload:preview, or npm run cf:upload:production (after Ezequiel says yes).' && exit 1",
+    "upload:preview": "opennextjs-cloudflare build && node scripts/cf-upload-guard.mjs --target=preview && wrangler versions upload --env preview",
+    "cf:upload:production": "node scripts/cf-upload-production.mjs",
+    "deploy": "echo 'Refused: no direct deploy. Run npm run upload:preview or npm run cf:upload:production, then wrangler versions deploy <id> only after Ezequiel says yes.' && exit 1",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "cf:guard": "node scripts/cf-upload-guard.mjs --target=preview"
   },
   "dependencies": {
     "@react-email/components": "^1.0.11",
@@ -19,9 +29,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
+    "heic2any": "^0.0.4",
     "lucide-react": "^1.7.0",
-    "next": "16.2.2",
-    "nodemailer": "^8.0.4",
+    "next": "16.3.8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.10.0",
@@ -31,21 +41,22 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "^5.15.9",
+    "@opennextjs/cloudflare": "1.20.8",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^20",
-    "@types/nodemailer": "^7.0.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.183.1",
     "@vitejs/plugin-react": "^5.1.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
+    "eslint-config-next": "16.3.8",
     "jsdom": "^27.4.0",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "wrangler": "^4.147.0"
   }
 }

@@ -60,6 +60,12 @@ export function DashboardAlerts({ alerts }: Props) {
               <div className="flex-1 min-w-0">
                 <h3 className={`text-sm font-semibold ${config.titleColor}`}>{alert.title}</h3>
                 <p className={`text-sm ${config.textColor} mt-0.5`}>{alert.message}</p>
+                {alert.detail ? (
+                  // Sable: the carried amount, a gray small line like the add-on confirm's split line.
+                  <p className="text-xs text-gray-500" data-testid="alert-detail">
+                    {alert.detail}
+                  </p>
+                ) : null}
                 {alert.actionLabel && alert.actionHref && (
                   <Link
                     href={alert.actionHref}

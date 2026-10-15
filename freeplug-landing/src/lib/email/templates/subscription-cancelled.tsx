@@ -1,35 +1,38 @@
 import { Text, Button, Section } from '@react-email/components'
 import * as React from 'react'
+import { emailBaseUrl } from '@/lib/site'
 import { BaseEmailLayout } from './base-layout'
 
 type Props = {
   userName?: string
-  planName: string
+  /** Not shown in the current copy; kept so existing callers still type-check. */
+  planName?: string
   endDate: string
   totalPaidToDate?: string
+  baseUrl?: string
 }
+
+/** Copy from Sable (Sep 25, 2026). {endDate} comes from formatBillingDate. */
+export const SUBSCRIPTION_CANCELLED_SUBJECT = 'Your Freeplug hosting is canceled'
 
 export function SubscriptionCancelledEmail({
   userName,
-  planName,
   endDate,
   totalPaidToDate,
+  baseUrl,
 }: Props) {
+  const base = emailBaseUrl(baseUrl)
   return (
-    <BaseEmailLayout preview={`Your ${planName} subscription has been cancelled`}>
-      <Text style={heading}>Subscription Cancelled</Text>
+    <BaseEmailLayout baseUrl={base} preview={SUBSCRIPTION_CANCELLED_SUBJECT}>
+      <Text style={heading}>{SUBSCRIPTION_CANCELLED_SUBJECT}</Text>
       <Text style={paragraph}>
         Hi{userName ? ` ${userName}` : ''},
       </Text>
-      <Text style={paragraph}>
-        We are sorry to see you go. Your <strong>{planName}</strong> subscription has been
-        cancelled.
-      </Text>
+      <Text style={paragraph}>Your hosting plan is canceled.</Text>
 
       <Section style={infoBox}>
         <Text style={infoText}>
-          Your access continues until <strong>{endDate}</strong>. After this date, your website
-          will no longer be hosted on our platform.
+          Your website stays online until <strong>{endDate}</strong>, then goes offline.
         </Text>
       </Section>
 
@@ -37,40 +40,19 @@ export function SubscriptionCancelledEmail({
         <Section style={progressBox}>
           <Text style={progressTitle}>Your Account History</Text>
           <Text style={progressText}>Total paid to date: {totalPaidToDate}</Text>
-          <Text style={progressNote}>
-            This amount is credited toward your website value. If you return, your progress is
-            preserved.
-          </Text>
         </Section>
       )}
-
-      <Text style={subheading}>What happens next?</Text>
-      <Section style={list}>
-        <Text style={listItem}>
-          • Your website will go offline after {endDate}
-        </Text>
-        <Text style={listItem}>
-          • Search engine rankings may be affected if your site is down
-        </Text>
-        <Text style={listItem}>
-          • You can resume your plan anytime from your dashboard
-        </Text>
-      </Section>
 
       <Section style={ctaBox}>
         <Text style={ctaTitle}>Changed your mind?</Text>
         <Text style={ctaText}>
-          You can reactivate your subscription before {endDate} to keep your website running
-          without interruption.
+          Until {endDate}, you can resume your plan from your dashboard. After that, choose Restart
+          hosting in your dashboard and we&apos;ll bring your website back.
         </Text>
-        <Button style={button} href="https://freeplug.dev/dashboard/plans">
-          Resume Your Plan
+        <Button style={button} href={`${base}/dashboard`}>
+          Go to your dashboard
         </Button>
       </Section>
-
-      <Text style={footerNote}>
-        If you cancelled by mistake or have questions, please contact our support team.
-      </Text>
     </BaseEmailLayout>
   )
 }
@@ -90,12 +72,6 @@ const paragraph = {
   margin: '0 0 16px',
 }
 
-const subheading = {
-  color: '#1a1a1a',
-  fontSize: '18px',
-  fontWeight: '600' as const,
-  margin: '24px 0 12px',
-}
 
 const infoBox = {
   backgroundColor: '#fef2f2',
@@ -132,22 +108,8 @@ const progressText = {
   margin: '0 0 4px',
 }
 
-const progressNote = {
-  color: '#94a3b8',
-  fontSize: '13px',
-  margin: '8px 0 0',
-}
 
-const list = {
-  margin: '0 0 24px',
-}
 
-const listItem = {
-  color: '#525f7f',
-  fontSize: '14px',
-  lineHeight: '24px',
-  margin: '0 0 4px',
-}
 
 const ctaBox = {
   backgroundColor: '#ecfdf5',
@@ -183,10 +145,5 @@ const button = {
   padding: '12px 24px',
 }
 
-const footerNote = {
-  color: '#94a3b8',
-  fontSize: '13px',
-  margin: '24px 0 0',
-}
 
 export default SubscriptionCancelledEmail

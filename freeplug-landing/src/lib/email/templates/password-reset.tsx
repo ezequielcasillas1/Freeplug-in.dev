@@ -6,17 +6,23 @@ type Props = {
   resetLink: string
   userName?: string
   expiresIn?: string
+  baseUrl?: string
 }
 
-export function PasswordResetEmail({ resetLink, userName, expiresIn = '1 hour' }: Props) {
+export function PasswordResetEmail({
+  resetLink,
+  userName,
+  expiresIn = '1 hour',
+  baseUrl,
+}: Props) {
   return (
-    <BaseEmailLayout preview="Reset your Freeplug.dev password">
+    <BaseEmailLayout baseUrl={baseUrl} preview="Reset your Freeplug password">
       <Text style={heading}>Reset Your Password</Text>
       <Text style={paragraph}>
         Hi{userName ? ` ${userName}` : ''},
       </Text>
       <Text style={paragraph}>
-        We received a request to reset your password for your Freeplug.dev account. Click the
+        We received a request to reset your password for your Freeplug account. Click the
         button below to create a new password:
       </Text>
 

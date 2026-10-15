@@ -13,12 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Freeplug.dev | Free Websites for Local Businesses",
-  description: "Get your professional website built for free. We help local businesses establish their online presence with no upfront costs. Only pay for hosting and maintenance.",
-  keywords: ["free website", "local business", "web development", "freeplug", "small business website"],
+  title: { default: "Free Website Outreach | Freeplug", template: "%s" },
+  description: "Freeplug finds local business owners who need a website. 72 After builds the free site. We serve San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
   openGraph: {
-    title: "Freeplug.dev | Free Websites for Local Businesses",
-    description: "Get your professional website built for free. Only pay for hosting and maintenance.",
+    title: "Free Websites for Local Businesses | Freeplug",
+    description: "Local business without a website? Request one. 72 After builds it for free.",
     type: "website",
   },
 };

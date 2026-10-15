@@ -5,8 +5,10 @@ import { usePathname } from 'next/navigation'
 
 const links = [
   { href: '/admin/requests', label: 'Requests' },
+  { href: '/admin/change-requests', label: 'Change requests' },
   { href: '/admin/customers', label: 'Customers' },
   { href: '/admin/accounts', label: 'Accounts' },
+  { href: '/admin/outreach', label: 'Outreach' },
 ] as const
 
 export function AdminNav() {
