@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPortal: vi.fn() }))
 
 import { HostingCheckoutCard } from './HostingCheckoutCard'
-import { AddonsBlock } from './AddonsBlock'
+import { AddonsBlock, CONFIRM_SCROLL_FALLBACK_MS, CONFIRM_SCROLL_MARGIN } from './AddonsBlock'
 import { ADDONS, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
 import type { AddonPreviewResponse, ChangeAddonResponse, PlanPreviewResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 import { addonChargeNote, addonPerkLine, BIG_CHANGE_BIGGER_NOTE, TIP_SLIDER_LABEL } from '@/lib/plans/ladder-copy'
@@ -507,16 +507,133 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
 
   it('sits directly in the card content (no mb-3 wrapper), sticky at bottom 0, white, 1px top border, safe-area padding, above the cards', () => {
     const { container } = card()
-    const bar = screen.getByTestId('switch-area')
+    // M-1: only the totals stick on phones; the buttons (switch-area) follow it in the normal flow.
+    const bar = screen.getByTestId('sticky-totals')
+    expect(screen.getByTestId('switch-area').className).not.toMatch(/sticky/)
     const shell = container.firstElementChild as HTMLElement
     expect(bar.parentElement).toBe(shell) // a wrapper would trap the sticky inside its own height
     expect(shell.className).not.toMatch(/overflow-(hidden|auto|scroll)/)
     const cls = bar.className.split(/\s+/)
-    for (const c of ['sticky', 'bottom-0', 'z-10', 'bg-white', 'border-t', 'border-zinc-200', 'pb-[max(0.75rem,env(safe-area-inset-bottom))]', 'mb-3']) expect(cls).toContain(c)
+    for (const c of ['sticky', 'bottom-0', 'z-10', 'bg-white', 'border-t', 'border-zinc-200', 'pb-[max(0.75rem,env(safe-area-inset-bottom))]', 'max-sm:mb-3', 'max-sm:[&_p]:whitespace-normal']) expect(cls).toContain(c)
+    expect(bar.className).not.toMatch(/max-h-|overflow-hidden/) // Vera: no cap; the bar grows to fit
     // Desktop (sm+) it's a normal block again.
     for (const c of ['sm:static', 'sm:border-0', 'sm:bg-transparent']) expect(cls).toContain(c)
     // Nothing else in the card sits above it.
     expect(container.querySelectorAll('[class*="z-2"],[class*="z-3"],[class*="z-4"],[class*="z-5"]')).toHaveLength(0)
+  })
+
+  it('Lina: opening the confirm scrolls its Turn on/Cancel row into view, kept above the phone bar (scroll margin = measured bar height, --sticky-bar-h)', async () => {
+    const scroll = vi.fn()
+    const orig = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scroll
+    try {
+      card()
+      fireEvent.click(sw('small_edit'))
+      const actions = await screen.findByTestId('addon-confirm-actions')
+      // No resize ever happens here: the fallback timer scrolls, exactly once, smooth.
+      await waitFor(() => expect(scroll.mock.contexts).toContain(actions))
+      await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
+      expect(scroll.mock.contexts.filter((c) => c === actions)).toHaveLength(1)
+      expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' })
+      expect(actions.className).toContain('max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]')
+      expect(within(actions).getByTestId('addon-confirm-button')).toBeInTheDocument()
+      expect(within(actions).getByTestId('addon-cancel')).toBeInTheDocument()
+      expect(document.activeElement).toBe(within(actions).getByTestId('addon-confirm-button'))
+    } finally {
+      Element.prototype.scrollIntoView = orig
+    }
+  })
+
+  it('Vera 375 + Lina: the bar grows after the confirm opens (49 -> 73px); ONE smooth scroll, after the new height is published', async () => {
+    const observers: Array<() => void> = []
+    const origRO = globalThis.ResizeObserver
+    const origRect = Element.prototype.getBoundingClientRect
+    const origScroll = Element.prototype.scrollIntoView
+    globalThis.ResizeObserver = class {
+      constructor(private cb: () => void) {}
+      observe() {
+        observers.push(() => this.cb())
+      }
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver
+    // The bar is 49px with the monthly total, 73px once the "today" line is in it.
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const h = this.getAttribute('data-testid') === 'sticky-totals' ? (this.querySelector('[data-testid="sticky-addon-today"]') ? 73 : 49) : 0
+      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: h, width: 0, height: h, toJSON: () => ({}) } as DOMRect
+    }
+    // Record the published --sticky-bar-h (the scroll margin's value) at each scroll.
+    const offsets: string[] = []
+    const opts: unknown[] = []
+    Element.prototype.scrollIntoView = function (this: Element, o?: unknown) {
+      if (this.getAttribute('data-testid') === 'addon-confirm-actions') {
+        offsets.push(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h'))
+        opts.push(o)
+      }
+    }
+    try {
+      card()
+      expect(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h')).toBe('49px')
+      fireEvent.click(sw('small_edit'))
+      await screen.findByTestId('sticky-addon-today')
+      expect(offsets).toEqual([]) // no scroll yet: waiting for the bar's new height
+      act(() => observers.forEach((fire) => fire())) // the ResizeObserver reports the taller bar
+      await waitFor(() => expect(offsets).toEqual(['73px']))
+      expect(opts).toEqual([{ block: 'nearest', behavior: 'smooth' }])
+      expect(screen.getByTestId('addon-confirm-actions').className).toContain('max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]')
+      // Exactly one: neither another resize nor the fallback timer scrolls again.
+      act(() => observers.forEach((fire) => fire()))
+      await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
+      expect(offsets).toEqual(['73px'])
+    } finally {
+      globalThis.ResizeObserver = origRO
+      Element.prototype.getBoundingClientRect = origRect
+      Element.prototype.scrollIntoView = origScroll
+    }
+  })
+
+  it('Lina: the scroll offset is set in one place: measured bar height + 16px (CONFIRM_SCROLL_MARGIN)', async () => {
+    expect(CONFIRM_SCROLL_MARGIN).toBe('max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]')
+    card()
+    fireEvent.click(sw('small_edit'))
+    const actions = await screen.findByTestId('addon-confirm-actions')
+    expect(actions.className.split(/\s+/).filter((c) => c.includes('scroll-m'))).toEqual([CONFIRM_SCROLL_MARGIN])
+  })
+
+  it('Vera (instant jump): opening the confirm moves the page only through the one smooth scroll (no plain focus(), no instant scroll API)', async () => {
+    const focusCalls: Array<{ el: Element; opts: FocusOptions | undefined }> = []
+    const scrolls: unknown[] = []
+    const origFocus = HTMLElement.prototype.focus
+    const origScroll = Element.prototype.scrollIntoView
+    const origScrollTo = window.scrollTo
+    const origScrollBy = window.scrollBy
+    HTMLElement.prototype.focus = function (this: HTMLElement, opts?: FocusOptions) {
+      focusCalls.push({ el: this, opts })
+      return origFocus.call(this, opts)
+    }
+    Element.prototype.scrollIntoView = function (o?: unknown) {
+      scrolls.push(o)
+    }
+    const instant = vi.fn()
+    window.scrollTo = instant as unknown as typeof window.scrollTo
+    window.scrollBy = instant as unknown as typeof window.scrollBy
+    try {
+      card()
+      const before = focusCalls.length
+      fireEvent.click(sw('small_edit'))
+      await screen.findByTestId('addon-confirm-actions')
+      await new Promise((r) => setTimeout(r, CONFIRM_SCROLL_FALLBACK_MS + 50))
+      const opened = focusCalls.slice(before)
+      expect(opened.length).toBeGreaterThan(0) // focus does move to Turn on
+      for (const f of opened) expect(f.opts).toMatchObject({ preventScroll: true })
+      expect(instant).not.toHaveBeenCalled()
+      expect(scrolls).toEqual([{ block: 'nearest', behavior: 'smooth' }])
+    } finally {
+      HTMLElement.prototype.focus = origFocus
+      Element.prototype.scrollIntoView = origScroll
+      window.scrollTo = origScrollTo
+      window.scrollBy = origScrollBy
+    }
   })
 
   it('confirm open: the bar swaps to the after-change totals (bold "$5.35 today" + the new monthly); Cancel restores the current ones', async () => {
@@ -535,7 +652,7 @@ describe('Lina (Oct 4): the Plans phone sticky bar', () => {
     const today = screen.getByTestId('sticky-addon-today')
     expect(today.textContent).toBe('$5.35 today')
     expect(today.className).toMatch(/font-bold/)
-    expect(within(screen.getByTestId('switch-area')).getByTestId('sticky-addon-today')).toBe(today)
+    expect(within(screen.getByTestId('sticky-totals')).getByTestId('sticky-addon-today')).toBe(today)
 
     fireEvent.click(within(box).getByRole('button', { name: 'Cancel' }))
     await waitFor(() => expect(amount().textContent).toBe('$60.75/month'))

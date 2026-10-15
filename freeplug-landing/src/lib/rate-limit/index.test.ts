@@ -117,6 +117,8 @@ describe('shared rate limiter', () => {
         // upgrade confirm preview (round 4): fails closed to the "charge the difference" fallback
         'app/(dashboard)/dashboard/billing-actions.ts',
         'app/(dashboard)/dashboard/request-website/actions.ts',
+        // forgot-password per-IP cap (20/hour) fails closed; the per-address caps use rateDecision
+        'lib/auth/reset-rate-limit.ts',
         'lib/outreach/resend-confirmation.ts',
         'lib/outreach/server.ts',
         'lib/rate-limit/index.ts',

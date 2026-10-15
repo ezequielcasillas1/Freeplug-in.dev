@@ -178,7 +178,10 @@ describe('"Total Paid" counter counts everything paid, tips included (Aria, Oct 
   const read = (rel: string) => readFileSync(path.join(__dirname, '../../', rel), 'utf8')
   it('the webhook adds the full amount paid (no tip carve-out, no flag)', () => {
     const route = read('app/api/webhooks/stripe/route.ts')
-    expect(route).toMatch(/cumulative_website_value_paid_cents: prev \+ inv\.amount_paid,/)
+    // Phase 4 L-2: the increment is record_invoice_paid's (one transaction), with the full amount paid.
+    expect(route).toMatch(/rpc\('record_invoice_paid'[\s\S]*?p_amount_cents: inv\.amount_paid,/)
+    const fn = readFileSync(path.resolve(__dirname, '../../../supabase/migrations/20261013093000_record_invoice_paid.sql'), 'utf8')
+    expect(fn).toMatch(/cumulative_website_value_paid_cents = coalesce\(cumulative_website_value_paid_cents, 0\) \+ p_amount_cents/)
     expect(route).not.toMatch(/buyoutValueCents|BUYOUT_COUNTS_TIPS/)
     expect(read('lib/plans/ladder.ts')).not.toMatch(/BUYOUT_COUNTS_TIPS/)
   })

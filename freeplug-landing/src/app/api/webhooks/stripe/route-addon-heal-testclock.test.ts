@@ -64,6 +64,17 @@ vi.mock('@/lib/supabase/admin', () => ({
         for (const r of h.emailRows.values()) if (r.id === a.p_id) r.status = a.p_status
         return { data: true, error: null }
       }
+      if (fn === 'record_invoice_paid') {
+        return recordInvoicePaidRpc(
+          args as unknown as RecordArgs,
+          async (row) => {
+            if (h.ledger.some((r) => r.stripe_invoice_id === row.stripe_invoice_id)) return { error: { code: '23505' } }
+            h.ledger.push(row as { stripe_invoice_id: string; amount_cents: number })
+            return { error: null }
+          },
+          (n) => (h.total += n)
+        )
+      }
       throw new Error(`unexpected rpc ${fn}`)
     },
     from: (table: string) => {
@@ -123,6 +134,7 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import { POST } from './route'
+import { recordInvoicePaidRpc, type RecordArgs } from '../../../../../test/record-invoice-paid-rpc'
 import { changeAddon, previewAddonChange } from '@/lib/stripe/change-plan'
 import { listInvoicesForCustomer } from '@/lib/stripe/billing-routing'
 import { recentAddonRefundNotes } from '@/components/plans/AddonRefundNotes'

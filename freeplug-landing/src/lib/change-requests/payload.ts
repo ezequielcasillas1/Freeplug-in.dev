@@ -1,4 +1,5 @@
 import { scrubForWebhook } from './scrub'
+import { CHANGE_TYPES } from '@/lib/help/help-chat-content'
 import type { ChangeBilling } from './billing'
 
 /**
@@ -41,13 +42,22 @@ export function adminChangeRequestUrl(siteBase: string, requestId: string): stri
   return `${siteBase.replace(/\/+$/, '')}/admin/change-requests/${encodeURIComponent(requestId)}`
 }
 
+/**
+ * Phase 5 L-2: change_type goes out only as one of the form's values (CHANGE_TYPES). Anything else (a direct
+ * PostgREST insert from before the DB check) is sent as "Something else", never verbatim.
+ */
+export function webhookChangeType(raw: string | null | undefined): string {
+  const v = (raw ?? '').trim()
+  return (CHANGE_TYPES as readonly string[]).includes(v) ? v : 'Something else'
+}
+
 export function buildChangeRequestPayload(row: PayloadSource, siteBase: string): ChangeRequestPayloadV1 {
   return {
     v: 1,
     event: 'change_request.created',
     request_id: row.id,
     business_name: (row.business_name ?? '').trim(),
-    change_type: row.change_type,
+    change_type: webhookChangeType(row.change_type),
     page: scrubForWebhook(row.page),
     description: scrubForWebhook(row.description),
     has_photo: Boolean(row.photo_name?.trim()),

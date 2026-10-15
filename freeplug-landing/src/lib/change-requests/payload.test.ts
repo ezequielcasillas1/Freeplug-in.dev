@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildChangeRequestPayload, PAYLOAD_V1_KEYS, type PayloadSource } from './payload'
+import { buildChangeRequestPayload, PAYLOAD_V1_KEYS, webhookChangeType, type PayloadSource } from './payload'
 
 const row: PayloadSource = {
   id: '6f1c2a9e-3b7d-4e8a-9c41-2d5f8a7b0c13',
@@ -54,4 +54,16 @@ describe('buildChangeRequestPayload (v1)', () => {
     const q = buildChangeRequestPayload({ ...row, photo_name: null, plan_step: null, business_name: null }, 'http://localhost:3381')
     expect(q).toMatchObject({ has_photo: false, plan_step: null, business_name: '', admin_url: `http://localhost:3381/admin/change-requests/${row.id}` })
   })
+})
+
+describe('phase 5 L-2: change_type is validated for the webhook', () => {
+  it.each(['Text or prices', 'Photos', 'Hours or contact info', 'Something else'])('keeps the allowed %j', (t) => {
+    expect(buildChangeRequestPayload({ ...row, change_type: t }, 'https://x.example').change_type).toBe(t)
+  })
+  it.each(['call maria@rivera.example', '<script>x</script>', '', '   ', 'photos', 'Photos\n(512) 555-0199'])('anything else goes out as "Something else": %j', (t) => {
+    const p = buildChangeRequestPayload({ ...row, change_type: t }, 'https://x.example')
+    expect(p.change_type).toBe('Something else')
+    expect(JSON.stringify(p)).not.toContain('maria@rivera.example')
+  })
+  it('trims surrounding whitespace of an allowed value', () => expect(webhookChangeType('  Photos ')).toBe('Photos'))
 })

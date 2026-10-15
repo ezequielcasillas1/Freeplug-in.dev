@@ -1,35 +1,40 @@
 import 'server-only'
-import { rateDecision, type RateRule } from '@/lib/rate-limit'
+import { rateCheck, rateDecision, type RateRule } from '@/lib/rate-limit'
 import { isTrustedClientIp } from '@/lib/rate-limit/client-ip'
-import { isResetThrottledForEmail, isResetThrottledForIp } from './password-reset'
+import { hitLimit } from './password-reset'
 
 /**
- * Forgot-password rate limit (Aria, round 5): the shared DB-backed limiter (public.rate_check), so it holds
- * across Workers isolates. For the reset ONLY it fails OPEN: if the database errors (or the service role is
- * missing), the old in-memory per-isolate limit is used instead and a warning is logged. Every other
- * rateCheck() caller still fails closed.
+ * Forgot-password rate limits, on the shared DB-backed limiter (public.rate_check) so they hold across
+ * Workers isolates.
+ *
+ * - Per address: 1/minute, 5/hour, 10/day. These use rateDecision() and fail OPEN: if the database errors
+ *   (or the service role is missing) the same caps are enforced in memory per isolate and a warning is logged.
+ * - Per trusted client IP: 20/hour via rateCheck(), which fails CLOSED like every other rateCheck() caller.
+ *
+ * The caller always shows the same neutral response, throttled or not, so none of this leaks whether an
+ * account exists.
  */
 export const RESET_LIMITS = {
-  /** One reset email per address per minute. */
-  perEmail: { bucket: 'reset_email', limit: 1, windowSeconds: 60 } satisfies RateRule,
-  /** At most 5 reset requests per trusted client IP per 10 minutes. */
-  perIp: { bucket: 'reset_ip', limit: 5, windowSeconds: 600 } satisfies RateRule,
+  perEmailMinute: { bucket: 'reset_email', limit: 1, windowSeconds: 60 } satisfies RateRule,
+  perEmailHour: { bucket: 'reset_email_hour', limit: 5, windowSeconds: 3600 } satisfies RateRule,
+  perEmailDay: { bucket: 'reset_email_day', limit: 10, windowSeconds: 86_400 } satisfies RateRule,
+  perIp: { bucket: 'reset_ip_hour', limit: 20, windowSeconds: 3600 } satisfies RateRule,
 }
+
+const EMAIL_RULES = [RESET_LIMITS.perEmailMinute, RESET_LIMITS.perEmailHour, RESET_LIMITS.perEmailDay]
 
 /** true = throttled (send nothing). Runs before any account lookup or send. Never logs the address. */
 export async function isResetThrottled(email: string, ip: string): Promise<boolean> {
-  const checks: { rule: RateRule; key: string; inMemory: () => boolean }[] = []
-  // No per-IP throttle on the shared bucket (everyone without a trusted IP), only per email (Vera r2 N6).
-  if (isTrustedClientIp(ip)) checks.push({ rule: RESET_LIMITS.perIp, key: ip, inMemory: () => isResetThrottledForIp(ip) })
-  const normalized = email.trim().toLowerCase()
-  checks.push({ rule: RESET_LIMITS.perEmail, key: normalized, inMemory: () => isResetThrottledForEmail(normalized) })
+  // No per-IP throttle on the shared bucket (everyone without a trusted IP), only per address (Vera r2 N6).
+  if (isTrustedClientIp(ip) && !(await rateCheck(RESET_LIMITS.perIp, ip))) return true
 
-  for (const c of checks) {
-    const d = await rateDecision(c.rule, c.key)
+  const normalized = email.trim().toLowerCase()
+  for (const rule of EMAIL_RULES) {
+    const d = await rateDecision(rule, normalized)
     if (d === 'limited') return true
     if (d === 'error') {
-      console.warn(`[password-reset] rate limit database unavailable (${c.rule.bucket}); using the in-memory limit (fail open)`)
-      if (c.inMemory()) return true
+      console.warn(`[password-reset] rate limit database unavailable (${rule.bucket}); using the in-memory limit (fail open)`)
+      if (hitLimit(`${rule.bucket}:${normalized}`, rule.limit, rule.windowSeconds * 1000)) return true
     }
   }
   return false

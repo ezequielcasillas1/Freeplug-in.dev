@@ -23,6 +23,7 @@ vi.mock('@/lib/supabase/admin', () => ({
     from: (table: string) => ({
       update: () => ({ eq: async () => ({ error: null }) }),
       upsert: async (row: Record<string, unknown>, opts: unknown) => {
+        if (table === 'stripe_webhook_events') return { error: null } // phase 4 L-1 processed marker
         upserts.push({ table, row, opts })
         return { error: upsertError }
       },

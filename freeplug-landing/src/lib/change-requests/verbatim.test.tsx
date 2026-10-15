@@ -20,6 +20,7 @@ const ROW = {
 vi.mock('next/navigation', () => ({ notFound: () => { throw new Error('NEXT_NOT_FOUND') } }))
 vi.mock('next/link', () => ({ default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }))
 vi.mock('@/app/admin/change-requests/actions', () => ({ adminDecideChangeRequest: async () => ({}), adminResendChangeRequest: async () => ({}) }))
+vi.mock('@/lib/admin/guard', () => ({ assertAdminAccess: async () => undefined })) // phase 5 L-3: this test renders as an admin
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({ from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: ROW, error: null }) }) }) }) }),
 }))

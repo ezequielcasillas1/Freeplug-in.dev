@@ -361,19 +361,18 @@ describe('upgrade confirm: preview + proration_date (Aria, Oct 3 1:34 PM)', () =
     expect(f.raw.subscriptions.update).not.toHaveBeenCalled()
   })
 
-  it('a double Confirm sends the identical update (same key, same params), so Stripe charges once', async () => {
+  it('a double Confirm: the second answers in_progress before touching Stripe (phase 4 M-1), so Stripe charges once', async () => {
     const f = fakeStripe()
     const deps = { stripe: f.stripe, priceIdFor, now: () => NOW }
     const opts = { prorationDate: NOW_S - 5, userId: 'u1' }
-    await Promise.all([changePlanStep(deps, ladderSub('starter'), 'priority', opts), changePlanStep(deps, ladderSub('starter'), 'priority', opts)])
+    const [a, b] = await Promise.all([changePlanStep(deps, ladderSub('starter'), 'priority', opts), changePlanStep(deps, ladderSub('starter'), 'priority', opts)])
+    expect([a, b].filter((r) => !r.ok && r.code === 'in_progress')).toHaveLength(1)
     const calls = f.raw.subscriptions.update.mock.calls as unknown as [string, unknown, { idempotencyKey: string }][]
-    expect(calls).toHaveLength(2)
-    expect(calls[0][2].idempotencyKey).toBe(calls[1][2].idempotencyKey)
-    expect(calls[0][1]).toEqual(calls[1][1])
+    expect(calls).toHaveLength(1)
     // and a confirm after the switch landed is "same": no second update at all
     const after = await changePlanStep(deps, ladderSub('priority'), 'priority', opts)
     expect(after).toEqual({ ok: true, kind: 'unchanged', step: 'priority' })
-    expect(f.raw.subscriptions.update).toHaveBeenCalledTimes(2)
+    expect(f.raw.subscriptions.update).toHaveBeenCalledTimes(1)
   })
 
   it('the second of two concurrent Confirms gets Stripe 409 (key in use): in_progress, and the pending downgrade is NOT put back', async () => {
