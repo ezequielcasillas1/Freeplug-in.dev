@@ -12,24 +12,15 @@ import { describe, expect, it } from 'vitest'
  *   - be named <14-digit version>_<snake_case name>.sql
  *   - have a version strictly greater than the file before it (unique, strictly increasing).
  *
- * ONE pinned exception (Aria, Oct 3 12:25): the two 20260403120000 files below predate this check
- * and may already be recorded in hosted migration history, so they are NOT renamed. They are
- * pinned by version, exact filename AND sha256 of the file bytes: any other duplicate, a third
- * file at that version, a rename, or any edit to either file fails the check.
+ * No pinned exceptions any more (Aria, Oct 13): the old 20260403120000 duplicate was resolved by moving
+ * website_transfer_handoff to 20260403120001 (provisional, see the comment in that file). The pin mechanism
+ * stays for a future, deliberately pinned case; the "catches" tests use a synthetic pin.
  */
 const DIR = path.resolve(__dirname, '../../../supabase/migrations')
 
 export type PinnedDuplicate = { version: string; files: readonly { name: string; sha256: string }[] }
 
-export const PINNED_DUPLICATES: readonly PinnedDuplicate[] = [
-  {
-    version: '20260403120000',
-    files: [
-      { name: '20260403120000_billing_ledger_select_own.sql', sha256: 'cbc63e16e60bc5051152414ff44781460e2a838781cdcca9376c4f4b4bf8145f' },
-      { name: '20260403120000_website_transfer_handoff.sql', sha256: 'f6e6d2e1f84b1d1c6b82bb1a74489f441f154e63e239f1604c9eb85f643c3f42' },
-    ],
-  },
-]
+export const PINNED_DUPLICATES: readonly PinnedDuplicate[] = []
 
 const sha256 = (buf: Buffer | string) => createHash('sha256').update(buf).digest('hex')
 
@@ -83,41 +74,47 @@ describe('supabase/migrations versions', () => {
   const files = readdirSync(DIR).filter((f) => !f.startsWith('.'))
   const hashOf = (f: string) => sha256(readFileSync(path.join(DIR, f)))
 
-  it('has unique versions in strictly increasing order (one pinned, hashed exception)', () => {
+  it('has unique versions in strictly increasing order (no exceptions)', () => {
     expect(files.length).toBeGreaterThan(0)
     expect(versionProblems(files, hashOf)).toEqual([])
   })
 
-  it('pins exactly one duplicate pair', () => {
-    expect(PINNED_DUPLICATES).toHaveLength(1)
-    expect(PINNED_DUPLICATES[0].files).toHaveLength(2)
+  it('pins nothing; the old 20260403120000 pair is resolved (Aria, Oct 13)', () => {
+    expect(PINNED_DUPLICATES).toHaveLength(0)
+    expect(files.filter((f) => f.startsWith('20260403120000_'))).toEqual(['20260403120000_billing_ledger_select_own.sql'])
+    expect(files).toContain('20260403120001_website_transfer_handoff.sql')
+    expect(files).not.toContain('20260403120000_website_transfer_handoff.sql')
+    expect(readFileSync(path.join(DIR, '20260403120001_website_transfer_handoff.sql'), 'utf8')).toMatch(/^-- PROVISIONAL VERSION/)
   })
 
   describe('catches', () => {
-    const pinned = PINNED_DUPLICATES
+    // A synthetic pin (the real list is empty) so the pin mechanism stays tested.
+    const pinned: readonly PinnedDuplicate[] = [
+      { version: '20260403120000', files: [{ name: '20260403120000_a.sql', sha256: 'a'.repeat(64) }, { name: '20260403120000_b.sql', sha256: 'b'.repeat(64) }] },
+    ]
     const [a, b] = pinned[0].files
     const okHash = (f: string) => pinned[0].files.find((p) => p.name === f)?.sha256 ?? sha256(f)
     const base = ['20260101000000_first.sql', a.name, b.name, '20261003180000_plan_steps.sql']
 
     it('nothing on the real shape', () => {
-      expect(versionProblems(base, okHash)).toEqual([])
+      expect(versionProblems(base, okHash, pinned)).toEqual([])
     })
     it('any other duplicate version', () => {
-      expect(versionProblems([...base, '20261003180000_other.sql'], okHash)).toEqual([
+      expect(versionProblems([...base, '20261003180000_other.sql'], okHash, pinned)).toEqual([
         'duplicate version 20261003180000: 20261003180000_other.sql, 20261003180000_plan_steps.sql',
       ])
     })
     it('a third file at the pinned version', () => {
-      expect(versionProblems([...base, '20260403120000_third.sql'], okHash)[0]).toMatch(/^pinned version 20260403120000 must be exactly/)
+      expect(versionProblems([...base, '20260403120000_third.sql'], okHash, pinned)[0]).toMatch(/^pinned version 20260403120000 must be exactly/)
     })
     it('an edit to either pinned file (hash mismatch)', () => {
-      expect(versionProblems(base, (f) => (f === b.name ? 'x'.repeat(64) : okHash(f)))).toEqual([
+      expect(versionProblems(base, (f) => (f === b.name ? 'x'.repeat(64) : okHash(f)), pinned)).toEqual([
         `pinned file ${b.name} changed (sha256 ${'x'.repeat(64)}, pinned ${b.sha256})`,
       ])
     })
     it('a rename of a pinned file', () => {
-      const renamed = base.map((f) => (f === a.name ? '20260403120001_billing_ledger_select_own.sql' : f))
-      const p = versionProblems(renamed, okHash)
+      const renamed = base.map((f) => (f === a.name ? '20260403120001_a.sql' : f))
+      const p = versionProblems(renamed, okHash, pinned)
       expect(p).toContain(`pinned file missing: ${a.name}`)
     })
     it('malformed names', () => {

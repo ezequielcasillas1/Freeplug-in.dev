@@ -540,13 +540,13 @@ describe('password reset (requestPasswordReset): Resend first, loud Supabase fal
     expect(bg.tasks).toEqual([]) // nothing scheduled
   })
 
-  it('rate-limited by IP (trusted CF-Connecting-IP, 6th request in 10 min): neither path, same response', async () => {
+  it('rate-limited by IP (trusted CF-Connecting-IP, 21st request in an hour): neither path, same response', async () => {
     logs()
     vi.stubEnv('TRUST_CF_CONNECTING_IP', 'true')
     vi.stubEnv('RESEND_API_KEY', '')
     hdr.extra = { 'cf-connecting-ip': `203.0.113.${(Date.now() % 200) + 1}` }
-    for (let i = 0; i < 5; i++) expect(await submit(uniqueEmail('ip'))).toBe(NEUTRAL)
-    expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(5)
+    for (let i = 0; i < 20; i++) expect(await submit(uniqueEmail('ip'))).toBe(NEUTRAL)
+    expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(20)
     sb.resetPasswordForEmail.mockClear()
     expect(await submit(uniqueEmail('ip'))).toBe(NEUTRAL)
     expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
@@ -640,8 +640,10 @@ describe('password reset: template errors, DB rate limit (fail open), response b
     await settle()
     const buckets = sb.rpc.mock.calls.map(([fn, a]) => [fn, a.p_bucket, a.p_limit, a.p_window_seconds])
     expect(buckets).toEqual([
-      ['rate_check', 'reset_ip', 5, 600],
+      ['rate_check', 'reset_ip_hour', 20, 3600],
       ['rate_check', 'reset_email', 1, 60],
+      ['rate_check', 'reset_email_hour', 5, 3600],
+      ['rate_check', 'reset_email_day', 10, 86400],
     ])
     expect(JSON.stringify(sb.rpc.mock.calls)).not.toContain(email)
     expect(JSON.stringify(sb.rpc.mock.calls)).not.toContain('198.51.100.7')

@@ -3,32 +3,33 @@ import type { EmailOtpType } from '@supabase/supabase-js'
 /**
  * Redirect targets after sign-in / email links. Only same-site relative paths are ever returned.
  *
- * safeNext() (login, /auth/callback, /auth/confirm): must start with a single `/` and, after up to three
- * rounds of URL-decoding, must not start with `//` or `/\`, contain a backslash, control character or
- * whitespace, or contain `://`; it must also resolve to the same origin. Anything else → the fallback.
- * Hardened in round 6 (Aria): the old check only refused a leading `//`.
+ * safeNext() (login, /auth/callback, /auth/confirm) is an allowlist (base QA, replaces the round-6 denylist):
+ * the value is URL-decoded exactly once (a malformed escape is refused), and then the decoded value must
+ *   - start with exactly one `/` (never `//`),
+ *   - use only path/query characters: letters, digits and `- . _ ~ / ? = & # + ,` (so no `\`, `%`, `:`,
+ *     whitespace, control characters or any `scheme:`),
+ *   - not contain `..` anywhere.
+ * The raw value must not contain an encoded `/` or `\` (`%2f` / `%5c`, any case), and the result must resolve
+ * to our own origin. Anything else → the fallback (/dashboard by default).
  */
 const DEFAULT_NEXT = '/dashboard'
 const PROBE_ORIGIN = 'https://freeplug.invalid'
+const ALLOWED_PATH = /^\/[A-Za-z0-9\-._~/?=&#+,]*$/
 
 function isSafeRelativePath(raw: string): boolean {
   if (raw.length === 0 || raw.length > 512) return false
-  let v = raw
-  for (let round = 0; round < 4; round++) {
-    if (!v.startsWith('/') || v.startsWith('//') || v.startsWith('/\\')) return false
-    if (/[\\\s\u0000-\u001f\u007f]/.test(v) || v.includes('://')) return false
-    let decoded: string
-    try {
-      decoded = decodeURIComponent(v)
-    } catch {
-      return false
-    }
-    if (decoded === v) break
-    if (round === 3) return false // still decoding after three rounds: refuse
-    v = decoded
-  }
+  if (/%(2f|5c)/i.test(raw)) return false
+  if (/[\u0000-\u001f\u007f]/.test(raw)) return false
+  let decoded: string
   try {
-    return new URL(raw, PROBE_ORIGIN).origin === PROBE_ORIGIN
+    decoded = decodeURIComponent(raw)
+  } catch {
+    return false
+  }
+  if (!ALLOWED_PATH.test(decoded)) return false
+  if (decoded.startsWith('//') || decoded.includes('..')) return false
+  try {
+    return new URL(decoded, PROBE_ORIGIN).origin === PROBE_ORIGIN
   } catch {
     return false
   }

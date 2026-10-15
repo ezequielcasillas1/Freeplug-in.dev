@@ -24,6 +24,10 @@ import { stepById, stepByLookupKey } from '@/lib/plans/ladder'
 import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel } from '@/lib/dashboard/billing-activity'
 import { daysSince, firstPaymentDate } from '@/lib/dashboard/customer-since'
 
+
+/** Statuses whose plan still grants access, so a set-to-end plan gets the Subscription ending alert (L-2). */
+const ENDING_ALERT_STATUSES: ReadonlySet<string> = new Set(['active', 'trialing', 'past_due', 'unpaid'])
+
 export type DashboardStats = {
   totalPaidCents: number
   activeSubscriptionCount: number
@@ -401,10 +405,9 @@ export async function getEnhancedDashboardData(
   }
 
   // The one "Subscription ending" card on the dashboard (the website-access "ending" card is gone,
-  // next round): it also covers a trial and a cancel_at set on its own, as that card did.
-  const cancelingSubscription = subscriptions.find(
-    (s) => (s.status === 'active' || s.status === 'trialing') && s.cancelAtPeriodEnd
-  )
+  // next round): it also covers a trial and a cancel_at set on its own, as that card did. L-2 (base QA phase 3):
+  // past_due and unpaid still grant access (computeWebsiteAccess), so a set-to-end one gets the same notice.
+  const cancelingSubscription = subscriptions.find((s) => ENDING_ALERT_STATUSES.has(s.status) && s.cancelAtPeriodEnd)
   if (cancelingSubscription) {
     const daysUntilEnd = daysUntil(cancelingSubscription.endsAt ?? cancelingSubscription.currentPeriodEnd)
     alerts.push({

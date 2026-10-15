@@ -19,6 +19,14 @@ vi.mock('@/lib/stripe/addon-heal-webhook', async (orig) => ({
 vi.mock('@/lib/outreach/server', () => ({ handleOutreachInvoicePaid: async () => false, handleOutreachSetupSession: async () => false }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
+    rpc: async (fn: string, args: RecordArgs) => {
+      if (fn !== 'record_invoice_paid') throw new Error(`unexpected rpc ${fn}`)
+      return recordInvoicePaidRpc(
+        args,
+        async (row) => (h.inserts.push(row), { error: h.insertErrors.shift() ?? null }),
+        (n) => h.profileUpdates.push({ cumulative_website_value_paid_cents: 1000 + n })
+      )
+    },
     from: (table: string) => {
       if (table === 'profiles') {
         const q = {
@@ -46,6 +54,7 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import { POST } from './route'
+import { recordInvoicePaidRpc, type RecordArgs } from '../../../../../test/record-invoice-paid-rpc'
 
 async function deliver(inv: Record<string, unknown>) {
   constructEventAsync.mockResolvedValue({ id: `evt_${String(inv.id)}`, type: 'invoice.paid', data: { object: inv } })
