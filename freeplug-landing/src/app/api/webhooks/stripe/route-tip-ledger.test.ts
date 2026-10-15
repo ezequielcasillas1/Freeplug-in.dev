@@ -13,6 +13,14 @@ vi.mock('@/lib/stripe/server', () => ({ getStripe: () => ({ webhooks: { construc
 vi.mock('@/lib/outreach/server', () => ({ handleOutreachInvoicePaid: async () => false, handleOutreachSetupSession: async () => false }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
+    rpc: async (fn: string, args: RecordArgs) => {
+      if (fn !== 'record_invoice_paid') throw new Error(`unexpected rpc ${fn}`)
+      return recordInvoicePaidRpc(
+        args,
+        async (row) => (h.inserts.push(row), { error: h.insertErrors.shift() ?? null }),
+        (n) => h.profileUpdates.push({ cumulative_website_value_paid_cents: 1000 + n })
+      )
+    },
     from: (table: string) => {
       if (table === 'profiles') {
         const q = {
@@ -40,6 +48,7 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 import { POST } from './route'
+import { recordInvoicePaidRpc, type RecordArgs } from '../../../../../test/record-invoice-paid-rpc'
 
 const tipLine = (amount: number) => ({ amount, pricing: { price_details: { product: 'freeplug_tip', price: 'price_tip' } } })
 const stepLine = (amount: number) => ({ amount, pricing: { price_details: { product: 'freeplug_fast_lane', price: 'price_fl' } } })
@@ -85,14 +94,12 @@ describe('webhook invoice.paid: billing_ledger.tip_cents (the tipping system)', 
     expect(h.profileUpdates[0]).toMatchObject({ cumulative_website_value_paid_cents: 1000 + 400 })
   })
 
-  it.each(['42703', 'PGRST204'])('before the migration (%s): the row is saved without tip_cents, never lost', async (code) => {
+  it.each(['42703', 'PGRST202'])('phase 4 L-2: record_invoice_paid failing (%s, e.g. not migrated yet) answers 500 so Stripe retries; nothing counted', async (code) => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
     h.insertErrors.push({ code })
-    expect(await paid([stepLine(6500), tipLine(500)], 7000)).toBe(200)
-    expect(h.inserts).toEqual([
-      { profile_id: 'p1', stripe_invoice_id: 'in_1', amount_cents: 7000, tip_cents: 500 },
-      { profile_id: 'p1', stripe_invoice_id: 'in_1', amount_cents: 7000 },
-    ])
-    expect(h.profileUpdates).toHaveLength(1)
+    expect(await paid([stepLine(6500), tipLine(500)], 7000)).toBe(500)
+    expect(h.inserts).toEqual([{ profile_id: 'p1', stripe_invoice_id: 'in_1', amount_cents: 7000, tip_cents: 500 }])
+    expect(h.profileUpdates).toHaveLength(0)
   })
 
   it('a duplicate (23505) is not retried without the column and adds nothing', async () => {

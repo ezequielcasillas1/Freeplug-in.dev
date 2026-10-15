@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
 import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
-import { recordRemovalOwedNow, removalOwedStore, resumeRemovalOwed, sendRemovalOwedUnrecordedAlert } from '@/lib/stripe/addon-removal-owed-server'
+import { recordRemovalOwedNow, removalOwedStore, resumeRemovalOwed, sendPendingRestoreFailedAlert, sendRemovalOwedUnrecordedAlert } from '@/lib/stripe/addon-removal-owed-server'
 import { resumeEndingSubscriptions, resumeOutcomeFromLive, type ResumeOutcome } from '@/lib/stripe/resume-hosting'
 import { PortalNotConfiguredError } from '@/lib/stripe/portal'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH, RESUMED_REMOVAL_OWED_FOCUS_PATH, RESUMED_REMOVAL_OWED_PATH } from '@/lib/stripe/billing-routing'
@@ -294,7 +294,7 @@ async function runHostingPlanChange(
       await syncPlanSnapshotForCustomer(stripe, customerId)
     }
     // L-1 (Aria 9:57): a pending add-on removal that can't be put back after the upgrade is saved as owed + alerted.
-    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe), onRemovalOwed: recordRemovalOwedNow('upgrade') }, live[0], step.id, { prorationDate, userId })
+    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe), onRemovalOwed: recordRemovalOwedNow('upgrade'), onRestoreFailed: sendPendingRestoreFailedAlert }, live[0], step.id, { prorationDate, userId })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (r.ok && r.kind === 'upgraded') return { ok: true, message: CHANGE_PLAN_UPGRADED(step.name) }

@@ -1,6 +1,6 @@
 import { LEGACY_ADDON_TIERS, stepByLookupKey } from '../plans/ladder'
-import { GRANDFATHERED_HOSTING_ONLY_NAME, GRANDFATHERED_HOSTING_SHORT, LEGACY_ADDON_NAME, PLAN_STRIP_TIP, planStripAddons } from '../plans/ladder-copy'
-import { legacyAddonProductId } from './config'
+import { GENERIC_ADDON_NAME, GRANDFATHERED_HOSTING_ONLY_NAME, GRANDFATHERED_HOSTING_SHORT, LEGACY_ADDON_NAME, PLAN_STRIP_TIP, planStripAddons } from '../plans/ladder-copy'
+import { LEGACY_HOSTING_PRODUCT_ID, legacyAddonProductId } from './config'
 
 /** Whole dollars like the step rows ("$65"); cents only when they are not zero ("$65.50"). */
 export function formatPlanDollars(cents: number): string {
@@ -40,7 +40,7 @@ export function planNameOf(items: ReadonlyArray<Pick<PlanLineItem, 'lookupKey' |
   return step ? step.name : items.map((i) => i.productName).join(' + ')
 }
 
-export type PlanDisplayItem = Pick<PlanLineItem, 'lookupKey' | 'productName'> & { productId?: string | null }
+export type PlanDisplayItem = Pick<PlanLineItem, 'lookupKey' | 'productName'> & { productId?: string | null; unitAmountCents?: number; quantity?: number }
 
 /** The retired add-on an item is (product id, else a "<Tier> add-on…" product name, as entitlements read it). */
 function legacyAddonOfItem(item: PlanDisplayItem) {
@@ -59,7 +59,20 @@ function legacyAddonOfItem(item: PlanDisplayItem) {
 export function planDisplayName(items: ReadonlyArray<PlanDisplayItem>): string {
   const step = items.length === 1 ? stepByLookupKey(items[0].lookupKey) : null
   if (step) return step.name
-  const addons = [...new Set(items.map(legacyAddonOfItem).filter((t) => t != null).map((t) => LEGACY_ADDON_NAME(t.name)))]
+  const known = [...new Set(items.map(legacyAddonOfItem).filter((t) => t != null).map((t) => LEGACY_ADDON_NAME(t.name)))]
+  // L-1: the hosting item is the legacy hosting product (else a "Hosting…" name, else the first other item);
+  // any further item is an add-on outside today's catalog: a generic label with its own price.
+  const others = items.filter((i) => legacyAddonOfItem(i) == null)
+  const hostingIdx = Math.max(
+    0,
+    others.findIndex((i) => i.productId === LEGACY_HOSTING_PRODUCT_ID) >= 0
+      ? others.findIndex((i) => i.productId === LEGACY_HOSTING_PRODUCT_ID)
+      : others.findIndex((i) => /^hosting\b/i.test(i.productName))
+  )
+  const unknown = others
+    .filter((_, n) => n !== hostingIdx)
+    .map((i) => GENERIC_ADDON_NAME(i.unitAmountCents != null ? formatPlanDollars(i.unitAmountCents * (i.quantity ?? 1)) : undefined))
+  const addons = [...known, ...unknown]
   return addons.length > 0 ? `${GRANDFATHERED_HOSTING_SHORT} + ${addons.join(' + ')}` : GRANDFATHERED_HOSTING_ONLY_NAME
 }
 

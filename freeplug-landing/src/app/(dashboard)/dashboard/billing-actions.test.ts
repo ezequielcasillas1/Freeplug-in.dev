@@ -68,6 +68,7 @@ const owedReads: string[][] = []
 const recorderSources: string[] = []
 vi.mock('@/lib/stripe/addon-removal-owed-server', () => ({
   recordRemovalOwedNow: (source: string) => (recorderSources.push(source), async () => ({ saved: true, alerted: true })),
+  sendPendingRestoreFailedAlert: async () => undefined,
   sendRemovalOwedUnrecordedAlert: async () => undefined,
   removalOwedStore: () => ({ keep: async () => undefined }),
   resumeRemovalOwed: async (ids: string[]) => (owedReads.push([...ids]), { addons: owedAddons, effectiveAt: owedAddons.length ? '2026-10-31T00:00:00.000Z' : null }),

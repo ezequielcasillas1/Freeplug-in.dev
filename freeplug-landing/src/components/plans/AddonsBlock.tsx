@@ -99,7 +99,21 @@ type LiveProps = {
   onConfirmTotals?: (totals: ConfirmTotals | null) => void
 }
 
-type Props = { stepId: PlanStepId; className?: string } & (CheckoutProps | LiveProps)
+/** Fallback: scroll the open confirm into view this long after it opens if the bar's height never changes. */
+export const CONFIRM_SCROLL_FALLBACK_MS = 150
+
+/**
+ * Lina (Oct 13): the ONE place the add-on confirm's scroll offset is set (both languages): the sticky bar's
+ * measured height (--sticky-bar-h, 90px before the first measurement) plus 16px of breathing room.
+ */
+export const CONFIRM_SCROLL_MARGIN = 'max-sm:scroll-mb-[calc(var(--sticky-bar-h,90px)+16px)]'
+
+type Props = {
+  stepId: PlanStepId
+  className?: string
+  /** The phone sticky bar's measured height (published as --sticky-bar-h); a change re-scrolls an open confirm. */
+  stickyBarHeight?: number
+} & (CheckoutProps | LiveProps)
 
 type Pending =
   | { id: AddonId; kind: 'loading' }
@@ -147,6 +161,7 @@ export function AddonsBlock(props: Props) {
   const [error, setError] = useState<string | null>(null)
   const [keeping, setKeeping] = useState<AddonId | null>(null)
   const turnOnRef = useRef<HTMLButtonElement>(null)
+  const confirmActionsRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Partial<Record<AddonId, HTMLElement | null>>>({})
   // Stale-request guard (as in HostingCheckoutCard): closing bumps it, a late preview is dropped.
   const previewSeq = useRef(0)
@@ -175,18 +190,49 @@ export function AddonsBlock(props: Props) {
     if (focusId) setTimeout(() => cardRefs.current[focusId]?.focus(), 0)
   }, [])
 
-  // Focus + Esc in the same commit that shows the confirm (Vera, aaec23d finding 2 pattern).
   const pendingKind = pending?.kind ?? null
   const pendingId = pending?.id ?? null
+  // Vera (375, ce0af86) + Lina (Oct 13): opening the confirm adds the "today" line, so the bar grows
+  // (49 -> 73px). Scroll ONCE, smooth, after the new height is measured and published (--sticky-bar-h, the
+  // scroll margin). If the height never changes, a short fallback timer still scrolls once.
+  const stickyBarHeight = props.stickyBarHeight
+  const stickyBarHeightRef = useRef(stickyBarHeight)
+  stickyBarHeightRef.current = stickyBarHeight
+  const scrollWait = useRef<{ baseline: number; timer: ReturnType<typeof setTimeout> } | null>(null)
+  const scrollConfirmOnce = useCallback(() => {
+    if (scrollWait.current) clearTimeout(scrollWait.current.timer)
+    scrollWait.current = null
+    confirmActionsRef.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+  }, [])
+  useEffect(() => {
+    const wait = scrollWait.current
+    if (wait && stickyBarHeight !== undefined && stickyBarHeight !== wait.baseline) scrollConfirmOnce()
+  }, [stickyBarHeight, scrollConfirmOnce])
+  useEffect(
+    () => () => {
+      if (scrollWait.current) clearTimeout(scrollWait.current.timer)
+    },
+    []
+  )
+
+  // Focus + Esc in the same commit that shows the confirm (Vera, aaec23d finding 2 pattern).
   useLayoutEffect(() => {
     if (pendingKind !== 'confirm' && pendingKind !== 'loading') return
-    if (pendingKind === 'confirm') turnOnRef.current?.focus()
+    if (pendingKind === 'confirm') {
+      // Lina: bring the Activate/Cancel buttons into view (above the phone sticky bar: scroll margin = its measured height, --sticky-bar-h).
+      turnOnRef.current?.focus({ preventScroll: true })
+      if (stickyBarHeightRef.current === undefined) scrollConfirmOnce() // no sticky bar: nothing to wait for
+      else {
+        if (scrollWait.current) clearTimeout(scrollWait.current.timer)
+        scrollWait.current = { baseline: stickyBarHeightRef.current, timer: setTimeout(scrollConfirmOnce, CONFIRM_SCROLL_FALLBACK_MS) }
+      }
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close(pendingId ?? undefined)
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [pendingKind, pendingId, close])
+  }, [pendingKind, pendingId, close, scrollConfirmOnce])
 
   const withIncludedEdit = entitlementsFor({ stepId }).includedEditsPerMonth >= 1
   const submitting = pending?.kind === 'submitting' || keeping !== null
@@ -412,7 +458,7 @@ export function AddonsBlock(props: Props) {
             {l}
           </p>
         ))}
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div ref={confirmActionsRef} className={cn('mt-3 flex flex-col gap-2 sm:flex-row sm:items-center', CONFIRM_SCROLL_MARGIN)} data-testid="addon-confirm-actions">
           <Button
             ref={turnOnRef}
             size="sm"

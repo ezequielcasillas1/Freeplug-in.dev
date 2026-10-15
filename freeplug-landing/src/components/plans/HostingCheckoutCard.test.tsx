@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPortal: vi.fn() }))
@@ -163,10 +163,15 @@ describe('checkout and claim modes', () => {
     const btn = screen.getByRole('button', { name: 'Choose Priority' })
     const note = screen.getByText('No charge until live.')
     expect(note.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    const bar = screen.getByTestId('pay-area')
+    // M-1: only the totals stick on phones; the note and the button follow in the normal flow.
+    const bar = screen.getByTestId('sticky-totals')
     expect(bar.className).toMatch(/sticky bottom-0/)
     expect(bar.className).toMatch(/sm:static/)
-    expect(bar.contains(note)).toBe(true)
+    expect(bar.className).not.toMatch(/max-h-|overflow-hidden/) // Vera: no height cap, grows to fit
+    expect(bar.contains(note)).toBe(false)
+    expect(bar.contains(btn)).toBe(false)
+    expect(bar.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByTestId('pay-area').className).not.toMatch(/sticky/)
     expect(within(bar).getByTestId('sticky-summary')).toHaveTextContent('Priority · $55/month')
     fireEvent.click(btn)
     await waitFor(() => expect(onChoosePlan).toHaveBeenCalledWith({ planStep: 'priority', tipDollars: 0 }))
@@ -241,6 +246,106 @@ describe('switching card: direction-aware button (Lina §3a)', () => {
     switching()
     expect(screen.getByRole('button', { name: 'Choose a different plan to switch' })).toBeDisabled()
     expect(screen.queryByTestId('switch-help')).toBeNull()
+  })
+
+  it('Lina (Oct 13): while a switch submits, the phone switch button stays visible, busy with "Switching…"', async () => {
+    const { container } = switching({ currentStepId: 'priority', currentPlanLines: ['Freeplug Hosting: Priority · $55.00/month'], onChangePlan: vi.fn(() => new Promise<never>(() => {})) })
+    pickStep(container, 'starter')
+    const btn = screen.getByTestId('switch-button')
+    expect(btn).toBeEnabled()
+    fireEvent.click(btn)
+    await waitFor(() => expect(btn).toBeDisabled())
+    expect(btn).toHaveTextContent('Switching…')
+    expect(btn).toHaveAttribute('aria-busy', 'true')
+    expect(btn.querySelector('.animate-spin')).not.toBeNull()
+    expect(btn.className).not.toMatch(/(^|\s)(max-sm:)?hidden(\s|$)/)
+  })
+
+  it('Lina (Oct 13): the card pads its phone bottom by the MEASURED sticky bar height, and follows resizes', async () => {
+    let height = 74
+    const observers: Array<() => void> = []
+    const origRO = globalThis.ResizeObserver
+    const origRect = Element.prototype.getBoundingClientRect
+    globalThis.ResizeObserver = class {
+      constructor(private cb: () => void) {}
+      observe() {
+        observers.push(() => this.cb())
+      }
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const h = this.getAttribute('data-testid') === 'sticky-totals' ? height : 0
+      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: h, width: 0, height: h, toJSON: () => ({}) } as DOMRect
+    }
+    try {
+      switching()
+      const shell = screen.getByTestId('checkout-card-shell')
+      expect(shell.className).toMatch(/max-sm:pb-\[var\(--sticky-bar-h,90px\)\]/)
+      expect(shell.style.getPropertyValue('--sticky-bar-h')).toBe('74px')
+      height = 82
+      act(() => observers.forEach((fire) => fire()))
+      await waitFor(() => expect(shell.style.getPropertyValue('--sticky-bar-h')).toBe('82px'))
+      cleanup()
+      render(<HostingCheckoutCard />)
+      const plain = screen.getByTestId('checkout-card-shell')
+      expect(plain.className).not.toMatch(/sticky-bar-h/)
+      expect(plain.style.getPropertyValue('--sticky-bar-h')).toBe('')
+    } finally {
+      globalThis.ResizeObserver = origRO
+      Element.prototype.getBoundingClientRect = origRect
+    }
+  })
+
+  it('Vera: before the first measurement (server render) the padding falls back to 90px, not 0px', async () => {
+    const { renderToString } = await import('react-dom/server')
+    const html = renderToString(
+      <HostingCheckoutCard currentPlanLines={['Freeplug Hosting: Starter · $35.00/month']} currentStepId="starter" renewalDate="November 3, 2026" onChangePlan={vi.fn()} onPreviewChange={vi.fn()} stickyOnPhone />
+    )
+    expect(html).toContain('max-sm:pb-[var(--sticky-bar-h,90px)]')
+    expect(html).not.toMatch(/--sticky-bar-h:\s*0px/)
+  })
+
+  it('Vera: a taller bar (e.g. Spanish copy) is measured at its full height, not clipped at 90px', () => {
+    const origRect = Element.prototype.getBoundingClientRect
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const h = this.getAttribute('data-testid') === 'sticky-totals' ? 128 : 0
+      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: h, width: 0, height: h, toJSON: () => ({}) } as DOMRect
+    }
+    try {
+      switching()
+      expect(screen.getByTestId('checkout-card-shell').style.getPropertyValue('--sticky-bar-h')).toBe('128px')
+    } finally {
+      Element.prototype.getBoundingClientRect = origRect
+    }
+  })
+
+  it('Lina (Oct 13): bar lines wrap: no truncate/ellipsis/nowrap/clip classes on the bar or its lines', () => {
+    switching({ showTip: true, showAddons: true } as Partial<React.ComponentProps<typeof HostingCheckoutCard>>)
+    const bar = screen.getByTestId('sticky-totals')
+    const BAD = /(^|\s)(\S*:)?(truncate|text-ellipsis|whitespace-nowrap|line-clamp-\d+|overflow-hidden|max-h-\S+)(\s|$)|\[&_p\]:truncate/
+    expect(bar.className).not.toMatch(BAD)
+    expect(bar.className).toContain('max-sm:[&_p]:whitespace-normal')
+    const lines = bar.querySelectorAll('p')
+    expect(lines.length).toBeGreaterThan(0)
+    for (const p of lines) {
+      expect(p.className).not.toMatch(BAD)
+      expect(p.textContent ?? '').not.toContain('…')
+      for (const amount of (p.textContent ?? '').match(/\$[\d,.\u00a0]+/g) ?? []) expect(amount).not.toMatch(/[ \t\u2000-\u200b]/)
+    }
+  })
+
+  it('M-1: phones hide the disabled "Choose a different plan to switch"; a real switch stays visible', () => {
+    const { container } = switching()
+    const same = screen.getByRole('button', { name: 'Choose a different plan to switch' })
+    expect(same.className).toMatch(/max-sm:hidden/)
+    pickStep(container, 'fast_lane')
+    const real = screen.getByRole('button', { name: /Fast lane/ })
+    expect(real).toBeEnabled()
+    expect(real.className).not.toMatch(/max-sm:hidden/)
+    // The sticky bar carries totals only, never a button.
+    const bar = screen.queryByTestId('sticky-totals')
+    if (bar) expect(within(bar).queryAllByRole('button')).toHaveLength(0)
   })
 
   it('higher: "Switch to <Name> now" + the up line; lower: "Switch to <Name> on <date>" + the down line', () => {
@@ -338,10 +443,16 @@ describe('upgrade confirm states (Lina §3a, Aria 1:34 PM)', () => {
     const confirmBtn = within(confirm).getByRole('button', { name: 'Confirm' })
     expect(confirmBtn.className).toMatch(/w-full/)
     expect(document.activeElement).toBe(confirmBtn)
-    // Confirm sits first, Cancel under it; the whole thing is in the sticky bar on phones
+    // Confirm sits first, Cancel under it; on phones they follow the sticky totals bar, outside it (M-1)
     const cancelBtn = within(confirm).getByRole('button', { name: 'Not now' })
     expect(confirmBtn.compareDocumentPosition(cancelBtn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(screen.getByTestId('switch-area').className).toMatch(/sticky bottom-0/)
+    expect(screen.getByTestId('switch-area').className).not.toMatch(/sticky/)
+    const stickyBar = screen.queryByTestId('sticky-totals')
+    if (stickyBar) {
+      expect(stickyBar.contains(confirmBtn)).toBe(false)
+      expect(stickyBar.contains(cancelBtn)).toBe(false)
+      expect(stickyBar.className).toMatch(/sm:hidden/)
+    }
     expect(onChangePlan).not.toHaveBeenCalled()
   })
 
