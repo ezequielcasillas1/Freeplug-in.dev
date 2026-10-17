@@ -21,6 +21,7 @@ const footerLinks = {
   contact: [
     { label: 'Get Started', href: '/signup' },
     { label: 'Support', href: 'mailto:support@freeplug-in.dev' },
+    { label: 'Contact', href: '/contact' },
     { label: 'FAQ', href: '/faq' },
   ],
 }
