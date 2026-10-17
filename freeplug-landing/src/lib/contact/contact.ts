@@ -1,16 +1,16 @@
 /**
  * Public contact form (/contact): validation + recipient. Nothing is stored; each submission is emailed.
- * Env: CONTACT_FORM_TO (recipient; default support@freeplug-in.dev). Sending reuses the Resend mailer
+ * Env: CONTACT_FORM_TO (recipient; default iqc@freeplug-in.dev). Sending reuses the Resend mailer
  * (RESEND_API_KEY, EMAIL_FROM, EMAIL_FROM_NAME); spam check reuses Turnstile (TURNSTILE_SECRET_KEY,
  * NEXT_PUBLIC_TURNSTILE_SITE_KEY), which fails closed in production when unset.
  */
-export const DEFAULT_CONTACT_TO = 'support@freeplug-in.dev'
+export const DEFAULT_CONTACT_TO = 'iqc@freeplug-in.dev'
 
 export const CONTACT_LIMITS = { name: 100, email: 254, message: 5000, messageMin: 10 } as const
 
 export const CONTACT_SUCCESS = "Thanks for reaching out. We got your message and will reply by email soon."
 export const CONTACT_ERROR =
-  "Sorry, we couldn't send your message right now. Please try again in a few minutes, or email support@freeplug-in.dev."
+  "Sorry, we couldn't send your message right now. Please try again in a few minutes, or email iqc@freeplug-in.dev."
 
 const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[A-Za-z]{2,}$/
 
