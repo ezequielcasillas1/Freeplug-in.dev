@@ -9,31 +9,68 @@ import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
 import { fadeInUp, staggerContainer, cardVariants } from '../animations/landing.variants'
 
+// Photos: Wikimedia Commons (Lina, Oct 12 2026). CC BY / BY-SA need visible credit, so each card shows
+// "Photo: {author}, {license}" linked to the license and the Commons page. Full record: public/images/outreach/CREDITS.md
 const texasCities = [
   {
     name: 'San Marcos',
-    image: '/images/outreach/san-marcos.jpg',
-    alt: 'Stock photo of a city skyline — San Marcos, Texas',
+    image: '/images/outreach/san-marcos-2026-10.jpg',
+    alt: 'The Hays County Courthouse in downtown San Marcos',
+    credit: {
+      author: 'Billy Hathorn',
+      license: 'CC BY 3.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Hays_County,_TX,_Courthouse_IMG_4119.JPG',
+      cropped: false,
+    },
   },
   {
     name: 'Kyle',
-    image: '/images/outreach/kyle.jpg',
-    alt: 'Stock photo of a residential street — Kyle, Texas',
+    image: '/images/outreach/kyle-2026-10.jpg',
+    alt: "The Kyle water tower with the city's name on it",
+    credit: {
+      author: 'Travis K. Witt',
+      license: 'CC BY-SA 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Kyle_Texas_Water_Tower.JPG',
+      cropped: true,
+    },
   },
   {
     name: 'New Braunfels',
-    image: '/images/outreach/new-braunfels.jpg',
-    alt: 'Stock photo of a river landscape — New Braunfels, Texas',
+    image: '/images/outreach/new-braunfels-2026-10.jpg',
+    alt: 'Gruene Hall, the historic dance hall in New Braunfels',
+    credit: {
+      author: 'Larry D. Moore',
+      license: 'CC BY 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Gruene_hall.jpg',
+      cropped: true,
+    },
   },
   {
     name: 'San Antonio',
-    image: '/images/outreach/san-antonio.jpg',
-    alt: 'Stock photo of San Antonio, Texas',
+    image: '/images/outreach/san-antonio-2026-10.jpg',
+    alt: 'The Alamo in downtown San Antonio',
+    credit: {
+      author: 'Thank You (22.5 Millions+) views',
+      license: 'CC BY 2.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Alamo_-_52134465867.jpg',
+      cropped: true,
+    },
   },
   {
     name: 'Austin',
-    image: '/images/outreach/austin.jpg',
-    alt: 'Stock photo of the Austin, Texas skyline',
+    image: '/images/outreach/austin-2026-10.jpg',
+    alt: 'The Austin skyline over Lady Bird Lake',
+    credit: {
+      author: 'ajay_suresh',
+      license: 'CC BY 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Downtown_Austin_Skyline_-_Lady_Bird_Lake_(54987239041).jpg',
+      cropped: true,
+    },
   },
 ]
 
@@ -127,7 +164,15 @@ export function OutreachSection() {
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-500">{city.name} — stock photo</p>
+                    <p className="text-xs text-gray-500">
+                      <a href={city.credit.source} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                        Photo: {city.credit.author},{' '}
+                      </a>
+                      <a href={city.credit.licenseUrl} target="_blank" rel="noopener noreferrer license" className="underline">
+                        {city.credit.license}
+                      </a>
+                      {city.credit.cropped ? ', cropped' : null}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
