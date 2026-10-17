@@ -23,7 +23,7 @@ describe('validateContact', () => {
 
 describe('contactRecipient', () => {
   afterEach(() => { delete process.env.CONTACT_FORM_TO })
-  it('defaults to support', () => expect(contactRecipient()).toBe(DEFAULT_CONTACT_TO))
+  it('defaults to iqc', () => expect(contactRecipient()).toBe(DEFAULT_CONTACT_TO))
   it('uses CONTACT_FORM_TO', () => {
     process.env.CONTACT_FORM_TO = 'x@freeplug-in.dev'
     expect(contactRecipient()).toBe('x@freeplug-in.dev')

@@ -73,6 +73,9 @@ export default function ContactPage() {
                 <p role="status" className="text-center text-gray-700">{success}</p>
               ) : (
                 <form onSubmit={onSubmit} className="space-y-5" noValidate={false}>
+                  <p className="text-sm font-semibold text-gray-900">
+                    <span className="text-[#ba3d3d]">IQC:</span> inquiries, questions, and concerns
+                  </p>
                   <div>
                     <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                     <input id="contact-name" required maxLength={CONTACT_LIMITS.name} autoComplete="name" value={form.name} onChange={set('name')} className={field} />
