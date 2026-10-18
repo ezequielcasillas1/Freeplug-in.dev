@@ -17,7 +17,7 @@ import { supabasePlanChangeLockStore } from '@/lib/plans/plan-change-lock'
 import { healOwedRemovals } from '@/lib/stripe/addon-removal-owed'
 import { supabaseRemovalOwedStore, type RemovalOwedDb } from '@/lib/stripe/addon-removal-owed-server'
 import { markWebhookEventProcessed, webhookEventState, type WebhookEventsDb } from '@/lib/stripe/webhook-events'
-import { chargeIdOfInvoice, recordChargePayment, recordDispute, recordInvoicePayment, recordRefund, supabaseOwnershipStore } from '@/lib/buyout/ownership'
+import { chargeIdOfInvoice, recordChargePayment, recordDispute, recordInvoicePayment, recordRefundObject, recordRefunds, supabaseOwnershipStore, type RefundLike } from '@/lib/buyout/ownership'
 import { markQuoteInvoice, type QuoteWebhookDb } from '@/lib/maintenance-quotes/quotes'
 
 export const runtime = 'nodejs'
@@ -49,6 +49,13 @@ function getCustomerId(
 ): string | null {
   if (!customer) return null
   return typeof customer === 'string' ? customer : customer.id
+}
+
+/** All refunds of a charge (empty when the client can't list them, e.g. a test mock). */
+async function listChargeRefunds(chargeId: string): Promise<RefundLike[]> {
+  const stripe = getStripe() as unknown as { refunds?: { list?: (p: { charge: string; limit: number }) => Promise<{ data: unknown[] }> } }
+  if (typeof stripe.refunds?.list !== 'function') return []
+  return (await stripe.refunds.list({ charge: chargeId, limit: 100 })).data as RefundLike[]
 }
 
 export async function POST(request: Request) {
@@ -336,10 +343,28 @@ export async function POST(request: Request) {
         if (event.type === 'charge.succeeded') {
           if (profileId) await recordChargePayment(store, profileId, ch)
         } else {
-          await recordRefund(store, ch, profileId)
+          // One ledger row per refund id. Newer API versions omit charge.refunds, so list them.
+          const listed = (ch as unknown as { refunds?: { data?: RefundLike[] } }).refunds?.data
+          const refunds: RefundLike[] = listed && listed.length > 0
+            ? listed
+            : await listChargeRefunds(ch.id)
+          await recordRefunds(store, ch as unknown as Parameters<typeof recordRefunds>[1], refunds, profileId)
         }
       } catch (e) {
         console.error('[webhook] ownership ledger (charge)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'refund.created':
+    case 'refund.updated':
+    case 'refund.failed': {
+      // A refund's own events (e.g. a refund that later fails is restored). Same key as charge.refunded: refund:<re_id>.
+      const r = event.data.object as Stripe.Refund
+      try {
+        await recordRefundObject(supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0]), r as unknown as RefundLike, null)
+      } catch (e) {
+        console.error('[webhook] ownership ledger (refund)', e instanceof Error ? e.message : e)
         return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
       }
       break

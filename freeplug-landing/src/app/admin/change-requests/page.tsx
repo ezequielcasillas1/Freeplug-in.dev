@@ -29,15 +29,19 @@ export default async function AdminChangeRequestsPage() {
     .limit(200)
   if (error) return <p className="text-red-700 text-sm">{error.message}</p>
   const rows = (data ?? []) as unknown as AdminChangeRequest[]
-  // Oct 18: each row's live maintenance quote (void ones are history). A read error just hides the badges.
+  // Oct 18: each row's live maintenance quote; with none live, its latest voided one stays visible ("Void" badge).
+  // A read error just hides the badges.
   const quotes = new Map<string, RowQuote>()
   if (rows.length > 0) {
     const { data: q } = await admin
       .from('maintenance_quotes')
-      .select('id, change_request_id, status, amount_cents, description, sent_at')
+      .select('id, change_request_id, status, amount_cents, description, sent_at, created_at')
       .in('change_request_id', rows.map((r) => r.id))
-      .neq('status', 'void')
-    for (const x of (q ?? []) as (NonNullable<RowQuote> & { change_request_id: string })[]) quotes.set(x.change_request_id, x)
+      .order('created_at', { ascending: true })
+    for (const x of (q ?? []) as (NonNullable<RowQuote> & { change_request_id: string })[]) {
+      const prev = quotes.get(x.change_request_id)
+      if (!prev || prev.status === 'void') quotes.set(x.change_request_id, x)
+    }
   }
 
   return (
@@ -64,7 +68,7 @@ export default async function AdminChangeRequestsPage() {
               <p className="mt-1 text-xs text-zinc-500">
                 {new Date(r.created_at).toLocaleString('en-US', { timeZone: 'America/Chicago' })} CT · Billing: {ADMIN_BILLING_LABEL[r.billing] ?? r.billing} · Webhook: {adminNotifyLine(r)}
               </p>
-              <MaintenanceQuoteControls changeRequestId={r.id} quote={quotes.get(r.id) ?? null} />
+              <MaintenanceQuoteControls changeRequestId={r.id} quote={quotes.get(r.id) ?? null} customerName={businessNameOf(r)} />
             </li>
           ))}
         </ul>

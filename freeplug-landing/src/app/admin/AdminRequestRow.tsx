@@ -16,6 +16,8 @@ export type AdminRequestRowData = {
   buyout_price_cents: number | null
   /** Buyout request flag (server-set only). The notes line is never used to detect a buyout. */
   is_buyout: boolean
+  /** Buyout eligibility: cleared ownership_ledger credit (cents); null = not loaded. */
+  buyoutClearedCents?: number | null
   status: string
   /** End of next business day for a Fast lane+ small edit (server-set only). */
   due_by?: string | null
@@ -102,6 +104,7 @@ export function AdminRequestRow({
             <AdminBuyoutPriceCell
               requestId={row.id}
               priceCents={row.buyout_price_cents}
+              clearedCents={row.buyoutClearedCents ?? null}
             />
           </div>
         ) : null}

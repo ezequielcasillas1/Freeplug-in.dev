@@ -19,7 +19,7 @@ describe('edit counts per plan (Oct 17 FINAL table)', () => {
       expect(editsIncluded({ stepId: step, hasEditPack: false, used: 99 })).toEqual({ unlimited: true })
       expect(editsIncluded({ stepId: step, hasEditPack: true, used: 0 })).toEqual({ unlimited: true })
       expect(EDIT_PACK_EDITS[step]).toBe(0)
-      expect(editsIncludedLine({ unlimited: true })).toBe('Edits included: Unlimited')
+      expect(editsIncludedLine({ unlimited: true })).toBe('Unlimited edits')
       return
     }
     expect(editsIncluded({ stepId: step, hasEditPack: false, used: 0 })).toMatchObject({ total: plan, remaining: plan })

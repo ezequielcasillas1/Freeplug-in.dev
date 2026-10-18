@@ -8,7 +8,10 @@ import {
   recordChargePayment,
   recordDispute,
   recordInvoicePayment,
-  recordRefund,
+  recordRefundObject,
+  recordRefunds,
+  buyoutCreditCents,
+  OWNERSHIP_NOTE,
   stillClearingLine,
 } from './ownership'
 
@@ -49,17 +52,51 @@ describe('ownership ledger (every dollar toward buyout)', () => {
     expect(total(s).paidCents).toBe(3900)
   })
 
-  it('partial then full refund subtract, replays change nothing', async () => {
+  it('refunds are keyed per refund id (Aria): two partials subtract separately, replays change nothing', async () => {
     const s = memoryOwnershipStore()
     await recordInvoicePayment(s, P, inv(), 'ch_1')
-    await recordRefund(s, charge({ amount_refunded: 1000 }))
+    const re1 = { id: 're_1', amount: 1000, status: 'succeeded', created: unix(T0) }
+    const re2 = { id: 're_2', amount: 2500, status: 'succeeded', created: unix(T0) }
+    await recordRefunds(s, charge({ amount_refunded: 1000 }), [re1])
     expect(total(s).paidCents).toBe(2500)
-    await recordRefund(s, charge({ amount_refunded: 1000 })) // duplicate event
+    await recordRefunds(s, charge({ amount_refunded: 1000 }), [re1]) // duplicate event
     expect(total(s).paidCents).toBe(2500)
-    await recordRefund(s, charge({ amount_refunded: 3500 })) // now full
+    await recordRefunds(s, charge({ amount_refunded: 3500 }), [re1, re2]) // second refund; charge lists both
     expect(total(s).paidCents).toBe(0)
-    await recordRefund(s, charge({ amount_refunded: 1000 })) // out-of-order old event can't add money back
+    expect([...s.rows.keys()].filter((k) => k.startsWith('refund:')).sort()).toEqual(['refund:re_1', 'refund:re_2'])
+    expect(s.rows.get('refund:re_1')!.amount_cents).toBe(-1000)
+    await recordRefundObject(s, { ...re1, charge: 'ch_1' }, null) // refund.updated replay
     expect(total(s).paidCents).toBe(0)
+  })
+
+  it('a failed refund is restored and stays restored', async () => {
+    const s = memoryOwnershipStore()
+    await recordInvoicePayment(s, P, inv(), 'ch_1')
+    await recordRefundObject(s, { id: 're_9', amount: 1500, status: 'pending', created: unix(T0), charge: 'ch_1' }, 3500)
+    expect(total(s).paidCents).toBe(2000)
+    await recordRefundObject(s, { id: 're_9', amount: 1500, status: 'failed', created: unix(T0), charge: 'ch_1' }, 3500)
+    expect(total(s).paidCents).toBe(3500)
+    await recordRefundObject(s, { id: 're_9', amount: 1500, status: 'pending', created: unix(T0), charge: 'ch_1' }, 3500) // late replay
+    expect(total(s).paidCents).toBe(3500)
+  })
+
+  it('buyout eligibility counts cleared payments only; refunds subtract right away', async () => {
+    const s = memoryOwnershipStore()
+    await recordInvoicePayment(s, P, inv(), 'ch_1') // $35 at T0
+    const day = (n: number) => new Date(T0 + n * 86_400_000)
+    expect(buyoutCreditCents([...s.rows.values()], day(13))).toBe(0)
+    expect(buyoutCreditCents([...s.rows.values()], day(CLEARING_DAYS))).toBe(3500)
+    await recordRefundObject(s, { id: 're_3', amount: 1000, status: 'succeeded', created: unix(T0), charge: 'ch_1' }, 3500)
+    expect(buyoutCreditCents([...s.rows.values()], day(1))).toBe(0) // still clearing: 0, never below 0
+    expect(buyoutCreditCents([...s.rows.values()], day(CLEARING_DAYS))).toBe(2500)
+    // A refund of a payment still clearing doesn't eat into other cleared money.
+    const rows = [
+      { kind: 'payment' as const, amount_cents: 3500, clears_at: day(-1).toISOString(), stripe_charge_id: 'ch_old' },
+      { kind: 'payment' as const, amount_cents: 2500, clears_at: day(10).toISOString(), stripe_charge_id: 'ch_new' },
+      { kind: 'refund' as const, amount_cents: -2500, clears_at: null, stripe_charge_id: 'ch_new' },
+    ]
+    expect(buyoutCreditCents(rows, day(0))).toBe(3500)
+    expect(OWNERSHIP_NOTE).toBe("Payments count after 14 days. Refunds aren't counted.")
   })
 
   it('dispute lost subtracts for good; dispute won restores', async () => {

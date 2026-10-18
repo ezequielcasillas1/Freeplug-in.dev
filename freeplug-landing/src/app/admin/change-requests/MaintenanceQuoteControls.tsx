@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { QUOTE_BADGE, quoteDueDateText, type QuoteStatus } from '@/lib/maintenance-quotes/quotes'
+import { QUOTE_BADGE, QUOTE_SEND_LABEL, QUOTE_VOID_CONFIRM, quoteDueDateText, quoteSendConfirmText, type QuoteStatus } from '@/lib/maintenance-quotes/quotes'
 import { adminSaveQuoteDraft, adminSendQuote, adminVoidQuote, type QuoteActionResult } from './quote-actions'
 
 export type RowQuote = { id: string; status: QuoteStatus; amount_cents: number; description: string; sent_at: string | null } | null
 
-/** Row badge in the page's badge style: gray Draft, yellow Unpaid, green Paid (void shows none). */
+/** Row badge in the page's badge style: gray Draft, yellow "Sent, unpaid", green Paid, red Void. */
 export function QuoteBadge({ quote }: { quote: RowQuote }) {
-  if (!quote || quote.status === 'void') return null
+  if (!quote) return null
   const b = QUOTE_BADGE[quote.status]
   return (
     <span className={`text-xs font-semibold rounded px-2 py-0.5 ${b.className}`} data-testid="quote-badge" data-quote-status={quote.status}>
@@ -22,10 +22,11 @@ export function QuoteBadge({ quote }: { quote: RowQuote }) {
  * "Quote maintenance" row action: opens the page's panel style with amount, short description and the due
  * date as text (fixed 7 days). Save draft (outlined), Send (filled brand red) with a confirm step, Void link.
  */
-export function MaintenanceQuoteControls({ changeRequestId, quote }: { changeRequestId: string; quote: RowQuote }) {
+export function MaintenanceQuoteControls({ changeRequestId, quote, customerName }: { changeRequestId: string; quote: RowQuote; customerName: string }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [confirmingVoid, setConfirmingVoid] = useState(false)
   const [amount, setAmount] = useState(quote ? String(quote.amount_cents / 100) : '')
   const [description, setDescription] = useState(quote?.description ?? '')
   const [result, setResult] = useState<QuoteActionResult | null>(null)
@@ -43,6 +44,7 @@ export function MaintenanceQuoteControls({ changeRequestId, quote }: { changeReq
       const r = await fn()
       setResult(r)
       setConfirming(false)
+      setConfirmingVoid(false)
       router.refresh()
     })
 
@@ -59,11 +61,54 @@ export function MaintenanceQuoteControls({ changeRequestId, quote }: { changeReq
           Quote maintenance
         </button>
         {live && live.status !== 'paid' ? (
-          <button type="button" className="font-semibold text-red-700 hover:underline disabled:opacity-50" disabled={pending} onClick={() => run(() => adminVoidQuote(live.id))} data-testid="quote-void-link">
+          <button type="button" className="font-semibold text-red-700 hover:underline disabled:opacity-50" disabled={pending || confirmingVoid} aria-expanded={confirmingVoid} onClick={() => setConfirmingVoid(true)} data-testid="quote-void-link">
             Void
           </button>
         ) : null}
       </div>
+      {confirmingVoid && live ? (
+        <div
+          role="alertdialog"
+          aria-modal="false"
+          aria-labelledby={`quote-void-title-${live.id}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setConfirmingVoid(false)
+          }}
+          className="mt-2 rounded-md border border-red-200 bg-red-50 p-3"
+          data-testid="quote-void-confirm"
+        >
+          <p id={`quote-void-title-${live.id}`} className="text-sm font-semibold text-zinc-900">
+            {QUOTE_VOID_CONFIRM}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              autoFocus
+              disabled={pending}
+              onClick={() => run(() => adminVoidQuote(live.id))}
+              className="rounded-md bg-red-700 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+              data-testid="quote-void-yes"
+            >
+              {pending ? 'Voiding…' : 'Void quote'}
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => setConfirmingVoid(false)}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {!open && result ? (
+        result.ok ? (
+          <p role="status" className="mt-1 text-sm text-green-800">{result.message}</p>
+        ) : (
+          <p role="alert" className="mt-1 text-sm text-red-700">{result.error}</p>
+        )
+      ) : null}
       {open ? (
         <div className="mt-2 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm space-y-3" data-testid="quote-panel">
           <label className="block text-sm">
@@ -113,7 +158,7 @@ export function MaintenanceQuoteControls({ changeRequestId, quote }: { changeReq
                 data-testid="quote-send"
                 title={live ? undefined : 'Save a draft first'}
               >
-                Send
+                {QUOTE_SEND_LABEL}
               </button>
             </div>
           ) : null}
@@ -129,11 +174,8 @@ export function MaintenanceQuoteControls({ changeRequestId, quote }: { changeReq
               data-testid="quote-confirm"
             >
               <h3 id={`quote-confirm-title-${live.id}`} ref={titleRef} tabIndex={-1} className="text-sm font-semibold text-zinc-900 outline-none">
-                Send this quote?
+                {quoteSendConfirmText(customerName, live.amount_cents)}
               </h3>
-              <p className="mt-1 text-sm text-zinc-700">
-                The customer gets a Stripe invoice for ${(live.amount_cents / 100).toFixed(2)}, due in 7 days. Nothing is charged unless they pay it.
-              </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"

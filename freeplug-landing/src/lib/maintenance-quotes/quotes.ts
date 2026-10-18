@@ -26,16 +26,25 @@ export type MaintenanceQuote = {
   created_at: string
 }
 
-export const QUOTE_BADGE: Record<Exclude<QuoteStatus, 'void'>, { label: string; className: string }> = {
+// Sable's wording (Oct 18 QA): "Send quote", "Sent, unpaid", voided quotes stay visible as "Void".
+export const QUOTE_BADGE: Record<QuoteStatus, { label: string; className: string }> = {
   draft: { label: 'Draft', className: 'bg-zinc-100 text-zinc-700' },
-  unpaid: { label: 'Unpaid', className: 'bg-amber-100 text-amber-800' },
+  unpaid: { label: 'Sent, unpaid', className: 'bg-amber-100 text-amber-800' },
   paid: { label: 'Paid', className: 'bg-green-100 text-green-800' },
+  void: { label: 'Void', className: 'bg-red-50 text-red-700' },
 }
+export const QUOTE_SEND_LABEL = 'Send quote'
+export const QUOTE_VOID_CONFIRM = "Void this quote? The invoice can't be paid after this."
+export const quoteSendConfirmText = (customer: string, cents: number) =>
+  `Send this quote to ${customer}? They get a Stripe invoice for $${(cents / 100).toFixed(2)}, due in 7 days. Nothing is charged unless they pay it.`
+/** "Oct 25, 2026" (America/Chicago). */
+export const quoteDueDate = (from: Date = new Date()) =>
+  new Date(from.getTime() + QUOTE_DAYS_UNTIL_DUE * 86_400_000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' })
+export const quoteSentToast = (sentAt: Date) => `Quote sent. Due ${quoteDueDate(sentAt)}.`
 
 /** "Due Oct 25, 2026" — fixed 7 days from today (or from when it was sent). */
 export function quoteDueDateText(from: Date = new Date()): string {
-  const d = new Date(from.getTime() + QUOTE_DAYS_UNTIL_DUE * 86_400_000)
-  return `Due ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' })} (7 days after sending)`
+  return `Due ${quoteDueDate(from)} (7 days after sending)`
 }
 
 /** Whole or cents dollars from the admin field ("75", "$75.50") -> cents within $50-$100. */

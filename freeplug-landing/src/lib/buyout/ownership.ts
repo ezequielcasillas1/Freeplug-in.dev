@@ -1,6 +1,6 @@
 /**
  * Every dollar toward buyout (Cheke, Oct 18 2026). Each payment is one ledger row keyed on its Stripe CHARGE,
- * so invoice.paid and charge.succeeded for the same money count once. Refunds and disputes subtract (a won
+ * so invoice.paid and charge.succeeded for the same money count once. Refunds (one row per refund id) and disputes subtract (a won
  * dispute restores). Payments are "still clearing" for 14 days, then cleared. Amounts are before tax and not
  * net of Stripe fees. The buyout price is not changed here (website_requests.buyout_price_cents).
  *
@@ -39,8 +39,7 @@ export function applyEntry(old: OwnershipEntry | null, next: Omit<OwnershipEntry
   }
   if (next.kind === 'payment' && old.source === 'charge' && next.source === 'invoice' && old.amount_cents !== next.amount_cents)
     return { ...old, amount_cents: next.amount_cents, source: 'invoice' }
-  if (next.kind === 'refund' && next.amount_cents < old.amount_cents) return { ...old, amount_cents: next.amount_cents }
-  if (next.kind === 'dispute' && !old.final && (old.amount_cents !== next.amount_cents || next.final))
+  if ((next.kind === 'refund' || next.kind === 'dispute') && !old.final && (old.amount_cents !== next.amount_cents || next.final))
     return { ...old, amount_cents: next.amount_cents, final: next.final }
   return null
 }
@@ -159,23 +158,38 @@ function scaled(payment: OwnershipEntry | null, chargeAmount: number, cents: num
   return Math.min(payment.amount_cents, Math.max(0, Math.round(cents * Math.min(1, ratio))))
 }
 
-/** charge.refunded: the refunded total for the charge (partial, then full). Unknown charge = skipped. */
-export async function recordRefund(store: OwnershipStore, ch: ChargeLike, profileId?: string): Promise<UpsertResult> {
-  const payment = await store.paymentForCharge(ch.id)
+export type RefundLike = { id: string; amount: number; status?: string | null; created: number; charge?: string | { id: string } | null }
+
+/**
+ * One ledger row per Stripe refund id (Aria): `refund:<re_id>`. Pending and succeeded refunds subtract; a refund
+ * that failed or was canceled is restored to 0 and final, so a late replay can't re-subtract it. Unknown charge = skipped.
+ */
+export async function recordRefundObject(store: OwnershipStore, r: RefundLike, chargeAmount: number | null, profileId?: string): Promise<UpsertResult> {
+  const chargeId = refId(r.charge ?? null)
+  if (!chargeId) return 'unchanged'
+  const payment = await store.paymentForCharge(chargeId)
   const owner = payment?.profile_id ?? profileId
   if (!owner) return 'unchanged'
-  const refunded = scaled(payment, ch.amount, ch.amount_refunded ?? 0)
-  if (refunded <= 0) return 'unchanged'
+  const failed = r.status === 'failed' || r.status === 'canceled'
+  const amount = failed ? 0 : scaled(payment, chargeAmount ?? r.amount, r.amount)
+  if (amount <= 0 && !failed) return 'unchanged'
   return store.upsert({
-    entry_key: `refund:${ch.id}`,
+    entry_key: `refund:${r.id}`,
     profile_id: owner,
-    stripe_charge_id: ch.id,
+    stripe_charge_id: chargeId,
     kind: 'refund',
     source: 'stripe',
-    amount_cents: -refunded,
-    final: false,
-    occurred_at: new Date().toISOString(),
+    amount_cents: -amount,
+    final: failed,
+    occurred_at: iso(r.created),
   })
+}
+
+/** charge.refunded: records each of the charge's refunds by its own id. */
+export async function recordRefunds(store: OwnershipStore, ch: ChargeLike, refunds: readonly RefundLike[], profileId?: string): Promise<UpsertResult[]> {
+  const out: UpsertResult[] = []
+  for (const r of refunds) out.push(await recordRefundObject(store, { ...r, charge: r.charge ?? ch.id }, ch.amount, profileId))
+  return out
 }
 
 /** charge.dispute.created / updated / closed. Won = restored (0), lost = subtracted for good. */
@@ -206,6 +220,53 @@ export function ownershipTotals(rows: readonly Pick<OwnershipEntry, 'kind' | 'am
     .reduce((n, r) => n + r.amount_cents, 0)
   return { paidCents: paid, clearingCents: Math.min(paid, Math.max(0, clearing)) }
 }
+
+/**
+ * Buyout eligibility (Oct 18 QA): reads ownership_ledger and counts CLEARED payments only (paid 14+ days ago).
+ * Per charge: a cleared payment counts net of its refunds/disputes; a payment still clearing counts 0 (its
+ * refunds can't eat into other cleared money); a refund/dispute with no payment row subtracts. Never below 0.
+ */
+type CreditRow = Pick<OwnershipEntry, 'kind' | 'amount_cents' | 'clears_at' | 'stripe_charge_id'>
+export function buyoutCreditCents(rows: readonly CreditRow[], now: Date = new Date()): number {
+  const t = now.getTime()
+  const byCharge = new Map<string, { pay: CreditRow | null; adj: number }>()
+  for (const r of rows) {
+    const g = byCharge.get(r.stripe_charge_id) ?? { pay: null, adj: 0 }
+    if (r.kind === 'payment') g.pay = r
+    else g.adj += r.amount_cents
+    byCharge.set(r.stripe_charge_id, g)
+  }
+  let total = 0
+  for (const { pay, adj } of byCharge.values()) {
+    if (!pay) total += adj
+    else if (pay.clears_at && Date.parse(pay.clears_at) <= t) total += Math.max(0, pay.amount_cents + adj)
+  }
+  return Math.max(0, total)
+}
+
+/** Cleared credit toward buyout per profile, read from ownership_ledger (service role). */
+export async function fetchBuyoutCredit(
+  db: { from(t: string): { select(c: string): { in(k: string, v: string[]): PromiseLike<{ data: unknown; error: { message: string } | null }> } } },
+  profileIds: string[],
+  now: Date = new Date()
+): Promise<Map<string, number>> {
+  const out = new Map<string, number>()
+  if (profileIds.length === 0) return out
+  const { data, error } = await db.from('ownership_ledger').select('profile_id, stripe_charge_id, kind, amount_cents, clears_at').in('profile_id', profileIds)
+  if (error) throw new Error(`ownership_ledger: ${error.message}`)
+  const byProfile = new Map<string, CreditRow[]>()
+  for (const r of (data ?? []) as (CreditRow & { profile_id: string })[]) {
+    const list = byProfile.get(r.profile_id) ?? []
+    list.push(r)
+    byProfile.set(r.profile_id, list)
+  }
+  for (const id of profileIds) out.set(id, buyoutCreditCents(byProfile.get(id) ?? [], now))
+  return out
+}
+
+/** Sable (Oct 18): gray note under the ownership line. */
+export const OWNERSHIP_NOTE = "Payments count after 14 days. Refunds aren't counted."
+export const ADMIN_BUYOUT_CLEARED = 'Cleared toward buyout'
 
 const usd = (cents: number) => `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: cents % 100 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`
 export const paidTowardOwnershipLine = (cents: number) => `Paid toward ownership: ${usd(cents)}`

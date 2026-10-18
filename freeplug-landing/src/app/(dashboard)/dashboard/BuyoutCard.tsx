@@ -8,7 +8,7 @@ import {
   BUYOUT_DASHBOARD_HEADING,
 } from '@/lib/buyout/buyout'
 import { BuyoutRequestButton } from './BuyoutRequestButton'
-import { paidTowardOwnershipLine, stillClearingLine } from '@/lib/buyout/ownership'
+import { OWNERSHIP_NOTE, paidTowardOwnershipLine, stillClearingLine } from '@/lib/buyout/ownership'
 
 export type OwnershipSummary = { paidCents: number; clearingCents: number } | null
 
@@ -47,6 +47,9 @@ export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '
               {stillClearingLine(ownership.clearingCents)}
             </p>
           ) : null}
+          <p className="mt-1 text-xs text-gray-500" data-testid="ownership-note">
+            {OWNERSHIP_NOTE}
+          </p>
         </div>
       ) : null}
       <p className={dashboard ? 'text-sm text-gray-600 mb-4' : 'text-sm text-gray-600 mt-1 mb-4'}>

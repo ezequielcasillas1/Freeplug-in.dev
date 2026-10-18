@@ -9,6 +9,7 @@ import {
   QUOTE_DESCRIPTION_MAX,
   assertTestModeKey,
   parseQuoteAmount,
+  quoteSentToast,
   sendQuote,
   voidQuote,
   type MaintenanceQuote,
@@ -82,10 +83,11 @@ export async function adminSendQuote(quoteId: string): Promise<QuoteActionResult
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) }
   }
-  const res = await sendQuote(quoteStore(createAdminClient()), getStripe() as unknown as QuoteStripe, quoteId)
+  const now = new Date()
+  const res = await sendQuote(quoteStore(createAdminClient()), getStripe() as unknown as QuoteStripe, quoteId, now)
   revalidatePath('/admin/change-requests')
   if (!res.ok) return res
-  return { ok: true, message: res.outcome === 'sent' ? 'Quote sent.' : 'Already sent. Nothing changed.' }
+  return { ok: true, message: res.outcome === 'sent' ? quoteSentToast(now) : 'Already sent. Nothing changed.' }
 }
 
 export async function adminVoidQuote(quoteId: string): Promise<QuoteActionResult> {

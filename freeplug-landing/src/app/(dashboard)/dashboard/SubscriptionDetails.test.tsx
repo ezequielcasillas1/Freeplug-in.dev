@@ -244,7 +244,7 @@ describe('add-on lines (Oct 4)', () => {
   })
   it('Oct 18: the $100 plan shows Unlimited and no pack line', () => {
     render(<SubscriptionDetails subscriptions={[{ ...plan(10000), entitlements: entitlementsFor({ stepId: 'growth' }), editsIncluded: { unlimited: true }, editStepId: 'growth' }]} />)
-    expect(screen.getByTestId('edits-included')).toHaveTextContent('Edits included: Unlimited')
+    expect(screen.getByTestId('edits-included')).toHaveTextContent('Unlimited edits')
     expect(screen.queryByTestId('edits-need-more')).toBeNull()
   })
   it('no add-ons: no Big change line, no ending line', () => {

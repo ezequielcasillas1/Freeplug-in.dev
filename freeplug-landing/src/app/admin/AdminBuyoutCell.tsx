@@ -10,6 +10,7 @@ import {
   formatBuyoutPrice,
 } from '@/lib/buyout/buyout'
 import { adminSetBuyoutPrice } from './actions'
+import { ADMIN_BUYOUT_CLEARED } from '@/lib/buyout/ownership'
 
 /** "Buyout" type badge on a request row (Sable's admin labels). */
 export function AdminBuyoutBadge() {
@@ -31,8 +32,11 @@ export function AdminBuyoutBadge() {
 export function AdminBuyoutPriceCell({
   requestId,
   priceCents,
+  clearedCents = null,
   onSave = adminSetBuyoutPrice,
 }: {
+  /** Cleared ownership_ledger credit (payments 14+ days old, minus refunds/disputes); null = unknown. */
+  clearedCents?: number | null
   requestId: string
   /** website_requests.buyout_price_cents (null = not quoted yet). Never read from notes. */
   priceCents: number | null
@@ -55,6 +59,11 @@ export function AdminBuyoutPriceCell({
       <p className="text-xs font-medium text-zinc-700" data-buyout-status>
         {quoted ? `${ADMIN_BUYOUT_QUOTED}: ${formatBuyoutPrice(priceCents)}` : ADMIN_BUYOUT_REQUESTED}
       </p>
+      {clearedCents != null ? (
+        <p className="text-[11px] text-zinc-600" data-testid="buyout-cleared">
+          {ADMIN_BUYOUT_CLEARED}: {formatBuyoutPrice(clearedCents)}
+        </p>
+      ) : null}
       <label className="block text-[11px] text-zinc-500">
         {ADMIN_BUYOUT_PRICE} (USD)
         <input

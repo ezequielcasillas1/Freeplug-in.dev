@@ -66,6 +66,6 @@ export function needMoreEditsLine(stepId: PlanStepId): string | null {
 
 /** Dashboard "Included" line. */
 export function editsIncludedLine(e: EditsIncluded): string {
-  if (e.unlimited) return 'Edits included: Unlimited'
+  if (e.unlimited) return 'Unlimited edits'
   return `Edits included: ${e.remaining} of ${e.total} left this billing period`
 }
