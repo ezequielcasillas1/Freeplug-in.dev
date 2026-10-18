@@ -35,12 +35,14 @@ export const QUOTE_BADGE: Record<QuoteStatus, { label: string; className: string
 }
 export const QUOTE_SEND_LABEL = 'Send quote'
 export const QUOTE_VOID_CONFIRM = "Void this quote? The invoice can't be paid after this."
+/** Sable (Oct 18): exact confirm text; price as "$75" (or "$75.50"). */
 export const quoteSendConfirmText = (customer: string, cents: number) =>
-  `Send this quote to ${customer}? They get a Stripe invoice for $${(cents / 100).toFixed(2)}, due in 7 days. Nothing is charged unless they pay it.`
+  `Send this quote to ${customer} for $${cents % 100 === 0 ? cents / 100 : (cents / 100).toFixed(2)}? They get a Stripe invoice and have 7 days to pay.`
+export const QUOTE_CONFIRM_SEND_LABEL = 'Send'
 /** "Oct 25, 2026" (America/Chicago). */
 export const quoteDueDate = (from: Date = new Date()) =>
   new Date(from.getTime() + QUOTE_DAYS_UNTIL_DUE * 86_400_000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' })
-export const quoteSentToast = (sentAt: Date) => `Quote sent. Due ${quoteDueDate(sentAt)}.`
+export const quoteSentToast = (sentAt: Date) => `Quote sent. It's due ${quoteDueDate(sentAt)}.`
 
 /** "Due Oct 25, 2026" — fixed 7 days from today (or from when it was sent). */
 export function quoteDueDateText(from: Date = new Date()): string {

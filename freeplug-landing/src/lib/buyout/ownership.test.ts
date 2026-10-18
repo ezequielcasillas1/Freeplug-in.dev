@@ -123,11 +123,11 @@ describe('ownership ledger (every dollar toward buyout)', () => {
     const s = memoryOwnershipStore()
     await recordInvoicePayment(s, P, inv(), 'ch_1')
     const day = (n: number) => new Date(T0 + n * 86_400_000)
-    expect(ownershipTotals([...s.rows.values()])).toEqual({ paidCents: 3500, clearingCents: 3500 })
+    expect(ownershipTotals([...s.rows.values()])).toEqual({ paidCents: 3500, clearingCents: 3500, clearedCents: 0 })
     vi.setSystemTime(day(CLEARING_DAYS - 1))
     expect(ownershipTotals([...s.rows.values()]).clearingCents).toBe(3500)
     vi.setSystemTime(day(CLEARING_DAYS))
-    expect(ownershipTotals([...s.rows.values()])).toEqual({ paidCents: 3500, clearingCents: 0 })
+    expect(ownershipTotals([...s.rows.values()])).toEqual({ paidCents: 3500, clearingCents: 0, clearedCents: 3500 })
     expect(paidTowardOwnershipLine(3500)).toBe('Paid toward ownership: $35')
     expect(stillClearingLine(1250)).toBe('(includes $12.50 still clearing)')
   })
@@ -139,5 +139,22 @@ describe('ownership ledger (every dollar toward buyout)', () => {
     }
     expect(await chargeIdOfInvoice({ id: 'in_9' }, stripe)).toBe('ch_9')
     expect(await chargeIdOfInvoice({ id: 'in_8', charge: 'ch_legacy' }, stripe)).toBe('ch_legacy')
+  })
+})
+
+describe('per-charge totals (QA r2): customer line and eligibility agree', () => {
+  const NOW = new Date('2026-10-18T12:00:00Z')
+  const ago = (d: number) => new Date(NOW.getTime() - d * 86_400_000)
+  const pay = (id: string, cents: number, paidDaysAgo: number) => ({ kind: 'payment' as const, amount_cents: cents, stripe_charge_id: id, clears_at: new Date(ago(paidDaysAgo).getTime() + CLEARING_DAYS * 86_400_000).toISOString() })
+  const adj = (id: string, cents: number, kind: 'refund' | 'dispute' = 'refund') => ({ kind, amount_cents: cents, stripe_charge_id: id, clears_at: null })
+  it.each([
+    ['A 5000, B 3000 fully refunded', [pay('A', 5000, 20), pay('B', 3000, 5), adj('B', -3000)], { paidCents: 5000, clearingCents: 0, clearedCents: 5000 }],
+    ['refund 2000 on cleared A', [pay('A', 5000, 20), pay('B', 3000, 5), adj('A', -2000)], { paidCents: 6000, clearingCents: 3000, clearedCents: 3000 }],
+    ['refund 1000 on pending B', [pay('A', 5000, 20), pay('B', 3000, 5), adj('B', -1000)], { paidCents: 7000, clearingCents: 2000, clearedCents: 5000 }],
+    ['open dispute on pending B', [pay('A', 5000, 20), pay('B', 3000, 5), adj('B', -3000, 'dispute')], { paidCents: 5000, clearingCents: 0, clearedCents: 5000 }],
+    ['orphan refund/dispute subtracts nothing', [pay('A', 5000, 20), adj('Z', -4000), adj('Y', -700, 'dispute')], { paidCents: 5000, clearingCents: 0, clearedCents: 5000 }],
+  ])('%s', (_name, rows, want) => {
+    expect(ownershipTotals(rows, NOW)).toEqual(want)
+    expect(buyoutCreditCents(rows, NOW)).toBe(want.clearedCents)
   })
 })

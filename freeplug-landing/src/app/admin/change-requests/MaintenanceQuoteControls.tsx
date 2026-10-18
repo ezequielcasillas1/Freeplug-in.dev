@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { QUOTE_BADGE, QUOTE_SEND_LABEL, QUOTE_VOID_CONFIRM, quoteDueDateText, quoteSendConfirmText, type QuoteStatus } from '@/lib/maintenance-quotes/quotes'
+import { QUOTE_BADGE, QUOTE_CONFIRM_SEND_LABEL, QUOTE_SEND_LABEL, QUOTE_VOID_CONFIRM, quoteDueDateText, quoteSendConfirmText, type QuoteStatus } from '@/lib/maintenance-quotes/quotes'
 import { adminSaveQuoteDraft, adminSendQuote, adminVoidQuote, type QuoteActionResult } from './quote-actions'
 
 export type RowQuote = { id: string; status: QuoteStatus; amount_cents: number; description: string; sent_at: string | null } | null
@@ -184,7 +184,7 @@ export function MaintenanceQuoteControls({ changeRequestId, quote, customerName 
                   className="rounded-md bg-[#ba3d3d] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
                   data-testid="quote-confirm-yes"
                 >
-                  {pending ? 'Sending…' : 'Yes, send'}
+                  {pending ? 'Sending…' : QUOTE_CONFIRM_SEND_LABEL}
                 </button>
                 <button
                   type="button"

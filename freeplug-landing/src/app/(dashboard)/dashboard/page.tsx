@@ -155,9 +155,9 @@ export default async function DashboardPage({ searchParams }: Props) {
   // Oct 18: every dollar toward buyout (ownership_ledger, own rows via RLS). A read error hides the line.
   const { data: ownershipRows, error: ownershipErr } = await supabase
     .from('ownership_ledger')
-    .select('kind, amount_cents, clears_at')
+    .select('stripe_charge_id, kind, amount_cents, clears_at')
     .eq('profile_id', user.id)
-  const ownership = ownershipErr ? null : ownershipTotals((ownershipRows ?? []) as Pick<OwnershipEntry, 'kind' | 'amount_cents' | 'clears_at'>[])
+  const ownership = ownershipErr ? null : ownershipTotals((ownershipRows ?? []) as Pick<OwnershipEntry, 'stripe_charge_id' | 'kind' | 'amount_cents' | 'clears_at'>[])
 
   const intakeClosedInfo =
     !openRequest && latestRequest?.status === 'closed'

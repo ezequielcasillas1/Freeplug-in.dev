@@ -212,22 +212,17 @@ export async function recordDispute(store: OwnershipStore, d: DisputeLike, charg
   })
 }
 
-/** Dashboard: X = paid toward ownership (never below 0); Y = the part of X still clearing at `now`. */
-export function ownershipTotals(rows: readonly Pick<OwnershipEntry, 'kind' | 'amount_cents' | 'clears_at'>[], now: Date = new Date()): { paidCents: number; clearingCents: number } {
-  const paid = Math.max(0, rows.reduce((n, r) => n + r.amount_cents, 0))
-  const clearing = rows
-    .filter((r) => r.kind === 'payment' && r.clears_at && Date.parse(r.clears_at) > now.getTime())
-    .reduce((n, r) => n + r.amount_cents, 0)
-  return { paidCents: paid, clearingCents: Math.min(paid, Math.max(0, clearing)) }
-}
+type CreditRow = Pick<OwnershipEntry, 'kind' | 'amount_cents' | 'clears_at' | 'stripe_charge_id'>
 
 /**
- * Buyout eligibility (Oct 18 QA): reads ownership_ledger and counts CLEARED payments only (paid 14+ days ago).
- * Per charge: a cleared payment counts net of its refunds/disputes; a payment still clearing counts 0 (its
- * refunds can't eat into other cleared money); a refund/dispute with no payment row subtracts. Never below 0.
+ * Per-charge totals, shared by the customer line and buyout eligibility (Oct 18 QA r2), so they always agree:
+ * each charge counts its payment net of that charge's refunds and disputes (never below 0). A refund or dispute
+ * with no matching payment row counts nothing. A charge is "still clearing" while its payment is under 14 days old.
+ *   paidCents     = X ("Paid toward ownership")
+ *   clearingCents = Y ("still clearing"), the part of X from charges not yet cleared
+ *   clearedCents  = X - Y = buyout eligibility credit
  */
-type CreditRow = Pick<OwnershipEntry, 'kind' | 'amount_cents' | 'clears_at' | 'stripe_charge_id'>
-export function buyoutCreditCents(rows: readonly CreditRow[], now: Date = new Date()): number {
+export function ownershipTotals(rows: readonly CreditRow[], now: Date = new Date()): { paidCents: number; clearingCents: number; clearedCents: number } {
   const t = now.getTime()
   const byCharge = new Map<string, { pay: CreditRow | null; adj: number }>()
   for (const r of rows) {
@@ -236,12 +231,20 @@ export function buyoutCreditCents(rows: readonly CreditRow[], now: Date = new Da
     else g.adj += r.amount_cents
     byCharge.set(r.stripe_charge_id, g)
   }
-  let total = 0
+  let paid = 0
+  let clearing = 0
   for (const { pay, adj } of byCharge.values()) {
-    if (!pay) total += adj
-    else if (pay.clears_at && Date.parse(pay.clears_at) <= t) total += Math.max(0, pay.amount_cents + adj)
+    if (!pay) continue
+    const net = Math.max(0, pay.amount_cents + adj)
+    paid += net
+    if (!(pay.clears_at && Date.parse(pay.clears_at) <= t)) clearing += net
   }
-  return Math.max(0, total)
+  return { paidCents: paid, clearingCents: clearing, clearedCents: paid - clearing }
+}
+
+/** Buyout eligibility (Oct 18 QA): reads ownership_ledger and counts CLEARED charges only (see ownershipTotals). */
+export function buyoutCreditCents(rows: readonly CreditRow[], now: Date = new Date()): number {
+  return ownershipTotals(rows, now).clearedCents
 }
 
 /** Cleared credit toward buyout per profile, read from ownership_ledger (service role). */

@@ -88,11 +88,13 @@ describe('Sable wording (Oct 18 QA)', () => {
   it('button, confirm with customer, badges, void confirm and the sent toast with due date', async () => {
     const q = await import('./quotes')
     expect(q.QUOTE_SEND_LABEL).toBe('Send quote')
-    expect(q.quoteSendConfirmText('Gracias Lawn Service', 7500)).toContain('Gracias Lawn Service')
+    expect(q.quoteSendConfirmText('Gracias Lawn Service', 7500)).toBe('Send this quote to Gracias Lawn Service for $75? They get a Stripe invoice and have 7 days to pay.')
+    expect(q.quoteSendConfirmText('Gracias Lawn Service', 7550)).toContain('for $75.50?')
+    expect(q.QUOTE_CONFIRM_SEND_LABEL).toBe('Send')
     expect(q.QUOTE_BADGE.unpaid.label).toBe('Sent, unpaid')
     expect(q.QUOTE_BADGE.void.label).toBe('Void')
     expect(q.QUOTE_VOID_CONFIRM).toBe("Void this quote? The invoice can't be paid after this.")
-    expect(q.quoteSentToast(new Date('2026-10-18T17:00:00Z'))).toBe('Quote sent. Due Oct 25, 2026.')
+    expect(q.quoteSentToast(new Date('2026-10-18T17:00:00Z'))).toBe("Quote sent. It's due Oct 25, 2026.")
   })
 })
 

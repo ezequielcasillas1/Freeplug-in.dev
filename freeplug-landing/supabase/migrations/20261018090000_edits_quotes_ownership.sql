@@ -11,7 +11,7 @@ create table if not exists public.maintenance_quotes (
   id uuid primary key default gen_random_uuid(),
   change_request_id uuid not null references public.change_requests (id) on delete cascade,
   user_id uuid not null references auth.users (id) on delete cascade,
-  amount_cents integer not null constraint maintenance_quotes_amount_range check (amount_cents between 5000 and 10000),
+  amount_cents integer not null check (amount_cents > 0 and amount_cents <= 1000000),
   description text not null check (length(description) between 1 and 500),
   days_until_due integer not null default 7 check (days_until_due = 7),
   status text not null default 'draft' check (status in ('draft', 'unpaid', 'paid', 'void')),
@@ -60,7 +60,7 @@ create policy "ownership_ledger_select_own" on public.ownership_ledger
 
 -- Idempotent upsert, same rules as src/lib/buyout/ownership.ts (memory store in tests):
 --   payment: first write wins, except an invoice amount (before tax) replaces a raw charge amount.
---   refund : one row per Stripe refund id (Aria): its latest state wins until final (failed/canceled -> 0, final).
+--   refund : the refunded total per charge only grows (partial then full; replays change nothing).
 --   dispute: latest non-final state wins; once final (won -> 0, lost -> negative) it never changes.
 -- Returns 'inserted' | 'updated' | 'unchanged'. Service role only.
 create or replace function public.record_ownership_entry(
@@ -92,8 +92,8 @@ begin
   if p_kind = 'payment' and v_old.source = 'charge' and p_source = 'invoice' and v_old.amount_cents <> p_amount_cents then
     update public.ownership_ledger set amount_cents = p_amount_cents, source = 'invoice', updated_at = pg_catalog.now() where entry_key = p_entry_key;
     return 'updated';
-  elsif p_kind = 'refund' and not v_old.final and (v_old.amount_cents <> p_amount_cents or coalesce(p_final, false)) then
-    update public.ownership_ledger set amount_cents = p_amount_cents, final = coalesce(p_final, false), updated_at = pg_catalog.now() where entry_key = p_entry_key;
+  elsif p_kind = 'refund' and p_amount_cents < v_old.amount_cents then
+    update public.ownership_ledger set amount_cents = p_amount_cents, updated_at = pg_catalog.now() where entry_key = p_entry_key;
     return 'updated';
   elsif p_kind = 'dispute' and not v_old.final and (v_old.amount_cents <> p_amount_cents or coalesce(p_final, false)) then
     update public.ownership_ledger set amount_cents = p_amount_cents, final = coalesce(p_final, false), updated_at = pg_catalog.now() where entry_key = p_entry_key;
