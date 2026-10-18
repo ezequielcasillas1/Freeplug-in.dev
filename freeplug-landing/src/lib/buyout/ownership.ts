@@ -1,0 +1,238 @@
+/**
+ * Every dollar toward buyout (Cheke, Oct 18 2026). Each payment is one ledger row keyed on its Stripe CHARGE,
+ * so invoice.paid and charge.succeeded for the same money count once. Refunds and disputes subtract (a won
+ * dispute restores). Payments are "still clearing" for 14 days, then cleared. Amounts are before tax and not
+ * net of Stripe fees. The buyout price is not changed here (website_requests.buyout_price_cents).
+ *
+ * The rules live in applyEntry(): the SQL function public.record_ownership_entry (migration 20261018090000)
+ * mirrors them for the database; memoryOwnershipStore uses them directly for tests.
+ */
+export const CLEARING_DAYS = 14
+const DAY_MS = 86_400_000
+
+export type OwnershipKind = 'payment' | 'refund' | 'dispute'
+export type OwnershipSource = 'invoice' | 'charge' | 'stripe'
+export type OwnershipEntry = {
+  entry_key: string
+  profile_id: string
+  stripe_charge_id: string
+  kind: OwnershipKind
+  source: OwnershipSource
+  amount_cents: number
+  final: boolean
+  occurred_at: string
+  clears_at: string | null
+}
+export type UpsertResult = 'inserted' | 'updated' | 'unchanged'
+
+export interface OwnershipStore {
+  upsert(e: Omit<OwnershipEntry, 'clears_at'>): Promise<UpsertResult>
+  /** The payment row for a charge (to find the profile and cap refunds/disputes), or null. */
+  paymentForCharge(chargeId: string): Promise<OwnershipEntry | null>
+}
+
+/** Pure merge rule (same as the SQL function). Returns the new row, or null when nothing changes. */
+export function applyEntry(old: OwnershipEntry | null, next: Omit<OwnershipEntry, 'clears_at'>): OwnershipEntry | null {
+  if (!old) {
+    const clears = next.kind === 'payment' ? new Date(Date.parse(next.occurred_at) + CLEARING_DAYS * DAY_MS).toISOString() : null
+    return { ...next, clears_at: clears }
+  }
+  if (next.kind === 'payment' && old.source === 'charge' && next.source === 'invoice' && old.amount_cents !== next.amount_cents)
+    return { ...old, amount_cents: next.amount_cents, source: 'invoice' }
+  if (next.kind === 'refund' && next.amount_cents < old.amount_cents) return { ...old, amount_cents: next.amount_cents }
+  if (next.kind === 'dispute' && !old.final && (old.amount_cents !== next.amount_cents || next.final))
+    return { ...old, amount_cents: next.amount_cents, final: next.final }
+  return null
+}
+
+export function memoryOwnershipStore(rows: Map<string, OwnershipEntry> = new Map()): OwnershipStore & { rows: Map<string, OwnershipEntry> } {
+  return {
+    rows,
+    async upsert(e) {
+      const old = rows.get(e.entry_key) ?? null
+      const merged = applyEntry(old, e)
+      if (!merged) return 'unchanged'
+      rows.set(e.entry_key, merged)
+      return old ? 'updated' : 'inserted'
+    },
+    async paymentForCharge(chargeId) {
+      return rows.get(`pay:${chargeId}`) ?? null
+    },
+  }
+}
+
+type Rpc = {
+  rpc(fn: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: { message: string } | null }>
+  from(t: string): {
+    select(c: string): { eq(k: string, v: string): { maybeSingle(): PromiseLike<{ data: unknown; error: { message: string } | null }> } }
+  }
+}
+export function supabaseOwnershipStore(db: Rpc): OwnershipStore {
+  return {
+    async upsert(e) {
+      const { data, error } = await db.rpc('record_ownership_entry', {
+        p_entry_key: e.entry_key,
+        p_profile_id: e.profile_id,
+        p_charge_id: e.stripe_charge_id,
+        p_kind: e.kind,
+        p_amount_cents: e.amount_cents,
+        p_occurred_at: e.occurred_at,
+        p_source: e.source,
+        p_final: e.final,
+      })
+      if (error) throw new Error(`record_ownership_entry: ${error.message}`)
+      return data as UpsertResult
+    },
+    async paymentForCharge(chargeId) {
+      const { data, error } = await db.from('ownership_ledger').select('*').eq('entry_key', `pay:${chargeId}`).maybeSingle()
+      if (error) throw new Error(error.message)
+      return (data as OwnershipEntry | null) ?? null
+    },
+  }
+}
+
+// ------------------------------------------------------------------ Stripe -> ledger
+
+type InvoiceLike = {
+  id: string
+  amount_paid: number
+  tax?: number | null
+  total_taxes?: { amount: number }[] | null
+  status_transitions?: { paid_at?: number | null } | null
+  created?: number
+}
+type ChargeLike = {
+  id: string
+  amount: number
+  amount_refunded?: number
+  paid?: boolean
+  status?: string
+  captured?: boolean
+  created: number
+}
+type DisputeLike = { id: string; charge: string | { id: string }; amount: number; status: string; created: number }
+
+const iso = (unix: number | null | undefined) => new Date((unix ?? 0) * 1000).toISOString()
+
+/** Amount paid before tax (not net of fees). */
+export function invoiceAmountBeforeTax(inv: InvoiceLike): number {
+  const tax = Array.isArray(inv.total_taxes) ? inv.total_taxes.reduce((n, t) => n + Math.max(0, t.amount ?? 0), 0) : Math.max(0, inv.tax ?? 0)
+  return Math.max(0, (inv.amount_paid ?? 0) - tax)
+}
+
+/** invoice.paid: the payment for its charge (amount before tax). Tips and add-ons on the invoice count too. */
+export async function recordInvoicePayment(store: OwnershipStore, profileId: string, inv: InvoiceLike, chargeId: string | null): Promise<UpsertResult> {
+  const amount = invoiceAmountBeforeTax(inv)
+  if (amount <= 0) return 'unchanged'
+  const charge = chargeId ?? `inv:${inv.id}` // paid without a charge (e.g. out of band): keyed on the invoice
+  return store.upsert({
+    entry_key: `pay:${charge}`,
+    profile_id: profileId,
+    stripe_charge_id: charge,
+    kind: 'payment',
+    source: 'invoice',
+    amount_cents: amount,
+    final: false,
+    occurred_at: iso(inv.status_transitions?.paid_at ?? inv.created),
+  })
+}
+
+/** charge.succeeded: a charge (with or without an invoice). Same key as its invoice, so it counts once. */
+export async function recordChargePayment(store: OwnershipStore, profileId: string, ch: ChargeLike): Promise<UpsertResult> {
+  if (ch.paid === false || (ch.status && ch.status !== 'succeeded') || ch.captured === false || ch.amount <= 0) return 'unchanged'
+  return store.upsert({
+    entry_key: `pay:${ch.id}`,
+    profile_id: profileId,
+    stripe_charge_id: ch.id,
+    kind: 'payment',
+    source: 'charge',
+    amount_cents: ch.amount,
+    final: false,
+    occurred_at: iso(ch.created),
+  })
+}
+
+/** Scales a charge-level amount (tax included) to the payment row's before-tax amount, capped at it. */
+function scaled(payment: OwnershipEntry | null, chargeAmount: number, cents: number): number {
+  if (!payment) return Math.max(0, cents)
+  const ratio = chargeAmount > 0 ? payment.amount_cents / chargeAmount : 1
+  return Math.min(payment.amount_cents, Math.max(0, Math.round(cents * Math.min(1, ratio))))
+}
+
+/** charge.refunded: the refunded total for the charge (partial, then full). Unknown charge = skipped. */
+export async function recordRefund(store: OwnershipStore, ch: ChargeLike, profileId?: string): Promise<UpsertResult> {
+  const payment = await store.paymentForCharge(ch.id)
+  const owner = payment?.profile_id ?? profileId
+  if (!owner) return 'unchanged'
+  const refunded = scaled(payment, ch.amount, ch.amount_refunded ?? 0)
+  if (refunded <= 0) return 'unchanged'
+  return store.upsert({
+    entry_key: `refund:${ch.id}`,
+    profile_id: owner,
+    stripe_charge_id: ch.id,
+    kind: 'refund',
+    source: 'stripe',
+    amount_cents: -refunded,
+    final: false,
+    occurred_at: new Date().toISOString(),
+  })
+}
+
+/** charge.dispute.created / updated / closed. Won = restored (0), lost = subtracted for good. */
+export async function recordDispute(store: OwnershipStore, d: DisputeLike, chargeAmount?: number): Promise<UpsertResult> {
+  const chargeId = typeof d.charge === 'string' ? d.charge : d.charge.id
+  const payment = await store.paymentForCharge(chargeId)
+  if (!payment) return 'unchanged'
+  const won = d.status === 'won'
+  const final = won || d.status === 'lost'
+  const amount = won ? 0 : -scaled(payment, chargeAmount ?? d.amount, d.amount)
+  return store.upsert({
+    entry_key: `dispute:${d.id}`,
+    profile_id: payment.profile_id,
+    stripe_charge_id: chargeId,
+    kind: 'dispute',
+    source: 'stripe',
+    amount_cents: amount,
+    final,
+    occurred_at: iso(d.created),
+  })
+}
+
+/** Dashboard: X = paid toward ownership (never below 0); Y = the part of X still clearing at `now`. */
+export function ownershipTotals(rows: readonly Pick<OwnershipEntry, 'kind' | 'amount_cents' | 'clears_at'>[], now: Date = new Date()): { paidCents: number; clearingCents: number } {
+  const paid = Math.max(0, rows.reduce((n, r) => n + r.amount_cents, 0))
+  const clearing = rows
+    .filter((r) => r.kind === 'payment' && r.clears_at && Date.parse(r.clears_at) > now.getTime())
+    .reduce((n, r) => n + r.amount_cents, 0)
+  return { paidCents: paid, clearingCents: Math.min(paid, Math.max(0, clearing)) }
+}
+
+const usd = (cents: number) => `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: cents % 100 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`
+export const paidTowardOwnershipLine = (cents: number) => `Paid toward ownership: ${usd(cents)}`
+export const stillClearingLine = (cents: number) => `(includes ${usd(cents)} still clearing)`
+
+type PaymentRef = { charge?: string | { id: string } | null; payment_intent?: string | { id: string; latest_charge?: string | { id: string } | null } | null }
+type StripeForCharge = {
+  invoicePayments: { list(p: { invoice: string; limit?: number }): Promise<{ data: { status?: string; payment: PaymentRef }[] }> }
+  paymentIntents: { retrieve(id: string): Promise<{ latest_charge?: string | { id: string } | null }> }
+}
+const refId = (v: string | { id: string } | null | undefined) => (typeof v === 'string' ? v : (v?.id ?? null))
+
+/** The charge that paid an invoice (legacy invoice.charge, invoice payments, or the PaymentIntent's latest charge). */
+export async function chargeIdOfInvoice(inv: { id: string; charge?: string | { id: string } | null; payments?: { data?: { status?: string; payment: PaymentRef }[] } | null }, stripe: StripeForCharge): Promise<string | null> {
+  const legacy = refId(inv.charge ?? null)
+  if (legacy) return legacy
+  let payments = inv.payments?.data
+  if (!payments || payments.length === 0) {
+    if (typeof stripe.invoicePayments?.list !== 'function') return null
+    payments = (await stripe.invoicePayments.list({ invoice: inv.id, limit: 10 })).data ?? []
+  }
+  const paid = payments.find((p) => p.status === 'paid') ?? payments[0]
+  if (!paid) return null
+  const direct = refId(paid.payment.charge ?? null)
+  if (direct) return direct
+  const pi = paid.payment.payment_intent
+  if (!pi) return null
+  if (typeof pi !== 'string' && pi.latest_charge) return refId(pi.latest_charge)
+  return refId((await stripe.paymentIntents.retrieve(refId(pi)!)).latest_charge ?? null)
+}

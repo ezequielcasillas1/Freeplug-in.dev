@@ -1,7 +1,7 @@
 import { HelpChat } from '@/components/help/HelpChat'
 import { createClient } from '@/lib/supabase/server'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
-import { starterSmallEditAddonLine } from '@/lib/plans/ladder-copy'
+import { EDITS_COPY_EN } from '@/lib/plans/edits-copy'
 import { sendHelpChangeRequest } from '../request-website/actions'
 
 /**
@@ -15,7 +15,7 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
   } = await supabase.auth.getUser()
 
   let hasIncludedEdit = false
-  // Starter without the +1 small edit add-on: the review step points to the add-on (Sable, Oct 4).
+  // Oct 18: ladder plans (not unlimited) get the small-edit answer + "Go to Plans" (edit pack) in the review step.
   let smallEditAddonNote: string | null = null
   if (user) {
     const { data: prof } = await supabase
@@ -26,8 +26,8 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
     if (prof?.stripe_customer_id) {
       try {
         const ent = (await getUserEntitlements(supabase, user.id, prof.stripe_customer_id)).entitlements
-        hasIncludedEdit = ent.includedEditsPerMonth > 0
-        if (!hasIncludedEdit && !ent.legacy && ent.step?.id === 'starter' && !ent.addons.includes('small_edit')) smallEditAddonNote = starterSmallEditAddonLine()
+        if (ent.legacy) hasIncludedEdit = ent.includedEditsPerMonth > 0
+        else if (ent.step && Number.isFinite(ent.includedEditsPerMonth)) smallEditAddonNote = EDITS_COPY_EN.helpSmallEditAnswer
       } catch (e) {
         // Only hides the optional included-edit note; the chat still works.
         console.error('[help] entitlements lookup failed', e instanceof Error ? e.message : e)

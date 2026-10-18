@@ -1,6 +1,7 @@
 import { formatAmount, formatAmountCents } from '@/lib/format/keep-together'
+import { needMoreEditsLine } from './edits-copy'
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
-import { ADDON_STEP_LIMITS, PLAN_STEPS, addonById, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
+import { ADDON_STEP_LIMITS, PLAN_STEPS, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
 
 /** "$35" style, from ladder.ts (never hard-code a price in copy). */
 const dollars = (cents: number) => formatAmount(cents)
@@ -419,22 +420,12 @@ export function addonPerkLine(id: AddonId | 'visitor_snapshot', opts: { withIncl
     return "One larger change each billing period, up to about an hour of work on your existing pages. For example, adding a section, a new service with photos, a gallery refresh, or rewriting one page. Unused changes don't roll over."
   return 'A monthly email with how many people visited your site.'
 }
-/** [Sable, approved] Gray line under the Big change perk line. */
-export const BIG_CHANGE_BIGGER_NOTE = "Need something bigger, like a new page or feature? We'll quote it as maintenance first, and you can still use this month's change."
-/** [Sable, approved] Gray charge note on each live add-on card; {price} from ADDONS. */
-export function addonChargeNote(cents: number): string {
-  const price = dollars(cents)
-  // Sable, Oct 4 9:29: "today" (same verb as the confirm) + the credit sentence; the confirm shows the exact amount.
-  return `Turning it on charges ${price} today for this billing period, then ${price} each month. Any account credit is used first. If you turn it off, it stays on until the period ends.`
-}
 /**
- * [Sable, approved] Help chat review step: a Starter plan without the +1 small edit add-on asks for a
- * small edit. The AI-builder sentence shows only while showAiEditQuota (ladder.ts) is true.
+ * Oct 18 (Cheke): replaces the old Starter "+1 small edit" add-on line. The Big change note and the add-on
+ * charge note were removed with the add-ons.
  */
-export function starterSmallEditAddonLine(show: boolean = showAiEditQuota): string {
-  const price = dollars(addonById('small_edit')!.monthlyCents)
-  const base = `Small edits are ${price} with the ${ADDON_NAMES.small_edit} add-on. Turn it on and we'll take care of it this month. You can turn it off anytime.`
-  return show ? `${base} Or make the change yourself with the AI builder, at no extra cost.` : base
+export function starterSmallEditAddonLine(): string {
+  return needMoreEditsLine('starter') ?? ''
 }
 export const addonPriceLine = (cents: number) => `${dollars(cents)}/month`
 /** New checkout (no plan yet): turning one on would push Starter past its total; the tip goes down right away (Sable 9:29: same verb). */
@@ -564,10 +555,6 @@ export function planTotalBreakdown(stepName: string, stepCents: number, addonCen
   return parts.join(' · ')
 }
 export const planTotalLine = (totalCents: number) => `${dollars(totalCents)}/month`
-/** Dashboard: Big change uses this period. */
-export const bigChangeLine = (used: number, of: number) => `Big change: ${used} of ${of} used this period`
-/** Admin. */
-export const ADMIN_MARK_BIG_CHANGE = 'Mark as big change'
 /** Plan strip / dashboard: add-ons part ("+ $10.75 add-ons"). */
 export const planStripAddons = (cents: number) => ` + ${dollars(cents)} add-ons`
 /** Cancel page price line with add-ons: "$35.00 + $10.75 add-ons + $4.00 tip = $49.75/month" (tip part only when > 0). */

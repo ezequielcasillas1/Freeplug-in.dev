@@ -3,7 +3,8 @@ import { CreditCard, Calendar, ArrowRight } from 'lucide-react'
 import type { SubscriptionDetail } from './dashboard-actions'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
-import { addonsPendingEndLine, bigChangeLine } from '@/lib/plans/ladder-copy'
+import { addonsPendingEndLine } from '@/lib/plans/ladder-copy'
+import { editsIncludedLine, needMoreEditsLine } from '@/lib/plans/edits-copy'
 import {
   CHANGE_PLAN_LINK,
   INCLUDED_EDIT_LINE,
@@ -154,10 +155,17 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                       {INCLUDED_EDIT_LINE(sub.includedEdit.used, sub.includedEdit.available)}
                     </p>
                   ) : null}
-                  {sub.bigChange ? (
-                    <p className="text-sm text-gray-700 mt-1" data-testid="big-change">
-                      {bigChangeLine(sub.bigChange.used, sub.bigChange.available)}
-                    </p>
+                  {sub.editsIncluded ? (
+                    <div data-testid="edits-included-area">
+                      <p className="text-sm text-gray-700 mt-1" data-testid="edits-included">
+                        {editsIncludedLine(sub.editsIncluded)}
+                      </p>
+                      {sub.editStepId && !sub.editsIncluded.unlimited && needMoreEditsLine(sub.editStepId) ? (
+                        <p className="text-xs text-gray-500 mt-0.5" data-testid="edits-need-more">
+                          {needMoreEditsLine(sub.editStepId)}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : null}
                   {sub.addonsEnding ? (
                     <p className="text-sm text-amber-800 mt-1" data-testid="home-addons-ending">

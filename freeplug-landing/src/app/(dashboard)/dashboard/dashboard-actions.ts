@@ -16,7 +16,8 @@ import { isTipPrice } from '@/lib/plans/tips'
 import { isAddonPrice } from '@/lib/plans/addons'
 import { ADDON_NAMES, renewalCarriedLine, renewalLineText } from '@/lib/plans/ladder-copy'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
-import type { Entitlements } from '@/lib/plans/ladder'
+import type { Entitlements, PlanStepId } from '@/lib/plans/ladder'
+import { editsIncluded, type EditsIncluded } from '@/lib/plans/edit-allowance'
 import { periodStartDate } from '@/lib/plans/included-edits'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { formatPlanEndDate, isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
@@ -62,7 +63,10 @@ export type SubscriptionDetail = {
   /** Included small edit this billing period (Fast lane+ or legacy Plus/Pro); null = not included / unknown. */
   includedEdit?: { used: number; available: number } | null
   /** Big change add-on (Oct 4): used this period of the available one. */
-  bigChange?: { used: number; available: number } | null
+  /** Oct 18: plan edits + edit pack - used this period ("Included" on the dashboard). */
+  editsIncluded?: EditsIncluded | null
+  /** Plan step id, for the edit pack line. */
+  editStepId?: PlanStepId | null
   /** Add-ons that end at the period end (turned off, or dropped by a planned switch). */
   addonsEnding?: { names: string[]; date: string } | null
   /** A downgrade waiting for the next billing date (Lina §3c); null = none or unknown. */
@@ -273,7 +277,8 @@ export async function getEnhancedDashboardData(
           created: stripeTimestampToDate(sub.created) ?? new Date(0),
           entitlements,
           includedEdit: null,
-          bigChange: null,
+          editsIncluded: null,
+          editStepId: null,
           pendingChange,
           addonsEnding,
         })
@@ -283,30 +288,33 @@ export async function getEnhancedDashboardData(
         }
       }
 
-      // Included small edit: one per billing period, counted in included_edit_uses (owner can
-      // select own rows). A missing table or a read error just hides the line.
+      // Edits "Included" (Oct 18): plan edits + edit pack - edits used this billing period (included_edit_uses,
+      // owner can select own rows). Growth = Unlimited. A read error just hides the line. Legacy plans keep
+      // the old one-edit line. The edit pack has no Stripe price yet, so hasEditPack is false for now.
       for (const detail of subscriptions) {
-        const avail = detail.entitlements?.includedEditsPerMonth ?? 0
+        const ent = detail.entitlements
         const start = periodStartDate(detail.currentPeriodStart)
-        if (avail < 1 || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
+        if (!ent || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
+        if (ent.step && !ent.legacy) {
+          const { count, error: useErr } = await supabase
+            .from('included_edit_uses')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('period_start', start)
+          if (!useErr) {
+            detail.editsIncluded = editsIncluded({ stepId: ent.step.id, hasEditPack: false, used: count ?? 0 })
+            detail.editStepId = ent.step.id
+          }
+          continue
+        }
+        const avail = ent.includedEditsPerMonth ?? 0
+        if (avail < 1) continue
         const { count, error: useErr } = await supabase
           .from('included_edit_uses')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .eq('period_start', start)
         if (!useErr) detail.includedEdit = { used: count ?? 0, available: avail }
-      }
-      // Big change add-on (Oct 4): counted in big_change_uses the same way; hidden on any error.
-      for (const detail of subscriptions) {
-        const avail = detail.entitlements?.bigChangesPerMonth ?? 0
-        const start = periodStartDate(detail.currentPeriodStart)
-        if (avail < 1 || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
-        const { count, error: useErr } = await supabase
-          .from('big_change_uses')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('period_start', start)
-        if (!useErr) detail.bigChange = { used: count ?? 0, available: avail }
       }
 
       // No ledger rows yet (e.g. the invoice.paid webhook has not landed): the earliest start of the

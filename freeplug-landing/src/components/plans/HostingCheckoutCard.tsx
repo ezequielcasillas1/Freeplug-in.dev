@@ -18,6 +18,7 @@ import type {
 import { TipSlider, tipTotalText } from './TipSlider'
 import { TipChangeBox } from './TipChangeBox'
 import { AddonsBlock, type ConfirmTotals } from './AddonsBlock'
+import { EDITS_COPY_EN, PLAN_EDIT_EXPLANATIONS, editPackLine } from '@/lib/plans/edits-copy'
 import { PLAN_STEPS, type AddonId, type PlanStep, type PlanStepId } from '@/lib/plans/ladder'
 import { addonConfigCents } from '@/lib/plans/addons'
 import { tipRangeFor } from '@/lib/plans/tips'
@@ -454,7 +455,8 @@ export function HostingCheckoutCard({
   function linesFor(step: PlanStep): string[] {
     const aiLine = aiEditsLine(step) // null while showAiEditQuota (ladder.ts) is false
     const i = indexOf(step.id)
-    return [...(i === 0 ? STARTER_BASE_LINES : step.adds.map((perk) => PERK_LINES[perk])), ...(aiLine ? [aiLine] : [])]
+    // Oct 18: the old "one small edit" perk line is replaced by the plan's edit line under the list.
+    return [...(i === 0 ? STARTER_BASE_LINES : step.adds.filter((perk) => perk !== 'includedSmallEdit').map((perk) => PERK_LINES[perk])), ...(aiLine ? [aiLine] : [])]
   }
 
   function price(step: PlanStep, muted?: boolean) {
@@ -509,6 +511,16 @@ export function HostingCheckoutCard({
             <li key={line}>{line}</li>
           ))}
         </ul>
+        {PLAN_EDIT_EXPLANATIONS[step.id] ? (
+          <span className="mt-2 block text-xs text-gray-500" data-testid="plan-edit-explanation">
+            {PLAN_EDIT_EXPLANATIONS[step.id]}
+          </span>
+        ) : null}
+        {PLAN_EDIT_EXPLANATIONS[step.id] && editPackLine(step.id) ? (
+          <span className="mt-1 block text-xs text-gray-500" data-testid="plan-edit-pack">
+            {editPackLine(step.id)}
+          </span>
+        ) : null}
       </>
     )
   }
@@ -824,6 +836,9 @@ export function HostingCheckoutCard({
         <div className={cn('grid gap-2', columns ? `lg:gap-3 ${COLS[main.length] ?? ''}` : '')}>
           {main.map((step) => pickRow(step))}
         </div>
+        <p className="mt-2 text-xs text-gray-500" data-testid="plan-list-maintenance-note">
+          {EDITS_COPY_EN.planListNote}
+        </p>
         {soon.length > 0 ? (
           <div className="mt-4" data-testid="coming-soon-group">
             <div className="mb-2 hidden items-center gap-3 sm:flex">

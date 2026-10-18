@@ -25,6 +25,7 @@ import { getClaimedSiteForUser, getSiteDetails } from '@/lib/outreach/server'
 import { organicTracker, outreachTracker } from '@/lib/outreach/tracker'
 import { TRACKER_LIVE_WAITING } from '@/lib/outreach/copy'
 import { ChangeRequestsCard } from './ChangeRequestsCard'
+import { ownershipTotals, type OwnershipEntry } from '@/lib/buyout/ownership'
 import {
   CUSTOMER_CHANGE_REQUEST_COLUMNS,
   CUSTOMER_CHANGE_REQUEST_LIMIT,
@@ -151,6 +152,13 @@ export default async function DashboardPage({ searchParams }: Props) {
     hasStripeCustomer: Boolean(p?.stripe_customer_id),
   })
 
+  // Oct 18: every dollar toward buyout (ownership_ledger, own rows via RLS). A read error hides the line.
+  const { data: ownershipRows, error: ownershipErr } = await supabase
+    .from('ownership_ledger')
+    .select('kind, amount_cents, clears_at')
+    .eq('profile_id', user.id)
+  const ownership = ownershipErr ? null : ownershipTotals((ownershipRows ?? []) as Pick<OwnershipEntry, 'kind' | 'amount_cents' | 'clears_at'>[])
+
   const intakeClosedInfo =
     !openRequest && latestRequest?.status === 'closed'
       ? { businessName: latestRequest.business_name?.trim() || 'Your request' }
@@ -242,6 +250,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         access={websiteAccess}
         alreadyRequested={openRequest?.is_buyout === true}
         onRequest={requestBuyoutQuote}
+        ownership={ownership}
       />
 
       <div className="grid gap-6 md:grid-cols-2">

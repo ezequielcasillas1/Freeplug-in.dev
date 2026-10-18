@@ -14,7 +14,7 @@ import { resolvePlanStep } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewAddonChange, previewPlanStepChange, previewTipChange, type AddonAction, type AddonChangeRefusal, type TipChangeRefusal } from '@/lib/stripe/change-plan'
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
-import { addonById, type AddonId } from '@/lib/plans/ladder'
+import { addonById, RETIRED_ADDON_IDS, type AddonId } from '@/lib/plans/ladder'
 import { ADDON_ERROR, ADDON_NAMES, ADDON_PRICE_UNCONFIRMED, ADDON_PENDING_REMOVAL, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonFinishing, addonKeepDone, addonOffDone, addonOnDone, addonPaymentFailed, addonRefunded, addonRefundFailed, addonsLockedBySwitch } from '@/lib/plans/ladder-copy'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
@@ -507,6 +507,8 @@ export async function previewAddonChangeAction(addonId: string, action: string):
   const addon = addonById(addonId)
   const act = parseAddonAction(action)
   if (!addon || !act) return { ok: false, message: ADDON_ERROR, prorationDate: null }
+  // Oct 18: retired add-ons can't be turned on again (turning one off or keeping it still works).
+  if (act === 'on' && RETIRED_ADDON_IDS.includes(addon.id)) return { ok: false, message: ADDON_ERROR, prorationDate: null }
   const prorationDate = Math.floor(Date.now() / 1000)
   try {
     const own = await ownLiveSubscription()
@@ -551,6 +553,7 @@ export async function changeAddonAction(addonId: string, action: string, opts: {
   const addon = addonById(addonId)
   const act = parseAddonAction(action)
   if (!addon || !act) return { ok: false, message: ADDON_ERROR }
+  if (act === 'on' && RETIRED_ADDON_IDS.includes(addon.id)) return { ok: false, message: ADDON_ERROR }
   if (opts.prorationDate !== undefined && (typeof opts.prorationDate !== 'number' || !Number.isSafeInteger(opts.prorationDate))) return { ok: false, message: ADDON_ERROR }
   const supabase = await createClient()
   const {

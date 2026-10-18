@@ -1,8 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import { adminMarkBigChange, adminMarkSmallEdit, adminSetWebsiteRequestStatus } from './actions'
-import { ADMIN_MARK_BIG_CHANGE } from '@/lib/plans/ladder-copy'
+import { adminMarkSmallEdit, adminSetWebsiteRequestStatus } from './actions'
 import { AdminQuickEmail } from './AdminQuickEmail'
 import { AdminBuyoutBadge, AdminBuyoutPriceCell } from './AdminBuyoutCell'
 
@@ -94,20 +93,6 @@ export function AdminRequestRow({
               }
             >
               Use included edit
-            </button>
-            <button
-              type="button"
-              disabled={pending}
-              data-testid="admin-mark-big-change"
-              className="rounded border border-zinc-300 px-2 py-0.5 text-xs text-zinc-700 disabled:opacity-50"
-              onClick={() =>
-                startTransition(async () => {
-                  const res = await adminMarkBigChange(row.id)
-                  if (!res.ok) window.alert(res.error)
-                })
-              }
-            >
-              {ADMIN_MARK_BIG_CHANGE}
             </button>
           </div>
         ) : null}

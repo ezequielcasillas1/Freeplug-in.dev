@@ -494,7 +494,8 @@ describe('POST /api/checkout/hosting', () => {
     })
   })
 
-  describe('add-ons at checkout (Oct 4)', () => {
+  // Oct 18 (Cheke): the "+1 small edit" and "Big change" add-ons are retired; these flows no longer exist.
+  describe.skip('add-ons at checkout (Oct 4)', () => {
     beforeEach(() => subsList.mockResolvedValue({ data: [] }))
 
     it('Starter + both add-ons + $8 tip: step x1, each add-on x1, tip x8 ($53.75); addons metadata', async () => {

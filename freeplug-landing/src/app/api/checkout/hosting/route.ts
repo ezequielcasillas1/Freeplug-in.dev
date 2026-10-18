@@ -10,7 +10,7 @@ import { resolvePlanStep } from '@/lib/plans/ladder'
 import { getAddonPriceId, getStepPriceId, getTipPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
 import { parseTipDollars, tipLineItems } from '@/lib/plans/tips'
 import { addonCapCheck, addonConfigCents, parseAddonIds } from '@/lib/plans/addons'
-import { addonById } from '@/lib/plans/ladder'
+import { addonById, RETIRED_ADDON_IDS } from '@/lib/plans/ladder'
 import {
   ALREADY_HAS_PLAN_MESSAGE,
   listLiveSubscriptions,
@@ -84,7 +84,8 @@ export async function POST(request: Request) {
     // Add-ons (Oct 4): known ids, each at most once; the step's cap (Starter $15) from the add-on
     // prices, which getAddonPriceId below validates against the same amounts (fails closed).
     const addons = parseAddonIds(body?.addons)
-    if (!addons) {
+    // Oct 18: the "+1 small edit" and "Big change" add-ons are retired and can't be bought at checkout.
+    if (!addons || addons.some((id) => RETIRED_ADDON_IDS.includes(id))) {
       return NextResponse.json({ error: 'Invalid add-ons.', code: 'invalid_addons' }, { status: 400 })
     }
     if (!addonCapCheck(step.id, addons.map((id) => ({ id, cents: addonById(id)!.monthlyCents }))).ok) {

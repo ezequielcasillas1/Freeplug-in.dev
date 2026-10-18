@@ -148,7 +148,8 @@ describe('Plans page billing', () => {
     expect(await screen.findByRole('button', { name: `Switch to Starter on ${short}` })).toBeEnabled()
   })
 
-  it('add-ons (Oct 4): a schedule that only ends an add-on is not a plan change; the card says when it ends', async () => {
+  // Oct 18: no add-on rows any more (retired add-ons).
+  it.skip('add-ons (Oct 4): a schedule that only ends an add-on is not a plan change; the card says when it ends', async () => {
     schedule = 'sub_sched_1'
     pendingKind = 'addons'
     liveAddonIds = ['small_edit', 'big_change']
@@ -233,7 +234,8 @@ describe('Aria 10:09 (option A), Lina: Resume worked but an add-on removal is st
     expect(box).not.toHaveAttribute('data-focus-ring')
   })
 
-  it('Lina 10:33: the add-on rows use the same focus style the box now uses (one Plans card focus style)', async () => {
+  // Oct 18: no add-on rows any more (retired add-ons).
+  it.skip('Lina 10:33: the add-on rows use the same focus style the box now uses (one Plans card focus style)', async () => {
     owedAddons = ['big_change']
     await renderPage({ focus: 'removal-owed' })
     const row = screen.getByTestId('addon-switch-small_edit')

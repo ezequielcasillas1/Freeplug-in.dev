@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
-import { ADDONS, COMING_SOON_ADDONS, entitlementsFor, type AddonDef, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
+import { COMING_SOON_ADDONS, VISIBLE_ADDONS, entitlementsFor, type AddonDef, type AddonId, type PlanStepId } from '@/lib/plans/ladder'
 import { ADDON_MIN_CHARGE_CENTS } from '@/lib/plans/addons'
 import type { AddonPreviewResponse, ChangeAddonResponse } from '@/app/(dashboard)/dashboard/billing-actions'
 import {
@@ -18,12 +18,10 @@ import {
   ADDONS_LEGACY_NOTE,
   ADDONS_LOCKED_BY_REMOVAL,
   ADDONS_STARTER_CAP_NOTE,
-  BIG_CHANGE_BIGGER_NOTE,
   COMING_SOON_LABEL,
   UPGRADE_CALCULATING,
   ADDON_CREDIT_COVERS,
   addonChargeAfterCreditLine,
-  addonChargeNote,
   addonAddedToNextBill,
   addonCarriedBreakdown,
   addonChargeNowLine,
@@ -405,17 +403,6 @@ export function AddonsBlock(props: Props) {
         <span className="mt-1 block text-sm text-gray-600" data-testid="addon-perk">
           {addonPerkLine(addon.id, { withIncludedEdit })}
         </span>
-        {addon.id === 'big_change' ? (
-          <span className="mt-1 block text-xs text-gray-500" data-testid="addon-bigger-note">
-            {BIG_CHANGE_BIGGER_NOTE}
-          </span>
-        ) : null}
-        {/* Sable (Oct 4): the charge note is for an add-on turned on on a live plan, not at checkout. */}
-        {props.mode === 'live' && addon.id !== 'visitor_snapshot' ? (
-          <span className="mt-1 block text-xs text-gray-500" data-testid="addon-charge-note">
-            {addonChargeNote(addon.monthlyCents)}
-          </span>
-        ) : null}
       </span>
     )
   }
@@ -526,6 +513,9 @@ export function AddonsBlock(props: Props) {
     )
   }
 
+  // Oct 18: the two paid add-ons are retired. No add-on (and no coming-soon card) left = no section at all.
+  if (VISIBLE_ADDONS.length === 0 && (COMING_SOON_ADDONS as readonly unknown[]).length === 0) return null
+
   if (props.mode === 'live' && props.legacy) {
     return (
       <section className={cn('mb-6', className)} aria-labelledby="addons-heading" data-testid="addons-block">
@@ -545,7 +535,7 @@ export function AddonsBlock(props: Props) {
         <h4 id="addons-heading" className="text-sm font-semibold text-gray-900">
           {ADDONS_HEADING}
         </h4>
-        {stepId === 'starter' ? (
+        {stepId === 'starter' && VISIBLE_ADDONS.length > 0 ? (
           <span className="text-xs text-gray-500" data-testid="addons-cap-note">
             {ADDONS_STARTER_CAP_NOTE}
           </span>
@@ -560,7 +550,7 @@ export function AddonsBlock(props: Props) {
         {pending?.kind === 'loading' ? UPGRADE_CALCULATING : pending ? [pending.question, ...todayLines(pending), ...pending.lines].join(' ') : (notice ?? '')}
       </p>
       <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
-        {ADDONS.map((addon) => {
+        {VISIBLE_ADDONS.map((addon) => {
           const isEnding = props.mode === 'live' && props.ending.includes(addon.id)
           return (
             <div key={addon.id} className="flex flex-col">

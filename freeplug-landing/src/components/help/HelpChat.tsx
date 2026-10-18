@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { GO_TO_PLANS } from '@/lib/plans/ladder-copy'
+import { EDITS_COPY_EN, MAINTENANCE_OPTION_HREF, fieldNoteParts } from '@/lib/plans/edits-copy'
 import {
   CHANGE_REQUEST_COPY as C,
   CHANGE_TYPES,
@@ -18,6 +19,9 @@ import type {
   HelpChangeRequestInput,
   HelpChangeRequestResult,
 } from '@/app/(dashboard)/dashboard/request-website/actions'
+
+/** Oct 18: the edit field note, split around its "one-time maintenance" link. */
+const NOTE = fieldNoteParts()
 
 type Props = {
   email: string
@@ -183,8 +187,16 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
           >
             <BotBubble>
               <label htmlFor="help-change-description">{C.step3}</label>
+              {/* Oct 18 edit explanation: hint + examples under the label (first edit field only). */}
+              <span id="help-change-edit-hint" className="mt-1 block text-xs text-gray-500" data-testid="edit-field-hint">
+                {EDITS_COPY_EN.fieldHint}
+              </span>
+              <span className="mt-0.5 block text-xs text-gray-500" data-testid="edit-field-examples">
+                {EDITS_COPY_EN.fieldExamples}
+              </span>
             </BotBubble>
             <textarea
+              aria-describedby="help-change-edit-hint help-change-edit-note"
               id="help-change-description"
               className={`${inputClass} resize-y`}
               rows={4}
@@ -195,6 +207,14 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
               value={draft.description}
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
             />
+            {/* Once, under the last edit field. Wraps on phones. */}
+            <p id="help-change-edit-note" className="text-xs text-gray-500 break-words" data-testid="edit-field-note">
+              {NOTE.before}
+              <Link href={MAINTENANCE_OPTION_HREF} className="underline underline-offset-2 hover:text-gray-700" data-testid="edit-field-maintenance-link">
+                {NOTE.link}
+              </Link>
+              {NOTE.after}
+            </p>
             <div className="flex gap-2">
               <Button type="button" variant="secondary" size="sm" onClick={() => setStep(2)}>
                 Back

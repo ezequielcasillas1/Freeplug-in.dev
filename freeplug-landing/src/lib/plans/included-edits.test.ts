@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { recordBigChange, recordIncludedEdit, type BigChangeStore, type IncludedEditStore } from './included-edits'
+import { recordIncludedEdit, type IncludedEditStore } from './included-edits'
 
 type Row = { user_id: string; period_start: string; request_id: string; slot?: number }
 
@@ -22,16 +22,7 @@ function db(opts: { noSlotColumn?: boolean } = {}) {
       return null
     },
   }
-  const bigStore: BigChangeStore = {
-    async insertUse(row) {
-      if (small.some((r) => r.request_id === row.request_id)) return { code: 'FP409', message: 'This request is already counted as a small edit.' }
-      if (big.some((r) => r.request_id === row.request_id)) return dup('big_change_uses_request_id_key')
-      if (big.some((r) => r.user_id === row.user_id && r.period_start === row.period_start)) return dup('big_change_uses_user_period_key')
-      big.push(row)
-      return null
-    },
-  }
-  return { small, big, smallStore, bigStore }
+  return { small, big, smallStore }
 }
 const period = new Date('2026-10-01T05:00:00Z')
 const next = new Date('2026-11-01T05:00:00Z')
@@ -69,25 +60,4 @@ describe('2 small edits a period (step edit + "+1 small edit" add-on)', () => {
   })
 })
 
-describe('Big change counting (one a period, never also a small edit)', () => {
-  const mark = (d: ReturnType<typeof db>, requestId: string, at = period, n = 1) => recordBigChange(d.bigStore, { userId: 'u1', requestId, bigChangesPerMonth: n, periodStart: at })
-  it('one a period; next period allowed', async () => {
-    const d = db()
-    expect(await mark(d, 'r1')).toEqual({ ok: true })
-    expect(await mark(d, 'r2')).toMatchObject({ ok: false, reason: 'already_used' })
-    expect(await mark(d, 'r3', next)).toEqual({ ok: true })
-  })
-  it('needs the add-on and a known period (nothing written)', async () => {
-    const d = db()
-    expect(await mark(d, 'r1', period, 0)).toMatchObject({ reason: 'not_included' })
-    expect(await recordBigChange(d.bigStore, { userId: 'u1', requestId: 'r1', bigChangesPerMonth: 1, periodStart: null })).toMatchObject({ reason: 'no_period' })
-    expect(d.big).toEqual([])
-  })
-  it('a request is counted in one table only, both directions', async () => {
-    const d = db()
-    await recordIncludedEdit(d.smallStore, { userId: 'u1', requestId: 'r1', includedEditsPerMonth: 1, periodStart: period })
-    expect(await mark(d, 'r1')).toMatchObject({ ok: false, reason: 'counted_elsewhere' })
-    expect(await mark(d, 'r2')).toEqual({ ok: true })
-    expect(await recordIncludedEdit(d.smallStore, { userId: 'u1', requestId: 'r2', includedEditsPerMonth: 2, periodStart: next })).toMatchObject({ ok: false, reason: 'counted_elsewhere' })
-  })
-})
+// Oct 18: Big change counting removed with the retired add-on (big_change_uses table kept, no longer written).

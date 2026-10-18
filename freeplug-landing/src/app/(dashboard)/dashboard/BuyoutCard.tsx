@@ -8,6 +8,9 @@ import {
   BUYOUT_DASHBOARD_HEADING,
 } from '@/lib/buyout/buyout'
 import { BuyoutRequestButton } from './BuyoutRequestButton'
+import { paidTowardOwnershipLine, stillClearingLine } from '@/lib/buyout/ownership'
+
+export type OwnershipSummary = { paidCents: number; clearingCents: number } | null
 
 type Props = {
   /** 'dashboard' = "Want to keep your website?" card; 'cancel' = "Keep your website" card. */
@@ -15,10 +18,12 @@ type Props = {
   alreadyRequested: boolean
   onRequest: () => Promise<BuyoutRequestResult>
   className?: string
+  /** Oct 18: "Paid toward ownership" (dashboard only); null hides it. */
+  ownership?: OwnershipSummary
 }
 
 /** Plain card: dashboard card style on the dashboard, benefit-card style on the cancel page. */
-export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '' }: Props) {
+export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '', ownership = null }: Props) {
   const dashboard = variant === 'dashboard'
   return (
     <section
@@ -34,6 +39,16 @@ export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '
       >
         {dashboard ? BUYOUT_DASHBOARD_HEADING : BUYOUT_CANCEL_HEADING}
       </h2>
+      {dashboard && ownership ? (
+        <div className="mb-3" data-testid="paid-toward-ownership">
+          <p className="text-lg font-bold text-gray-900">{paidTowardOwnershipLine(ownership.paidCents)}</p>
+          {ownership.clearingCents > 0 ? (
+            <p className="text-xs text-gray-500" data-testid="ownership-clearing">
+              {stillClearingLine(ownership.clearingCents)}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <p className={dashboard ? 'text-sm text-gray-600 mb-4' : 'text-sm text-gray-600 mt-1 mb-4'}>
         {dashboard ? BUYOUT_DASHBOARD_BODY : BUYOUT_CANCEL_BODY}
       </p>
@@ -47,10 +62,12 @@ export function DashboardBuyoutCard({
   access,
   alreadyRequested,
   onRequest,
+  ownership = null,
 }: {
   access: WebsiteAccess | null
   alreadyRequested: boolean
   onRequest: () => Promise<BuyoutRequestResult>
+  ownership?: OwnershipSummary
 }) {
   if (!showBuyoutCard(access)) return null
   return (
@@ -59,6 +76,7 @@ export function DashboardBuyoutCard({
       className="mb-8"
       alreadyRequested={alreadyRequested}
       onRequest={onRequest}
+      ownership={ownership}
     />
   )
 }

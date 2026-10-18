@@ -17,6 +17,8 @@ import { supabasePlanChangeLockStore } from '@/lib/plans/plan-change-lock'
 import { healOwedRemovals } from '@/lib/stripe/addon-removal-owed'
 import { supabaseRemovalOwedStore, type RemovalOwedDb } from '@/lib/stripe/addon-removal-owed-server'
 import { markWebhookEventProcessed, webhookEventState, type WebhookEventsDb } from '@/lib/stripe/webhook-events'
+import { chargeIdOfInvoice, recordChargePayment, recordDispute, recordInvoicePayment, recordRefund, supabaseOwnershipStore } from '@/lib/buyout/ownership'
+import { markQuoteInvoice, type QuoteWebhookDb } from '@/lib/maintenance-quotes/quotes'
 
 export const runtime = 'nodejs'
 
@@ -247,6 +249,15 @@ export async function POST(request: Request) {
       } catch (e) {
         console.error('[webhook] outreach invoice', e instanceof Error ? e.message : e)
       }
+      // Oct 18: a paid maintenance quote invoice -> the admin row badge turns Paid (idempotent update).
+      if (inv.metadata?.maintenance_quote_id && inv.id) {
+        try {
+          await markQuoteInvoice(admin as unknown as QuoteWebhookDb, inv.id, 'paid', invoicePaidAtIso(inv) ?? new Date().toISOString())
+        } catch (e) {
+          console.error('[webhook] maintenance quote paid', e instanceof Error ? e.message : e)
+          return NextResponse.json({ error: 'Quote not saved' }, { status: 500 })
+        }
+      }
       const customerId = getCustomerId(inv.customer)
       if (!customerId || inv.amount_paid <= 0) {
         break
@@ -292,6 +303,58 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Ledger row not saved' }, { status: 500 })
       }
       if (recorded === false) console.info('[webhook] invoice.paid already recorded', inv.id)
+      // Oct 18: every dollar toward buyout, keyed on the charge (charge.succeeded for the same charge is a no-op).
+      try {
+        const chargeId = await chargeIdOfInvoice(inv as unknown as Parameters<typeof chargeIdOfInvoice>[0], getStripe() as unknown as Parameters<typeof chargeIdOfInvoice>[1])
+        await recordInvoicePayment(supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0]), profile.id, inv, chargeId)
+      } catch (e) {
+        console.error('[webhook] ownership ledger (invoice)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'invoice.voided': {
+      try {
+        await markQuoteInvoice(admin as unknown as QuoteWebhookDb, (event.data.object as Stripe.Invoice).id as string, 'void', new Date().toISOString())
+      } catch (e) {
+        console.error('[webhook] maintenance quote void', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Quote not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'charge.succeeded':
+    case 'charge.refunded': {
+      const ch = event.data.object as Stripe.Charge
+      const store = supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0])
+      try {
+        const customerId = getCustomerId(ch.customer)
+        let profileId: string | undefined
+        if (customerId) {
+          const { data: rows } = await admin.from('profiles').select('id').eq('stripe_customer_id', customerId).limit(1)
+          profileId = rows?.[0]?.id as string | undefined
+        }
+        if (event.type === 'charge.succeeded') {
+          if (profileId) await recordChargePayment(store, profileId, ch)
+        } else {
+          await recordRefund(store, ch, profileId)
+        }
+      } catch (e) {
+        console.error('[webhook] ownership ledger (charge)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'charge.dispute.created':
+    case 'charge.dispute.updated':
+    case 'charge.dispute.closed':
+    case 'charge.dispute.funds_reinstated': {
+      const d = event.data.object as Stripe.Dispute
+      try {
+        await recordDispute(supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0]), d as unknown as Parameters<typeof recordDispute>[1])
+      } catch (e) {
+        console.error('[webhook] ownership ledger (dispute)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
       break
     }
     default:
