@@ -1393,7 +1393,7 @@
     },
     "save": "Save my choice",
     "keepsWorking": "Your site keeps working at {url} the whole time.",
-    "freeUrlFallback": "your free Freeplug web address",
+    "freeUrlFallback": "your Freeplug web address",
     "savedNote": "Saved. Check your email for the next steps.",
     "status": {
       "title": "Your domain status",

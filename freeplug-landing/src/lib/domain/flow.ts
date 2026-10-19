@@ -65,8 +65,8 @@ const TEMPLATE_KEY: Record<DomainKind, 'have' | 'buy-self' | 'we-buy'> = { have_
 export const domainTemplateName = (kind: DomainKind) => `domain-${TEMPLATE_KEY[kind]}`
 
 const FALLBACK = {
-  en: { business: 'your business', freeplugUrl: 'your free Freeplug web address', domain: 'your domain' },
-  es: { business: 'tu negocio', freeplugUrl: 'tu dirección web gratis de Freeplug', domain: 'tu dominio' },
+  en: { business: 'your business', freeplugUrl: 'your Freeplug web address', domain: 'your domain' },
+  es: { business: 'tu negocio', freeplugUrl: 'tu dirección web de Freeplug', domain: 'tu dominio' },
 }
 
 /** Lina's HTML with every value HTML-escaped. Subject is plain text (single line). */

@@ -1393,7 +1393,7 @@
     },
     "save": "Guardar mi elección",
     "keepsWorking": "Tu sitio sigue funcionando en {url} todo el tiempo.",
-    "freeUrlFallback": "tu dirección web gratis de Freeplug",
+    "freeUrlFallback": "tu dirección web de Freeplug",
     "savedNote": "Listo, lo guardamos. Revisa tu correo para ver los siguientes pasos.",
     "status": {
       "title": "Estado de tu dominio",
@@ -1403,7 +1403,7 @@
       "yourDomain": "tu dominio"
     },
     "errors": {
-      "domainInvalid": "Escribe un dominio como tunegocio.com",
+      "domainInvalid": "Escribe un dominio, como tunegocio.com.",
       "consentRequired": "Marca la casilla para continuar con esta opción.",
       "tryAgain": "Algo salió mal. Inténtalo de nuevo. Si sigue pasando, escríbenos a support@freeplug-in.dev."
     }
