@@ -62,7 +62,17 @@
         "alreadyHaveAccount": "Already have an account?"
       },
       "logIn": "Log in",
-      "backSite": "Back to site"
+      "backSite": "Back to site",
+      "claim": {
+        "claimingFor": "Claiming the website for {name}",
+        "heading": "Create your account",
+        "body": "We've filled in your business name and email. Check them and choose a password.",
+        "bodyNameOnly": "We've filled in your business name. Check it, add your email, and choose a password.",
+        "button": "Create account",
+        "signInPrompt": "Already have an account?",
+        "signInLink": "Sign in",
+        "backLink": "Back to your preview"
+      }
     }
   },
   "dashboard": {
