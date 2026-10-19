@@ -71,7 +71,15 @@
         "button": "Crear cuenta",
         "signInPrompt": "¿Ya tienes cuenta?",
         "signInLink": "Iniciar sesión",
-        "backLink": "Volver a tu vista previa"
+        "backLink": "Volver a tu vista previa",
+        "stepLine": "Paso {n} de {total} · {name}",
+        "stepAria": "Paso {n} de {total}",
+        "stepNames": {
+          "account": "Cuenta",
+          "details": "Tus datos",
+          "plan": "Plan de hosting",
+          "card": "Agregar tarjeta"
+        }
       }
     }
   },
