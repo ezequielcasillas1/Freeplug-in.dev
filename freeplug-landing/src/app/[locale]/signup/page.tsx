@@ -106,7 +106,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
               <div className="w-full border-t border-zinc-200" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or</span>
+              <span className="px-2 bg-white text-gray-500">{t('or')}</span>
             </div>
           </div>
         </>
@@ -117,7 +117,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
         {claimSite ? (
           <div>
             <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">
-              Business name
+              {t('businessName')}
             </label>
             <input
               id="business_name"
@@ -131,7 +131,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
         ) : null}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+            {t('email')}
           </label>
           <input
             id="email"
@@ -145,7 +145,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
         </div>
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
+            {t('password')}
           </label>
           <input
             id="password"
@@ -159,7 +159,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
         </div>
         <div>
           <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 mb-1">
-            Confirm password
+            {t('confirmPassword')}
           </label>
           <input
             id="confirm"
