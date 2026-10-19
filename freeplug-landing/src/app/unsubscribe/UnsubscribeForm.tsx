@@ -4,7 +4,7 @@ import { useActionState } from 'react'
 import { confirmUnsubscribe, type UnsubscribeState } from './actions'
 import { UNSUBSCRIBE_COPY as C } from './copy'
 
-export function UnsubscribeForm({ email, t, e }: { email: string; t?: string; e?: string }) {
+export function UnsubscribeForm({ email, t }: { email: string; t: string }) {
   const [state, action, pending] = useActionState<UnsubscribeState, FormData>(confirmUnsubscribe, { status: 'idle' })
   if (state.status === 'done') {
     return (
@@ -16,8 +16,7 @@ export function UnsubscribeForm({ email, t, e }: { email: string; t?: string; e?
   return (
     <form action={action} className="space-y-6" data-testid="unsubscribe-form">
       <p className="text-lg text-gray-700">{C.confirm(email)}</p>
-      {t ? <input type="hidden" name="t" value={t} /> : null}
-      {e ? <input type="hidden" name="e" value={e} /> : null}
+      <input type="hidden" name="t" value={t} />
       <button
         type="submit"
         disabled={pending}

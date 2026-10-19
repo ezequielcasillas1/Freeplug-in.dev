@@ -1,6 +1,6 @@
 /**
  * Unsubscribe links (Oct 19, Cheke). A link carries the recipient either as a signed token
- * (`?t=<b64url(email)>.<b64url(HMAC-SHA256(email, UNSUBSCRIBE_SECRET))>`) or as a plain email (`?e=`).
+ * (`?t=<b64url(email)>.<b64url(HMAC-SHA256(email, UNSUBSCRIBE_SECRET))>`) only.
  * The cold-email sender (/workspace/cold-email-sender/cold-email.js) signs with the same secret.
  * Web Crypto only, so it runs on Cloudflare Workers.
  */
@@ -53,17 +53,13 @@ export async function verifyUnsubscribeToken(token: string, secret: string | und
   return diff === 0 ? e : null
 }
 
-/** The recipient a link names: a valid signed token wins; else a plain `e=` email. */
+/** The recipient a link names: a valid SIGNED token only (Luma QA Oct 19: no plain-email links). */
 export async function recipientFromParams(
-  params: { t?: string | string[]; e?: string | string[] },
+  params: { t?: string | string[] },
   secret = process.env.UNSUBSCRIBE_SECRET
-): Promise<{ email: string; kind: 'signed' | 'email' } | null> {
+): Promise<{ email: string; kind: 'signed' } | null> {
   const t = Array.isArray(params.t) ? params.t[0] : params.t
-  const e = Array.isArray(params.e) ? params.e[0] : params.e
-  if (t) {
-    const v = await verifyUnsubscribeToken(t, secret)
-    if (v) return { email: v, kind: 'signed' }
-  }
-  const plain = normalizeEmail(e)
-  return plain ? { email: plain, kind: 'email' } : null
+  if (!t) return null
+  const v = await verifyUnsubscribeToken(t, secret)
+  return v ? { email: v, kind: 'signed' } : null
 }

@@ -8,8 +8,8 @@ import { UNSUBSCRIBE_COPY as C } from './copy'
 export const metadata: Metadata = { title: 'Unsubscribe | Freeplug', robots: { index: false } }
 export const dynamic = 'force-dynamic'
 
-/** Oct 19: confirm page for the cold-email unsubscribe link (?t=signed token or ?e=email). Same shell as the 404. */
-export default async function UnsubscribePage({ searchParams }: { searchParams: Promise<{ t?: string; e?: string }> }) {
+/** Oct 19: confirm page for the cold-email unsubscribe link (?t=signed token only). Same shell as the 404. */
+export default async function UnsubscribePage({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
   const sp = await searchParams
   const who = await recipientFromParams(sp)
   return (
@@ -20,7 +20,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-40 pb-24 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-8">{C.heading}</h1>
           {who ? (
-            <UnsubscribeForm email={who.email} t={who.kind === 'signed' ? sp.t : undefined} e={who.kind === 'email' ? who.email : undefined} />
+            <UnsubscribeForm email={who.email} t={sp.t!} />
           ) : (
             <p className="text-lg text-gray-700" data-testid="unsubscribe-invalid">{C.invalid}</p>
           )}

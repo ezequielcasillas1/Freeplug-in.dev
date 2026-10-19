@@ -9,7 +9,7 @@ import { defaultOptOutStore, recordOptOut } from '@/lib/unsubscribe/store'
 export async function POST(request: Request) {
   const url = new URL(request.url)
   const who = await recipientFromParams({ t: url.searchParams.get('t') ?? undefined })
-  if (!who || who.kind !== 'signed') return NextResponse.json({ ok: false }, { status: 400 })
+  if (!who) return NextResponse.json({ ok: false }, { status: 400 })
   const r = await recordOptOut(await defaultOptOutStore(), { email: who.email, source: 'one_click', tokenKind: 'signed', userAgent: request.headers.get('user-agent') })
   return NextResponse.json({ ok: r.ok }, { status: r.ok ? 200 : 500 })
 }
