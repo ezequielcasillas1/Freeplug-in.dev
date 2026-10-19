@@ -144,12 +144,10 @@ export async function adminSetProfileCumulativeWebsiteValuePaid(
   if (!uuidSchema.safeParse(profileId).success) {
     return { ok: false, error: 'Invalid profile id' }
   }
-  const t = dollarsRaw.trim()
-  const n = Number(t)
-  if (t === '' || !Number.isFinite(n) || !Number.isInteger(n) || n < 0 || n > 500_000) {
-    return { ok: false, error: 'Use whole dollars from 0 to 500,000.' }
-  }
-  const cumulative_website_value_paid_cents = n * 100
+  // Oct 19: same rule as the buyout price, whole dollars $1 to $2,000 (BUYOUT_PRICE_ERROR).
+  const parsed = parseBuyoutPriceInput(dollarsRaw)
+  if (!parsed.ok) return parsed
+  const cumulative_website_value_paid_cents = parsed.cents
   let admin
   try {
     admin = createAdminClient()

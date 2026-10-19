@@ -48,9 +48,9 @@ describe('buyout request notes carry the picked tier (informational only)', () =
 })
 
 describe('override cap migration (Luma QA Oct 19)', () => {
-  it('adds CHECK (buyout_price_cents <= 200000)', async () => {
+  it('adds CHECK whole dollars $1..$2,000', async () => {
     const { readFileSync } = await import('node:fs')
     const sql = readFileSync(`${__dirname}/../../../supabase/migrations/20261019100000_buyout_price_cap_2000.sql`, 'utf8')
-    expect(sql).toMatch(/check \(buyout_price_cents is null or buyout_price_cents <= 200000\)/)
+    expect(sql).toContain('check (buyout_price_cents is null or (buyout_price_cents between 100 and 200000 and buyout_price_cents % 100 = 0))')
   })
 })
