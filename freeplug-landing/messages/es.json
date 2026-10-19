@@ -62,7 +62,17 @@
         "alreadyHaveAccount": "¿Ya tienes cuenta?"
       },
       "logIn": "Iniciar sesión",
-      "backSite": "Volver al sitio"
+      "backSite": "Volver al sitio",
+      "claim": {
+        "claimingFor": "Reclamando el sitio web de {name}",
+        "heading": "Crea tu cuenta",
+        "body": "Ya llenamos el nombre de tu negocio y tu correo. Revísalos y elige una contraseña.",
+        "bodyNameOnly": "Ya llenamos el nombre de tu negocio. Revísalo, agrega tu correo y elige una contraseña.",
+        "button": "Crear cuenta",
+        "signInPrompt": "¿Ya tienes cuenta?",
+        "signInLink": "Inicia sesión",
+        "backLink": "Volver a tu vista previa"
+      }
     }
   },
   "dashboard": {

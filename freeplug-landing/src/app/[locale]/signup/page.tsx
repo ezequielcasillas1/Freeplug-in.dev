@@ -57,7 +57,9 @@ function GoogleIcon() {
 
 export default async function SignUpPage({ params, searchParams }: Props) {
   const q = await searchParams
-  const t = await getTranslations({ locale: toAppLocale((await params).locale), namespace: 'auth.signup' })
+  const locale = toAppLocale((await params).locale)
+  const t = await getTranslations({ locale, namespace: 'auth.signup' })
+  const es = locale === 'es'
   const google = await isGoogleSignInEnabled()
   // Claim mode (outreach step 1): only with next=/claim and a valid preview cookie.
   const claimSite = q.next === '/claim' ? await currentPreviewSite() : null
@@ -67,15 +69,15 @@ export default async function SignUpPage({ params, searchParams }: Props) {
     <div className="rounded-2xl bg-white p-8 shadow-sm border border-zinc-200">
       {claimSite ? (
         <div className="mb-6 space-y-3">
-          <ClaimStepLine step={1} />
+          <ClaimStepLine step={1} es={es} />
           <p className="text-sm text-gray-500">
-            {fill(CLAIMING_FOR_LINE, { 'Business Name': claimSite.business_name })}
+            {es ? t('claim.claimingFor', { name: claimSite.business_name }) : fill(CLAIMING_FOR_LINE, { 'Business Name': claimSite.business_name })}
           </p>
         </div>
       ) : null}
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">{claimSite ? STEP1_HEADING : t('heading')}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">{claimSite ? (es ? t('claim.heading') : STEP1_HEADING) : t('heading')}</h1>
       <p className="text-sm text-gray-500 mb-6">
-        {claimSite ? step1Body(claimSite.contact_email) : t('subtitle')}
+        {claimSite ? (es ? t(claimSite.contact_email?.trim() ? 'claim.body' : 'claim.bodyNameOnly') : step1Body(claimSite.contact_email)) : t('subtitle')}
       </p>
 
       {q.error ? (
@@ -170,20 +172,20 @@ export default async function SignUpPage({ params, searchParams }: Props) {
           />
         </div>
         <Button type="submit" className="w-full" size="lg">
-          {claimSite ? STEP1_BUTTON : 'Sign up'}
+          {claimSite ? (es ? t('claim.button') : STEP1_BUTTON) : t('signUp')}
         </Button>
       </form>
 
       {/* Claim mode wording (Sable 12:35 AM); the regular sign-up screen is unchanged. */}
       <p className="mt-6 text-center text-sm text-gray-600">
-        {claimSite ? STEP1_SIGN_IN_PROMPT : 'Already have an account?'}{' '}
+        {claimSite ? (es ? t('claim.signInPrompt') : STEP1_SIGN_IN_PROMPT) : t('SignUpPage.alreadyHaveAccount')}{' '}
         <Link href={next ? '/login?next=/claim' : '/login'} className="font-medium text-[#ba3d3d] hover:underline">
-          {claimSite ? STEP1_SIGN_IN_LINK : 'Log in'}
+          {claimSite ? (es ? t('claim.signInLink') : STEP1_SIGN_IN_LINK) : t('logIn')}
         </Link>
       </p>
       <p className="mt-3 text-center">
         <Link href={claimSite ? '/preview' : '/'} className="text-sm text-gray-500 hover:text-[#ba3d3d]">
-          ← {claimSite ? STEP1_BACK_LINK : 'Back to site'}
+          ← {claimSite ? (es ? t('claim.backLink') : STEP1_BACK_LINK) : t('backSite')}
         </Link>
       </p>
     </div>
