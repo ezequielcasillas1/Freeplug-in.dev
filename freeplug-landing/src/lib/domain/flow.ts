@@ -225,11 +225,9 @@ export async function submitDomainRequest(
   return { ok: true, id: saved.id }
 }
 
-/** Admin count line, e.g. "Buy-for-me domain requests: 12 (3 live)". live/done both count as live. */
-export function adminBuyForMeSummary(rows: ReadonlyArray<{ kind: string; status: string }>): string {
-  const buy = rows.filter((r) => r.kind === 'buy_for_me')
-  const live = buy.filter((r) => domainStatusStep(r.status) === 'live').length
-  return `Buy-for-me domain requests: ${buy.length} (${live} live)`
+/** Admin count line from exact DB counts, e.g. "Buy-for-me domain requests: 12 (3 live)". */
+export function adminBuyForMeSummary(c: { total: number; live: number } | null): string {
+  return c ? `Buy-for-me domain requests: ${c.total} (${c.live} live)` : 'Buy-for-me domain requests: count unavailable'
 }
 
 /** Status step for the page: pending = Request saved, connecting, live/done = Live. */

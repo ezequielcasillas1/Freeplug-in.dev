@@ -1170,6 +1170,16 @@ export async function insertDomainRequestAsService(row: import('@/lib/domain/flo
   }
 }
 
+/** Admin: exact buy_for_me counts (head counts, not the 50-row list). null when a count fails. */
+export async function adminBuyForMeCounts(): Promise<{ total: number; live: number } | null> {
+  await assertAdminAccess()
+  const client = db()
+  const base = () => client.from('domain_requests').select('id', { count: 'exact', head: true }).eq('kind', 'buy_for_me')
+  const [all, live] = await Promise.all([base(), base().in('status', ['live', 'done'])])
+  if (all.error || live.error || all.count == null || live.count == null) return null
+  return { total: all.count, live: live.count }
+}
+
 export async function adminMarkDomainRequestDone(id: string): Promise<Result> {
   await assertAdminAccess()
   const { error } = await db().from('domain_requests').update({ status: 'done' }).eq('id', id)

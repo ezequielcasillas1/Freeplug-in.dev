@@ -159,15 +159,8 @@ describe('migration 20261019120000 (QA bug 1)', () => {
   })
 })
 
-it('admin buy-for-me count', () => {
-  const rows = [
-    { kind: 'buy_for_me', status: 'pending' },
-    { kind: 'buy_for_me', status: 'live' },
-    { kind: 'buy_for_me', status: 'done' },
-    { kind: 'buy_for_me', status: 'connecting' },
-    { kind: 'have_domain', status: 'live' },
-    { kind: 'need_domain', status: 'done' },
-  ]
-  expect(adminBuyForMeSummary(rows)).toBe('Buy-for-me domain requests: 4 (2 live)')
-  expect(adminBuyForMeSummary([])).toBe('Buy-for-me domain requests: 0 (0 live)')
+it('admin buy-for-me count (exact DB counts, not the 50-row list)', () => {
+  expect(adminBuyForMeSummary({ total: 137, live: 52 })).toBe('Buy-for-me domain requests: 137 (52 live)')
+  expect(adminBuyForMeSummary({ total: 0, live: 0 })).toBe('Buy-for-me domain requests: 0 (0 live)')
+  expect(adminBuyForMeSummary(null)).toBe('Buy-for-me domain requests: count unavailable')
 })

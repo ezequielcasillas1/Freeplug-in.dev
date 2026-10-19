@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { adminListDomainRequests, adminListOutreachSites } from '@/lib/outreach/server'
+import { adminBuyForMeCounts, adminListDomainRequests, adminListOutreachSites } from '@/lib/outreach/server'
 import { adminBuyForMeSummary } from '@/lib/domain/flow'
 import { adminOutreachStatus } from '@/lib/outreach/status'
 import { formatMonthly, resolveLegacyOutreachPlan, resolveOutreachStep } from '@/lib/outreach/plan'
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Outreach | Admin', robots: { index: 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminOutreachPage() {
-  const [sites, domains] = await Promise.all([adminListOutreachSites(), adminListDomainRequests()])
+  const [sites, domains, buyForMe] = await Promise.all([adminListOutreachSites(), adminListDomainRequests(), adminBuyForMeCounts()])
   const rows: AdminOutreachRowView[] = sites.map((s) => {
     const step = resolveOutreachStep(s.plan_step)
     const legacy = step ? null : resolveLegacyOutreachPlan(s.plan_hosting_cents, s.plan_addon_tier ?? 'none')
@@ -72,7 +72,7 @@ export default async function AdminOutreachPage() {
 
       <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">Domain requests ({openDomains.length} open)</h2>
-        <p className="mb-3 text-sm text-gray-700" data-testid="buy-for-me-count">{adminBuyForMeSummary(domains)}</p>
+        <p className="mb-3 text-sm text-gray-700" data-testid="buy-for-me-count">{adminBuyForMeSummary(buyForMe)}</p>
         {domains.length === 0 ? (
           <p className="text-sm text-gray-600">No domain requests.</p>
         ) : (
