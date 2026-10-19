@@ -57,6 +57,7 @@ const texasCities = [
     alt: 'The Alamo in downtown San Antonio',
     credit: {
       author: 'Thank You (22.5 Millions+) views',
+      authorEs: 'Gracias (más de 22.5 millones de vistas)',
       license: 'CC BY 2.0',
       licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
       source: 'https://commons.wikimedia.org/wiki/File:Alamo_-_52134465867.jpg',
@@ -182,7 +183,7 @@ export function OutreachSection() {
                   <CardContent className="p-4">
                     <p className="text-xs text-gray-500">
                       <a href={city.credit.source} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                        {CREDIT_WORDS[locale === 'es' ? 'es' : 'en'].photo}: {city.credit.author},{' '}
+                        {CREDIT_WORDS[locale === 'es' ? 'es' : 'en'].photo}: {locale === 'es' && 'authorEs' in city.credit && city.credit.authorEs ? city.credit.authorEs : city.credit.author},{' '}
                       </a>
                       <a href={city.credit.licenseUrl} target="_blank" rel="noopener noreferrer license" className="underline">
                         {city.credit.license}
