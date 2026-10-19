@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { BUY_FOR_ME_CONSENT, DOMAIN_EMAIL_REPLY_TO, domainChoiceSchema, domainStatusStep, renderDomainEmail, submitDomainRequest, type DomainSubmitDeps } from './flow'
+import { adminBuyForMeSummary, BUY_FOR_ME_CONSENT, DOMAIN_EMAIL_REPLY_TO, domainChoiceSchema, domainStatusStep, renderDomainEmail, submitDomainRequest, type DomainSubmitDeps } from './flow'
 
 function setup(over: Partial<DomainSubmitDeps> = {}, who: Partial<Awaited<ReturnType<DomainSubmitDeps['customer']>>> = {}) {
   const tasks: Promise<void>[] = []
@@ -157,4 +157,17 @@ describe('migration 20261019120000 (QA bug 1)', () => {
   it.each(['domain_requests_check', 'domain_requests_domain_check', 'domain_requests_kind_check', 'domain_requests_status_check'])('drops live constraint %s by its exact name', (n) => {
     expect(sql).toContain(`drop constraint if exists ${n};`)
   })
+})
+
+it('admin buy-for-me count', () => {
+  const rows = [
+    { kind: 'buy_for_me', status: 'pending' },
+    { kind: 'buy_for_me', status: 'live' },
+    { kind: 'buy_for_me', status: 'done' },
+    { kind: 'buy_for_me', status: 'connecting' },
+    { kind: 'have_domain', status: 'live' },
+    { kind: 'need_domain', status: 'done' },
+  ]
+  expect(adminBuyForMeSummary(rows)).toBe('Buy-for-me domain requests: 4 (2 live)')
+  expect(adminBuyForMeSummary([])).toBe('Buy-for-me domain requests: 0 (0 live)')
 })
