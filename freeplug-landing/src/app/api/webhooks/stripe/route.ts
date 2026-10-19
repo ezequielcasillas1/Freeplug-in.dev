@@ -19,6 +19,9 @@ import { supabaseRemovalOwedStore, type RemovalOwedDb } from '@/lib/stripe/addon
 import { markWebhookEventProcessed, webhookEventState, type WebhookEventsDb } from '@/lib/stripe/webhook-events'
 import { chargeIdOfInvoice, recordChargePayment, recordDispute, recordInvoicePayment, recordRefundObject, recordRefunds, supabaseOwnershipStore, type RefundLike } from '@/lib/buyout/ownership'
 import { markQuoteInvoice, type QuoteWebhookDb } from '@/lib/maintenance-quotes/quotes'
+import { ownerAlertForStripeEvent } from '@/lib/owner-alerts/stripe-events'
+import { scheduleOwnerAlert } from '@/lib/owner-alerts/send'
+import { ownerAlertCustomer } from '@/lib/owner-alerts/customer'
 
 export const runtime = 'nodejs'
 
@@ -387,6 +390,28 @@ export async function POST(request: Request) {
   }
 
   if (redeliver) return NextResponse.json({ error: redeliver }, { status: 500 })
+  // Owner alert (Oct 19): after every write above, in the background; deduped on the Stripe event id
+  // (email_sends ledger + Resend idempotency), so retries never send twice. Never affects the answer.
+  const ownerAlert = ownerAlertForStripeEvent(event)
+  if (ownerAlert) {
+    scheduleOwnerAlert(event.type, async () => {
+      let customerId = ownerAlert.customerId
+      const chargeRef = (event.data.object as { charge?: unknown }).charge
+      if (!customerId && typeof chargeRef === 'string') {
+        try {
+          customerId = getCustomerId((await getStripe().charges.retrieve(chargeRef)).customer)
+        } catch {
+          /* best effort */
+        }
+      }
+      const customer = await ownerAlertCustomer(admin as unknown as Parameters<typeof ownerAlertCustomer>[0], { customerId })
+      return {
+        alert: { kind: ownerAlert.kind, customer, details: ownerAlert.details, adminPath: ownerAlert.adminPath, at: new Date(event.created * 1000) },
+        dedupeKey: event.id,
+        stripeEventId: event.id,
+      }
+    })
+  }
   await markWebhookEventProcessed(eventsDb, event.id, event.type)
   return NextResponse.json(websiteAccess ? { received: true, websiteAccess } : { received: true })
 }

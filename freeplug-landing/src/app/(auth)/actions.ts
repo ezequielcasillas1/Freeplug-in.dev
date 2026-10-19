@@ -17,6 +17,8 @@ import { isResetThrottled } from '@/lib/auth/reset-rate-limit'
 import { runAfterResponse } from '@/lib/background'
 import { createAnonClient } from '@/lib/supabase/anon'
 import { syncLocaleCookieFromProfile } from '@/i18n/locale-cookie-sync'
+import { alertOwner } from '@/lib/owner-alerts/events'
+import { currentLocale } from '@/i18n/current-locale'
 import { isMailConfigured, sendMail } from '@/lib/email/mailer'
 import { RESET_COOKIE_NAME, resetCookieSecret, verifyResetToken } from '@/lib/auth/reset-cookie'
 import { sendPasswordResetEmail } from '@/lib/email/send'
@@ -273,6 +275,18 @@ export async function signUp(formData: FormData) {
     },
   })
 
+  // Owner alert: a NEW account only (an existing email comes back with no identities and gets none).
+  if (!error && data.user && (data.user.identities?.length ?? 0) > 0) {
+    const locale = await currentLocale().catch(() => 'en')
+    alertOwner({
+      kind: 'signup',
+      dedupeKey: `signup:${data.user.id}`,
+      userId: data.user.id,
+      email,
+      business: businessName || null,
+      details: [['Signed up with', 'Email'], ['Language', locale === 'es' ? 'Spanish' : 'English'], ['From', next === '/claim' ? 'Claim link' : null]],
+    })
+  }
   // A weak/invalid password gets its own message (it can't reveal an account); every other error and
   // "confirm your email" answer identically, so the response never says whether the email has an account.
   if (error && isWeakPasswordError(error)) {

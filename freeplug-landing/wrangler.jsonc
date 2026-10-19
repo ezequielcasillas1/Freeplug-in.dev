@@ -37,7 +37,10 @@
   "vars": {
     // Trust Cloudflare's CF-Connecting-IP for per-IP rate limits (src/lib/rate-limit/client-ip.ts).
     "TRUST_CF_CONNECTING_IP": "true",
-    "ADMIN_ROUTE_ENABLED": "true"
+    "ADMIN_ROUTE_ENABLED": "true",
+    // Owner alerts (src/lib/owner-alerts): one email per important customer event to this address.
+    // Not a secret. Remove it to turn the alerts off (unset = no alerts). Preview Worker: unset.
+    "OWNER_ALERT_EMAIL": "fplgn.dev.72@gmail.com"
   },
   "env": {
     // Rehearsal Worker on freeplug-preview.<account>.workers.dev with test keys and test data.

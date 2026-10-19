@@ -74,6 +74,7 @@ export function RequestWebsiteForm({
         <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">
           {t('businessName')}
         </label>
+        {focusMaintenance ? <input type="hidden" name="focus" value="maintenance" /> : null}
         <input
           id="business_name"
           name="business_name"

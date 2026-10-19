@@ -1,5 +1,6 @@
 'use server'
 
+import { alertOwner } from '@/lib/owner-alerts/events'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -193,6 +194,22 @@ export async function submitWebsiteRequest(
   if (saved.error) {
     return { error: saved.error }
   }
+  const maintenance = formData.get('focus') === 'maintenance'
+  const locale = await currentLocale().catch(() => 'en')
+  alertOwner({
+    kind: maintenance ? 'maintenance_quote_request' : 'website_request',
+    dedupeKey: `website-request:${saved.requestId ?? user.id}:${crypto.randomUUID()}`,
+    userId: user.id,
+    email: user.email ?? null,
+    business: parsed.data.business_name,
+    details: [
+      ['Phone', parsed.data.contact_phone || null],
+      ['Google Business', parsed.data.google_business_url || null],
+      [maintenance ? 'What they need' : 'Notes', parsed.data.notes || null],
+      ['Language', locale === 'es' ? 'Spanish' : 'English'],
+    ],
+    adminPath: '/admin/requests',
+  })
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/request-website')
@@ -323,6 +340,15 @@ export async function sendHelpChangeRequest(
   }
 
   const userId = user.id
+  alertOwner({
+    kind: 'change_request',
+    dedupeKey: `change-request:${rowId ?? crypto.randomUUID()}`,
+    userId,
+    email: user.email ?? null,
+    business: latest.business_name,
+    details: [['Type', c.changeType], ['Page', c.page], ['Change', c.description], ['Photo', c.photoName || null]],
+    adminPath: rowId ? `/admin/change-requests/${rowId}` : '/admin/requests',
+  })
   if (!rowId) {
     const reason = rowErr?.message ?? 'insert returned no id'
     console.error('[change-requests] row not saved; the change is in the request notes only', reason)
