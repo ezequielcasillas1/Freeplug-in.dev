@@ -1,14 +1,20 @@
+import enMessages from '../../../messages/en.json'
+import esMessages from '../../../messages/es.json'
 import { STEP_NAMES } from '@/lib/outreach/copy'
 
 /** Lina's step line: "Step 2 of 4 · Your details" with a thin red bar on a grey track. */
-/** Optional translated labels (ES from messages auth.signup.claim.step*); EN uses STEP_NAMES. */
-export type ClaimStepLabels = { line: (n: number, total: number, name: string) => string; aria: (n: number, total: number) => string; names: readonly string[] }
+/** Every label comes from messages auth.signup.claim.step* (EN equals the locked STEP_NAMES; copy.test guards it). */
+export const CLAIM_STEP_KEYS = ['account', 'details', 'plan', 'card'] as const
 
-export function ClaimStepLine({ step, labels }: { step: 1 | 2 | 3 | 4; labels?: ClaimStepLabels }) {
+const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in v ? String(v[k]) : m))
+
+/** Sync on purpose: also rendered by /claim (outside [locale]) and in client tests. */
+export function ClaimStepLine({ step, locale = 'en' }: { step: 1 | 2 | 3 | 4; locale?: string }) {
+  const c = (locale === 'es' ? esMessages : enMessages).auth.signup.claim
   const total = STEP_NAMES.length
-  const name = (labels?.names ?? STEP_NAMES)[step - 1]
-  const line = labels ? labels.line(step, total, name) : `Step ${step} of ${total} · ${name}`
-  const aria = labels ? labels.aria(step, total) : `Step ${step} of ${total}`
+  const name = c.stepNames[CLAIM_STEP_KEYS[step - 1]]
+  const line = fill(c.stepLine, { n: step, total, name })
+  const aria = fill(c.stepAria, { n: step, total })
   return (
     <div data-testid="claim-step-line">
       <p className="text-sm font-medium text-gray-700">
