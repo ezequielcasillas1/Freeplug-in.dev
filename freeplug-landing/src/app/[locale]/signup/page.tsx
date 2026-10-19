@@ -69,7 +69,18 @@ export default async function SignUpPage({ params, searchParams }: Props) {
     <div className="rounded-2xl bg-white p-8 shadow-sm border border-zinc-200">
       {claimSite ? (
         <div className="mb-6 space-y-3">
-          <ClaimStepLine step={1} es={es} />
+          <ClaimStepLine
+            step={1}
+            labels={
+              es
+                ? {
+                    line: (n, total, name) => t('claim.stepLine', { n, total, name }),
+                    aria: (n, total) => t('claim.stepAria', { n, total }),
+                    names: (['account', 'details', 'plan', 'card'] as const).map((k) => t(`claim.stepNames.${k}`)),
+                  }
+                : undefined
+            }
+          />
           <p className="text-sm text-gray-500">
             {es ? t('claim.claimingFor', { name: claimSite.business_name }) : fill(CLAIMING_FOR_LINE, { 'Business Name': claimSite.business_name })}
           </p>

@@ -71,7 +71,15 @@
         "button": "Crear cuenta",
         "signInPrompt": "¿Ya tienes cuenta?",
         "signInLink": "Iniciar sesión",
-        "backLink": "Volver a tu vista previa"
+        "backLink": "Volver a tu vista previa",
+        "stepLine": "Paso {n} de {total} · {name}",
+        "stepAria": "Paso {n} de {total}",
+        "stepNames": {
+          "account": "Cuenta",
+          "details": "Tus datos",
+          "plan": "Plan de hosting",
+          "card": "Agregar tarjeta"
+        }
       }
     }
   },
@@ -1073,7 +1081,7 @@
     "dashboardHeading": "¿Quieres quedarte con tu sitio web?",
     "dashboardBody": "Puedes comprar tu sitio web con un pago único. Calcularemos el valor de tu sitio y te diremos el precio exacto antes de que pagues.",
     "requestLabel": "Pedir cotización de compra",
-    "thanks": "Gracias. Recibimos tu solicitud de compra. Te diremos el precio antes de que pagues nada.",
+    "thanks": "Gracias. Recibimos tu solicitud de compra. Te diremos el precio antes de cobrarte nada.",
     "cancelHeading": "Quédate con tu sitio web",
     "cancelBody": "¿Prefieres quedarte con tu sitio web en lugar de alojarlo con nosotros? Puedes comprarlo con un pago único, según un cálculo de su valor. Verás el precio exacto antes de pagar.",
     "faqQuestion": "¿Puedo quedarme con mi sitio web si dejo el hosting de Freeplug?",
