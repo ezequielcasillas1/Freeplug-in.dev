@@ -26,54 +26,42 @@ import {
   techTileStagger,
   techTileVariants,
 } from '../animations/landing.variants'
+import { useTranslations } from 'next-intl'
+import { EN_MESSAGES } from '@/i18n/messages'
 
 /**
  * The stack 72 After builds local business sites on (Lina's layout + Sable's copy, Oct 3 2026).
  * One list: add a stack later by adding entries here. Icons are monochrome lucide icons, not brand logos.
  */
-export const techStack: ReadonlyArray<{ name: string; description: string; icon: LucideIcon }> = [
-  {
-    name: 'Envato template',
-    description: 'Premium templates our developers can access, enhanced with your details.',
-    icon: LayoutTemplate,
-  },
-  { name: 'HTML & CSS', description: 'Plain, lightweight pages that load quickly.', icon: Code },
-  { name: 'Bootstrap 5', description: 'A layout that fits phones, tablets and computers.', icon: Grid3x3 },
-  { name: 'Cloudflare', description: 'Hosts your site and provides the SSL certificate for https.', icon: Cloud },
-  {
-    name: 'Cloudflare Turnstile',
-    description: 'Filters out spam bots on your quote form, without picture puzzles.',
-    icon: ShieldCheck,
-  },
-  { name: 'Resend', description: 'Emails each quote request to you.', icon: Mail },
-]
+// Copy lives in messages/*.json under public.landing.techStack (card C3); names and descriptions
+// here are message keys, and `techStack` keeps the English (en.json) for tests and other callers.
+const STACK_KEYS = [
+  { name: 'envatoTemplate', description: 'premiumTemplatesDevelopersAccess', icon: LayoutTemplate },
+  { name: 'htmlCss', description: 'plainLightweightPagesLoad', icon: Code },
+  { name: 'bootstrap5', description: 'layoutFitsPhonesTablets', icon: Grid3x3 },
+  { name: 'cloudflare', description: 'hostsSiteProvidesSsl', icon: Cloud },
+  { name: 'cloudflareTurnstile', description: 'filtersOutSpamBots', icon: ShieldCheck },
+  { name: 'resend', description: 'emailsEachQuoteRequest', icon: Mail },
+] as const
+
+const EN_TECH = EN_MESSAGES.public.landing.techStack
+
+/**
+ * The stack 72 After builds local business sites on (Lina's layout + Sable's copy, Oct 3 2026).
+ * One list: add a stack later by adding entries here. Icons are monochrome lucide icons, not brand logos.
+ */
+export const techStack: ReadonlyArray<{ name: string; description: string; icon: LucideIcon }> = STACK_KEYS.map((k) => ({
+  name: EN_TECH.name[k.name],
+  description: EN_TECH.description[k.description],
+  icon: k.icon,
+}))
 
 const techFeatures = [
-  {
-    icon: Zap,
-    title: 'Fast Loading',
-    description: "Lightweight pages served from Cloudflare's network.",
-    gradient: 'from-amber-400 to-orange-500',
-  },
-  {
-    icon: Smartphone,
-    title: 'Mobile First',
-    description: 'A responsive layout that adjusts to phones, tablets and computers.',
-    gradient: 'from-blue-400 to-indigo-500',
-  },
-  {
-    icon: Search,
-    title: 'SEO Basics Included',
-    description: 'Clear page titles, descriptions and business details that search engines can read.',
-    gradient: 'from-green-400 to-emerald-500',
-  },
-  {
-    icon: Shield,
-    title: 'Secure Connection',
-    description: "HTTPS on every page through Cloudflare's SSL.",
-    gradient: 'from-purple-400 to-violet-500',
-  },
-]
+  { icon: Zap, title: 'fastLoading', description: 'lightweightPagesServedFrom', gradient: 'from-amber-400 to-orange-500' },
+  { icon: Smartphone, title: 'mobileFirst', description: 'responsiveLayoutAdjustsPhones', gradient: 'from-blue-400 to-indigo-500' },
+  { icon: Search, title: 'seoBasicsIncluded', description: 'clearPageTitlesDescriptions', gradient: 'from-green-400 to-emerald-500' },
+  { icon: Shield, title: 'secureConnection', description: 'httpsEveryPageThrough', gradient: 'from-purple-400 to-violet-500' },
+] as const
 
 const noopSubscribe = () => () => {}
 
@@ -91,6 +79,7 @@ export function TechStackSection() {
   // hydration (useReducedMotion reads the media query on the client only) so the markup never mismatches.
   const prefersReducedMotion = useReducedMotion() === true
   const reduceMotion = useHydrated() && prefersReducedMotion
+  const t = useTranslations('public.landing.techStack')
 
   return (
     <section id="services" className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
@@ -108,23 +97,23 @@ export function TechStackSection() {
             variants={fadeInUp}
             className="inline-block px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
           >
-            Our Technology
+            {t('ourTechnology')}
           </motion.span>
           <motion.h2
             variants={fadeInUp}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
           >
-            Built On{' '}
-            <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-              Proven Tools
-            </span>
+            {t.rich('builtProvenTools', {
+              span: (chunks) => (
+                <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">{chunks}</span>
+              ),
+            })}
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             className="text-lg text-gray-600 max-w-2xl mx-auto"
           >
-            Every local business site we build uses the same setup: lightweight pages, a layout that works on
-            phones, a quote form that filters out spam, and a secure https address.
+            {t('everyLocalBusinessSiteBuild')}
           </motion.p>
         </motion.div>
 
@@ -138,7 +127,7 @@ export function TechStackSection() {
           data-testid="tech-stack-tiles"
           data-reduced-motion={reduceMotion ? 'true' : undefined}
         >
-          {techStack.map((tech) => (
+          {STACK_KEYS.map((tech) => (
             <motion.div
               key={tech.name}
               variants={reduceMotion ? techTileAtRest : techTileVariants}
@@ -150,9 +139,9 @@ export function TechStackSection() {
                 <tech.icon className="w-7 h-7 sm:w-8 sm:h-8 text-gray-700" aria-hidden="true" strokeWidth={1.75} />
               </div>
               <span className="mt-3 text-xs sm:text-sm font-medium text-gray-600 leading-snug line-clamp-2 break-words">
-                {tech.name}
+                {t(`name.${tech.name}`)}
               </span>
-              <span className="hidden lg:block mt-1 text-xs text-gray-500 leading-snug">{tech.description}</span>
+              <span className="hidden lg:block mt-1 text-xs text-gray-500 leading-snug">{t(`description.${tech.description}`)}</span>
             </motion.div>
           ))}
         </motion.div>
@@ -172,8 +161,8 @@ export function TechStackSection() {
                   <div className={`w-14 h-14 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                     <feature.icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{t(`title.${feature.title}`)}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{t(`description.${feature.description}`)}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -201,15 +190,14 @@ export function TechStackSection() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                  Performance That{' '}
-                  <span className="text-[#ba3d3d]">Matters</span>
+                  {t.rich('performanceMatters', { span: (chunks) => <span className="text-[#ba3d3d]">{chunks}</span> })}
                 </h3>
                 <p className="text-gray-400 mb-8 leading-relaxed">
-                  Sites are built to be mobile-friendly and reasonably fast. We don&apos;t invent uptime or score guarantees.
+                  {t('sitesBuiltMobileFriendlyReasonably')}
                 </p>
                 
                 <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-3 text-sm text-gray-300">
-                  Responsive layouts · Clear quote request pages · Monthly hosting keeps it online
+                  {t('responsiveLayoutsClearQuoteRequest')}
                 </div>
               </div>
               

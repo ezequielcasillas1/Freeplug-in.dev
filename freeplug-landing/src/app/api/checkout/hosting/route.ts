@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
+import { localeKeyPart } from '@/lib/stripe/locale'
 import { NextResponse } from 'next/server'
 import { isSameOriginPost } from '@/app/claim/start/claim-redirect'
 import { emailBaseUrl } from '@/lib/site'
@@ -26,7 +27,8 @@ import {
 } from '@/lib/stripe/checkout-context'
 import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
 import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
-import { ADDON_TURN_OFF_FIRST, STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 
 export const runtime = 'nodejs'
 
@@ -38,6 +40,7 @@ export async function POST(request: Request) {
   if (h.get('origin') === 'null' || !isSameOriginPost(h.get('origin'), h.get('sec-fetch-site'), request.url, emailBaseUrl())) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+  const { ADDON_TURN_OFF_FIRST, STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } = ladderCopy(await currentLocale())
   try {
     const supabaseAuth = await createClient()
     const {
@@ -160,7 +163,7 @@ export async function POST(request: Request) {
       if (!customerId) {
         customerId = ownCustomerId
         if (customerId) await saveProfileCustomerId(checkoutUser.id, customerId)
-        else customerId = await createCheckoutCustomer(stripe, checkoutUser)
+        else customerId = await createCheckoutCustomer(stripe, checkoutUser, ctx.locale)
       }
     } catch (e) {
       console.error('[checkout/hosting] plan check failed', e)
@@ -220,7 +223,7 @@ export async function POST(request: Request) {
             addons.join(','),
             expiresAt,
             expiredSessionIds.join(','),
-          ].join('|')
+          ].join('|') + localeKeyPart(ctx.locale ?? 'en')
         )
         .digest('hex')
 

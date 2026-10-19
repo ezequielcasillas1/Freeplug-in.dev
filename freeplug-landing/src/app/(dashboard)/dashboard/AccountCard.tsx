@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ACCOUNT_ADD_CARD_LINE, ACCOUNT_FIRST_PAYMENT_LINE } from '@/lib/outreach/copy'
+import { useTranslations } from 'next-intl'
 import type { AccountBillingLine } from './outreach-dashboard'
 
 type Props = {
@@ -14,10 +14,11 @@ type Props = {
  * email: no bottom margin under it, no empty element after it.
  */
 export function AccountCard({ email, line, manageBilling }: Props) {
-  const text = line === 'add_card' ? ACCOUNT_ADD_CARD_LINE : line === 'first_payment' ? ACCOUNT_FIRST_PAYMENT_LINE : null
+  const t = useTranslations()
+  const text = line === 'add_card' ? t('claim.accountAddCardLine') : line === 'first_payment' ? t('claim.accountFirstPaymentLine') : null
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm" data-testid="account-card">
-      <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Account</h2>
+      <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">{t('dashboard.home.account')}</h2>
       <p className={line === 'none' ? 'text-gray-900' : 'text-gray-900 mb-4'} data-testid="account-email">
         {email}
       </p>

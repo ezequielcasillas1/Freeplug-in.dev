@@ -4,26 +4,28 @@ import { motion } from 'framer-motion'
 import { MessageCircle, Handshake, Building2, CheckCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { fadeInUp, staggerContainer, cardVariants } from '../animations/landing.variants'
+import { useTranslations } from 'next-intl'
 
 const bullets = [
   {
     icon: MessageCircle,
-    title: 'Outreach to owners who need a website',
-    description: 'Freeplug finds local businesses with a weak or missing website and invites them to get a free site.',
+    title: 'title.outreachOwnersWhoNeed',
+    description: 'description.freeplugFindsLocalBusinesses',
   },
   {
     icon: Handshake,
-    title: 'Hand-off to 72 After for the free build',
-    description: 'When an owner says yes, 72 After builds the site from a solid template, their real services, and clear Get-a-quote pages.',
+    title: 'title.handOff72After',
+    description: 'description.whenOwnerSaysYes',
   },
   {
     icon: Building2,
-    title: 'Monthly hosting keeps it online',
-    description: 'Once your site is live, you pay for monthly hosting, from $35 a month. Freeplug handles outreach, and 72 After builds the site.',
+    title: 'title.monthlyHostingKeepsOnline',
+    description: 'description.onceSiteLivePay',
   },
-]
+] as const // message keys under public.landing.about
 
 export function AboutSection() {
+  const t = useTranslations('public.landing.about')
   return (
     <section id="about" className="py-24 bg-white relative overflow-hidden">
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#ba3d3d]/5 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -41,26 +43,23 @@ export function AboutSection() {
             variants={fadeInUp}
             className="inline-block px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
           >
-            About Freeplug
+            {t('aboutFreeplug')}
           </motion.span>
           <motion.h2
             variants={fadeInUp}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
           >
-            What{' '}
-            <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-              Freeplug
-            </span>{' '}
-            does
+            {t.rich('freeplugDoes', {
+              span: (chunks) => (
+                <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">{chunks}</span>
+              ),
+            })}
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
           >
-            Freeplug is the outreach side. We find local businesses with a weak or missing website
-            and invite them to get a free site. When an owner says yes, 72 After builds the site
-            from a solid template, their real services, and clear Get-a-quote pages. Freeplug
-            connects the conversation. 72 After does the build.
+            {t('freeplugOutreachSide')}
           </motion.p>
         </motion.div>
 
@@ -79,8 +78,8 @@ export function AboutSection() {
                   <div className="w-14 h-14 bg-gradient-to-br from-[#ba3d3d] to-[#8a2e2e] rounded-2xl flex items-center justify-center mb-6 shadow-lg">
                     <bullet.icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{bullet.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{bullet.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{t(bullet.title)}</h3>
+                  <p className="text-gray-600 leading-relaxed">{t(bullet.description)}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -98,8 +97,7 @@ export function AboutSection() {
               <CheckCircle className="w-5 h-5 text-[#ba3d3d]" />
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Freeplug and 72 After work together: Freeplug handles owner outreach; 72 After builds
-              the free websites. We’re starting in Central Texas and growing from there.
+              {t('freeplug72AfterWorkTogether')}
             </p>
           </div>
         </motion.div>

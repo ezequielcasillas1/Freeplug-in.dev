@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
+import createNextIntlPlugin from "next-intl/plugin";
 import {
   PREVIEW_HEADER_SOURCES,
   PREVIEW_RESPONSE_HEADERS,
@@ -35,4 +36,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// next-intl (Spanish build, Oct 4): request config in src/i18n/request.ts.
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withNextIntl(nextConfig);

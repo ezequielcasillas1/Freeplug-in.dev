@@ -1,3 +1,6 @@
+import type { AppLocale } from '@/i18n/config'
+import { translatorFor } from '@/i18n/translate'
+import { intlLocale } from '@/i18n/format'
 import type { WebsiteAccess } from '@/lib/website-access'
 
 /**
@@ -73,9 +76,9 @@ export function parseBuyoutPriceInput(
 }
 
 /** "$1,200" / "$1,200.50" for a cents value (admin display). */
-export function formatBuyoutPrice(cents: number): string {
+export function formatBuyoutPrice(cents: number, locale: AppLocale = 'en'): string {
   const whole = cents % 100 === 0
-  return `$${(cents / 100).toLocaleString('en-US', {
+  return `$${(cents / 100).toLocaleString(intlLocale(locale), {
     minimumFractionDigits: whole ? 0 : 2,
     maximumFractionDigits: 2,
   })}`
@@ -133,13 +136,15 @@ export type BuyoutRequestResult =
   | { ok: true; alreadyRequested: boolean }
   | { ok: false; error: string }
 
-const GENERIC_ERROR = 'Something went wrong on our side. Try again later.'
-
 export async function recordBuyoutRequest(
   store: BuyoutStore,
   userId: string,
-  now: Date = new Date()
+  now: Date = new Date(),
+  locale: AppLocale = 'en'
 ): Promise<BuyoutRequestResult> {
+  // Customer-facing errors in the customer's language; the note block stays English (admin).
+  const t = translatorFor(locale, 'errors.buyout.error')
+  const GENERIC_ERROR = t('somethingWentWrongSide')
   const block = buyoutNoteBlock(now)
   // A lost race (another tab, a double click) just means re-reading: the second pass sees the
   // is_buyout flag the first one set and returns alreadyRequested.
@@ -153,7 +158,7 @@ export async function recordBuyoutRequest(
       if (notes.length > NOTES_MAX) {
         return {
           ok: false,
-          error: 'Your request notes are full. Email support@freeplug-in.dev to ask for a buyout quote.',
+          error: t('requestNotesFullEmail'),
         }
       }
       if (await store.markBuyoutIfUnchanged(open, notes, now)) {

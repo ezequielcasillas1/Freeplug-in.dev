@@ -16,6 +16,7 @@ import { PASSWORD_MIN_LENGTH, isGoogleOnlyUser, recoveryConfirmUrl } from '@/lib
 import { isResetThrottled } from '@/lib/auth/reset-rate-limit'
 import { runAfterResponse } from '@/lib/background'
 import { createAnonClient } from '@/lib/supabase/anon'
+import { syncLocaleCookieFromProfile } from '@/i18n/locale-cookie-sync'
 import { isMailConfigured, sendMail } from '@/lib/email/mailer'
 import { RESET_COOKIE_NAME, resetCookieSecret, verifyResetToken } from '@/lib/auth/reset-cookie'
 import { sendPasswordResetEmail } from '@/lib/email/send'
@@ -196,13 +197,15 @@ export async function signIn(formData: FormData) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data: signedIn, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) {
     // Record the failure (rate_check inserts a hit while under the limit).
     await rateCheck(AUTH_LIMITS.signInFailures, rateKey)
     await rateCheck(AUTH_LIMITS.signInFailuresPerIp, ipKey)
     redirect('/login?error=' + encodeURIComponent(SIGN_IN_FAILED_MESSAGE))
   }
+  // The account's language (profiles.locale) wins over whatever the cookie said before sign-in.
+  await syncLocaleCookieFromProfile(supabase, signedIn?.user?.id)
 
   await clearSignInFailures(rateKey)
   revalidatePath('/', 'layout')

@@ -7,6 +7,9 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { heroTextVariants, staggerContainer, fadeInUp, floatAnimation } from '../animations/landing.variants'
 import { VideoScene } from './VideoScene'
+import { useLocale, useTranslations } from 'next-intl'
+import { toAppLocale } from '@/i18n/config'
+import { publicHref } from '@/i18n/routing'
 
 function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
@@ -45,6 +48,8 @@ function FeaturePill({ icon: Icon, label }: { icon: typeof Code; label: string }
 }
 
 export function HeroSection() {
+  const t = useTranslations('public.landing')
+  const locale = toAppLocale(useLocale())
   return (
     <section
       id="hero"
@@ -89,55 +94,58 @@ export function HeroSection() {
                 rounded-full text-[#ba3d3d] text-sm font-semibold
               ">
                 <Sparkles size={16} className="animate-pulse" />
-                Freeplug outreach · 72 After builds
+                {t('hero.freeplugOutreach72AfterBuilds')}
               </span>
             </motion.div>
 
             <motion.div variants={heroTextVariants} className="space-y-2">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight">
-                Free websites for
-                <br />
-                <span className="relative inline-block mt-1">
-                  <span className="bg-gradient-to-r from-[#ba3d3d] via-[#c94a4a] to-[#8a2e2e] bg-clip-text text-transparent">
-                    local businesses
-                  </span>
-                  <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 0.8, delay: 1, ease: 'easeOut' }}
-                    className="absolute -bottom-1 left-0 right-0 h-3 bg-gradient-to-r from-[#ba3d3d]/20 to-[#8a2e2e]/20 rounded-full origin-left"
-                  />
-                </span>
+                {t.rich('hero.headline', {
+                  br: () => <br />,
+                  span: (chunks) => (
+                    <span className="relative inline-block mt-1">
+                      <span className="bg-gradient-to-r from-[#ba3d3d] via-[#c94a4a] to-[#8a2e2e] bg-clip-text text-transparent">
+                        {chunks}
+                      </span>
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ duration: 0.8, delay: 1, ease: 'easeOut' }}
+                        className="absolute -bottom-1 left-0 right-0 h-3 bg-gradient-to-r from-[#ba3d3d]/20 to-[#8a2e2e]/20 rounded-full origin-left"
+                      />
+                    </span>
+                  ),
+                })}
               </h1>
             </motion.div>
 
             <motion.div variants={heroTextVariants}>
               <GlassCard className="p-6">
                 <p className="text-gray-600 text-lg leading-relaxed">
-                  Freeplug reaches owners who need a site.{' '}
-                  <span className="font-semibold text-gray-800">72 After builds it for free.</span>{' '}
-                  Once it&apos;s live, monthly hosting keeps it online.
+                  {t.rich('hero.freeplugReachesOwnersWhoNeed', {
+                    span: (chunks) => <span className="font-semibold text-gray-800">{chunks}</span>,
+                  })}
                 </p>
               </GlassCard>
             </motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
-              <FeaturePill icon={Code} label="Modern Tech" />
-              <FeaturePill icon={Zap} label="Lightning Fast" />
-              <FeaturePill icon={Palette} label="Custom Design" />
-              <FeaturePill icon={Shield} label="Secure" />
+              <FeaturePill icon={Code} label={t('hero.label.modernTech')} />
+              <FeaturePill icon={Zap} label={t('hero.label.lightningFast')} />
+              <FeaturePill icon={Palette} label={t('hero.label.customDesign')} />
+              <FeaturePill icon={Shield} label={t('hero.label.secure')} />
             </motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link
-                href="/signup"
+                href={publicHref('/signup', locale)}
                 className={cn(
                   buttonVariants({ size: 'lg' }),
                   'group relative overflow-hidden bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] shadow-[0_8px_32px_rgba(186,61,61,0.35)] hover:shadow-[0_12px_40px_rgba(186,61,61,0.45)] transition-all duration-300 text-base px-8 border-0'
                 )}
               >
                 <span className="relative z-10 flex items-center">
-                  Request a free website
+                  {t('cTA.requestFreeWebsite')}
                   <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
@@ -148,12 +156,12 @@ export function HeroSection() {
                   'backdrop-blur-xl bg-white/70 border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white/90 text-gray-700 font-medium text-base px-8'
                 )}
               >
-                See where we work
+                {t('hero.seeWhereWork')}
               </a>
             </motion.div>
 
             <motion.p variants={fadeInUp} className="text-sm text-gray-500">
-              Outreach hub = freeplug-in.dev · Builds = 72 After
+              {t('hero.outreachHubFreeplugDevBuilds')}
             </motion.p>
           </motion.div>
 

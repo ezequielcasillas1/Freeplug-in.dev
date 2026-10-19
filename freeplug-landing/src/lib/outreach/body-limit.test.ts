@@ -26,7 +26,10 @@ describe('oversized server-action body (Vera QA #4)', () => {
     expect(readFileSync(path.join(root, 'next.config.ts'), 'utf8')).toMatch(/bodySizeLimit:\s*['"]6mb['"]/)
     const proxy = readFileSync(path.join(root, 'src/proxy.ts'), 'utf8')
     expect(proxy).toContain('await oversizedActionResponse(request)')
-    expect(proxy.indexOf('oversizedActionResponse(request)')).toBeLessThan(proxy.indexOf('updateSession(request)'))
+    expect(proxy.indexOf('oversizedActionResponse(request)')).toBeLessThan(proxy.indexOf('updateSession(request'))
+    // Spanish build (card §5 C2): next-intl runs inside the guard, i.e. after it and before updateSession.
+    expect(proxy.indexOf('oversizedActionResponse(request)')).toBeLessThan(proxy.indexOf('handleI18nRouting(request)'))
+    expect(proxy.indexOf('handleI18nRouting(request)')).toBeLessThan(proxy.indexOf('updateSession(request'))
   })
 })
 

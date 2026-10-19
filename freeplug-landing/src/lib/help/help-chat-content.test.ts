@@ -87,15 +87,34 @@ describe.skipIf(!existsSync(LOCKED_FILE))('help / FAQ page copy matches the lock
   const locked = (label: string) =>
     lines.findLast((l) => l.startsWith(`${label}  `))!.match(/  "(.*)"$/)![1]
   const page = (rel: string) => readFileSync(join(__dirname, '..', '..', 'app', rel), 'utf8')
+  // Spanish build: the dashboard Help page reads its copy from en.json (help.*), so the locked lines
+  // are checked against the English values it renders (plus any copy left in the source).
+  const enHelp = (): string => {
+    const en = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', 'messages', 'en.json'), 'utf8'))
+    const out: string[] = []
+    const walk = (v: unknown) => {
+      if (typeof v === 'string') out.push(v)
+      else if (v && typeof v === 'object') Object.values(v).forEach(walk)
+    }
+    walk(en.help)
+    return out.join('\n')
+  }
+  const helpPage = () => `${page('(dashboard)/dashboard/help/page.tsx')}\n${enHelp()}`
   const cases: [string, string][] = [
     ['help/page.tsx:85', '(dashboard)/dashboard/help/page.tsx'],
-    ['faq/page.tsx:26', 'faq/page.tsx'],
   ]
   for (const [label, rel] of cases) {
     it(label, () => {
-      expect(page(rel)).toContain(locked(label))
+      expect(rel.endsWith('help/page.tsx') ? helpPage() : page(rel)).toContain(locked(label))
     })
   }
+  // Spanish build (card C1): the public FAQ page moved to [locale]/faq and reads its copy from
+  // messages/en.json (the English lock); the locked line must be the value of the key it renders.
+  it('faq/page.tsx:26 (now en.json public.faq.answer.yesWebsiteDevelopmentFree)', () => {
+    const en = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', 'messages', 'en.json'), 'utf8'))
+    expect(en.public.faq.answer.yesWebsiteDevelopmentFree).toBe(locked('faq/page.tsx:26'))
+    expect(page('[locale]/faq/page.tsx')).toContain("'public.faq.answer.yesWebsiteDevelopmentFree'")
+  })
   // Hosting ladder (Oct 3): help/page.tsx:91 is a PLACEHOLDER until Sable re-locks it; the page and
   // the chat share one constant, so they cannot drift from each other.
   // Round 5b: Sable re-locked help/page.tsx:79 with the Manage-billing sentence (Oct 3, 3:15 PM CT).
@@ -113,7 +132,7 @@ describe.skipIf(!existsSync(LOCKED_FILE))('help / FAQ page copy matches the lock
   // close-request cancel instructions point to the dashboard's Cancel options link instead.
   it('cancel instructions say "choose Cancel options in your dashboard", not Manage billing', () => {
     const line = 'To cancel your plan, choose Cancel options in your dashboard.'
-    const help = page('(dashboard)/dashboard/help/page.tsx')
+    const help = helpPage()
     expect(help).toContain(line)
     expect(help).not.toMatch(/To cancel, open Manage billing/)
     const active = readFileSync(join(__dirname, '..', 'stripe', 'active-subscription.ts'), 'utf8')
@@ -126,7 +145,7 @@ describe.skipIf(!existsSync(LOCKED_FILE))('help / FAQ page copy matches the lock
     expect(CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE).toBe(locked('src/lib/stripe/active-subscription.ts:6'))
   })
   it('help b-5 (close a request) is the locked help/page.tsx:97 answer', () => {
-    const help = page('(dashboard)/dashboard/help/page.tsx').replace(/\\'/g, "'")
+    const help = helpPage().replace(/\\'/g, "'")
     expect(help).toContain(locked('src/app/(dashboard)/dashboard/help/page.tsx:97'))
   })
   it('the Priority help answer is the locked "help page (plans answer)" line, and no "front of our queue" anywhere', () => {

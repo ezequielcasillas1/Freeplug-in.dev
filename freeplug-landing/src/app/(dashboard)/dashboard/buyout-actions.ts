@@ -5,6 +5,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { recordBuyoutRequest, type BuyoutRequestResult } from '@/lib/buyout/buyout'
 import { supabaseBuyoutStore } from '@/lib/buyout/supabase-store'
+import { currentLocale } from '@/i18n/current-locale'
+import { translatorFor } from '@/i18n/translate'
 
 /**
  * "Request a buyout quote" (dashboard and cancel page). Adds the buyout request to the customer's
@@ -16,21 +18,23 @@ export async function requestBuyoutQuote(): Promise<BuyoutRequestResult> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'You must be signed in.' }
+  const locale = await currentLocale()
+  const t = translatorFor(locale, 'errors.buyout.error')
+  if (!user) return { ok: false, error: t('mustSigned') }
 
   let admin
   try {
     admin = createAdminClient()
   } catch {
-    return { ok: false, error: 'Something went wrong on our side. Try again later.' }
+    return { ok: false, error: t('somethingWentWrongSide') }
   }
 
   let result: BuyoutRequestResult
   try {
-    result = await recordBuyoutRequest(supabaseBuyoutStore(admin), user.id)
+    result = await recordBuyoutRequest(supabaseBuyoutStore(admin), user.id, new Date(), locale)
   } catch (e) {
     console.error('[buyout] request failed', e instanceof Error ? e.message : e)
-    return { ok: false, error: 'Something went wrong on our side. Try again later.' }
+    return { ok: false, error: t('somethingWentWrongSide') }
   }
   if (result.ok) {
     revalidatePath('/dashboard')

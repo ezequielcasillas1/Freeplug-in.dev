@@ -58,7 +58,7 @@ describe('OutreachSection Texas city photo credits', () => {
     expect(source.match(/author: '/g)).toHaveLength(5)
     expect(source.match(/licenseUrl: 'https:\/\/creativecommons\.org\/licenses\//g)).toHaveLength(5)
     expect(source.match(/source: 'https:\/\/commons\.wikimedia\.org\/wiki\/File:/g)).toHaveLength(5)
-    expect(source).toContain('Photo: {city.credit.author}')
+    expect(source).toContain('.photo}: {city.credit.author}') // en 'Photo' / es 'Foto' (CREDIT_WORDS)
     expect(source).toContain('{city.credit.license}')
     const credits = readFileSync(path.join(photoDir, 'CREDITS.md'), 'utf8')
     for (const f of files) expect(credits).toContain(path.basename(f))

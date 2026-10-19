@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { BUYOUT_REQUEST_LABEL, BUYOUT_THANKS, type BuyoutRequestResult } from '@/lib/buyout/buyout'
+import { useTranslations } from 'next-intl'
+import type { BuyoutRequestResult } from '@/lib/buyout/buyout'
 
 type Props = {
   alreadyRequested: boolean
@@ -15,6 +16,7 @@ type Props = {
  * After the request is sent, the thank-you line takes the button's place in the same card.
  */
 export function BuyoutRequestButton({ alreadyRequested, onRequest }: Props) {
+  const t = useTranslations('buyout')
   const [done, setDone] = useState(alreadyRequested)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -22,7 +24,7 @@ export function BuyoutRequestButton({ alreadyRequested, onRequest }: Props) {
   if (done) {
     return (
       <p className="text-sm font-medium text-gray-800" role="status" data-testid="buyout-thanks">
-        {BUYOUT_THANKS}
+        {t('thanks')}
       </p>
     )
   }
@@ -46,7 +48,7 @@ export function BuyoutRequestButton({ alreadyRequested, onRequest }: Props) {
           })
         }}
       >
-        {BUYOUT_REQUEST_LABEL}
+        {t('requestLabel')}
       </Button>
       {error ? (
         <p className="mt-2 text-sm text-red-700" role="alert">

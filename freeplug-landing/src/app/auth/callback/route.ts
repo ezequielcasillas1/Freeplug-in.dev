@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { safeNext } from '@/lib/auth/safe-next'
+import { syncLocaleCookieFromProfile } from '@/i18n/locale-cookie-sync'
 import { requestAwareBaseUrl } from '@/lib/site'
 import {
   RESET_COOKIE_NAME,
@@ -27,6 +28,8 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Google / email-link sign-in: cookie follows profiles.locale.
+      await syncLocaleCookieFromProfile(supabase, data.user?.id)
       // Supabase-mailer fallback: only a session that really came from a recovery link
       // (amr method "recovery") gets the /reset-password marker cookie.
       const secret = resetCookieSecret()

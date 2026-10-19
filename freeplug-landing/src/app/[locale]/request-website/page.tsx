@@ -1,10 +1,14 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
+import { toAppLocale } from '@/i18n/config'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-// Pattern title (no locked title yet); pending Sable's review.
-export const metadata: Metadata = {
-  title: 'Request a website | Freeplug',
+// Pattern title (no locked title yet); pending Sable's review. Per locale (public.meta).
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const locale = toAppLocale((await params).locale)
+  const t = await getTranslations({ locale, namespace: 'public.meta' })
+  return { title: t('requestWebsiteTitle') }
 }
 
 type Props = {

@@ -55,7 +55,7 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
       fn(copy.RESUME_REMOVAL_OWED_STATUS),
     ])
     // Sable 10:47: the L-1 reason no longer says "refunded" (back to 10; it must stay off this list)
-    // Oct 18: the add-on card charge note was removed with the add-ons (9 left).
+    // Oct 18: the add-on card charge notes were removed with the add-ons (9 left).
     expect(exempt.size).toBe(9)
     expect(exempt.has(fn(copy.ADDON_REFUND_REASONS.turned_off))).toBe(false)
     const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i

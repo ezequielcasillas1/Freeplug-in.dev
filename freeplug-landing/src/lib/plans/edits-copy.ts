@@ -39,11 +39,19 @@ export const EDITS_COPY_ES = {
 } as const
 
 /** Splits the field note around its "one-time maintenance" link text. */
-export function fieldNoteParts(): { before: string; link: string; after: string } {
-  const link = 'one-time maintenance'
-  const i = EDITS_COPY_EN.fieldNote.indexOf(link)
-  return { before: EDITS_COPY_EN.fieldNote.slice(0, i), link, after: EDITS_COPY_EN.fieldNote.slice(i + link.length) }
+export function fieldNoteParts(locale: 'en' | 'es' = 'en'): { before: string; link: string; after: string } {
+  const note = locale === 'es' ? EDITS_COPY_ES.fieldNote : EDITS_COPY_EN.fieldNote
+  const link = locale === 'es' ? EDITS_COPY_ES.fieldNoteLinkText : 'one-time maintenance'
+  const i = note.indexOf(link)
+  return { before: note.slice(0, i), link, after: note.slice(i + link.length) }
 }
+
+/** The edit strings in the page's language (Spanish build, Oct 19). */
+export const editsCopy = (locale: string) => (locale === 'es' ? EDITS_COPY_ES : EDITS_COPY_EN)
+
+/** The plan card explanation in the page's language. */
+export const planEditExplanation = (stepId: PlanStepId, locale: string = 'en'): string | undefined =>
+  locale === 'es' ? EDITS_COPY_ES.planExplanation[stepId] : PLAN_EDIT_EXPLANATIONS[stepId]
 
 /** Small gray line under a plan card's edit count ($35 / $55 / $65 only, as approved). */
 export const PLAN_EDIT_EXPLANATIONS: Partial<Record<PlanStepId, string>> = {
@@ -53,19 +61,23 @@ export const PLAN_EDIT_EXPLANATIONS: Partial<Record<PlanStepId, string>> = {
 }
 
 /** Edit pack line on a plan card; null on plans without a pack. */
-export function editPackLine(stepId: PlanStepId): string | null {
+export function editPackLine(stepId: PlanStepId, locale: string = 'en'): string | null {
   const n = editPackFor(stepId)
+  if (locale === 'es') return n > 0 ? EDITS_COPY_ES.editPackLine(n) : null
   return n > 0 ? `Edit pack: +${n} small edits for ${formatAmount(EDIT_PACK_CENTS)}/mo. One pack a month. Unused edits don't carry over.` : null
 }
 
 /** Replaces the old Starter "+1 small edit" add-on line. */
-export function needMoreEditsLine(stepId: PlanStepId): string | null {
+export function needMoreEditsLine(stepId: PlanStepId, locale: string = 'en'): string | null {
   const n = editPackFor(stepId)
+  if (locale === 'es') return n > 0 ? EDITS_COPY_ES.needMoreEdits(n) : null
   return n > 0 ? `Need more edits this month? Add the ${formatAmount(EDIT_PACK_CENTS)} edit pack for ${n} more.` : null
 }
 
 /** Dashboard "Included" line. */
-export function editsIncludedLine(e: EditsIncluded): string {
+export function editsIncludedLine(e: EditsIncluded, locale: string = 'en'): string {
+  // DRAFT es (box-translated Oct 19, for Sable): the two dashboard "Included" lines.
+  if (locale === 'es') return e.unlimited ? 'Ediciones ilimitadas' : `Ediciones incluidas: te quedan ${e.remaining} de ${e.total} en este periodo de facturación`
   if (e.unlimited) return 'Unlimited edits'
   return `Edits included: ${e.remaining} of ${e.total} left this billing period`
 }

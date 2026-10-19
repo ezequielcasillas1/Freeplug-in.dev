@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
-import { MANAGE_BILLING_LABEL, REQUEST_CHANGE_LABEL, SET_UP_DOMAIN_LABEL, UPLOAD_PHOTOS_LABEL } from '@/lib/outreach/copy'
+import { useTranslations } from 'next-intl'
 import { openBillingPortal } from './billing-actions'
 
 const BTN = cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'w-full min-h-[44px]')
@@ -23,16 +23,18 @@ type Props = {
 
 /** Lina's quick actions: outline buttons, 2×2 on phone and one row of four on desktop. */
 export function QuickActions({ canManageBilling, showManageBilling = true }: Props) {
+  const t = useTranslations()
+  const MANAGE_BILLING_LABEL = t('dashboard.home.manageBilling')
   return (
     <div className={showManageBilling ? QUICK_ACTIONS_GRID_4 : QUICK_ACTIONS_GRID_3} data-testid="quick-actions">
       <Link href="/dashboard/help" className={BTN}>
-        {REQUEST_CHANGE_LABEL}
+        {t('help.chat.requestChange')}
       </Link>
       <Link href="/dashboard/photos" className={BTN}>
-        {UPLOAD_PHOTOS_LABEL}
+        {t('claim.uploadPhotosLabel')}
       </Link>
       <Link href="/dashboard/domain" className={showManageBilling ? BTN : cn(BTN, QUICK_ACTIONS_LAST_OF_3)}>
-        {SET_UP_DOMAIN_LABEL}
+        {t('claim.setUpDomainLabel')}
       </Link>
       {!showManageBilling ? null : canManageBilling ? (
         <form action={openBillingPortal}>

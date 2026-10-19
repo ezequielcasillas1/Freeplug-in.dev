@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCancelPageData } from './actions'
 import { CancelPlanView } from './CancelPlanView'
@@ -22,10 +23,11 @@ export default async function CancelPage({ searchParams }: { searchParams?: Prom
   const data = await getCancelPageData({ tolerateStripeErrors: Boolean(outreachSite) })
 
   if (!data) {
+    const t = await getTranslations('cancel')
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Cancel Services</h1>
-        <p className="text-gray-600">Unable to load your account information. Please try again.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('cancelServices')}</h1>
+        <p className="text-gray-600">{t('unableLoadAccountInformationPlease')}</p>
       </div>
     )
   }

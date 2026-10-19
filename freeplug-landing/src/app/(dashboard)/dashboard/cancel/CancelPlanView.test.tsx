@@ -119,7 +119,7 @@ describe('CancelPlanView', () => {
     expect(line.compareDocumentPosition(screen.getByRole('button', { name: CANCEL_PLAN_BUTTON })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     unmount()
     render(<CancelPlanView data={data({ subscriptions: [sub({ endingAddons: { names: ['+1 small edit', 'Big change'], effectiveAt: new Date('2026-11-03T15:00:00Z') } })] })} />)
-    expect(screen.getByTestId('cancel-ending-addons')).toHaveTextContent('+1 small edit, Big change end Nov 3, 2026.')
+    expect(screen.getByTestId('cancel-ending-addons')).toHaveTextContent('+1 small edit and Big change end Nov 3, 2026.') // Intl list (Aria, Oct 4: no ", " joins)
   })
 
   it('no add-on set to end: no line', () => {
