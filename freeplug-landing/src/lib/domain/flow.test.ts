@@ -137,6 +137,13 @@ describe('migration 20261019120000 (QA bug 1)', () => {
     expect(sql).toMatch(/security invoker\s+set search_path = ''/)
     expect(sql).toMatch(/before insert or update on public\.domain_requests/)
   })
+  it('every re-added check is NOT VALID then validated; switching to buy_for_me needs the wording', () => {
+    const added = [...sql.matchAll(/add constraint (\w+)/g)].map((m) => m[1])
+    expect(added.length).toBeGreaterThan(5)
+    for (const n of added) expect(sql).toContain(`validate constraint ${n};`)
+    expect(sql.match(/not valid;/g)?.length).toBe(added.length)
+    expect(sql).toMatch(/new\.kind = 'buy_for_me' and old\.kind is distinct from 'buy_for_me'/)
+  })
   it('customers cannot insert directly', () => {
     expect(sql).toContain('drop policy if exists "domain_requests_insert_own"')
     expect(sql).toContain('revoke insert on table public.domain_requests from public, anon, authenticated')

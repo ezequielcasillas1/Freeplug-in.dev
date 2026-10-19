@@ -1,6 +1,7 @@
 -- "Set up your domain" upgrade (Oct 19 2026): three choices, registrar / backup domain, the Beta
 -- consent for "Buy a domain for me", and the status steps Request saved (pending) -> Connecting -> Live.
 -- Old rows stay valid: need_domain is still allowed (shown as "I'll buy my own domain"), 'done' = Live.
+-- Checks are added NOT VALID, then VALIDATE CONSTRAINT (pre-check: supabase/qa/domain_requests_legacy_precheck.sql).
 -- Customers keep SELECT on their own rows (RLS). Customers can NO LONGER insert directly (QA bug 1:
 -- a direct PostgREST insert could forge consent and skip the email + owner alert): the dashboard
 -- server action checks auth + consent and inserts with the service role. A trigger also stamps
@@ -20,49 +21,62 @@ alter table public.domain_requests
 
 alter table public.domain_requests drop constraint if exists domain_requests_kind_check;
 alter table public.domain_requests add constraint domain_requests_kind_check
-  check (kind in ('have_domain', 'buy_for_me', 'buy_self', 'need_domain'));
+  check (kind in ('have_domain', 'buy_for_me', 'buy_self', 'need_domain')) not valid;
 
 -- have_domain and buy_for_me need a domain; buy_self / legacy need_domain don't.
 alter table public.domain_requests drop constraint if exists domain_requests_check;
 alter table public.domain_requests add constraint domain_requests_check
-  check (kind in ('need_domain', 'buy_self') or domain is not null);
+  check (kind in ('need_domain', 'buy_self') or domain is not null) not valid;
 
 alter table public.domain_requests drop constraint if exists domain_requests_status_check;
 alter table public.domain_requests add constraint domain_requests_status_check
-  check (status in ('pending', 'connecting', 'live', 'done'));
+  check (status in ('pending', 'connecting', 'live', 'done')) not valid;
 
 -- Hostname rule (same as the app, flow.ts DOMAIN_RE): labels 1-63 of [a-z0-9-], no leading/trailing
 -- hyphen, no empty labels; TLD letters or punycode (xn--). Lowercase only (the app lowercases).
 alter table public.domain_requests drop constraint if exists domain_requests_domain_check;
 alter table public.domain_requests add constraint domain_requests_domain_check
   check (domain is null or (length(domain) between 3 and 253
-    and domain ~ '^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,63}|xn--[a-z0-9-]{2,59})$'));
+    and domain ~ '^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,63}|xn--[a-z0-9-]{2,59})$')) not valid;
 
 alter table public.domain_requests drop constraint if exists domain_requests_registrar_check;
 alter table public.domain_requests add constraint domain_requests_registrar_check
-  check (registrar is null or length(registrar) <= 100);
+  check (registrar is null or length(registrar) <= 100) not valid;
 
 alter table public.domain_requests drop constraint if exists domain_requests_backup_domain_check;
 alter table public.domain_requests add constraint domain_requests_backup_domain_check
   check (backup_domain is null or (length(backup_domain) between 3 and 253
-    and backup_domain ~ '^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,63}|xn--[a-z0-9-]{2,59})$'));
+    and backup_domain ~ '^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,63}|xn--[a-z0-9-]{2,59})$')) not valid;
 
 alter table public.domain_requests drop constraint if exists domain_requests_locale_check;
 alter table public.domain_requests add constraint domain_requests_locale_check
-  check (locale is null or locale in ('en', 'es'));
+  check (locale is null or locale in ('en', 'es')) not valid;
 
 alter table public.domain_requests drop constraint if exists domain_requests_consent_locale_check;
 alter table public.domain_requests add constraint domain_requests_consent_locale_check
-  check (consent_locale is null or consent_locale in ('en', 'es'));
+  check (consent_locale is null or consent_locale in ('en', 'es')) not valid;
 
 alter table public.domain_requests drop constraint if exists domain_requests_consent_text_check;
 alter table public.domain_requests add constraint domain_requests_consent_text_check
-  check (consent_text is null or length(consent_text) between 1 and 1000);
+  check (consent_text is null or length(consent_text) between 1 and 1000) not valid;
 
 -- "Buy a domain for me" is only saved with the consent (when, exact wording, language).
 alter table public.domain_requests drop constraint if exists domain_requests_buy_for_me_consent_check;
 alter table public.domain_requests add constraint domain_requests_buy_for_me_consent_check
-  check (kind <> 'buy_for_me' or (consent_at is not null and consent_text is not null and consent_locale is not null));
+  check (kind <> 'buy_for_me' or (consent_at is not null and consent_text is not null and consent_locale is not null)) not valid;
+
+-- Added NOT VALID above (cheap lock), then validated here. If any legacy row breaks a rule the
+-- migration stops here: run supabase/qa/domain_requests_legacy_precheck.sql first and fix rows.
+alter table public.domain_requests validate constraint domain_requests_kind_check;
+alter table public.domain_requests validate constraint domain_requests_check;
+alter table public.domain_requests validate constraint domain_requests_status_check;
+alter table public.domain_requests validate constraint domain_requests_domain_check;
+alter table public.domain_requests validate constraint domain_requests_registrar_check;
+alter table public.domain_requests validate constraint domain_requests_backup_domain_check;
+alter table public.domain_requests validate constraint domain_requests_locale_check;
+alter table public.domain_requests validate constraint domain_requests_consent_locale_check;
+alter table public.domain_requests validate constraint domain_requests_consent_text_check;
+alter table public.domain_requests validate constraint domain_requests_buy_for_me_consent_check;
 
 -- No direct customer inserts: the server action inserts with the service role after auth + consent.
 drop policy if exists "domain_requests_insert_own" on public.domain_requests;
@@ -94,6 +108,12 @@ begin
       new.consent_text := null;
       new.consent_locale := null;
     end if;
+  elsif new.kind = 'buy_for_me' and old.kind is distinct from 'buy_for_me'
+        and not ((new.consent_locale = 'en' and new.consent_text = en_text)
+              or (new.consent_locale = 'es' and new.consent_text = es_text)) then
+    -- Switching to buy_for_me needs the official wording too, for every role (service_role included).
+    raise exception 'domain_requests: switching to buy_for_me needs the official consent wording'
+      using errcode = '23514';
   elsif (new.consent_at, new.consent_text, new.consent_locale, new.kind)
         is distinct from (old.consent_at, old.consent_text, old.consent_locale, old.kind)
         and current_user not in ('service_role', 'postgres', 'supabase_admin') then

@@ -12,7 +12,8 @@ import { submitDomainRequest, type DomainLocale, type DomainSubmitResult } from 
 const asLocale = (v: unknown): DomainLocale | null => (v === 'es' ? 'es' : v === 'en' ? 'en' : null)
 
 /**
- * "Save my choice" on /dashboard/domain: one domain_requests row (customer's own client, RLS), then
+ * "Save my choice" on /dashboard/domain: one domain_requests row, written with the service role
+ * (insertDomainRequestAsService; customers have no INSERT grant) after the auth + consent checks, then
  * in the background the customer's email (profiles.locale, else the page locale) and an owner alert.
  * Buy-for-me consent is checked here too. Nothing is bought automatically.
  */
