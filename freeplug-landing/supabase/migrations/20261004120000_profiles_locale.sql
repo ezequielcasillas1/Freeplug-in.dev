@@ -25,7 +25,7 @@ create or replace function public.set_own_locale(p_locale text)
 returns text
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
   n int;
@@ -57,7 +57,7 @@ create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 begin
   insert into public.profiles (id, locale)
