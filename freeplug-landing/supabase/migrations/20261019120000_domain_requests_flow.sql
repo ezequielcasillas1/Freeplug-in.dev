@@ -114,6 +114,10 @@ begin
     -- Switching to buy_for_me needs the official wording too, for every role (service_role included).
     raise exception 'domain_requests: switching to buy_for_me needs the official consent wording'
       using errcode = '23514';
+  elsif new.kind = 'buy_for_me' and old.kind is distinct from 'buy_for_me'
+        and current_user in ('service_role', 'postgres', 'supabase_admin') then
+    -- Valid switch by a trusted role: the server stamps the consent time.
+    new.consent_at := pg_catalog.now();
   elsif (new.consent_at, new.consent_text, new.consent_locale, new.kind)
         is distinct from (old.consent_at, old.consent_text, old.consent_locale, old.kind)
         and current_user not in ('service_role', 'postgres', 'supabase_admin') then
