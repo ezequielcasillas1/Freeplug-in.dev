@@ -1156,6 +1156,20 @@ export async function adminListDomainRequests() {
   }[]
 }
 
+/**
+ * Dashboard "Save my choice": customers have no INSERT grant on domain_requests (migration
+ * 20261019120000), so the server action writes the row here with the service role, only after it has
+ * checked the session user and the buy-for-me consent. The DB trigger re-checks the consent wording.
+ */
+export async function insertDomainRequestAsService(row: import('@/lib/domain/flow').DomainRow): Promise<{ id: string | null; error: string | null }> {
+  try {
+    const { data, error } = await db().from('domain_requests').insert(row).select('id').maybeSingle()
+    return { id: (data?.id as string | undefined) ?? null, error: error?.message ?? null }
+  } catch (e) {
+    return { id: null, error: e instanceof Error ? e.message : 'service role unavailable' }
+  }
+}
+
 export async function adminMarkDomainRequestDone(id: string): Promise<Result> {
   await assertAdminAccess()
   const { error } = await db().from('domain_requests').update({ status: 'done' }).eq('id', id)

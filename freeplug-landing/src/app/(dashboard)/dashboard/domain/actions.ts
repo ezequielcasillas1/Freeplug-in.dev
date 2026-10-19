@@ -6,7 +6,7 @@ import { currentLocale } from '@/i18n/current-locale'
 import { sendMail } from '@/lib/email/mailer'
 import { scheduleAfterResponse } from '@/lib/background'
 import { alertOwner } from '@/lib/owner-alerts/events'
-import { getClaimedSiteForUser } from '@/lib/outreach/server'
+import { getClaimedSiteForUser, insertDomainRequestAsService } from '@/lib/outreach/server'
 import { submitDomainRequest, type DomainLocale, type DomainSubmitResult } from '@/lib/domain/flow'
 
 const asLocale = (v: unknown): DomainLocale | null => (v === 'es' ? 'es' : v === 'en' ? 'en' : null)
@@ -25,10 +25,9 @@ export async function requestDomainSetup(input: unknown): Promise<DomainSubmitRe
   if (!user) return { ok: false, error: 'save_failed' }
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>
   const res = await submitDomainRequest(input, { userId: user.id, email: user.email ?? null, locale }, {
-    insert: async (row) => {
-      const { data, error } = await supabase.from('domain_requests').insert(row).select('id').maybeSingle()
-      return { id: (data?.id as string | undefined) ?? null, error: error?.message ?? null }
-    },
+    // Customers have no INSERT grant (migration 20261019120000): the row is written with the service
+    // role, only after auth + the consent check above. user_id always comes from the session.
+    insert: (row) => insertDomainRequestAsService({ ...row, user_id: user.id }),
     customer: async () => {
       const [{ data: prof }, { data: wr }, site] = await Promise.all([
         supabase.from('profiles').select('locale').eq('id', user.id).maybeSingle(),

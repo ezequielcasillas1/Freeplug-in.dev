@@ -23,13 +23,19 @@ export const BUY_FOR_ME_CONSENT: Record<DomainLocale, string> = {
 export const DOMAIN_INVALID = 'domain_invalid'
 export const CONSENT_REQUIRED = 'consent_required'
 
+/**
+ * Hostname rule (QA bug 2; same regex as the DB check domain_requests_domain_check): labels 1-63 of
+ * [a-z0-9-], no leading/trailing hyphen, no empty labels; TLD is 2-63 letters or punycode (xn--...).
+ */
+export const DOMAIN_RE = /^(?=.{3,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{2,59})$/
+
 const domainField = z
   .string()
   .trim()
   .toLowerCase()
   .min(3, DOMAIN_INVALID)
   .max(253, DOMAIN_INVALID)
-  .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/, DOMAIN_INVALID)
+  .regex(DOMAIN_RE, DOMAIN_INVALID)
 const optionalDomain = z.union([z.literal(''), domainField]).optional()
 
 export const domainChoiceSchema = z.discriminatedUnion('kind', [

@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { BUY_FOR_ME_CONSENT, DOMAIN_EMAIL_REPLY_TO, domainStatusStep, renderDomainEmail, submitDomainRequest, type DomainSubmitDeps } from './flow'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { BUY_FOR_ME_CONSENT, DOMAIN_EMAIL_REPLY_TO, domainChoiceSchema, domainStatusStep, renderDomainEmail, submitDomainRequest, type DomainSubmitDeps } from './flow'
 
 function setup(over: Partial<DomainSubmitDeps> = {}, who: Partial<Awaited<ReturnType<DomainSubmitDeps['customer']>>> = {}) {
   const tasks: Promise<void>[] = []
@@ -112,4 +114,40 @@ describe('renderDomainEmail', () => {
 
 it('status steps', () => {
   expect([domainStatusStep('pending'), domainStatusStep('connecting'), domainStatusStep('live'), domainStatusStep('done')]).toEqual(['saved', 'connecting', 'live', 'live'])
+})
+
+describe('domain rule (QA bug 2)', () => {
+  const ok = (d: string) => domainChoiceSchema.safeParse({ kind: 'have_domain', domain: d }).success
+  it.each(['anatacos.com', 'a.co', 'my-shop.com.mx', 'xn--caf-dma.com', 'joes.xn--p1ai', 'A.COM', `${'a'.repeat(63)}.com`])('accepts %s', (d) => expect(ok(d)).toBe(true))
+  it.each(['..com', 'a..b.com', '-a-.com', 'a-.com', '-a.com', `${'a'.repeat(64)}.com`, '.com', 'com', 'a.c', 'a.b-c', 'https://a.com', 'a.com/x', 'café.com', 'a b.com', `${'a.'.repeat(126)}com`])(
+    'rejects %s',
+    (d) => expect(ok(d)).toBe(false)
+  )
+  it('backup domain uses the same rule', () => {
+    expect(domainChoiceSchema.safeParse({ kind: 'buy_for_me', domain: 'a.com', backupDomain: 'a..b.com', consent: true }).success).toBe(false)
+  })
+})
+
+describe('migration 20261019120000 (QA bug 1)', () => {
+  const sql = readFileSync(resolve(__dirname, '../../../supabase/migrations/20261019120000_domain_requests_flow.sql'), 'utf8')
+  it('trigger accepts exactly the official EN + ES consent wording', () => {
+    expect(sql).toContain(`'${BUY_FOR_ME_CONSENT.en}'`)
+    expect(sql).toContain(`'${BUY_FOR_ME_CONSENT.es}'`)
+    expect(sql).toMatch(/new\.consent_at := pg_catalog\.now\(\)/)
+    expect(sql).toMatch(/security invoker\s+set search_path = ''/)
+    expect(sql).toMatch(/before insert or update on public\.domain_requests/)
+  })
+  it('customers cannot insert directly', () => {
+    expect(sql).toContain('drop policy if exists "domain_requests_insert_own"')
+    expect(sql).toContain('revoke insert on table public.domain_requests from public, anon, authenticated')
+  })
+  it('DB domain check uses the same pattern as the app', () => {
+    const db = sql.match(/domain ~ '([^']+)'/)![1]
+    const re = new RegExp(db)
+    for (const d of ['anatacos.com', 'joes.xn--p1ai']) expect(re.test(d)).toBe(true)
+    for (const d of ['..com', 'a..b.com', '-a-.com', `${'a'.repeat(64)}.com`]) expect(re.test(d)).toBe(false)
+  })
+  it.each(['domain_requests_check', 'domain_requests_domain_check', 'domain_requests_kind_check', 'domain_requests_status_check'])('drops live constraint %s by its exact name', (n) => {
+    expect(sql).toContain(`drop constraint if exists ${n};`)
+  })
 })
