@@ -1,3 +1,4 @@
+import { BUYOUT_TIERS_FILES_ONLY } from './tiers'
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
@@ -243,7 +244,7 @@ describe.skipIf(!existsSync(LOCKED_FILE))('buyout copy matches the locked file w
     expect(quoted('admin labels')).toEqual([ADMIN_BUYOUT_REQUESTED, ADMIN_BUYOUT_PRICE, ADMIN_BUYOUT_QUOTED])
   })
   it('Oct 19 (Cheke): the price covers the website files only (reverses the old "no website files" rule)', () => {
-    expect(BUYOUT_FAQ_ANSWER).toMatch(/covers the website files only/)
+    expect(BUYOUT_FAQ_ANSWER).toContain(BUYOUT_TIERS_FILES_ONLY) // Sable: FAQ matches the card exactly
     expect(BUYOUT_FAQ_ANSWER).toContain('$500')
     expect(BUYOUT_FAQ_ANSWER).toContain('$2,000')
   })
