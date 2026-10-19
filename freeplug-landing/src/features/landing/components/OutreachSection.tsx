@@ -57,7 +57,6 @@ const texasCities = [
     alt: 'The Alamo in downtown San Antonio',
     credit: {
       author: 'Thank You (22.5 Millions+) views',
-      authorEs: 'Gracias (más de 22.5 millones de vistas)',
       license: 'CC BY 2.0',
       licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
       source: 'https://commons.wikimedia.org/wiki/File:Alamo_-_52134465867.jpg',
