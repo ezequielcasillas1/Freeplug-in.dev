@@ -1,9 +1,9 @@
 import type { BuyoutRequestResult } from '@/lib/buyout/buyout'
 import type { WebsiteAccess } from '@/lib/website-access'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { showBuyoutCard } from '@/lib/buyout/buyout'
 import { BuyoutRequestButton } from './BuyoutRequestButton'
-import { OWNERSHIP_NOTE, paidTowardOwnershipLine, stillClearingLine } from '@/lib/buyout/ownership'
+import { OWNERSHIP_COPY_ES, OWNERSHIP_NOTE, paidTowardOwnershipLine, stillClearingLine } from '@/lib/buyout/ownership'
 
 export type OwnershipSummary = { paidCents: number; clearingCents: number } | null
 
@@ -21,6 +21,7 @@ type Props = {
 export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '', ownership = null }: Props) {
   const dashboard = variant === 'dashboard'
   const t = useTranslations('buyout')
+  const es = useLocale() === 'es'
   return (
     <section
       className={`rounded-xl border border-zinc-200 bg-white ${dashboard ? 'p-6 shadow-sm' : 'p-5'} ${className}`}
@@ -37,14 +38,14 @@ export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '
       </h2>
       {dashboard && ownership ? (
         <div className="mb-3" data-testid="paid-toward-ownership">
-          <p className="text-lg font-bold text-gray-900">{paidTowardOwnershipLine(ownership.paidCents)}</p>
+          <p className="text-lg font-bold text-gray-900">{es ? OWNERSHIP_COPY_ES.paidToward(ownership.paidCents) : paidTowardOwnershipLine(ownership.paidCents)}</p>
           {ownership.clearingCents > 0 ? (
             <p className="text-xs text-gray-500" data-testid="ownership-clearing">
-              {stillClearingLine(ownership.clearingCents)}
+              {es ? OWNERSHIP_COPY_ES.stillClearing(ownership.clearingCents) : stillClearingLine(ownership.clearingCents)}
             </p>
           ) : null}
           <p className="mt-1 text-xs text-gray-500" data-testid="ownership-note">
-            {OWNERSHIP_NOTE}
+            {es ? OWNERSHIP_COPY_ES.note : OWNERSHIP_NOTE}
           </p>
         </div>
       ) : null}

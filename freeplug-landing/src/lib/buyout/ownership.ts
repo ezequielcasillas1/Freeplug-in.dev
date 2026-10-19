@@ -274,6 +274,12 @@ export const ADMIN_BUYOUT_CLEARED = 'Cleared toward buyout'
 const usd = (cents: number) => `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: cents % 100 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`
 export const paidTowardOwnershipLine = (cents: number) => `Paid toward ownership: ${usd(cents)}`
 export const stillClearingLine = (cents: number) => `(includes ${usd(cents)} still clearing)`
+/** DRAFT Spanish (box-translated Oct 19, for Sable): the three customer ownership lines. */
+export const OWNERSHIP_COPY_ES = {
+  note: 'Los pagos cuentan después de 14 días. Los reembolsos no cuentan.',
+  paidToward: (cents: number) => `Pagado para quedarte con tu sitio: ${usd(cents)}`,
+  stillClearing: (cents: number) => `(incluye ${usd(cents)} que aún se está procesando)`,
+}
 
 type PaymentRef = { charge?: string | { id: string } | null; payment_intent?: string | { id: string; latest_charge?: string | { id: string } | null } | null }
 type StripeForCharge = {
