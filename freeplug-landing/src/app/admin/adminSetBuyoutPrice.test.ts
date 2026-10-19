@@ -109,6 +109,17 @@ describe('adminSetProfileCumulativeWebsiteValuePaid (QA override: whole dollars 
       error: 'Enter a whole-dollar amount of $0 or more.',
     })
   })
+  it('accepts the int4 limit $21,474,836 and rejects $21,474,837 with a clear max message', async () => {
+    process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID = 'true'
+    db.updates = []
+    const { adminSetProfileCumulativeWebsiteValuePaid } = await import('./actions')
+    expect(await adminSetProfileCumulativeWebsiteValuePaid(PROFILE, '21474836')).toEqual({ ok: true })
+    expect(db.updates.at(-1)).toMatchObject({ cumulative_website_value_paid_cents: 2147483600 })
+    expect(await adminSetProfileCumulativeWebsiteValuePaid(PROFILE, '21474837')).toEqual({
+      ok: false,
+      error: 'Enter a whole-dollar amount up to $21,474,836.',
+    })
+  })
   it.each([['0', 0], ['5000', 500000]])('accepts %j', async (ok, cents) => {
     process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID = 'true'
     db.updates = []

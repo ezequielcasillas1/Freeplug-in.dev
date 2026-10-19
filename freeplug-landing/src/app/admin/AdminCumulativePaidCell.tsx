@@ -22,6 +22,7 @@ export function AdminCumulativePaidCell({ profileId, paidCents }: Props) {
         <input
           type="number"
           min={0}
+          max={21_474_836}
           step={1}
           value={dollars}
           onChange={(e) => setDollars(e.target.value)}
