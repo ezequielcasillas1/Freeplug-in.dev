@@ -1097,7 +1097,10 @@
       "hours": "Monday to Wednesday, 1 to 2 PM, and Thursday and Friday, 1 to 3 PM (Central time)",
       "availabilityLabel": "When we're available",
       "availabilityLine": "Our team is available during the support hours below.",
-      "cardLine": "Our team is available {supportHours}."
+      "cardLine": "Our team is available {supportHours}.",
+      "respondLabel": "When we respond",
+      "respondWeekdays": "We respond on business days, Monday to Friday (Central time).",
+      "respondWeekends": "We respond on business days and weekends (Central time)."
     },
     "legal": {
       "translationNotice": "Translation provided for your convenience; the English version prevails."

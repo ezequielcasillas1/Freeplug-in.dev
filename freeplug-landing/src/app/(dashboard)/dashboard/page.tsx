@@ -15,6 +15,8 @@ import { RecentActivity } from './RecentActivity'
 import { DashboardAlerts } from './DashboardAlerts'
 import { DashboardAddonRefundNotes } from './DashboardAddonRefundNotes'
 import { SupportCard } from './SupportCard'
+import { getUserEntitlements } from '@/lib/plans/user-entitlements'
+import { hasWeekendReplies } from '@/lib/plans/response-days'
 import { syncStripeCustomerFromCheckoutSession } from '@/lib/stripe/sync-checkout-customer'
 import { dashboardAccessAlert, getWebsiteAccessForCustomer, type WebsiteAccess } from '@/lib/website-access'
 import { WebsiteAccessAlert } from './WebsiteAccessAlert'
@@ -88,6 +90,16 @@ export default async function DashboardPage({ searchParams }: Props) {
   > | null
 
   const status = (p?.evaluation_status ?? 'none') as EvaluationStatus
+
+  // Support card response days (Priority $55 and up = weekends too). A failed lookup shows the
+  // business-days line rather than an error.
+  let weekendReplies = false
+  try {
+    const { entitlements } = await getUserEntitlements(supabase, user.id, p?.stripe_customer_id ?? null)
+    weekendReplies = hasWeekendReplies(entitlements)
+  } catch (e) {
+    console.error('[dashboard] plan lookup failed', e instanceof Error ? e.message : e)
+  }
 
   // Website access (hosting required): ending / offline message with one button. A failed Stripe
   // lookup shows nothing rather than a wrong status.
@@ -352,7 +364,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             loadFailed={!enhancedData.recentActivityLoaded}
           />
         )}
-        <SupportCard />
+        <SupportCard weekendReplies={weekendReplies} />
       </div>
     </div>
   )

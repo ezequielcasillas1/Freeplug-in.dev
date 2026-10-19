@@ -2,7 +2,8 @@ import { AdminCumulativePaidCell } from './AdminCumulativePaidCell'
 import { AdminQuickEmail } from './AdminQuickEmail'
 import Link from 'next/link'
 import { adminPlanAmount, adminPlanBadge, type AdminPlanBadge } from '@/lib/plans/admin-badge'
-import { entitlementsFor } from '@/lib/plans/ladder'
+import { entitlementsFor, stepById } from '@/lib/plans/ladder'
+import { hasWeekendReplies, WEEKEND_REPLIES_ADMIN_BADGE } from '@/lib/plans/response-days'
 import { adminMarkUnsoldPurchaseReviewed } from './actions'
 import type { WebsiteAccessStatus } from '@/lib/website-access'
 
@@ -30,15 +31,31 @@ export type CustomerRowView = {
   updated_at: string
 }
 
-/** Admin filter on the customers table (?access=offline|ending). */
-export type AccessFilter = 'all' | 'offline' | 'ending'
+/** Weekend replies = the plan step's Priority rank (hasWeekendReplies), from the row's plan badge. */
+export function badgeHasWeekendReplies(badge: AdminPlanBadge | null | undefined): boolean {
+  return hasWeekendReplies({ step: badge ? stepById(badge.stepId) : null, priorityRank: badge?.rank ?? -1 })
+}
+
+/** Admin badge: "Weekend replies" for a customer whose current plan is Priority ($55) or higher. */
+export function WeekendRepliesBadge({ badge }: { badge: AdminPlanBadge | null | undefined }) {
+  if (!badgeHasWeekendReplies(badge)) return null
+  return (
+    <span data-testid="weekend-replies-badge" className="rounded bg-emerald-50 px-1 text-[10px] font-semibold text-emerald-800">
+      {WEEKEND_REPLIES_ADMIN_BADGE}
+    </span>
+  )
+}
+
+/** Admin filter on the customers table (?access=offline|ending|weekend). */
+export type AccessFilter = 'all' | 'offline' | 'ending' | 'weekend'
 
 export function parseAccessFilter(value: string | undefined): AccessFilter {
-  return value === 'offline' || value === 'ending' ? value : 'all'
+  return value === 'offline' || value === 'ending' || value === 'weekend' ? value : 'all'
 }
 
 export function filterCustomersByAccess(rows: CustomerRowView[], filter: AccessFilter): CustomerRowView[] {
   if (filter === 'all') return rows
+  if (filter === 'weekend') return rows.filter((r) => badgeHasWeekendReplies(r.planBadge))
   return rows.filter((r) => r.websiteAccess?.status === filter)
 }
 
@@ -46,6 +63,7 @@ const ACCESS_FILTERS: { id: AccessFilter; label: string; href: string }[] = [
   { id: 'all', label: 'All customers', href: '/admin/customers' },
   { id: 'offline', label: 'Website offline (hosting canceled)', href: '/admin/customers?access=offline' },
   { id: 'ending', label: 'Canceled, still online', href: '/admin/customers?access=ending' },
+  { id: 'weekend', label: WEEKEND_REPLIES_ADMIN_BADGE, href: '/admin/customers?access=weekend' },
 ]
 
 /** Access badge tone: active green, ending amber, offline grey (no red). */
@@ -104,6 +122,11 @@ export function AdminCustomersTable({
       {accessFilter !== 'all' ? (
         <span className="self-center text-xs text-zinc-500">
           {rows.length} of {totalCount ?? rows.length}
+        </span>
+      ) : null}
+      {accessFilter === 'all' ? (
+        <span className="self-center text-xs text-zinc-500" data-testid="weekend-replies-count">
+          {rows.filter((r) => badgeHasWeekendReplies(r.planBadge)).length} with weekend replies
         </span>
       ) : null}
     </nav>
@@ -181,6 +204,7 @@ export function AdminCustomersTable({
                       }
                     />
                     <span className="whitespace-nowrap">{adminPlanAmount(r.planMonthlyCents, r.planTipCents ?? 0)}</span>
+                    <WeekendRepliesBadge badge={r.planBadge} />
                   </span>
                 ) : null}
                 <AdminUnsoldPurchaseBadge flag={r.unsoldPurchase ?? null} />

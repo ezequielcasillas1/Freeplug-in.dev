@@ -1097,7 +1097,10 @@
       "hours": "de lunes a miércoles, de 1 a 2 p. m., y jueves y viernes, de 1 a 3 p. m. (hora del Centro)",
       "availabilityLabel": "Cuándo estamos disponibles",
       "availabilityLine": "Nuestro equipo está disponible en el horario de atención de abajo.",
-      "cardLine": "Nuestro equipo está disponible {supportHours}."
+      "cardLine": "Nuestro equipo está disponible {supportHours}.",
+      "respondLabel": "Cuándo respondemos",
+      "respondWeekdays": "Respondemos en días hábiles, de lunes a viernes (hora del Centro).",
+      "respondWeekends": "Respondemos en días hábiles y fines de semana (hora del Centro)."
     },
     "legal": {
       "translationNotice": "Traducción para tu conveniencia; la versión en inglés prevalece."
