@@ -1,8 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import { adminMarkBigChange, adminMarkSmallEdit, adminSetWebsiteRequestStatus } from './actions'
-import { ADMIN_MARK_BIG_CHANGE } from '@/lib/plans/ladder-copy'
+import { adminMarkSmallEdit, adminSetWebsiteRequestStatus } from './actions'
 import { AdminQuickEmail } from './AdminQuickEmail'
 import { AdminBuyoutBadge, AdminBuyoutPriceCell } from './AdminBuyoutCell'
 
@@ -17,6 +16,8 @@ export type AdminRequestRowData = {
   buyout_price_cents: number | null
   /** Buyout request flag (server-set only). The notes line is never used to detect a buyout. */
   is_buyout: boolean
+  /** Buyout eligibility: cleared ownership_ledger credit (cents); null = not loaded. */
+  buyoutClearedCents?: number | null
   status: string
   /** End of next business day for a Fast lane+ small edit (server-set only). */
   due_by?: string | null
@@ -95,20 +96,6 @@ export function AdminRequestRow({
             >
               Use included edit
             </button>
-            <button
-              type="button"
-              disabled={pending}
-              data-testid="admin-mark-big-change"
-              className="rounded border border-zinc-300 px-2 py-0.5 text-xs text-zinc-700 disabled:opacity-50"
-              onClick={() =>
-                startTransition(async () => {
-                  const res = await adminMarkBigChange(row.id)
-                  if (!res.ok) window.alert(res.error)
-                })
-              }
-            >
-              {ADMIN_MARK_BIG_CHANGE}
-            </button>
           </div>
         ) : null}
         {buyout ? (
@@ -117,6 +104,7 @@ export function AdminRequestRow({
             <AdminBuyoutPriceCell
               requestId={row.id}
               priceCents={row.buyout_price_cents}
+              clearedCents={row.buyoutClearedCents ?? null}
             />
           </div>
         ) : null}

@@ -42,20 +42,15 @@ export async function classifyChangeRequest(
     const size = sizeOfChangeType(changeType)
     if (!size) return { billing: 'unknown', planStep }
 
-    // The period the admin "small edit" / "Big change" buttons count in: the ACTIVE subscription.
+    // The period the admin "small edit" button counts in: the ACTIVE subscription.
     const subs = await getStripe().subscriptions.list({ customer: customerId, status: 'active', limit: 10 })
     const period = periodStartDate(subs.data[0] ? subscriptionPeriodStart(subs.data[0]) : null)
     let smallEditsUsed: number | null = null
-    let bigChangesUsed: number | null = null
     if (period) {
-      const [small, big] = await Promise.all([
-        admin.from('included_edit_uses').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('period_start', period),
-        admin.from('big_change_uses').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('period_start', period),
-      ])
+      const small = await admin.from('included_edit_uses').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('period_start', period)
       smallEditsUsed = small.error ? null : (small.count ?? 0)
-      bigChangesUsed = big.error ? null : (big.count ?? 0)
     }
-    return { billing: classifyChangeBilling({ size, entitlements: ent, smallEditsUsed, bigChangesUsed }), planStep }
+    return { billing: classifyChangeBilling({ size, entitlements: ent, smallEditsUsed }), planStep }
   } catch (e) {
     console.error(`${LOG} billing lookup failed; billing=unknown`, errText(e))
     return { billing: 'unknown', planStep: null }

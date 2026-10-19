@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { startCustomerPhotoBatch } from '@/lib/outreach/server'
-import { customerMessage } from '@/lib/outreach/errors'
+import { customerMessageIn } from '@/lib/outreach/errors'
+import { currentLocale } from '@/i18n/current-locale'
 
 /**
  * First photo of a dashboard batch (FormData: id, file). The pending submission is created only
@@ -15,7 +16,7 @@ export async function startPhotoBatchAction(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, code: 'expired', error: customerMessage('expired') }
+  if (!user) return { ok: false, code: 'expired', error: customerMessageIn(await currentLocale(), 'expired') }
   const res = await startCustomerPhotoBatch(user.id, formData.get('id'), formData.get('file'))
-  return res.ok ? res : { ok: false, code: res.code, error: customerMessage(res.code) }
+  return res.ok ? res : { ok: false, code: res.code, error: customerMessageIn(await currentLocale(), res.code) }
 }

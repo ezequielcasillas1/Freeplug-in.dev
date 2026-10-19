@@ -1,3 +1,6 @@
+import { intlLocale, noWrapDate } from '@/i18n/format'
+import { translatorFor } from '@/i18n/translate'
+import type { AppLocale } from '@/i18n/config'
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { isLiveSubscriptionStatus } from './subscription-status'
@@ -26,13 +29,15 @@ export const CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE =
 export const NBSP = '\u00A0'
 
 /**
- * Formats a plan end date as "Month D, YYYY" (UTC, so server and client agree), with no-break spaces
- * between month and day and between day and year ("October\u00A09,\u00A02026"), so a date never wraps
- * across lines (Lina, Oct 4). The ONE place this happens: renewalLineText and every other caller get it.
+ * Formats a plan end date as "Month D, YYYY" / "D de mes de YYYY" (UTC, so server and client agree), with
+ * every space a no-break space ("October\u00A09,\u00A02026"; Spanish "9\u00A0de\u00A0octubre\u00A0de\u00A02026"),
+ * so a date never wraps across lines (Lina, Oct 4). The ONE place this happens: renewalLineText and every
+ * other caller get it.
  */
-export function formatPlanEndDate(date: Date): string {
+export function formatPlanEndDate(date: Date, locale: AppLocale = 'en'): string {
+  // Every space a no-break space, in every locale (EN: ladder-fix; ES: noWrapDate's rule).
   return date
-    .toLocaleDateString('en-US', {
+    .toLocaleDateString(intlLocale(locale), {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
@@ -45,22 +50,24 @@ export function formatPlanEndDate(date: Date): string {
  * Short date for buttons: "Nov 3", or "Nov 3, 2027" when the year isn't the current one (UTC, like
  * formatPlanEndDate). Lina, round 5b: "Switch to Starter on Nov 3" fits on one line at 375.
  */
-export function formatShortPlanDate(date: Date, now: Date = new Date()): string {
+export function formatShortPlanDate(date: Date, now: Date = new Date(), locale: AppLocale = 'en'): string {
   const sameYear = date.getUTCFullYear() === now.getUTCFullYear()
-  return date.toLocaleDateString('en-US', {
+  return noWrapDate(
+    locale,
+    date.toLocaleDateString(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     ...(sameYear ? {} : { year: 'numeric' as const }),
     timeZone: 'UTC',
   })
+  )
 }
 
 /** Shown when the plan is still active but already set to end (canceled at period end / cancel_at). */
-export function closeBlockedPlanEndingMessage(endsAt: Date | null): string {
-  if (!endsAt) {
-    return 'Your plan is canceled and ends at the end of the current billing period. You can close this request after that date.'
-  }
-  return `Your plan is canceled and ends on ${formatPlanEndDate(endsAt)}. You can close this request after that date.`
+export function closeBlockedPlanEndingMessage(endsAt: Date | null, locale: AppLocale = 'en'): string {
+  const t = translatorFor(locale, 'errors.plans.closeBlockedPlanEndingMessage')
+  if (!endsAt) return t('planCanceledEndsEnd')
+  return t('planCanceledEndsClose', { date: formatPlanEndDate(endsAt, locale) })
 }
 
 export type ActiveSubscriptionStatus =
@@ -140,7 +147,7 @@ export async function listLiveSubscriptions(customerId: string): Promise<Stripe.
  * One line per live subscription for the Plans page strip: "<step name> · $65/month" (see plan-line.ts;
  * grandfathered plans: "Hosting + Pro add-on · $50/month", no tip), plus the status when it is not "active".
  */
-export async function describeLiveSubscriptions(customerId: string): Promise<string[]> {
+export async function describeLiveSubscriptions(customerId: string, locale: AppLocale = 'en'): Promise<string[]> {
   const stripe = getStripe()
   const subs = await listLiveSubscriptions(customerId)
   const lines: string[] = []
@@ -155,7 +162,7 @@ export async function describeLiveSubscriptions(customerId: string): Promise<str
           : (item.price.product as Stripe.Product)
       items.push({ lookupKey: item.price.lookup_key ?? null, productName: product.name, productId: product.id ?? null, unitAmountCents: item.price.unit_amount ?? 0, quantity: item.quantity ?? 1 })
     }
-    lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars, addonCentsOfItems(sub.items.data)))
+    lines.push(planStripLine(items, tierItems(sub.items.data)[0]?.price.recurring?.interval ?? 'month', sub.status, tipDollars, addonCentsOfItems(sub.items.data), locale))
   }
   return lines
 }

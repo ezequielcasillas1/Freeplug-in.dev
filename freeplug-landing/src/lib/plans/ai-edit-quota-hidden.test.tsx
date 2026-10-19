@@ -24,7 +24,8 @@ vi.mock('@/app/(dashboard)/dashboard/billing-actions', () => ({ openBillingPorta
 /** Edit-count wording: "AI edits", "15 edits a month", "edits: 5", "5 AI edits per month"... */
 const EDIT_COUNT = [
   /\bAI[\s-]*edits?\b/i,
-  /\b\d+\s+(?:AI\s+)?(?:quick\s+|small\s+)?edits?\s*(?:a|per|each|\/)\s*(?:month|mo)\b/i,
+  // Oct 18: plan edit counts ("2 edits a month") are shown on purpose now; only AI-edit counts stay hidden.
+  /\b\d+\s+AI\s+(?:quick\s+|small\s+)?edits?\s*(?:a|per|each|\/)\s*(?:month|mo)\b/i,
   /\bedits?\s*(?:per month|a month|\/\s*mo(?:nth)?)\s*:\s*\d+/i,
 ]
 const showsEditCount = (text: string) => EDIT_COUNT.some((re) => re.test(text))
@@ -60,7 +61,8 @@ describe('AI-edit counts stay hidden while showAiEditQuota is false', () => {
 
   it('the detector catches the wording that would ship with the flag on (sanity check)', () => {
     expect(showsEditCount(copy.aiEditsLine(PLAN_STEPS[1], true)!)).toBe(true)
-    expect(showsEditCount('15 edits a month')).toBe(true)
+    expect(showsEditCount('15 AI edits a month')).toBe(true)
+    expect(showsEditCount('2 edits a month: small changes')).toBe(false) // Oct 18: plan edit counts are shown on purpose
     expect(showsEditCount('Edits per month: 40')).toBe(true)
     expect(showsEditCount('One small edit by us each billing period')).toBe(false)
     expect(showsEditCount('Your included edit: 1 available this billing period.')).toBe(false)
@@ -117,8 +119,9 @@ describe('AI-edit counts stay hidden while showAiEditQuota is false', () => {
       if (rel === path.join('src', 'lib', 'plans', 'ladder-copy.ts')) {
         // The one gated template: it must go through customerAiEditsPerMonth() (flag-aware), and is
         // checked by value above; everything else in the file is scanned.
-        const start = src.indexOf('export const aiEditsLine')
-        const end = src.indexOf('\n}\n', start)
+        // i18n (Oct 4): the copy is built per locale in build(); the template is the aiEditsLine entry.
+        const start = src.indexOf('    aiEditsLine: (')
+        const end = src.indexOf('\n    },\n', start)
         expect(start).toBeGreaterThan(-1)
         expect(src.slice(start, end)).toContain('customerAiEditsPerMonth(step, show)')
         src = src.slice(0, start) + src.slice(end)

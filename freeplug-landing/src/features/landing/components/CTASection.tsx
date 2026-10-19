@@ -6,8 +6,13 @@ import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { fadeInUp, staggerContainer } from '../animations/landing.variants'
+import { useLocale, useTranslations } from 'next-intl'
+import { toAppLocale } from '@/i18n/config'
+import { publicHref } from '@/i18n/routing'
 
 export function CTASection() {
+  const t = useTranslations('public.landing.cTA')
+  const locale = toAppLocale(useLocale())
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#ba3d3d] via-[#a53434] to-[#8a2e2e]" />
@@ -51,7 +56,7 @@ export function CTASection() {
         <motion.div variants={fadeInUp} className="mb-8">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium border border-white/20">
             <Sparkles size={16} className="animate-pulse" />
-            Freeplug · 72 After
+            {t('freeplug72After')}
           </span>
         </motion.div>
         
@@ -59,15 +64,14 @@ export function CTASection() {
           variants={fadeInUp}
           className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
         >
-          Ready for a free website?
+          {t('readyFreeWebsite')}
         </motion.h2>
         
         <motion.p
           variants={fadeInUp}
           className="text-lg sm:text-xl text-white/80 mb-10 max-w-2xl mx-auto"
         >
-          Local owners in San Marcos, Kyle, New Braunfels, San Antonio, and Austin — request a
-          site. Outside the US — tell us your city and we’ll check the network.
+          {t('localOwnersSanMarcosKyle')}
         </motion.p>
         
         <motion.div
@@ -75,13 +79,13 @@ export function CTASection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link
-            href="/signup"
+            href={publicHref('/signup', locale)}
             className={cn(
               buttonVariants({ size: 'lg' }),
               'bg-white text-[#ba3d3d] hover:bg-gray-100 group shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 transition-all px-8 border-0'
             )}
           >
-            Request a free website
+            {t('requestFreeWebsite')}
             <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>
@@ -91,7 +95,7 @@ export function CTASection() {
           className="mt-10 flex items-center justify-center gap-2 text-white/60 text-sm"
         >
           <Shield size={16} />
-          <span>Freeplug finds the businesses. 72 After builds the sites.</span>
+          <span>{t('freeplugFindsBusinesses72After')}</span>
         </motion.div>
       </motion.div>
     </section>

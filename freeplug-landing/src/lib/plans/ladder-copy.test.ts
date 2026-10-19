@@ -42,7 +42,6 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
     }
     const fn = (f: unknown) => sample(f as (...a: unknown[]) => unknown)
     const exempt = new Set<string | null>([
-      fn(copy.addonChargeNote),
       fn(copy.addonChargeAfterCreditLine),
       copy.ADDON_CREDIT_COVERS,
       fn(copy.addonFinishing),
@@ -56,7 +55,8 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
       fn(copy.RESUME_REMOVAL_OWED_STATUS),
     ])
     // Sable 10:47: the L-1 reason no longer says "refunded" (back to 10; it must stay off this list)
-    expect(exempt.size).toBe(10)
+    // Oct 18: the add-on card charge notes were removed with the add-ons (9 left).
+    expect(exempt.size).toBe(9)
     expect(exempt.has(fn(copy.ADDON_REFUND_REASONS.turned_off))).toBe(false)
     const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i
     expect(new Set(all.filter((s) => banned.test(s)))).toEqual(exempt)
@@ -148,11 +148,12 @@ describe("Sable, Oct 4 9:29 AM CT: the five lines, word for word", () => {
   it('3. checkout tip line, same verb', () => {
     expect(copy.addonTipDropQuestion(8, 'Big change')).toBe('Your tip goes down to $8. Turn on Big change?')
   })
-  it('4. card note (the confirm screen still shows the exact amount)', () => {
-    expect(copy.addonChargeNote(500)).toBe(
+  // Oct 18: the card charge note was removed with the retired add-ons.
+  it.skip('4. card note (the confirm screen still shows the exact amount)', () => {
+    expect((copy as unknown as Record<string, (c: number) => string>).addonChargeNote(500)).toBe(
       'Turning it on charges $5 today for this billing period, then $5 each month. Any account credit is used first. If you turn it off, it stays on until the period ends.'
     )
-    expect(copy.addonChargeNote(575)).toBe(
+    expect((copy as unknown as Record<string, (c: number) => string>).addonChargeNote(575)).toBe(
       'Turning it on charges $5.75 today for this billing period, then $5.75 each month. Any account credit is used first. If you turn it off, it stays on until the period ends.'
     )
   })

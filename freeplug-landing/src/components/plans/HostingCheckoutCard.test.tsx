@@ -49,7 +49,8 @@ describe('HostingCheckoutCard rows (Lina §0)', () => {
       expect(r).toHaveTextContent(`$${s.monthlyCents / 100}/month`)
       expect(r).not.toHaveTextContent(`${s.name} · $`)
       expect(r).not.toHaveTextContent(STEP_BLURBS[s.id])
-      for (const perk of s.adds) expect(r).toHaveTextContent(PERK_LINES[perk])
+      // Oct 18: the old one-small-edit perk line is replaced by the plan's edit line.
+      for (const perk of s.adds) if (perk !== 'includedSmallEdit') expect(r).toHaveTextContent(PERK_LINES[perk])
       if (i > 0) expect(within(r).getAllByText(EVERYTHING_IN(PLAN_STEPS[i - 1].name))).toHaveLength(1)
     }
     expect(screen.queryByText(MOST_POPULAR_LABEL)).toBeNull()

@@ -17,6 +17,8 @@ import { supabasePlanChangeLockStore } from '@/lib/plans/plan-change-lock'
 import { healOwedRemovals } from '@/lib/stripe/addon-removal-owed'
 import { supabaseRemovalOwedStore, type RemovalOwedDb } from '@/lib/stripe/addon-removal-owed-server'
 import { markWebhookEventProcessed, webhookEventState, type WebhookEventsDb } from '@/lib/stripe/webhook-events'
+import { chargeIdOfInvoice, recordChargePayment, recordDispute, recordInvoicePayment, recordRefundObject, recordRefunds, supabaseOwnershipStore, type RefundLike } from '@/lib/buyout/ownership'
+import { markQuoteInvoice, type QuoteWebhookDb } from '@/lib/maintenance-quotes/quotes'
 
 export const runtime = 'nodejs'
 
@@ -47,6 +49,13 @@ function getCustomerId(
 ): string | null {
   if (!customer) return null
   return typeof customer === 'string' ? customer : customer.id
+}
+
+/** All refunds of a charge (empty when the client can't list them, e.g. a test mock). */
+async function listChargeRefunds(chargeId: string): Promise<RefundLike[]> {
+  const stripe = getStripe() as unknown as { refunds?: { list?: (p: { charge: string; limit: number }) => Promise<{ data: unknown[] }> } }
+  if (typeof stripe.refunds?.list !== 'function') return []
+  return (await stripe.refunds.list({ charge: chargeId, limit: 100 })).data as RefundLike[]
 }
 
 export async function POST(request: Request) {
@@ -247,6 +256,15 @@ export async function POST(request: Request) {
       } catch (e) {
         console.error('[webhook] outreach invoice', e instanceof Error ? e.message : e)
       }
+      // Oct 18: a paid maintenance quote invoice -> the admin row badge turns Paid (idempotent update).
+      if (inv.metadata?.maintenance_quote_id && inv.id) {
+        try {
+          await markQuoteInvoice(admin as unknown as QuoteWebhookDb, inv.id, 'paid', invoicePaidAtIso(inv) ?? new Date().toISOString())
+        } catch (e) {
+          console.error('[webhook] maintenance quote paid', e instanceof Error ? e.message : e)
+          return NextResponse.json({ error: 'Quote not saved' }, { status: 500 })
+        }
+      }
       const customerId = getCustomerId(inv.customer)
       if (!customerId || inv.amount_paid <= 0) {
         break
@@ -292,6 +310,76 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Ledger row not saved' }, { status: 500 })
       }
       if (recorded === false) console.info('[webhook] invoice.paid already recorded', inv.id)
+      // Oct 18: every dollar toward buyout, keyed on the charge (charge.succeeded for the same charge is a no-op).
+      try {
+        const chargeId = await chargeIdOfInvoice(inv as unknown as Parameters<typeof chargeIdOfInvoice>[0], getStripe() as unknown as Parameters<typeof chargeIdOfInvoice>[1])
+        await recordInvoicePayment(supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0]), profile.id, inv, chargeId)
+      } catch (e) {
+        console.error('[webhook] ownership ledger (invoice)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'invoice.voided': {
+      try {
+        await markQuoteInvoice(admin as unknown as QuoteWebhookDb, (event.data.object as Stripe.Invoice).id as string, 'void', new Date().toISOString())
+      } catch (e) {
+        console.error('[webhook] maintenance quote void', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Quote not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'charge.succeeded':
+    case 'charge.refunded': {
+      const ch = event.data.object as Stripe.Charge
+      const store = supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0])
+      try {
+        const customerId = getCustomerId(ch.customer)
+        let profileId: string | undefined
+        if (customerId) {
+          const { data: rows } = await admin.from('profiles').select('id').eq('stripe_customer_id', customerId).limit(1)
+          profileId = rows?.[0]?.id as string | undefined
+        }
+        if (event.type === 'charge.succeeded') {
+          if (profileId) await recordChargePayment(store, profileId, ch)
+        } else {
+          // One ledger row per refund id. Newer API versions omit charge.refunds, so list them.
+          const listed = (ch as unknown as { refunds?: { data?: RefundLike[] } }).refunds?.data
+          const refunds: RefundLike[] = listed && listed.length > 0
+            ? listed
+            : await listChargeRefunds(ch.id)
+          await recordRefunds(store, ch as unknown as Parameters<typeof recordRefunds>[1], refunds, profileId)
+        }
+      } catch (e) {
+        console.error('[webhook] ownership ledger (charge)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'refund.created':
+    case 'refund.updated':
+    case 'refund.failed': {
+      // A refund's own events (e.g. a refund that later fails is restored). Same key as charge.refunded: refund:<re_id>.
+      const r = event.data.object as Stripe.Refund
+      try {
+        await recordRefundObject(supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0]), r as unknown as RefundLike, null)
+      } catch (e) {
+        console.error('[webhook] ownership ledger (refund)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'charge.dispute.created':
+    case 'charge.dispute.updated':
+    case 'charge.dispute.closed':
+    case 'charge.dispute.funds_reinstated': {
+      const d = event.data.object as Stripe.Dispute
+      try {
+        await recordDispute(supabaseOwnershipStore(admin as unknown as Parameters<typeof supabaseOwnershipStore>[0]), d as unknown as Parameters<typeof recordDispute>[1])
+      } catch (e) {
+        console.error('[webhook] ownership ledger (dispute)', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
       break
     }
     default:

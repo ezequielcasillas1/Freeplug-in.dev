@@ -130,11 +130,11 @@ describe('Vera Q2 / Aria 9:28: the nudge counts plan + add-ons + tip against the
 })
 
 describe('entitlements from add-ons', () => {
-  it('+1 small edit adds one included edit (Starter 1, Fast lane 2); Big change gives one big change', () => {
-    expect(withAddons(entitlementsFor({ stepId: 'starter' }), ['small_edit']).includedEditsPerMonth).toBe(1)
-    expect(withAddons(entitlementsFor({ stepId: 'fast_lane' }), ['small_edit']).includedEditsPerMonth).toBe(2)
+  it('Oct 18: retired add-ons are still recognized but grant no edits and no Big change', () => {
+    expect(withAddons(entitlementsFor({ stepId: 'starter' }), ['small_edit']).includedEditsPerMonth).toBe(2)
+    expect(withAddons(entitlementsFor({ stepId: 'fast_lane' }), ['small_edit']).includedEditsPerMonth).toBe(10)
     const both = withAddons(entitlementsFor({ stepId: 'priority' }), ['small_edit', 'big_change'])
-    expect(both).toMatchObject({ includedEditsPerMonth: 1, bigChangesPerMonth: 1, addons: ['small_edit', 'big_change'], addonCents: 1075 })
+    expect(both).toMatchObject({ includedEditsPerMonth: 5, bigChangesPerMonth: 0, addons: ['small_edit', 'big_change'], addonCents: 1075 })
     // never a queue rank or a price change
     expect(both.priorityRank).toBe(entitlementsFor({ stepId: 'priority' }).priorityRank)
     expect(both.monthlyCents).toBe(5500)

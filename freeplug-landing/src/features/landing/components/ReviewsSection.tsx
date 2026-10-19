@@ -3,8 +3,10 @@
 import { motion } from 'framer-motion'
 import { Clock } from 'lucide-react'
 import { fadeInUp, staggerContainer } from '../animations/landing.variants'
+import { useTranslations } from 'next-intl'
 
 export function ReviewsSection() {
+  const t = useTranslations('public.landing.reviews')
   return (
     <section id="reviews" className="py-24 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#ba3d3d]/5 to-transparent rounded-full blur-3xl" />
@@ -21,22 +23,23 @@ export function ReviewsSection() {
             variants={fadeInUp}
             className="inline-block px-4 py-1.5 rounded-full bg-[#ba3d3d]/10 text-[#ba3d3d] text-sm font-semibold uppercase tracking-wider mb-4"
           >
-            Testimonials
+            {t('testimonials')}
           </motion.span>
           <motion.h2
             variants={fadeInUp}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
           >
-            Reviews{' '}
-            <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">
-              coming soon
-            </span>
+            {t.rich('reviewsComingSoon', {
+              span: (chunks) => (
+                <span className="bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] bg-clip-text text-transparent">{chunks}</span>
+              ),
+            })}
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             className="text-lg text-gray-600 max-w-2xl mx-auto"
           >
-            We&apos;ll share real owner feedback here once the first Freeplug / 72 After sites are live. No invented stats.
+            {t('wellShareRealOwnerFeedback')}
           </motion.p>
         </motion.div>
 
@@ -54,8 +57,9 @@ export function ReviewsSection() {
               <Clock className="w-5 h-5 text-amber-600" />
             </div>
             <p className="text-gray-600">
-              <span className="font-semibold text-amber-700">Real reviews coming soon.</span>{' '}
-              Freeplug is in early outreach — we won&apos;t invent client counts.
+              {t.rich('realReviewsComingSoonFreeplug', {
+                span: (chunks) => <span className="font-semibold text-amber-700">{chunks}</span>,
+              })}
             </p>
           </div>
         </motion.div>

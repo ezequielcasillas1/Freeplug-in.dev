@@ -1,5 +1,6 @@
 import type { InvoiceRow } from '@/lib/stripe/billing-routing'
-import { addonNameList, addonRefundNote } from '@/lib/plans/ladder-copy'
+import { ladderCopy, type LadderCopy } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { formatNoteDate } from '@/lib/plans/note-date'
 
 /** How long the Plans page keeps explaining an automatic add-on refund (the email says it too). */
@@ -22,7 +23,8 @@ export type AddonRefundNoteItem = {
 /** The note's date: when the refund was made (invoice mark), or the invoice date on older invoices. */
 const noteTime = (r: InvoiceRow) => r.addonRefund?.refundedAt ?? r.created
 
-export function recentAddonRefundNotes(invoices: readonly InvoiceRow[] | null | undefined, now: Date = new Date()): AddonRefundNoteItem[] {
+export function recentAddonRefundNotes(invoices: readonly InvoiceRow[] | null | undefined, now: Date = new Date(), copy: LadderCopy = ladderCopy()): AddonRefundNoteItem[] {
+  const { addonNameList, addonRefundNote } = copy
   const since = now.getTime() - ADDON_REFUND_NOTE_DAYS * 86_400_000
   return (invoices ?? [])
     .filter((r) => r.addonRefund && new Date(noteTime(r)).getTime() >= since)
@@ -34,7 +36,7 @@ export function recentAddonRefundNotes(invoices: readonly InvoiceRow[] | null | 
 }
 
 export function AddonRefundNotes({ invoices, now }: { invoices: readonly InvoiceRow[] | null | undefined; now?: Date }) {
-  const notes = recentAddonRefundNotes(invoices, now)
+  const notes = recentAddonRefundNotes(invoices, now, useLadderCopy())
   if (notes.length === 0) return null
   return (
     <div className="max-w-2xl mb-6 space-y-2" data-testid="addon-refund-notes">

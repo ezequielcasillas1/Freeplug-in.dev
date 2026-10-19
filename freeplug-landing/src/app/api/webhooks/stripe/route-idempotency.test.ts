@@ -21,6 +21,7 @@ vi.mock('@/lib/outreach/server', () => ({ handleOutreachInvoicePaid: async () =>
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     rpc: async (fn: string, args: Record<string, unknown>) => {
+      if (fn === 'record_ownership_entry') return { data: 'inserted', error: null }
       h.rpcCalls.push([fn, args])
       if (h.rpcError) return { data: null, error: h.rpcError }
       const dup = h.ledgerRows.some((r) => r.stripe_invoice_id === args.p_stripe_invoice_id)

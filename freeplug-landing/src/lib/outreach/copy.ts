@@ -1,3 +1,5 @@
+import { intlLocale } from '@/i18n/format'
+import type { AppLocale } from '@/i18n/config'
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '@/lib/site'
 import { PHOTO_LIMITS } from './limits'
 import { CLAIM_STEP3_BODY } from '@/lib/plans/ladder-copy'
@@ -238,8 +240,8 @@ export function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{([^}]+)\}/g, (m, k: string) => (k in values ? values[k] : m))
 }
 
-export function formatExpiryDate(d: Date): string {
-  return d.toLocaleDateString('en-US', {
+export function formatExpiryDate(d: Date, locale: AppLocale = 'en'): string {
+  return d.toLocaleDateString(intlLocale(locale), {
     month: 'long',
     day: 'numeric',
     year: 'numeric',

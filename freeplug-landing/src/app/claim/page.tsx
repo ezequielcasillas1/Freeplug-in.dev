@@ -22,7 +22,8 @@ import {
   STEP4_HEADING,
   fill,
 } from '@/lib/outreach/copy'
-import { CLAIM_STEP3_BODY, LADDER_SUBHEADING, PLAN_STRIP_TIP } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 import { ClaimAddCardButton, ClaimChangePlanLink, ClaimDetailsStep, ClaimPlanStep, ClaimWaiting } from './ClaimSteps'
 import { ClaimStartForm } from './ClaimStartForm'
 import { claimStartToken, liveClaimRedirect, shouldAutoClaim } from './start/claim-redirect'
@@ -57,6 +58,7 @@ function unconfirmedEmailOf(user: { email?: string | null; email_confirmed_at?: 
 }
 
 export default async function ClaimPage({ searchParams }: Props) {
+  const { CLAIM_STEP3_BODY, LADDER_SUBHEADING, PLAN_STRIP_TIP } = ladderCopy(await currentLocale())
   const q = await searchParams
   const supabase = await createClient()
   const {

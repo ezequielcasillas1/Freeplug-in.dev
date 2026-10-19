@@ -258,3 +258,13 @@ describe('outreach copy', () => {
     )
   })
 })
+
+describe('ClaimStepLine EN catalog matches the locked STEP_NAMES', () => {
+  it('auth.signup.claim.stepNames (en) equals STEP_NAMES word for word', async () => {
+    const en = (await import('../../../messages/en.json')).default as { auth: { signup: { claim: { stepNames: Record<string, string>; stepLine: string; stepAria: string } } } }
+    const c = en.auth.signup.claim
+    expect([c.stepNames.account, c.stepNames.details, c.stepNames.plan, c.stepNames.card]).toEqual([...copy.STEP_NAMES])
+    expect(c.stepLine).toBe('Step {n} of {total} · {name}')
+    expect(c.stepAria).toBe('Step {n} of {total}')
+  })
+})

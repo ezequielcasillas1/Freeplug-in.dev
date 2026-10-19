@@ -8,19 +8,34 @@ import { createClient } from '@/lib/supabase/server'
 import { ensureProfile } from '@/lib/supabase/ensure-profile'
 import { CHANGE_TYPES } from '@/lib/help/help-chat-content'
 import {
-  CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE,
   closeBlockedPlanEndingMessage,
   getActiveSubscriptionStatus,
 } from '@/lib/stripe/active-subscription'
 import { HELP_CHAT_LIMIT, rateCheck } from '@/lib/rate-limit'
-import { ERROR_TOO_MANY_TRIES } from '@/lib/outreach/copy'
 import { scheduleAfterResponse } from '@/lib/background'
 import { notifyNewChangeRequest } from '@/lib/change-requests/notify'
 import { sendRowFailedAlert } from '@/lib/change-requests/alert'
-import { CHANGE_REQUEST_NOT_SAVED, CHANGE_REQUEST_TOO_LONG, DESCRIPTION_MAX, friendlyInsertError } from '@/lib/change-requests/submit-errors'
+import { CHANGE_REQUEST_NOT_SAVED, CHANGE_REQUEST_TOO_LONG, CHANGE_REQUEST_TOO_LONG_KEY, DESCRIPTION_MAX, friendlyInsertError } from '@/lib/change-requests/submit-errors'
+import { currentLocale } from '@/i18n/current-locale'
+import { translatorFor, type Translate } from '@/i18n/translate'
+
+/** Customer-facing errors in the request's language (errors.request.*). */
+async function errorsT(): Promise<Translate> {
+  return translatorFor(await currentLocale())
+}
+
+/**
+ * Zod issue messages are catalog keys; anything else (zod's own English) becomes "Invalid input.".
+ */
+function issueText(t: Translate, issues: readonly { message: string }[]): string {
+  const texts = issues.map((i) =>
+    t(i.message.startsWith('errors.') ? i.message : 'errors.request.error.invalidInput')
+  )
+  return [...new Set(texts)].join(' ')
+}
 
 const requestSchema = z.object({
-  business_name: z.string().min(1, 'Business name is required').max(200),
+  business_name: z.string().min(1, 'errors.request.business_name.businessNameRequired').max(200),
   contact_phone: z.string().max(50).optional().or(z.literal('')),
   google_business_url: z
     .string()
@@ -31,7 +46,7 @@ const requestSchema = z.object({
         const t = s.trim()
         return t === '' || /^https?:\/\/.+/.test(t)
       },
-      { message: 'Enter a valid URL (https://…)' }
+      { message: 'errors.request.message.enterValidUrlHttps' }
     ),
   notes: z.string().max(5000).optional().or(z.literal('')),
 })
@@ -69,11 +84,9 @@ async function saveWebsiteRequest(
     .in('status', ['submitted', 'in_review'])
     .maybeSingle()
 
+  const t = await errorsT()
   if (openRow?.status === 'in_review') {
-    return {
-      error:
-        'Your request is already being reviewed. We will contact you by email or phone.',
-    }
+    return { error: t('errors.request.error.requestAlreadyBeingReviewed') }
   }
 
   let requestId: string | null = null
@@ -112,8 +125,7 @@ async function saveWebsiteRequest(
     if (error) {
       if (error.code === '23505') {
         return {
-          error:
-            'You already have a request in progress. We will contact you soon.',
+          error: t('errors.request.error.alreadyHaveRequestProgress'),
         }
       }
       return { error: error.message }
@@ -125,8 +137,7 @@ async function saveWebsiteRequest(
     admin = createAdminClient()
   } catch {
     return {
-      error:
-        'Server configuration is incomplete (missing service role). Your request was saved; profile status could not be updated.',
+      error: t('errors.request.error.serverConfigurationIncompleteMissing'),
     }
   }
 
@@ -162,8 +173,9 @@ export async function submitWebsiteRequest(
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  const t = await errorsT()
   if (!user) {
-    return { error: 'You must be signed in.' }
+    return { error: t('errors.request.error.mustSigned') }
   }
 
   const parsed = requestSchema.safeParse({
@@ -174,8 +186,7 @@ export async function submitWebsiteRequest(
   })
 
   if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => i.message).join(' ')
-    return { error: msg || 'Invalid input.' }
+    return { error: issueText(t, parsed.error.issues) }
   }
 
   const saved = await saveWebsiteRequest(supabase, user.id, parsed.data)
@@ -193,13 +204,13 @@ const changeRequestSchema = z.object({
   page: z
     .string()
     .max(200)
-    .refine((s) => s.trim().length > 0, { message: 'Tell us which page it is on.' }),
+    .refine((s) => s.trim().length > 0, { message: 'errors.request.page.tellUsWhichPage' }),
   // Verbatim (Vera/Jace): validated trimmed, stored exactly as typed. Same limit as the form's
   // textarea maxLength (raw text), and the DB check matches (20261010160000).
   description: z
     .string()
-    .max(DESCRIPTION_MAX, CHANGE_REQUEST_TOO_LONG)
-    .refine((s) => s.trim().length > 0, { message: 'Describe the change.' }),
+    .max(DESCRIPTION_MAX, CHANGE_REQUEST_TOO_LONG_KEY)
+    .refine((s) => s.trim().length > 0, { message: 'errors.request.description.describeChange' }),
   /** File name only. The request path has no file storage, so the photo itself is not uploaded. */
   photoName: z.string().trim().max(200).optional(),
 })
@@ -223,20 +234,20 @@ export async function sendHelpChangeRequest(
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  const t = await errorsT()
   if (!user) {
-    return { ok: false, error: 'You must be signed in.' }
+    return { ok: false, error: t('errors.request.error.mustSigned') }
   }
 
   const parsed = changeRequestSchema.safeParse(input)
   if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => i.message).join(' ')
-    return { ok: false, error: msg || 'Invalid input.' }
+    return { ok: false, error: issueText(t, parsed.error.issues) }
   }
   const c = parsed.data
 
   // Shared limiter (Aria, section 3): 10 help-chat requests per hour per user.
   if (!(await rateCheck(HELP_CHAT_LIMIT, user.id))) {
-    return { ok: false, error: ERROR_TOO_MANY_TRIES }
+    return { ok: false, error: t('claim.errorTooManyTries') }
   }
 
   const { data: latest } = await supabase
@@ -250,7 +261,7 @@ export async function sendHelpChangeRequest(
   if (!latest?.business_name?.trim()) {
     return {
       ok: false,
-      error: 'Start a website request first, then you can ask for changes here.',
+      error: t('errors.request.error.startWebsiteRequestFirst'),
     }
   }
 
@@ -271,7 +282,7 @@ export async function sendHelpChangeRequest(
   if (notes.length > 5000) {
     return {
       ok: false,
-      error: 'Your request notes are full. Email support@freeplug-in.dev with this change.',
+      error: t('errors.request.error.requestNotesFullEmail'),
     }
   }
 
@@ -290,7 +301,7 @@ export async function sendHelpChangeRequest(
     .select('id')
     .maybeSingle()
   const capError = friendlyInsertError(rowErr)
-  if (capError) return { ok: false, error: capError }
+  if (capError) return { ok: false, error: capError === CHANGE_REQUEST_TOO_LONG ? t(CHANGE_REQUEST_TOO_LONG_KEY) : capError }
   const rowId = !rowErr && row?.id ? (row.id as string) : null
 
   // 2) The notes append (keeps /admin/requests working).
@@ -353,8 +364,10 @@ export async function cancelOwnWebsiteRequest(): Promise<
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  const locale = await currentLocale()
+  const t = translatorFor(locale)
   if (!user) {
-    return { ok: false, error: 'You must be signed in.' }
+    return { ok: false, error: t('errors.request.error.mustSigned') }
   }
 
   // Closing does not touch Stripe billing, so refuse while a plan is still active or trialing.
@@ -364,7 +377,7 @@ export async function cancelOwnWebsiteRequest(): Promise<
     .eq('id', user.id)
     .maybeSingle()
   if (profErr) {
-    return { ok: false, error: 'Could not verify your billing status. Try again later.' }
+    return { ok: false, error: t('errors.request.error.couldNotVerifyBilling') }
   }
   const customerId = prof?.stripe_customer_id
   if (customerId) {
@@ -374,8 +387,8 @@ export async function cancelOwnWebsiteRequest(): Promise<
         return {
           ok: false,
           error: plan.setToEnd
-            ? closeBlockedPlanEndingMessage(plan.endsAt)
-            : CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE,
+            ? closeBlockedPlanEndingMessage(plan.endsAt, locale)
+            : t('errors.plans.closeBlockedActivePlanMessage'),
         }
       }
     } catch (e) {
@@ -383,7 +396,7 @@ export async function cancelOwnWebsiteRequest(): Promise<
         '[request-website/close] subscription lookup failed',
         e instanceof Error ? e.message : e
       )
-      return { ok: false, error: 'Could not verify your billing status. Try again later.' }
+      return { ok: false, error: t('errors.request.error.couldNotVerifyBilling') }
     }
   }
 
@@ -393,15 +406,15 @@ export async function cancelOwnWebsiteRequest(): Promise<
   try {
     admin = createAdminClient()
   } catch {
-    return { ok: false, error: 'Server configuration is incomplete. Try again later.' }
+    return { ok: false, error: t('errors.request.error.serverConfigurationIncompleteTry') }
   }
   const { error } = await admin.rpc('cancel_website_request_for_user', { p_user_id: user.id })
   if (error) {
     if (error.message === 'No open request to close.') {
-      return { ok: false, error: error.message }
+      return { ok: false, error: t('errors.request.error.noOpenRequest') }
     }
     console.error('[request-website/close] close failed', error.message)
-    return { ok: false, error: 'Could not close your request. Try again later.' }
+    return { ok: false, error: t('errors.request.error.couldNotCloseRequest') }
   }
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/request-website')
