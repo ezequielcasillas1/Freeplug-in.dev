@@ -26,6 +26,8 @@ const eslintConfig = defineConfig([
       "src/lib/stripe/addon-removal-owed-server.ts",
       "src/lib/stripe/checkout-customer.ts",
       "src/lib/stripe/sync-checkout-customer.ts",
+      // Oct 19: email_opt_outs store (service_role-only table, RLS on, no policies).
+      "src/lib/unsubscribe/store.ts",
       "src/**/*.test.{ts,tsx}",
     ],
     rules: {
