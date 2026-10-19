@@ -84,7 +84,7 @@ export const HELP_QUICK_QUESTIONS: readonly HelpQuickQuestion[] = [
     question: 'How do I cancel my plan?',
     // help:85 (revised Sable Sep 25 3:30 PM: buyout instead of "export your data")
     answer:
-      "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.",
+      "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can buy your website files. See the buyout prices in the FAQ.",
     lockedRef: 'help/page.tsx:85',
   },
   {

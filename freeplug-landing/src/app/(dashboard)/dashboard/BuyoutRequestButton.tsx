@@ -2,19 +2,22 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import type { BuyoutTierId } from '@/lib/buyout/tiers'
 import { BUYOUT_REQUEST_LABEL, BUYOUT_THANKS, type BuyoutRequestResult } from '@/lib/buyout/buyout'
 
 type Props = {
   alreadyRequested: boolean
   /** Server action; injectable so the preview harness and tests don't write anything. */
-  onRequest: () => Promise<BuyoutRequestResult>
+  onRequest: (tierId?: BuyoutTierId) => Promise<BuyoutRequestResult>
+  /** The tier picked above the button (Oct 19); passed to onRequest. */
+  tierId?: BuyoutTierId
 }
 
 /**
  * Outline button (never the primary style: Resume plan / Restart hosting stay the main action).
  * After the request is sent, the thank-you line takes the button's place in the same card.
  */
-export function BuyoutRequestButton({ alreadyRequested, onRequest }: Props) {
+export function BuyoutRequestButton({ alreadyRequested, onRequest, tierId }: Props) {
   const [done, setDone] = useState(alreadyRequested)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -40,7 +43,7 @@ export function BuyoutRequestButton({ alreadyRequested, onRequest }: Props) {
           if (pending) return
           setError(null)
           startTransition(async () => {
-            const res = await onRequest()
+            const res = await (tierId ? onRequest(tierId) : onRequest())
             if (res.ok) setDone(true)
             else setError(res.error)
           })

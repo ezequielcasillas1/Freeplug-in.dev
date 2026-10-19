@@ -99,7 +99,7 @@ const faqCategories = [
         id: 'b-3',
         question: 'Can I cancel my plan?',
         answer:
-          'Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.',
+          'Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can buy your website files. See the buyout prices in the FAQ.',
       },
       {
         id: 'b-4',

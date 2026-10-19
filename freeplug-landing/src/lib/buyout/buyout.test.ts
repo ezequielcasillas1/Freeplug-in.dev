@@ -221,23 +221,29 @@ describe.skipIf(!existsSync(LOCKED_FILE))('buyout copy matches the locked file w
   }
   it.each([
     ['FAQ (new question)', BUYOUT_FAQ_QUESTION],
-    ['FAQ (new answer)', BUYOUT_FAQ_ANSWER],
     ['dashboard section (replaces EvaluationProgress) heading', BUYOUT_DASHBOARD_HEADING],
+    ['cancel page card (replaces "Progress Toward Ownership") heading', BUYOUT_CANCEL_HEADING],
+  ])('%s', (label, value) => {
+    expect(quoted(label)[0]).toBe(value)
+  })
+  // Oct 19 (Cheke): buyout tiers replace the "estimate / exact price" lines. These now differ from the locked
+  // file ON PURPOSE until Sable re-locks them (box draft); the guard checks they really changed.
+  it.each([
+    ['FAQ (new answer)', BUYOUT_FAQ_ANSWER],
     ['dashboard section body', BUYOUT_DASHBOARD_BODY],
     ['dashboard button', BUYOUT_REQUEST_LABEL],
     ['dashboard after request', BUYOUT_THANKS],
-    ['cancel page card (replaces "Progress Toward Ownership") heading', BUYOUT_CANCEL_HEADING],
     ['cancel page card body', BUYOUT_CANCEL_BODY],
-    ['cancel page card link', BUYOUT_REQUEST_LABEL],
-  ])('%s', (label, value) => {
-    expect(quoted(label)[0]).toBe(value)
+  ])('PENDING Sable (Oct 19 tiers): %s', (label, value) => {
+    expect(quoted(label)[0]).not.toBe(value)
+    expect(value).not.toMatch(/estimate|exact price|quote/i)
   })
   it('admin labels', () => {
     expect(quoted('admin labels')).toEqual([ADMIN_BUYOUT_REQUESTED, ADMIN_BUYOUT_PRICE, ADMIN_BUYOUT_QUOTED])
   })
-  it('no "website files" left in customer buyout copy', () => {
-    for (const v of [BUYOUT_FAQ_ANSWER, BUYOUT_DASHBOARD_BODY, BUYOUT_THANKS, BUYOUT_CANCEL_BODY]) {
-      expect(v).not.toMatch(/website files/i)
-    }
+  it('Oct 19 (Cheke): the price covers the website files only (reverses the old "no website files" rule)', () => {
+    expect(BUYOUT_FAQ_ANSWER).toMatch(/covers the website files only/)
+    expect(BUYOUT_FAQ_ANSWER).toContain('$500')
+    expect(BUYOUT_FAQ_ANSWER).toContain('$2,000')
   })
 })
