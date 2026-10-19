@@ -30,7 +30,7 @@ export const BUYOUT_CANCEL_HEADING = 'Keep your website'
 export const BUYOUT_CANCEL_BODY =
   "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it."
 export const BUYOUT_FAQ_QUESTION = 'Can I keep my website if I stop hosting with Freeplug?'
-export const BUYOUT_FAQ_ANSWER = `Yes. You can buy your website files for a one-time price based on how many pages your site has: ${buyoutTierSentence()}. The most you'd ever pay is ${formatTierPrice(BUYOUT_UNLIMITED_CENTS)}. Every dollar you've paid us counts toward it. The price covers the website files only. Moving your domain is handled separately.`
+export const BUYOUT_FAQ_ANSWER = `Yes. You can buy your website files for a one-time price based on how many pages your site has: ${buyoutTierSentence()}. The most you'd ever pay is ${formatTierPrice(BUYOUT_UNLIMITED_CENTS)}. Every dollar you've paid us counts toward it. The price covers the website files only. Transferring your domain is handled separately.`
 /** Admin labels (Sable). */
 export const ADMIN_BUYOUT_TYPE_BADGE = 'Buyout'
 export const ADMIN_BUYOUT_REQUESTED = 'Buyout requested'
@@ -49,7 +49,7 @@ export const NOTES_MAX = 5000
 export const BUYOUT_PRICE_MIN_DOLLARS = 1
 /** Oct 19 (Luma QA): the override never goes above the Unlimited tier ($2,000), the most anyone pays. */
 export const BUYOUT_PRICE_MAX_DOLLARS = BUYOUT_UNLIMITED_CENTS / 100
-export const BUYOUT_PRICE_ERROR = 'Use whole dollars from 1 to 2,000.'
+export const BUYOUT_PRICE_ERROR = 'Enter a whole-dollar amount from $1 to $2,000.'
 
 /**
  * Validates the admin's price input (whole dollars, "$" and thousands commas allowed) and returns
