@@ -99,17 +99,17 @@ describe('adminSetBuyoutPrice', () => {
   })
 })
 
-describe('adminSetProfileCumulativeWebsiteValuePaid (Oct 19: same $1..$2,000 whole-dollar rule)', () => {
+describe('adminSetProfileCumulativeWebsiteValuePaid (QA override: whole dollars $0 and up, no cap)', () => {
   const PROFILE = '44444444-4444-4444-8444-444444444444'
-  it.each(['0', '2001', '500000', '12.5', '', 'abc'])('rejects %j with the exact error', async (bad) => {
+  it.each(['-1', '12.5', '', 'abc'])('rejects %j with the exact error', async (bad) => {
     process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID = 'true'
     const { adminSetProfileCumulativeWebsiteValuePaid } = await import('./actions')
     expect(await adminSetProfileCumulativeWebsiteValuePaid(PROFILE, bad)).toEqual({
       ok: false,
-      error: 'Enter a whole-dollar amount from $1 to $2,000.',
+      error: 'Enter a whole-dollar amount of $0 or more.',
     })
   })
-  it.each([['1', 100], ['2,000', 200000]])('accepts %j', async (ok, cents) => {
+  it.each([['0', 0], ['5000', 500000]])('accepts %j', async (ok, cents) => {
     process.env.ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID = 'true'
     db.updates = []
     const { adminSetProfileCumulativeWebsiteValuePaid } = await import('./actions')

@@ -144,10 +144,13 @@ export async function adminSetProfileCumulativeWebsiteValuePaid(
   if (!uuidSchema.safeParse(profileId).success) {
     return { ok: false, error: 'Invalid profile id' }
   }
-  // Oct 19: same rule as the buyout price, whole dollars $1 to $2,000 (BUYOUT_PRICE_ERROR).
-  const parsed = parseBuyoutPriceInput(dollarsRaw)
-  if (!parsed.ok) return parsed
-  const cumulative_website_value_paid_cents = parsed.cents
+  // Oct 19 (Cheke): QA override is whole dollars from $0 up, no cap (not a buyout price).
+  const t = String(dollarsRaw ?? '').trim().replace(/^\$\s*/, '').replace(/,(?=\d{3}(\D|$))/g, '')
+  const n = Number(t)
+  if (!/^\d+$/.test(t) || !Number.isSafeInteger(n * 100)) {
+    return { ok: false, error: 'Enter a whole-dollar amount of $0 or more.' }
+  }
+  const cumulative_website_value_paid_cents = n * 100
   let admin
   try {
     admin = createAdminClient()
