@@ -19,13 +19,13 @@ import { BuyoutRequestButton } from './BuyoutRequestButton'
  * Oct 19 (Cheke): the buyout tiers, shown up front. The customer picks by page count, then requests.
  * Plain list in the card's existing style (no new theme). paidCents = cleared payments (ownership ledger).
  */
-/** DRAFT Spanish (box-translated Oct 19, for Sable). English comes from tiers.ts. */
+/** Spanish approved by Sable Oct 19 (catalog still draft until Cheke signs off). English comes from tiers.ts. */
 const ES = {
-  labels: { quick: 'Rápido: hasta 5 páginas', up_to_7: 'Hasta 7 páginas', up_to_11: 'Hasta 11 páginas', more_pages: '12 páginas o más', unlimited: 'Ilimitado: lo máximo que pagarías' } as Record<BuyoutTierId, string>,
+  labels: { quick: 'Quick: hasta 5 páginas', up_to_7: 'Hasta 7 páginas', up_to_11: 'Hasta 11 páginas', more_pages: '12 páginas o más', unlimited: 'Unlimited: lo máximo que pagarías' } as Record<BuyoutTierId, string>,
   heading: 'Precios de compra',
   pick: '¿Cuántas páginas tiene tu sitio web?',
-  filesOnly: 'El precio cubre solo los archivos de tu sitio web. Cada dólar que ya pagaste cuenta para la compra.',
-  due: (amount: string) => `Con lo que ya pagaste, pagarías ${amount}.`,
+  filesOnly: 'La compra incluye solo los archivos de tu sitio web.',
+  due: (amount: string) => `Con lo que ya pagaste, te faltan ${amount}.`,
 }
 
 export function BuyoutTiers({
