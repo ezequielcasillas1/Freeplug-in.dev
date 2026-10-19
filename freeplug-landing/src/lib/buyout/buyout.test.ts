@@ -176,9 +176,10 @@ describe('buyout helpers', () => {
     expect(parseBuyoutPriceInput('1200')).toEqual({ ok: true, cents: 120_000 })
     expect(parseBuyoutPriceInput(' $1,200 ')).toEqual({ ok: true, cents: 120_000 })
     expect(parseBuyoutPriceInput('1')).toEqual({ ok: true, cents: 100 })
-    expect(parseBuyoutPriceInput('500000')).toEqual({ ok: true, cents: 50_000_000 })
-    for (const bad of ['', '0', '-5', '12.50', '1e3', 'abc', '500001', '1,20', '99999999999999999999']) {
-      expect(parseBuyoutPriceInput(bad)).toEqual({ ok: false, error: 'Use whole dollars from 1 to 500,000.' })
+    expect(parseBuyoutPriceInput('2000')).toEqual({ ok: true, cents: 200_000 })
+    expect(parseBuyoutPriceInput('$2,000')).toEqual({ ok: true, cents: 200_000 })
+    for (const bad of ['', '0', '-5', '12.50', '1e3', 'abc', '2001', '2500', '500000', '1,20', '99999999999999999999']) {
+      expect(parseBuyoutPriceInput(bad)).toEqual({ ok: false, error: 'Use whole dollars from 1 to 2,000.' })
     }
   })
 
