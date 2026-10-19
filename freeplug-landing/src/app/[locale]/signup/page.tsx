@@ -28,6 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 type Props = {
+  params: Promise<{ locale: string }>
   searchParams: Promise<{ error?: string; next?: string }>
 }
 
@@ -54,8 +55,9 @@ function GoogleIcon() {
   )
 }
 
-export default async function SignUpPage({ searchParams }: Props) {
+export default async function SignUpPage({ params, searchParams }: Props) {
   const q = await searchParams
+  const t = await getTranslations({ locale: toAppLocale((await params).locale), namespace: 'auth.signup' })
   const google = await isGoogleSignInEnabled()
   // Claim mode (outreach step 1): only with next=/claim and a valid preview cookie.
   const claimSite = q.next === '/claim' ? await currentPreviewSite() : null
@@ -71,9 +73,9 @@ export default async function SignUpPage({ searchParams }: Props) {
           </p>
         </div>
       ) : null}
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">{claimSite ? STEP1_HEADING : 'Create account'}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">{claimSite ? STEP1_HEADING : t('heading')}</h1>
       <p className="text-sm text-gray-500 mb-6">
-        {claimSite ? step1Body(claimSite.contact_email) : 'Sign up to access your dashboard.'}
+        {claimSite ? step1Body(claimSite.contact_email) : t('subtitle')}
       </p>
 
       {q.error ? (
@@ -93,7 +95,7 @@ export default async function SignUpPage({ searchParams }: Props) {
               className="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 rounded-lg text-gray-700 bg-white hover:bg-zinc-50 font-medium transition-colors"
             >
               <GoogleIcon />
-              Continue with Google
+              {t('continueGoogle')}
             </button>
           </form>
 

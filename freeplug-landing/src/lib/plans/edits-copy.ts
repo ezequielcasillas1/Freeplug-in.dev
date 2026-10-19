@@ -77,7 +77,7 @@ export function needMoreEditsLine(stepId: PlanStepId, locale: string = 'en'): st
 /** Dashboard "Included" line. */
 export function editsIncludedLine(e: EditsIncluded, locale: string = 'en'): string {
   // DRAFT es (box-translated Oct 19, for Sable): the two dashboard "Included" lines.
-  if (locale === 'es') return e.unlimited ? 'Ediciones ilimitadas' : `Ediciones incluidas: te quedan ${e.remaining} de ${e.total} en este periodo de facturación`
+  if (locale === 'es') return e.unlimited ? 'Ediciones ilimitadas' : e.remaining === 1 ? `Ediciones incluidas: te queda 1 de ${e.total} en este periodo de facturación` : `Ediciones incluidas: te quedan ${e.remaining} de ${e.total} en este periodo de facturación`
   if (e.unlimited) return 'Unlimited edits'
   return `Edits included: ${e.remaining} of ${e.total} left this billing period`
 }
