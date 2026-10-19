@@ -1,6 +1,5 @@
 'use client'
 
-import { BUYOUT_PRICE_MAX_DOLLARS, BUYOUT_PRICE_MIN_DOLLARS } from '@/lib/buyout/buyout'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { adminSetProfileCumulativeWebsiteValuePaid } from './actions'
@@ -22,8 +21,7 @@ export function AdminCumulativePaidCell({ profileId, paidCents }: Props) {
       <div className="flex flex-col gap-1">
         <input
           type="number"
-          min={BUYOUT_PRICE_MIN_DOLLARS}
-          max={BUYOUT_PRICE_MAX_DOLLARS}
+          min={0}
           step={1}
           value={dollars}
           onChange={(e) => setDollars(e.target.value)}
