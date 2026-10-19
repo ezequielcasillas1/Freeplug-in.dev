@@ -2,7 +2,8 @@ import type { BuyoutRequestResult } from '@/lib/buyout/buyout'
 import type { WebsiteAccess } from '@/lib/website-access'
 import { useTranslations } from 'next-intl'
 import { showBuyoutCard } from '@/lib/buyout/buyout'
-import { BuyoutRequestButton } from './BuyoutRequestButton'
+import { BuyoutTiers } from './BuyoutTiers'
+import type { BuyoutTierId } from '@/lib/buyout/tiers'
 import { OWNERSHIP_NOTE, paidTowardOwnershipLine, stillClearingLine } from '@/lib/buyout/ownership'
 
 export type OwnershipSummary = { paidCents: number; clearingCents: number } | null
@@ -11,7 +12,7 @@ type Props = {
   /** 'dashboard' = "Want to keep your website?" card; 'cancel' = "Keep your website" card. */
   variant: 'dashboard' | 'cancel'
   alreadyRequested: boolean
-  onRequest: () => Promise<BuyoutRequestResult>
+  onRequest: (tierId?: BuyoutTierId) => Promise<BuyoutRequestResult>
   className?: string
   /** Oct 18: "Paid toward ownership" (dashboard only); null hides it. */
   ownership?: OwnershipSummary
@@ -51,7 +52,7 @@ export function BuyoutCard({ variant, alreadyRequested, onRequest, className = '
       <p className={dashboard ? 'text-sm text-gray-600 mb-4' : 'text-sm text-gray-600 mt-1 mb-4'}>
         {dashboard ? t('dashboardBody') : t('cancelBody')}
       </p>
-      <BuyoutRequestButton alreadyRequested={alreadyRequested} onRequest={onRequest} />
+      <BuyoutTiers alreadyRequested={alreadyRequested} onRequest={onRequest} paidCents={ownership?.paidCents ?? null} />
     </section>
   )
 }
@@ -65,7 +66,7 @@ export function DashboardBuyoutCard({
 }: {
   access: WebsiteAccess | null
   alreadyRequested: boolean
-  onRequest: () => Promise<BuyoutRequestResult>
+  onRequest: (tierId?: BuyoutTierId) => Promise<BuyoutRequestResult>
   ownership?: OwnershipSummary
 }) {
   if (!showBuyoutCard(access)) return null

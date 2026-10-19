@@ -244,7 +244,7 @@
       "error": {
         "mustSigned": "Tienes que iniciar sesión.",
         "somethingWentWrongSide": "Algo falló de nuestro lado. Inténtalo más tarde.",
-        "requestNotesFullEmail": "Las notas de tu solicitud ya están llenas. Escribe a support@freeplug-in.dev para pedir una cotización de compra."
+        "requestNotesFullEmail": "Las notas de tu solicitud ya están llenas. Escribe a support@freeplug-in.dev para pedir la compra de tu sitio."
       }
     },
     "request": {
@@ -397,7 +397,7 @@
         "goRequestWebsiteDashboard": "Ve a \"Pedir sitio web\" en tu panel. Llena el formulario con los datos de tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud y te contactará sobre los siguientes pasos.",
         "youllNeedBusinessName": "Necesitas el nombre de tu negocio, una descripción, tus datos de contacto y cualquier material de marca que tengas (logo, colores). Entre más detalles nos des sobre lo que imaginas, mejor podremos cumplir tus expectativas.",
         "wellGiveTimelineAfter": "Te daremos un tiempo estimado después de revisar tu solicitud. El proceso incluye el primer diseño, tus cambios y el lanzamiento. La mayor parte del tiempo depende de qué tan rápido recibamos tus datos y aprobaciones. Te mantendremos al tanto en cada paso.",
-        "yesCancelAnyTime": "Sí, puedes cancelar cuando quieras. Elige Opciones de cancelación en tu panel. Tu sitio web sigue en línea hasta el final del periodo que pagaste. Si quieres quedarte con tu sitio web, puedes pedir una cotización para comprarlo.",
+        "yesCancelAnyTime": "Sí, puedes cancelar cuando quieras. Elige Opciones de cancelación en tu panel. Tu sitio web sigue en línea hasta el final del periodo que pagaste. Si quieres quedarte con tu sitio web, puedes comprar los archivos de tu sitio. Consulta los precios de compra en las preguntas frecuentes.",
         "closeRequestFromRequest": "Puedes cerrar una solicitud desde la página de la solicitud (Panel y luego Ver o actualizar). Si tienes un plan de hosting activo, primero tienes que cancelar el plan, porque tu sitio sigue alojado con ese plan y no queremos cobrarte por una solicitud cerrada. Para cancelar tu plan, elige Opciones de cancelación en tu panel. Tu plan sigue activo hasta el final del periodo de facturación actual. Cuando termine, puedes cerrar la solicitud. Cerrar una solicitud nunca cancela un plan por sí solo.",
         "yesEverySiteBuild": "Sí. Cada sitio que hacemos funciona en celulares, tabletas y computadoras, y lo revisamos en cada uno antes de lanzarlo.",
         "everySiteIncludesBasics": "Cada sitio incluye lo básico para que los buscadores lo puedan leer: un título y una descripción para cada página, una estructura limpia y un diseño que se adapta al celular. No podemos prometer ningún lugar en los resultados de búsqueda.",
@@ -465,7 +465,7 @@
       "answer": {
         "yesWebsiteDevelopmentFree": "Sí. Hacer el sitio web es gratis. 72 After diseña y construye tu sitio web sin costo. Cuando tu sitio esté en línea, pagas el hosting mensual, que es obligatorio. El mantenimiento o la compra del sitio cuestan aparte solo si los pides. No hay cargos ocultos ni cobros sorpresa.",
         "wellGiveTimelineAfter": "Te daremos un tiempo estimado después de revisar tu solicitud. El proceso incluye el primer diseño, tus cambios y el lanzamiento. La mayor parte del tiempo depende de qué tan rápido recibamos tus datos y aprobaciones. Te mantendremos al tanto en cada paso.",
-        "yesCancelAnyTime": "Sí, puedes cancelar cuando quieras. Elige Opciones de cancelación en tu panel. Tu sitio web sigue en línea hasta el final del periodo que pagaste. Si quieres quedarte con tu sitio web, puedes pedir una cotización para comprarlo.",
+        "yesCancelAnyTime": "Sí, puedes cancelar cuando quieras. Elige Opciones de cancelación en tu panel. Tu sitio web sigue en línea hasta el final del periodo que pagaste. Si quieres quedarte con tu sitio web, puedes comprar los archivos de tu sitio. Consulta los precios de compra en las preguntas frecuentes.",
         "signPageClickForgot": "En la página para iniciar sesión, haz clic en \"¿Olvidaste tu contraseña?\" y escribe tu correo. Te enviaremos un enlace para crear una contraseña nueva. ¿No te llega después de unos minutos? Revisa tu carpeta de spam o escribe a support@freeplug-in.dev. Si inicias sesión con Google, usa \"Continuar con Google\"."
       },
       "changeTypes": {
@@ -1061,13 +1061,13 @@
   },
   "buyout": {
     "dashboardHeading": "¿Quieres quedarte con tu sitio web?",
-    "dashboardBody": "Puedes comprar tu sitio web con un pago único. Calcularemos el valor de tu sitio y te diremos el precio exacto antes de que pagues.",
-    "requestLabel": "Pedir cotización de compra",
-    "thanks": "Gracias. Recibimos tu solicitud de compra. Te diremos el precio antes de que pagues nada.",
+    "dashboardBody": "Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tiene tu sitio. Cada dólar que ya pagaste cuenta para la compra.",
+    "requestLabel": "Pedir la compra de mi sitio",
+    "thanks": "Gracias. Recibimos tu solicitud de compra. Confirmaremos cuántas páginas tiene tu sitio antes de que pagues nada.",
     "cancelHeading": "Quédate con tu sitio web",
-    "cancelBody": "¿Prefieres quedarte con tu sitio web en lugar de alojarlo con nosotros? Puedes comprarlo con un pago único, según un cálculo de su valor. Verás el precio exacto antes de pagar.",
+    "cancelBody": "¿Prefieres quedarte con tu sitio web en lugar de alojarlo con nosotros? Puedes comprar los archivos del sitio con un pago único según cuántas páginas tiene. Cada dólar que ya pagaste cuenta para la compra.",
     "faqQuestion": "¿Puedo quedarme con mi sitio web si dejo el hosting de Freeplug?",
-    "faqAnswer": "Sí. Puedes comprar tu sitio web con un pago único. El precio se basa en un cálculo del valor de tu sitio y verás el precio exacto antes de pagar. El pago cubre tu sitio web terminado. El cambio de tu dominio se maneja por separado.",
+    "faqAnswer": "Sí. Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tiene tu sitio: hasta 5 páginas $500, hasta 7 páginas $700, hasta 11 páginas $950, 12 páginas o más $1,200. Lo máximo que pagarías es $2,000. Cada dólar que ya nos pagaste cuenta para la compra. El precio cubre solo los archivos del sitio web. El cambio de tu dominio se maneja por separado.",
     "requestRecordName": "Compra del sitio web"
   },
   "common": {

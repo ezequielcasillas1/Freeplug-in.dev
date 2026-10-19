@@ -2,6 +2,7 @@ import type { AppLocale } from '@/i18n/config'
 import { translatorFor } from '@/i18n/translate'
 import { intlLocale } from '@/i18n/format'
 import type { WebsiteAccess } from '@/lib/website-access'
+import { BUYOUT_UNLIMITED_CENTS, buyoutTierSentence, formatTierPrice, type BuyoutTier } from './tiers'
 
 /**
  * Website buyout (Ezequiel, Sep 25, 2026): monthly payments do not count toward owning the site. A
@@ -22,17 +23,17 @@ import type { WebsiteAccess } from '@/lib/website-access'
 
 // Copy from Sable (Sep 25, 2026, 3:15 PM CT). Use exactly.
 export const BUYOUT_DASHBOARD_HEADING = 'Want to keep your website?'
+// Oct 19 (Cheke): tiers replace the "we'll estimate / ask for a price" wording. Box draft for Sable.
 export const BUYOUT_DASHBOARD_BODY =
-  "You can buy your website for a one-time fee. We'll estimate your website's value and tell you the exact price before you pay."
-export const BUYOUT_REQUEST_LABEL = 'Request a buyout quote'
+  "You can buy your website files for a one-time price based on how many pages your site has. Every dollar you've paid counts toward it."
+export const BUYOUT_REQUEST_LABEL = 'Request my buyout'
 export const BUYOUT_THANKS =
-  "Thanks. We got your buyout request. We'll let you know the price before you pay anything."
+  "Thanks. We got your buyout request. We'll confirm your page count before you pay anything."
 export const BUYOUT_CANCEL_HEADING = 'Keep your website'
 export const BUYOUT_CANCEL_BODY =
-  "Want to keep your website instead of hosting it with us? You can buy it for a one-time fee based on an estimate of its value. You'll see the exact price before you pay."
+  "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it."
 export const BUYOUT_FAQ_QUESTION = 'Can I keep my website if I stop hosting with Freeplug?'
-export const BUYOUT_FAQ_ANSWER =
-  "Yes. You can buy your website for a one-time fee. The price is based on an estimate of your website's value, and you'll see the exact price before you pay. The fee covers your finished website. Moving your domain is handled separately."
+export const BUYOUT_FAQ_ANSWER = `Yes. You can buy your website files for a one-time price based on how many pages your site has: ${buyoutTierSentence()}. The most you'd ever pay is ${formatTierPrice(BUYOUT_UNLIMITED_CENTS)}. Every dollar you've paid us counts toward it. The price covers the website files only. Moving your domain is handled separately.`
 /** Admin labels (Sable). */
 export const ADMIN_BUYOUT_TYPE_BADGE = 'Buyout'
 export const ADMIN_BUYOUT_REQUESTED = 'Buyout requested'
@@ -84,8 +85,9 @@ export function formatBuyoutPrice(cents: number, locale: AppLocale = 'en'): stri
   })}`
 }
 
-export function buyoutNoteBlock(now: Date): string {
-  return `${BUYOUT_NOTE_MARKER}\nRequested: ${now.toISOString()}`
+export function buyoutNoteBlock(now: Date, tier: BuyoutTier | null = null): string {
+  const picked = tier ? `\nTier picked: ${tier.label} (${formatTierPrice(tier.cents)})` : ''
+  return `${BUYOUT_NOTE_MARKER}\nRequested: ${now.toISOString()}${picked}`
 }
 
 /** Dashboard card: shown for active, ending and offline customers (anyone who has had hosting). */
@@ -140,12 +142,13 @@ export async function recordBuyoutRequest(
   store: BuyoutStore,
   userId: string,
   now: Date = new Date(),
-  locale: AppLocale = 'en'
+  locale: AppLocale = 'en',
+  tier: BuyoutTier | null = null
 ): Promise<BuyoutRequestResult> {
   // Customer-facing errors in the customer's language; the note block stays English (admin).
   const t = translatorFor(locale, 'errors.buyout.error')
   const GENERIC_ERROR = t('somethingWentWrongSide')
-  const block = buyoutNoteBlock(now)
+  const block = buyoutNoteBlock(now, tier)
   // A lost race (another tab, a double click) just means re-reading: the second pass sees the
   // is_buyout flag the first one set and returns alreadyRequested.
   for (let attempt = 0; attempt < 3; attempt++) {

@@ -89,7 +89,7 @@ describe('CancelPlanView', () => {
     expect(within(keep).getByText('Keep your website')).toBeInTheDocument()
     expect(
       within(keep).getByText(
-        "Want to keep your website instead of hosting it with us? You can buy it for a one-time fee based on an estimate of its value. You'll see the exact price before you pay."
+        "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it."
       )
     ).toBeInTheDocument()
     const warning = screen.getByTestId('cancel-access-warning')

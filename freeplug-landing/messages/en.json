@@ -244,7 +244,7 @@
       "error": {
         "mustSigned": "You must be signed in.",
         "somethingWentWrongSide": "Something went wrong on our side. Try again later.",
-        "requestNotesFullEmail": "Your request notes are full. Email support@freeplug-in.dev to ask for a buyout quote."
+        "requestNotesFullEmail": "Your request notes are full. Email support@freeplug-in.dev to request your buyout."
       }
     },
     "request": {
@@ -397,7 +397,7 @@
         "goRequestWebsiteDashboard": "Go to \"Request website\" in your dashboard. Fill out the form with your business details and what you need. Our team will review your request and contact you about next steps.",
         "youllNeedBusinessName": "You'll need your business name, description, contact information, and any branding materials (logo, colors) you have. The more details you provide about your vision, the better we can match your expectations.",
         "wellGiveTimelineAfter": "We'll give you a timeline after we review your request. The process includes the first design, your revisions, and launch. Most of the time depends on how quickly we get your details and approvals. We'll keep you updated along the way.",
-        "yesCancelAnyTime": "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.",
+        "yesCancelAnyTime": "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can buy your website files. See the buyout prices in the FAQ.",
         "closeRequestFromRequest": "You can close a request from the request page (Dashboard, then View or update). If you have an active hosting plan, you'll need to cancel the plan first, because your site is still hosted under it and we don't want you charged for a request that's closed. To cancel your plan, choose Cancel options in your dashboard. Your plan stays active until the end of the current billing period. Once it has ended, you can close the request. Closing a request never cancels a plan on its own.",
         "yesEverySiteBuild": "Yes. Every site we build works on phones, tablets and computers, and we check it on each before launch.",
         "everySiteIncludesBasics": "Every site includes the basics that help search engines read it: a page title and description for each page, clean page structure, and a mobile-friendly layout. We can't promise any search ranking.",
@@ -465,7 +465,7 @@
       "answer": {
         "yesWebsiteDevelopmentFree": "Yes. Website development is free. 72 After designs and builds your website at no charge. After your site is live, you pay for monthly hosting, which is required. Maintenance or a buyout costs extra only if you ask for it. There are no hidden fees or surprise charges.",
         "wellGiveTimelineAfter": "We'll give you a timeline after we review your request. The process includes the first design, your revisions, and launch. Most of the time depends on how quickly we get your details and approvals. We'll keep you updated along the way.",
-        "yesCancelAnyTime": "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.",
+        "yesCancelAnyTime": "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can buy your website files. See the buyout prices in the FAQ.",
         "signPageClickForgot": "On the sign-in page, click \"Forgot password?\" and enter your email. We'll email you a link to set a new password. No email after a few minutes? Check your spam folder, or email support@freeplug-in.dev. If you sign in with Google, use \"Continue with Google\" instead."
       },
       "changeTypes": {
@@ -1061,13 +1061,13 @@
   },
   "buyout": {
     "dashboardHeading": "Want to keep your website?",
-    "dashboardBody": "You can buy your website for a one-time fee. We'll estimate your website's value and tell you the exact price before you pay.",
-    "requestLabel": "Request a buyout quote",
-    "thanks": "Thanks. We got your buyout request. We'll let you know the price before you pay anything.",
+    "dashboardBody": "You can buy your website files for a one-time price based on how many pages your site has. Every dollar you've paid counts toward it.",
+    "requestLabel": "Request my buyout",
+    "thanks": "Thanks. We got your buyout request. We'll confirm your page count before you pay anything.",
     "cancelHeading": "Keep your website",
-    "cancelBody": "Want to keep your website instead of hosting it with us? You can buy it for a one-time fee based on an estimate of its value. You'll see the exact price before you pay.",
+    "cancelBody": "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it.",
     "faqQuestion": "Can I keep my website if I stop hosting with Freeplug?",
-    "faqAnswer": "Yes. You can buy your website for a one-time fee. The price is based on an estimate of your website's value, and you'll see the exact price before you pay. The fee covers your finished website. Moving your domain is handled separately.",
+    "faqAnswer": "Yes. You can buy your website files for a one-time price based on how many pages your site has: up to 5 pages $500, up to 7 pages $700, up to 11 pages $950, 12 or more pages $1,200. The most you'd ever pay is $2,000. Every dollar you've paid us counts toward it. The price covers the website files only. Moving your domain is handled separately.",
     "requestRecordName": "Website buyout"
   },
   "common": {
