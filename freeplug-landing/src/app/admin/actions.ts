@@ -133,6 +133,9 @@ export async function adminDeleteUser(
 }
 
 /** QA only: set `ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID=true` — does not write billing_ledger. */
+/** int4 cents ceiling in whole dollars (floor(2147483647 / 100)). */
+const CUMULATIVE_PAID_MAX_DOLLARS = 21_474_836
+
 export async function adminSetProfileCumulativeWebsiteValuePaid(
   profileId: string,
   dollarsRaw: string
@@ -149,6 +152,10 @@ export async function adminSetProfileCumulativeWebsiteValuePaid(
   const n = Number(t)
   if (!/^\d+$/.test(t) || !Number.isSafeInteger(n * 100)) {
     return { ok: false, error: 'Enter a whole-dollar amount of $0 or more.' }
+  }
+  // The column is int4 cents (max 2,147,483,647), so the most it holds is $21,474,836.
+  if (n > CUMULATIVE_PAID_MAX_DOLLARS) {
+    return { ok: false, error: 'Enter a whole-dollar amount up to $21,474,836.' }
   }
   const cumulative_website_value_paid_cents = n * 100
   let admin
