@@ -1385,7 +1385,10 @@
       "backupHelp": "Opcional. Si ya no está disponible, te mandamos opciones por correo antes de comprar nada.",
       "betaLead": "Oferta beta:",
       "betaNote": "Por ahora, Freeplug compra tu dominio y paga la renovación anual en todos los planes. Estamos probando si podemos seguir haciéndolo en nuestros planes de menor precio. Si deja de ser posible, a los clientes del plan de menor precio les podríamos pedir que paguen la renovación anual del dominio con la tarjeta registrada. Te avisaremos antes de cobrarte cualquier cosa.",
-      "consentRequired": "(Obligatorio para esta opción)"
+      "consentRequired": "(Obligatorio para esta opción)",
+      "offerIncluded": "Dominio incluido con tu plan para nuestros primeros {cap} clientes.",
+      "offerSpotsLeft": "{count, plural, one {Queda # lugar.} other {Quedan # lugares.}}",
+      "offerEnded": "Terminó la oferta de dominio incluido para nuestros primeros {cap} clientes. Aún podemos comprarte un dominio."
     },
     "self": {
       "label": "Yo compro mi dominio",

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
-import { getClaimedSiteForUser } from '@/lib/outreach/server'
+import { getClaimedSiteForUser, getDomainOfferStatus } from '@/lib/outreach/server'
 import { domainStatusStep } from '@/lib/domain/flow'
 import { DomainRequestForm } from './DomainRequestForm'
 
@@ -22,6 +22,7 @@ export default async function DomainPage() {
         getClaimedSiteForUser(user.id).catch(() => null),
       ])
     : [{ data: null }, null]
+  const offer = await getDomainOfferStatus()
   const step = latest ? domainStatusStep(latest.status as string) : null
   const steps = ['saved', 'connecting', 'live'] as const
   return (
@@ -43,7 +44,7 @@ export default async function DomainPage() {
           </ol>
         </section>
       ) : null}
-      <DomainRequestForm freeplugUrl={site?.live_url ?? null} />
+      <DomainRequestForm freeplugUrl={site?.live_url ?? null} offer={offer} />
     </div>
   )
 }

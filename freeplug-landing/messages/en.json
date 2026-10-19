@@ -1385,7 +1385,10 @@
       "backupHelp": "Optional. If it's taken, we'll email you options before buying anything.",
       "betaLead": "Beta offer:",
       "betaNote": "For now, Freeplug buys your domain and pays the yearly renewal on every plan. We're testing whether we can keep doing this on our lower-priced plans. If it stops being affordable, customers on the lowest-priced plan may be asked to pay the yearly domain renewal with the card on file. We'll tell you before we charge anything.",
-      "consentRequired": "(Required for this option)"
+      "consentRequired": "(Required for this option)",
+      "offerIncluded": "Domain included with your plan for our first {cap} clients.",
+      "offerSpotsLeft": "{count, plural, one {# spot left.} other {# spots left.}}",
+      "offerEnded": "The included-domain offer for our first {cap} clients has ended. We can still buy a domain for you."
     },
     "self": {
       "label": "I'll buy my own domain",

@@ -89,3 +89,43 @@ reset role;
 \i supabase/qa/domain_requests_legacy_precheck.sql
 
 rollback;
+
+-- ===== First-100 domain-included offer (migration 20261019130000). Separate rolled-back transaction.
+-- Needs 2 real auth.users ids on the test DB: psql -v uid=<id1> -v uid2=<id2> -f ...
+begin;
+set local role service_role;
+-- C1) shrink the cap to make it testable: cap = current count + 1
+update public.domain_offers set cap = (select count(*) from public.domain_requests where domain_included) + 1
+where key = 'first_100_domain_included';
+-- C2) first claim takes the last spot (expect: included t, reason included, claimed = cap)
+select * from public.create_buy_for_me_request(:'uid', 'x.com', '', 'en',
+  'I understand that if this offer changes, Freeplug may charge my card on file for the yearly domain renewal, and will tell me before it does.', 'en');
+-- C3) same user again (expect: included f, reason already_claimed; row still saved)
+select * from public.create_buy_for_me_request(:'uid', 'y.com', '', 'en',
+  'I understand that if this offer changes, Freeplug may charge my card on file for the yearly domain renewal, and will tell me before it does.', 'en');
+-- C4) another user after the cap (expect: included f, reason offer_ended, claimed = cap)
+select * from public.create_buy_for_me_request(:'uid2', 'z.com', '', 'en',
+  'I understand that if this offer changes, Freeplug may charge my card on file for the yearly domain renewal, and will tell me before it does.', 'en');
+-- C5) count never above cap (expect: t)
+select claimed <= cap as within_cap from public.domain_offer_status();
+-- C6) wrong consent wording still rejected through the function (expect: ERROR official en wording)
+savepoint h;
+select * from public.create_buy_for_me_request(:'uid2', 'w.com', '', 'en', 'anything', 'en');
+rollback to savepoint h;
+-- C7) a second included row for one user is impossible (expect: ERROR duplicate key domain_requests_one_included_per_user)
+savepoint i;
+update public.domain_requests set domain_included = true where user_id = :'uid' and kind = 'buy_for_me' and not domain_included;
+rollback to savepoint i;
+-- C8) included only on buy_for_me (expect: ERROR domain_requests_included_kind_check)
+savepoint j;
+insert into public.domain_requests (user_id, kind, domain_included) values (:'uid2', 'buy_self', true);
+rollback to savepoint j;
+reset role;
+-- C9) customers cannot call the claim or read the offer (expect: ERROR permission denied, twice)
+set local role authenticated;
+savepoint k; select * from public.create_buy_for_me_request(:'uid', 'v.com', '', 'en', 'x', 'en'); rollback to savepoint k;
+savepoint l; select * from public.domain_offers; rollback to savepoint l;
+reset role;
+-- C10) race (manual, two psql sessions with cap = count + 1): run C2 in both inside BEGIN; the
+-- second blocks on the offer row lock until the first commits, then returns offer_ended.
+rollback;

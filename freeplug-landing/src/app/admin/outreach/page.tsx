@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { adminListDomainRequests, adminListOutreachSites } from '@/lib/outreach/server'
+import { adminListDomainRequests, adminListOutreachSites, getDomainOfferStatus } from '@/lib/outreach/server'
+import { adminOfferSummary } from '@/lib/domain/flow'
 import { adminOutreachStatus } from '@/lib/outreach/status'
 import { formatMonthly, resolveLegacyOutreachPlan, resolveOutreachStep } from '@/lib/outreach/plan'
 import { AdminOutreachRow, type AdminOutreachRowView } from './AdminOutreachRow'
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: 'Outreach | Admin', robots: { index: 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminOutreachPage() {
-  const [sites, domains] = await Promise.all([adminListOutreachSites(), adminListDomainRequests()])
+  const [sites, domains, offer] = await Promise.all([adminListOutreachSites(), adminListDomainRequests(), getDomainOfferStatus()])
   const rows: AdminOutreachRowView[] = sites.map((s) => {
     const step = resolveOutreachStep(s.plan_step)
     const legacy = step ? null : resolveLegacyOutreachPlan(s.plan_hosting_cents, s.plan_addon_tier ?? 'none')
@@ -71,6 +72,7 @@ export default async function AdminOutreachPage() {
 
       <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">Domain requests ({openDomains.length} open)</h2>
+        <p className="mb-3 text-sm text-gray-700" data-testid="domain-offer-count">{adminOfferSummary(offer)}</p>
         {domains.length === 0 ? (
           <p className="text-sm text-gray-600">No domain requests.</p>
         ) : (
@@ -78,7 +80,10 @@ export default async function AdminOutreachPage() {
             {domains.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
                 <span className="text-gray-900">{d.email ?? d.user_id}</span>
-                <span className="text-gray-600">{d.kind === 'have_domain' ? `Has a domain: ${d.domain}` : 'Needs a domain'}</span>
+                <span className="text-gray-600">
+                  {d.kind === 'have_domain' ? `Has a domain: ${d.domain}` : d.kind === 'buy_for_me' ? `Buy for me: ${d.domain}` : 'Buys own domain'}
+                </span>
+                {d.domain_included ? <span className="rounded bg-emerald-100 px-1.5 text-xs font-semibold text-emerald-800">Included</span> : null}
                 <span className="text-xs text-gray-500">{new Date(d.created_at).toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}</span>
                 {d.status === 'pending' ? <MarkDomainDoneButton id={d.id} /> : <span className="text-xs text-gray-500">Done</span>}
               </li>
