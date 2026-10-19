@@ -67,7 +67,7 @@ export const formatTierPrice = (cents: number) => `$${(cents / 100).toLocaleStri
 export const BUYOUT_TIERS_HEADING = 'Buyout prices'
 export const BUYOUT_TIERS_FILES_ONLY = 'The buyout covers your website files only.'
 export const BUYOUT_TIER_PICK_LABEL = 'How many pages does your website have?'
-export const buyoutDueLine = (dueCents: number) => `After what you've paid, you'd pay ${formatTierPrice(dueCents)}.`
+export const buyoutDueLine = (dueCents: number) => `After what you've already paid, you'd have ${formatTierPrice(dueCents)} left to pay.`
 
 /** "up to 5 pages $500, up to 7 pages $700, up to 11 pages $950, 12 or more pages $1,200" (built from the config). */
 export function buyoutTierSentence(): string {

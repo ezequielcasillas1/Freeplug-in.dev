@@ -179,7 +179,7 @@ describe('buyout helpers', () => {
     expect(parseBuyoutPriceInput('2000')).toEqual({ ok: true, cents: 200_000 })
     expect(parseBuyoutPriceInput('$2,000')).toEqual({ ok: true, cents: 200_000 })
     for (const bad of ['', '0', '-5', '12.50', '1e3', 'abc', '2001', '2500', '500000', '1,20', '99999999999999999999']) {
-      expect(parseBuyoutPriceInput(bad)).toEqual({ ok: false, error: 'Use whole dollars from 1 to 2,000.' })
+      expect(parseBuyoutPriceInput(bad)).toEqual({ ok: false, error: 'Enter a whole-dollar amount from $1 to $2,000.' })
     }
   })
 

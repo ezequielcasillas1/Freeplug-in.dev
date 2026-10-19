@@ -88,7 +88,7 @@ describe('Buyout tiers on the card (Oct 19)', () => {
     const onRequest = vi.fn().mockResolvedValue({ ok: true, alreadyRequested: false })
     render(<BuyoutCard variant="dashboard" alreadyRequested={false} onRequest={onRequest} ownership={{ paidCents: 30000, clearingCents: 0 }} />)
     fireEvent.click(screen.getByRole('radio', { name: /Up to 11 pages/ }))
-    expect(screen.getByTestId('buyout-due')).toHaveTextContent("After what you've paid, you'd pay $650.")
+    expect(screen.getByTestId('buyout-due')).toHaveTextContent("After what you've already paid, you'd have $650 left to pay.")
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Request my buyout' }))
     })
