@@ -65,7 +65,7 @@ export const formatTierPrice = (cents: number) => `$${(cents / 100).toLocaleStri
 
 /** Copy (box draft, Oct 19; Sable to review). */
 export const BUYOUT_TIERS_HEADING = 'Buyout prices'
-export const BUYOUT_TIERS_FILES_ONLY = 'The buyout covers your website files only. Every dollar you\'ve paid counts toward it.'
+export const BUYOUT_TIERS_FILES_ONLY = 'The buyout covers your website files only.'
 export const BUYOUT_TIER_PICK_LABEL = 'How many pages does your website have?'
 export const buyoutDueLine = (dueCents: number) => `After what you've paid, you'd pay ${formatTierPrice(dueCents)}.`
 
