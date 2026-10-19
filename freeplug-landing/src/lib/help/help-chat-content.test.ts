@@ -50,7 +50,7 @@ describe('help chat quick questions', () => {
     expect(byId['is-it-free']).toContain('you pay for monthly hosting, which is required')
     expect(byId['what-do-i-pay']).toMatch(/^Hosting is required\./)
     expect(byId['buy-website']).toBe(BUYOUT_FAQ_ANSWER)
-    expect(byId['buy-website']).toMatch(/covers the website files only/)
+    expect(byId['buy-website']).toMatch(/The buyout covers your website files only\./)
     for (const q of HELP_QUICK_QUESTIONS) {
       expect(q.answer, q.id).not.toMatch(/optional hosting|billed (separately )?later/i)
     }
