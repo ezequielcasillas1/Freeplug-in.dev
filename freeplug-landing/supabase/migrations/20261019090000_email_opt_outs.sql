@@ -1,15 +1,32 @@
 -- Oct 19 (Cheke): cold-email opt-outs. LOCAL DB ONLY until Cheke says to apply it anywhere else.
--- Every opt-out is recorded (one row per event: email, when, where it came from). Casey's sender checks
+-- One row per address (unique normalized lowercase email; replays are ON CONFLICT DO NOTHING): email, first opt-out time, source. Casey's sender checks
 -- public.email_opted_out(...) before each send and skips any address that has a row here.
 create table if not exists public.email_opt_outs (
   id bigint generated always as identity primary key,
   email text not null check (email = lower(btrim(email)) and position('@' in email) > 1 and length(email) <= 320),
   opted_out_at timestamptz not null default now(),
   source text not null check (source in ('unsubscribe_page', 'one_click', 'reply_stop', 'admin', 'import')),
-  token_kind text check (token_kind in ('signed', 'email')),
+  token_kind text check (token_kind = 'signed'),
   user_agent text check (length(user_agent) <= 500)
 );
-create index if not exists email_opt_outs_email_idx on public.email_opt_outs (email);
+create unique index if not exists email_opt_outs_email_key on public.email_opt_outs (email);
+
+-- Insert path for the site (service role): idempotent.
+create or replace function public.record_email_opt_out(p_email text, p_source text, p_user_agent text default null)
+returns boolean
+language sql
+set search_path = ''
+as $$
+  with ins as (
+    insert into public.email_opt_outs (email, source, token_kind, user_agent)
+    values (lower(btrim(p_email)), p_source, 'signed', left(p_user_agent, 500))
+    on conflict (email) do nothing
+    returning 1
+  )
+  select exists (select 1 from ins)
+$$;
+revoke all on function public.record_email_opt_out(text, text, text) from public, anon, authenticated;
+grant execute on function public.record_email_opt_out(text, text, text) to service_role;
 
 -- Service role only: RLS on with no policies, and no grants to anon/authenticated.
 alter table public.email_opt_outs enable row level security;

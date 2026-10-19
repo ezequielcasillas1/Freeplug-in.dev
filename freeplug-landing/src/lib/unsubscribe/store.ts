@@ -2,7 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeEmail } from './token'
 
 export type OptOutSource = 'unsubscribe_page' | 'one_click'
-export type OptOut = { email: string; source: OptOutSource; tokenKind: 'signed' | 'email'; userAgent?: string | null; at?: Date }
+export type OptOut = { email: string; source: OptOutSource; tokenKind: 'signed'; userAgent?: string | null; at?: Date }
 export type OptOutStore = {
   record(o: OptOut): Promise<void>
   optedOut(emails: string[]): Promise<Set<string>>
@@ -11,9 +11,10 @@ export type OptOutStore = {
 /** public.email_opt_outs (migration 20261019090000), service role. */
 export const supabaseOptOutStore = (): OptOutStore => ({
   async record(o) {
+    // One row per address (unique lowercase email): a replay is ON CONFLICT DO NOTHING; the first opt-out's time stays.
     const { error } = await createAdminClient()
       .from('email_opt_outs')
-      .insert({ email: o.email, source: o.source, token_kind: o.tokenKind, user_agent: o.userAgent?.slice(0, 500) ?? null, opted_out_at: (o.at ?? new Date()).toISOString() })
+      .upsert({ email: o.email, source: o.source, token_kind: o.tokenKind, user_agent: o.userAgent?.slice(0, 500) ?? null, opted_out_at: (o.at ?? new Date()).toISOString() }, { onConflict: 'email', ignoreDuplicates: true })
     if (error) throw new Error(error.message)
   },
   async optedOut(emails) {
@@ -23,7 +24,7 @@ export const supabaseOptOutStore = (): OptOutStore => ({
   },
 })
 
-/** Records one opt-out (every event is kept; repeats are fine). */
+/** Records an opt-out; repeats are no-ops (one row per normalized email). */
 export async function recordOptOut(store: OptOutStore, o: OptOut): Promise<{ ok: true } | { ok: false }> {
   const email = normalizeEmail(o.email)
   if (!email) return { ok: false }
