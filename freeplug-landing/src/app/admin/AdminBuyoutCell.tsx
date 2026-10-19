@@ -10,6 +10,7 @@ import {
   formatBuyoutPrice,
 } from '@/lib/buyout/buyout'
 import { adminSetBuyoutPrice } from './actions'
+import { BUYOUT_PRICE_MAX_DOLLARS } from '@/lib/buyout/buyout'
 import { ADMIN_BUYOUT_CLEARED } from '@/lib/buyout/ownership'
 
 /** "Buyout" type badge on a request row (Sable's admin labels). */
@@ -69,6 +70,7 @@ export function AdminBuyoutPriceCell({
         <input
           type="number"
           min={1}
+          max={BUYOUT_PRICE_MAX_DOLLARS}
           step={1}
           value={dollars}
           onChange={(e) => setDollars(e.target.value)}

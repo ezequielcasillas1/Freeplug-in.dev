@@ -91,8 +91,9 @@ describe('adminSetBuyoutPrice', () => {
   it('validates the input on the server', async () => {
     expect(await adminSetBuyoutPrice(BUYOUT_ID, '12.50')).toEqual({
       ok: false,
-      error: 'Use whole dollars from 1 to 500,000.',
+      error: 'Use whole dollars from 1 to 2,000.',
     })
+    expect(await adminSetBuyoutPrice(BUYOUT_ID, '2500')).toEqual({ ok: false, error: 'Use whole dollars from 1 to 2,000.' })
     expect(await adminSetBuyoutPrice('not-a-uuid', '500')).toEqual({ ok: false, error: 'Invalid request id' })
     expect(db.updates).toHaveLength(0)
   })

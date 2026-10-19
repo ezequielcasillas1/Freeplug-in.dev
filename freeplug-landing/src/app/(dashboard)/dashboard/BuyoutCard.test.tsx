@@ -82,7 +82,7 @@ describe('Buyout tiers on the card (Oct 19)', () => {
     const radios = screen.getAllByRole('radio')
     expect(radios).toHaveLength(5)
     for (const p of ['$500', '$700', '$950', '$1,200', '$2,000']) expect(screen.getByText(p)).toBeInTheDocument()
-    expect(screen.getByText(/covers your website files only/)).toBeInTheDocument()
+    expect(screen.getByText(/The buyout covers your website files only/)).toBeInTheDocument()
   })
   it('passes the picked tier to the request, and shows what is left after paid amounts', async () => {
     const onRequest = vi.fn().mockResolvedValue({ ok: true, alreadyRequested: false })

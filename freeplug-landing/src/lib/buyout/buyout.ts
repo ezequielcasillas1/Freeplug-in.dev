@@ -50,8 +50,9 @@ export const NOTES_MAX = 5000
 
 /** Admin price limits (whole dollars). */
 export const BUYOUT_PRICE_MIN_DOLLARS = 1
-export const BUYOUT_PRICE_MAX_DOLLARS = 500_000
-export const BUYOUT_PRICE_ERROR = 'Use whole dollars from 1 to 500,000.'
+/** Oct 19 (Luma QA): the override never goes above the Unlimited tier ($2,000), the most anyone pays. */
+export const BUYOUT_PRICE_MAX_DOLLARS = BUYOUT_UNLIMITED_CENTS / 100
+export const BUYOUT_PRICE_ERROR = 'Use whole dollars from 1 to 2,000.'
 
 /**
  * Validates the admin's price input (whole dollars, "$" and thousands commas allowed) and returns
