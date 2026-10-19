@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { HelpChat } from './HelpChat'
 import { HELP_QUICK_QUESTIONS } from '@/lib/help/help-chat-content'
 import { HELP_CHAT_INCLUDED_EDIT_NOTE, starterSmallEditAddonLine } from '@/lib/plans/ladder-copy'
+import { EDITS_COPY_EN } from '@/lib/plans/edits-copy'
 
 function setup(
   opts: {
@@ -97,34 +98,34 @@ describe('HelpChat', () => {
     expect(await screen.findByRole('button', { name: 'Send request' })).toBeInTheDocument()
   })
 
-  describe('Starter without +1 small edit (Sable, Oct 4 8:31 AM)', () => {
-    const LINE = "Small edits are $5 with the +1 small edit add-on. Turn it on and we'll take care of it this month. You can turn it off anytime."
-    const AI = 'Or make the change yourself with the AI builder, at no extra cost.'
-    it('showAiEditQuota false (today): the add-on line only, no AI-builder sentence', () => {
-      setup({ smallEditAddonNote: starterSmallEditAddonLine(false) })
-      walkToReview()
-      expect(screen.getByTestId('small-edit-addon-note')).toHaveTextContent(LINE)
-      expect(screen.getByTestId('small-edit-addon-note')).not.toHaveTextContent(AI)
-    })
-    it('showAiEditQuota true: the AI-builder sentence follows', () => {
-      setup({ smallEditAddonNote: starterSmallEditAddonLine(true) })
-      walkToReview()
-      expect(screen.getByTestId('small-edit-addon-note')).toHaveTextContent(`${LINE} ${AI}`)
-    })
-    it('Sable 9:05: a "Go to Plans" link right after the line, to the Plans page', () => {
-      setup({ smallEditAddonNote: starterSmallEditAddonLine(false) })
+  describe('small-edit answer (Oct 18: edit pack replaces the +1 small edit add-on)', () => {
+    const LINE = EDITS_COPY_EN.helpSmallEditAnswer
+    it('the new answer, with its "Go to Plans" link right after it', () => {
+      setup({ smallEditAddonNote: LINE })
       walkToReview()
       const note = screen.getByTestId('small-edit-addon-note')
       const link = screen.getByRole('link', { name: 'Go to Plans' })
       expect(link).toHaveAttribute('href', '/dashboard/plans')
       expect(note).toContainElement(link)
       expect(note).toHaveTextContent(`${LINE} Go to Plans`)
+      expect(note).not.toHaveTextContent('+1 small edit')
     })
-    it('the default follows the flag in ladder.ts (false on a5806f0)', () => {
-      expect(starterSmallEditAddonLine()).toBe(LINE)
+    it('the Starter line is the edit pack line now', () => {
+      expect(starterSmallEditAddonLine()).toBe('Need more edits this month? Add the $5 edit pack for 3 more.')
+    })
+    it('the edit field shows the hint, the examples and the maintenance note with its link', () => {
+      setup()
+      fireEvent.click(screen.getByRole('button', { name: 'Request a change' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Photos' }))
+      fireEvent.change(screen.getByLabelText('Which page is it on?'), { target: { value: 'Home' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+      expect(screen.getByTestId('edit-field-hint')).toHaveTextContent("Edits are small updates to what's already on your site.")
+      expect(screen.getByTestId('edit-field-examples')).toHaveTextContent('For example: Update your hours · Swap a photo · Change a price')
+      expect(screen.getByTestId('edit-field-note')).toHaveTextContent(EDITS_COPY_EN.fieldNote)
+      expect(screen.getByTestId('edit-field-maintenance-link')).toHaveAttribute('href', '/dashboard/request-website?focus=maintenance')
     })
     it('a plan with the included edit shows that note instead', () => {
-      setup({ hasIncludedEdit: true, smallEditAddonNote: starterSmallEditAddonLine(false) })
+      setup({ hasIncludedEdit: true, smallEditAddonNote: LINE })
       walkToReview()
       expect(screen.queryByTestId('small-edit-addon-note')).toBeNull()
     })

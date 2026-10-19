@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
+import { localeKeyPart } from '@/lib/stripe/locale'
 import { NextResponse } from 'next/server'
 import { isSameOriginPost } from '@/app/claim/start/claim-redirect'
 import { emailBaseUrl } from '@/lib/site'
@@ -10,7 +11,7 @@ import { resolvePlanStep } from '@/lib/plans/ladder'
 import { getAddonPriceId, getStepPriceId, getTipPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
 import { parseTipDollars, tipLineItems } from '@/lib/plans/tips'
 import { addonCapCheck, addonConfigCents, parseAddonIds } from '@/lib/plans/addons'
-import { addonById } from '@/lib/plans/ladder'
+import { addonById, RETIRED_ADDON_IDS } from '@/lib/plans/ladder'
 import {
   ALREADY_HAS_PLAN_MESSAGE,
   listLiveSubscriptions,
@@ -26,7 +27,8 @@ import {
 } from '@/lib/stripe/checkout-context'
 import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
 import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
-import { ADDON_TURN_OFF_FIRST, STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 
 export const runtime = 'nodejs'
 
@@ -38,6 +40,7 @@ export async function POST(request: Request) {
   if (h.get('origin') === 'null' || !isSameOriginPost(h.get('origin'), h.get('sec-fetch-site'), request.url, emailBaseUrl())) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+  const { ADDON_TURN_OFF_FIRST, STEP_NOT_SELLABLE_MESSAGE, TIP_OUT_OF_RANGE } = ladderCopy(await currentLocale())
   try {
     const supabaseAuth = await createClient()
     const {
@@ -84,7 +87,8 @@ export async function POST(request: Request) {
     // Add-ons (Oct 4): known ids, each at most once; the step's cap (Starter $15) from the add-on
     // prices, which getAddonPriceId below validates against the same amounts (fails closed).
     const addons = parseAddonIds(body?.addons)
-    if (!addons) {
+    // Oct 18: the "+1 small edit" and "Big change" add-ons are retired and can't be bought at checkout.
+    if (!addons || addons.some((id) => RETIRED_ADDON_IDS.includes(id))) {
       return NextResponse.json({ error: 'Invalid add-ons.', code: 'invalid_addons' }, { status: 400 })
     }
     if (!addonCapCheck(step.id, addons.map((id) => ({ id, cents: addonById(id)!.monthlyCents }))).ok) {
@@ -159,7 +163,7 @@ export async function POST(request: Request) {
       if (!customerId) {
         customerId = ownCustomerId
         if (customerId) await saveProfileCustomerId(checkoutUser.id, customerId)
-        else customerId = await createCheckoutCustomer(stripe, checkoutUser)
+        else customerId = await createCheckoutCustomer(stripe, checkoutUser, ctx.locale)
       }
     } catch (e) {
       console.error('[checkout/hosting] plan check failed', e)
@@ -219,7 +223,7 @@ export async function POST(request: Request) {
             addons.join(','),
             expiresAt,
             expiredSessionIds.join(','),
-          ].join('|')
+          ].join('|') + localeKeyPart(ctx.locale ?? 'en')
         )
         .digest('hex')
 

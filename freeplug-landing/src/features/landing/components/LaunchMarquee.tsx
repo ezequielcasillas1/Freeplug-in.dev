@@ -16,7 +16,7 @@ export function LaunchMarquee({ locale = 'en' }: { locale?: LaunchMarqueeLocale 
     <div
       className="launch-marquee relative overflow-hidden bg-gradient-to-r from-[#8a2e2e] via-[#ba3d3d] to-[#8a2e2e] text-white text-xs sm:text-sm font-medium"
       role="region"
-      aria-label="Launch announcement"
+      aria-label={locale === 'es' ? 'Anuncio de lanzamiento' : 'Launch announcement'}
       aria-live="off"
       data-testid="launch-marquee"
     >

@@ -5,7 +5,7 @@
  * Gate 1).
  *   1. Pre-flight guard (target production, no bundle yet): refuses before building if the override flag is in
  *      any variable/env file, CLOUDFLARE_ENV is set, or live secrets are around.
- *   2. opennextjs-cloudflare build
+ *   2. opennextjs-cloudflare build, then populateCache local (copies prerendered pages into the static assets)
  *   3. Full guard on the built bundle (target production; live PUBLIC markers relaxed only with the argument).
  *   4. wrangler versions upload, with no --env: the top-level `freeplug` Worker in wrangler.jsonc is production.
  *      CLOUDFLARE_ENV is removed from its env.
@@ -33,6 +33,11 @@ const run = (cmd, args, env = process.env) => {
   return r.status ?? 1
 }
 if (run('opennextjs-cloudflare', ['build']) !== 0) process.exit(1)
+// Copy the prerendered pages (.open-next/cache) into assets/cdn-cgi/_next_cache for the static-assets
+// incremental cache. `wrangler versions upload` skips this (only `opennextjs-cloudflare deploy/upload` do it);
+// without it every prerendered [locale] page ('/', '/es', '/faq') is a cache miss -> 404 (dynamicParams = false).
+// Local file copy only: no remote writes.
+if (run('opennextjs-cloudflare', ['populateCache', 'local']) !== 0) process.exit(1)
 if (report(guard(true)) !== 0) process.exit(1)
 const env = { ...process.env }
 delete env.CLOUDFLARE_ENV

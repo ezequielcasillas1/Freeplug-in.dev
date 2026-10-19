@@ -61,7 +61,8 @@ describe('L-1 (Aria 9:57): Keep it drops an owed removal for that add-on', () =>
   })
 })
 
-describe('Aria 9:27: a refund on Confirm also sends the email (once per invoice, through the ledger)', () => {
+// Oct 18 (Cheke): the "+1 small edit" and "Big change" add-ons are retired; these flows no longer exist.
+describe.skip('Aria 9:27: a refund on Confirm also sends the email (once per invoice, through the ledger)', () => {
   it('not_applied + refunded: the notice is sent for that invoice; a notice failure never changes the message', async () => {
     h.notice = vi.fn<(...a: unknown[]) => Promise<unknown>>(async () => 'sent')
     h.change = { ok: false, code: 'not_applied', message: 'x', refunded: true, refundCardCents: 500, refundCreditCents: 0, invoiceId: 'in_7' }
@@ -84,7 +85,8 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => undefined)
 })
 
-describe('preview (turn on): the real amount, the lock line, the fallback', () => {
+// Oct 18 (Cheke): the "+1 small edit" and "Big change" add-ons are retired; these flows no longer exist.
+describe.skip('preview (turn on): the real amount, the lock line, the fallback', () => {
   it('passes the real amount and the full price through', async () => {
     h.preview = { ok: true, action: 'on', addon: 'big_change', prorationDate: 100, amountDueCents: 375, fullCents: 575, currency: 'usd', nextAmountCents: 6075, nextBillingAt: SWITCH_AT, tipDollarsNow: 0, tipDollarsAfter: 0 }
     expect(await previewAddonChangeAction('big_change', 'on')).toEqual({
@@ -112,7 +114,8 @@ describe('preview (turn on): the real amount, the lock line, the fallback', () =
   })
 })
 
-describe("Confirm: Sable's final result lines, word for word", () => {
+// Oct 18 (Cheke): the "+1 small edit" and "Big change" add-ons are retired; these flows no longer exist.
+describe.skip("Confirm: Sable's final result lines, word for word", () => {
   it.each([
     [{ ok: true, kind: 'on', addon: 'small_edit', tipDollars: 0, invoiceStatus: 'paid', invoiceId: 'in_1' }, 'small_edit', { ok: true, message: '+1 small edit is on.' }],
     [{ ok: true, kind: 'removal_scheduled', addon: 'big_change', effectiveAt: SWITCH_AT }, 'big_change', { ok: true, message: 'Big change ends November\u00A03,\u00A02026.' }],

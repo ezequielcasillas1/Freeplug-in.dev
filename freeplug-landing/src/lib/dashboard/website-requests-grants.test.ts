@@ -18,7 +18,8 @@ describe('website_requests grants migration', () => {
   })
   it('sorts after 20261003220000 and the other new migrations; r13 copy untouched', () => {
     const files = readdirSync(path.join(root, 'supabase/migrations')).sort()
-    expect(files.indexOf('20261013094000_website_requests_grants.sql')).toBe(files.length - 1)
+    // Oct 18: 20261018090000_edits_quotes_ownership.sql now sorts after it.
+    expect(files.indexOf('20261013094000_website_requests_grants.sql')).toBe(files.indexOf('20261018090000_edits_quotes_ownership.sql') - 1)
     expect(files).toContain('20261003220000_revoke_client_writes.sql')
   })
   it('INSERT and UPDATE are still needed: the request form writes website_requests with the user session client', () => {

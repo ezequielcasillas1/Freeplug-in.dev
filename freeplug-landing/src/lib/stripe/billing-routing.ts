@@ -1,6 +1,8 @@
 import type Stripe from 'stripe'
 import { isLiveSubscriptionStatus } from './subscription-status'
 import { billingPortalSessionParams } from './portal'
+import { stripeLocaleParam } from './locale'
+import { DEFAULT_LOCALE, type AppLocale } from '@/i18n/config'
 import { invoiceTipCents } from '../plans/tips'
 import { hasPendingSwitch } from './change-plan'
 import { addonRefundOf } from './addon-refund-info'
@@ -69,9 +71,11 @@ export async function findScheduledSubscription(
 export function paymentMethodUpdateSessionParams(
   customer: string,
   returnUrl: string,
-  env: Record<string, string | undefined> = process.env
+  env: Record<string, string | undefined> = process.env,
+  locale: AppLocale = DEFAULT_LOCALE
 ): Stripe.BillingPortal.SessionCreateParams {
-  return billingPortalSessionParams(customer, returnUrl, env)
+  // Card R7: the portal opens in profiles.locale (no `locale` key at all with the gate off).
+  return { ...billingPortalSessionParams(customer, returnUrl, env), ...stripeLocaleParam(locale, env.NEXT_PUBLIC_FREEPLUG_I18N_ES) }
 }
 
 export type InvoiceRow = {

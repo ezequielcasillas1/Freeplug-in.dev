@@ -56,9 +56,11 @@ describe('hosting ladder config (Aria card, Oct 3)', () => {
   })
 
   it('entitlements per step', () => {
-    expect(entitlementsFor({ stepId: 'starter' })).toMatchObject({ priorityRank: 0, includedEditsPerMonth: 0, aiEditsPerMonth: 5, legacy: false })
-    expect(entitlementsFor({ stepId: 'priority' })).toMatchObject({ priorityRank: 1, includedEditsPerMonth: 0, nextBusinessDayEdits: false })
-    expect(entitlementsFor({ stepId: 'fast_lane' })).toMatchObject({ includedEditsPerMonth: 1, nextBusinessDayEdits: true, leadsReport: false })
+    // Oct 18 plan structure: 2 / 5 / 10 / 35 / 50 / unlimited edits.
+    expect(entitlementsFor({ stepId: 'starter' })).toMatchObject({ priorityRank: 0, includedEditsPerMonth: 2, aiEditsPerMonth: 5, legacy: false })
+    expect(entitlementsFor({ stepId: 'priority' })).toMatchObject({ priorityRank: 1, includedEditsPerMonth: 5, nextBusinessDayEdits: false })
+    expect(entitlementsFor({ stepId: 'fast_lane' })).toMatchObject({ includedEditsPerMonth: 10, nextBusinessDayEdits: true, leadsReport: false })
+    expect(entitlementsFor({ stepId: 'growth' }).includedEditsPerMonth).toBe(Number.POSITIVE_INFINITY)
     expect(entitlementsFor({ stepId: 'leads' })).toMatchObject({ leadsReport: true, quoteAlerts: true, gbpManaged: false })
     expect(entitlementsFor({ stepId: 'get_found' })).toMatchObject({ gbpManaged: true, reviewKit: true, seasonalRefresh: false })
     expect(entitlementsFor({ stepId: 'growth' })).toMatchObject({ seasonalRefresh: true, quarterlyCall: true, doneForYouEdits: true, monthlyCents: 10000 })

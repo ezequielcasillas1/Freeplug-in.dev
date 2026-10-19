@@ -2,26 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check, Loader2, X } from 'lucide-react'
-import {
-  ADD_PHOTOS_LABEL,
-  ERROR_TOO_MANY_PHOTOS,
-  ERROR_TOO_MANY_TRIES,
-  FIELD_PHOTOS_HELP,
-  PHOTO_COUNT_TEXT,
-  PHOTO_FAILED_TEXT,
-  PHOTO_LIMIT_REACHED,
-  PHOTO_REFUSED,
-  PHOTO_REMOVE_ARIA,
-  REFUSED_DISMISS_ARIA,
-  PHOTO_RETRYING_TEXT,
-  PHOTO_UPLOADED_ARIA,
-  PHOTO_UPLOADING_ARIA,
-  SHOW_ALL_PHOTOS,
-  SHOW_FEWER_PHOTOS,
-  THUMB_TAP_TO_RETRY,
-  THUMB_TRYING_AGAIN,
-  fill,
-} from '@/lib/outreach/copy'
+import { fill } from '@/lib/outreach/copy'
+import { localizeRefusal, usePhotoCopy, type PhotoCopy } from '@/lib/outreach/use-photo-copy'
 import { PHOTO_ACCEPT, preparePhoto } from '@/lib/outreach/client-image'
 import { PHOTO_LIMITS } from '@/lib/outreach/limits'
 import {
@@ -42,15 +24,16 @@ export type QueuePhoto = { id: string; blob: Blob; url: string; status: PhotoSta
 export type RefusedPhoto = { id: string; name: string; message: string }
 export type PhotoUploader = (clientPhotoId: string, blob: Blob) => Promise<UploadResult>
 
-function failureMessage(code: string | undefined): string {
-  if (code === 'photo_limit') return PHOTO_LIMIT_REACHED
-  if (code === 'rate') return ERROR_TOO_MANY_TRIES
-  if (code === 'bad_type' || code === 'unreadable' || code === 'too_large') return PHOTO_REFUSED
-  return PHOTO_FAILED_TEXT
+function failureMessage(C: PhotoCopy, code: string | undefined): string {
+  if (code === 'photo_limit') return C.PHOTO_LIMIT_REACHED
+  if (code === 'rate') return C.ERROR_TOO_MANY_TRIES
+  if (code === 'bad_type' || code === 'unreadable' || code === 'too_large') return C.PHOTO_REFUSED
+  return C.PHOTO_FAILED_TEXT
 }
 
 /** Photo list state + uploads (three at a time, automatic retries, tap-to-retry). */
 export function usePhotoQueue(alreadySent: number) {
+  const C = usePhotoCopy()
   const [photos, setPhotos] = useState<QueuePhoto[]>([])
   const [refused, setRefused] = useState<RefusedPhoto[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -75,13 +58,13 @@ export function usePhotoQueue(alreadySent: number) {
       try {
         for (const file of Array.from(files)) {
           if (remainingSlots(alreadySent, waiting) <= 0) {
-            setError(ERROR_TOO_MANY_PHOTOS)
+            setError(C.ERROR_TOO_MANY_PHOTOS)
             break
           }
           const out = await preparePicked(file, preparePhoto)
           if (out.kind === 'refused') {
             // No thumbnail, no server call, no count toward the 50.
-            setRefused((r) => [...r, { id: newClientPhotoId(), name: file.name, message: out.message }])
+            setRefused((r) => [...r, { id: newClientPhotoId(), name: file.name, message: localizeRefusal(C, out.message) }])
             continue
           }
           waiting += 1
@@ -92,7 +75,7 @@ export function usePhotoQueue(alreadySent: number) {
         setBusy(false)
       }
     },
-    [alreadySent]
+    [alreadySent, C]
   )
 
   const remove = useCallback((id: string) => {
@@ -108,7 +91,7 @@ export function usePhotoQueue(alreadySent: number) {
     async (photo: QueuePhoto, uploader: PhotoUploader) => {
       // Never send a body the server would refuse for size (it is shrunk before this; Vera QA #4).
       if (photo.blob.size > PHOTO_LIMITS.maxUploadBytes) {
-        patch(photo.id, { status: 'failed', error: failureMessage('too_large') })
+        patch(photo.id, { status: 'failed', error: failureMessage(C, 'too_large') })
         return
       }
       patch(photo.id, { status: 'uploading', error: undefined })
@@ -118,10 +101,10 @@ export function usePhotoQueue(alreadySent: number) {
       if (res.ok) patch(photo.id, { status: 'done', error: undefined })
       else {
         if (res.code === 'photo_limit') setLimitHit(true)
-        patch(photo.id, { status: 'failed', error: failureMessage(res.code) })
+        patch(photo.id, { status: 'failed', error: failureMessage(C, res.code) })
       }
     },
-    [patch]
+    [patch, C]
   )
 
   const uploadAll = useCallback(
@@ -169,6 +152,7 @@ type Props = {
  * rows (6 on phone, 10 on desktop) until "Show all {n} photos". Each thumbnail shows its own status.
  */
 export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, disabled, onRetry }: Props) {
+  const C = usePhotoCopy()
   const [expanded, setExpanded] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   const { photos, refused, error, busy, limitHit, add, remove, dismissRefused, alreadySent } = queue
@@ -192,13 +176,13 @@ export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, di
           {label}
         </label>
         <span className="text-xs text-gray-500" data-testid="photo-count">
-          {fill(PHOTO_COUNT_TEXT, { n: String(total) })}
+          {fill(C.PHOTO_COUNT_TEXT, { n: String(total) })}
         </span>
       </div>
-      <p className="text-xs text-gray-500 mb-2">{FIELD_PHOTOS_HELP}</p>
+      <p className="text-xs text-gray-500 mb-2">{C.FIELD_PHOTOS_HELP}</p>
       {atLimit ? (
         <div className="rounded-lg border-2 border-dashed border-zinc-200 bg-zinc-100 px-4 py-5 text-sm text-gray-600" data-testid="photo-limit">
-          {PHOTO_LIMIT_REACHED}
+          {C.PHOTO_LIMIT_REACHED}
         </div>
       ) : !sent ? (
         <label
@@ -221,7 +205,7 @@ export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, di
             }}
           />
           {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <span aria-hidden="true">+</span>}
-          <span className="ml-2">{ADD_PHOTOS_LABEL}</span>
+          <span className="ml-2">{C.ADD_PHOTOS_LABEL}</span>
         </label>
       ) : null}
       {refused.length > 0 ? (
@@ -235,7 +219,7 @@ export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, di
               <button
                 type="button"
                 onClick={() => dismissRefused(r.id)}
-                aria-label={fill(REFUSED_DISMISS_ARIA, { 'file name': r.name })}
+                aria-label={fill(C.REFUSED_DISMISS_ARIA, { 'file name': r.name })}
                 className="-my-2 -mr-2 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-zinc-100"
                 data-testid="photo-refused-dismiss"
               >
@@ -252,7 +236,7 @@ export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, di
       ) : null}
       {retrying ? (
         <p className="mt-2 text-xs text-gray-500" role="status">
-          {PHOTO_RETRYING_TEXT}
+          {C.PHOTO_RETRYING_TEXT}
         </p>
       ) : null}
       {ordered.length > 0 ? (
@@ -273,33 +257,33 @@ export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, di
                 {/* eslint-disable-next-line @next/next/no-img-element -- local object URL or short-lived signed URL */}
                 <img src={p.url} alt="" className={`h-full w-full object-cover ${p.status === 'uploading' || p.status === 'retrying' || failed ? 'opacity-60' : ''}`} />
                 {p.status === 'uploading' ? (
-                  <span className="absolute inset-x-2 bottom-2 h-1 overflow-hidden rounded-full bg-zinc-200" role="progressbar" aria-label={fill(PHOTO_UPLOADING_ARIA, n)}>
+                  <span className="absolute inset-x-2 bottom-2 h-1 overflow-hidden rounded-full bg-zinc-200" role="progressbar" aria-label={fill(C.PHOTO_UPLOADING_ARIA, n)}>
                     <span className="block h-full w-1/2 animate-pulse rounded-full bg-zinc-500" />
                   </span>
                 ) : null}
                 {p.status === 'retrying' ? (
                   <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-xs font-medium text-gray-800">
                     <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-                    {THUMB_TRYING_AGAIN}
+                    {C.THUMB_TRYING_AGAIN}
                   </span>
                 ) : null}
                 {p.status === 'done' ? (
                   <span
                     className="absolute bottom-1 right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow"
-                    aria-label={fill(PHOTO_UPLOADED_ARIA, n)}
+                    aria-label={fill(C.PHOTO_UPLOADED_ARIA, n)}
                     role="img"
                   >
                     <Check className="h-4 w-4 text-green-600" />
                   </span>
                 ) : null}
-                {failed && onRetry && p.error === PHOTO_FAILED_TEXT ? (
+                {failed && onRetry && p.error === C.PHOTO_FAILED_TEXT ? (
                   <button
                     type="button"
                     onClick={() => onRetry(p.id)}
                     className="absolute inset-0 flex items-end justify-center p-1 text-xs font-semibold text-[#ba3d3d]"
-                    aria-label={PHOTO_FAILED_TEXT}
+                    aria-label={C.PHOTO_FAILED_TEXT}
                   >
-                    <span className="w-full rounded-md bg-white/95 px-1 py-2 shadow">{THUMB_TAP_TO_RETRY}</span>
+                    <span className="w-full rounded-md bg-white/95 px-1 py-2 shadow">{C.THUMB_TAP_TO_RETRY}</span>
                   </button>
                 ) : null}
                 {!p.carried && (p.status === 'ready' || failed) ? (
@@ -307,7 +291,7 @@ export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, di
                     type="button"
                     onClick={() => remove(p.id)}
                     disabled={disabled}
-                    aria-label={fill(PHOTO_REMOVE_ARIA, n)}
+                    aria-label={fill(C.PHOTO_REMOVE_ARIA, n)}
                     // 44x44 tap area in the thumbnail's top-right corner; the visible circle stays small (Vera QA #6).
                     className="group absolute right-0 top-0 z-10 flex h-11 w-11 items-start justify-end p-1"
                     data-testid="photo-remove"
@@ -330,12 +314,12 @@ export function PhotoUploadBox({ label, queue, sentPhotos = [], sent = false, di
             !expanded && ordered.length <= COLLAPSED_DESKTOP ? 'md:hidden' : ''
           }`}
         >
-          {expanded ? SHOW_FEWER_PHOTOS : fill(SHOW_ALL_PHOTOS, { n: String(ordered.length) })}
+          {expanded ? C.SHOW_FEWER_PHOTOS : fill(C.SHOW_ALL_PHOTOS, { n: String(ordered.length) })}
         </button>
       ) : null}
-      {photos.some((p) => p.status === 'failed' && p.error && p.error !== PHOTO_FAILED_TEXT) ? (
+      {photos.some((p) => p.status === 'failed' && p.error && p.error !== C.PHOTO_FAILED_TEXT) ? (
         <p className="mt-2 text-sm text-red-700" role="alert">
-          {photos.find((p) => p.status === 'failed' && p.error !== PHOTO_FAILED_TEXT)?.error}
+          {photos.find((p) => p.status === 'failed' && p.error !== C.PHOTO_FAILED_TEXT)?.error}
         </p>
       ) : null}
     </div>

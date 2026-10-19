@@ -1,5 +1,7 @@
 import type Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { DEFAULT_LOCALE, type AppLocale } from '@/i18n/config'
+import { syncCustomerPreferredLocales } from '@/lib/stripe/locale'
 
 /**
  * First-time buyer fix (Sep 25, 2026).
@@ -38,7 +40,11 @@ export async function findCustomersToCheck(
  * and saves it to profiles.stripe_customer_id when that is still empty. Saving is best effort: the
  * checkout webhook and the success-page sync write the same value later.
  */
-export async function createCheckoutCustomer(stripe: Stripe, user: CheckoutUser): Promise<string> {
+export async function createCheckoutCustomer(
+  stripe: Stripe,
+  user: CheckoutUser,
+  locale: AppLocale = DEFAULT_LOCALE
+): Promise<string> {
   const customer = await stripe.customers.create(
     {
       ...(user.email ? { email: user.email } : {}),
@@ -47,6 +53,9 @@ export async function createCheckoutCustomer(stripe: Stripe, user: CheckoutUser)
     { idempotencyKey: `checkout-customer:${user.id}` }
   )
   await saveProfileCustomerId(user.id, customer.id)
+  // Receipts and invoice emails in the customer's language (card R7). Set by update, not in the
+  // idempotent create, so a language switch never collides with the create's idempotency key.
+  await syncCustomerPreferredLocales(stripe, customer.id, locale)
   return customer.id
 }
 

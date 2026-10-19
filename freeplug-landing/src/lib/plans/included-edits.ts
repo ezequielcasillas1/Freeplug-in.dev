@@ -1,6 +1,5 @@
 /**
- * Included small edits (Fast lane and up, grandfathered Plus/Pro, and the "+1 small edit" add-on,
- * Oct 4): `includedEditsPerMonth` per billing period, no rollover. Each use is a row in
+ * Included edits (Oct 18 plan structure, edit-allowance.ts; grandfathered Plus/Pro keep 1): `includedEditsPerMonth` per billing period, no rollover. Each use is a row in
  * public.included_edit_uses with a slot (1 or 2; UNIQUE (user_id, period_start, slot), migration
  * 20261004091000), so the database itself refuses more than two in a period and the server only
  * uses slots up to the entitlement. A request is counted once (request_id unique) and never in both
@@ -16,8 +15,11 @@ export function periodStartDate(start: Date | null | undefined): string | null {
 export const INCLUDED_EDIT_ALREADY_USED_CODE = '23505'
 /** edit_uses_request_once(): the request is already counted in the other table. */
 export const COUNTED_IN_OTHER_TABLE_CODE = 'FP409'
-/** The database caps small edits at 2 per period (slot check); the entitlement decides how many of those. */
-export const MAX_SMALL_EDIT_SLOTS = 2
+/**
+ * Oct 18 plan structure: up to 50 plan edits (+20 pack) or unlimited, so the slot cap is a sanity bound only
+ * (migration 20261018090000 relaxes included_edit_uses_slot_check to slot >= 1); the entitlement decides.
+ */
+export const MAX_SMALL_EDIT_SLOTS = 1000
 
 export type IncludedEditResult =
   | { ok: true; slot: number }
@@ -52,7 +54,7 @@ export async function recordIncludedEdit(
     }
     if (!err) return { ok: true, slot }
     if (err.code === COUNTED_IN_OTHER_TABLE_CODE) {
-      return { ok: false, reason: 'counted_elsewhere', message: 'This request is already counted as a big change.' }
+      return { ok: false, reason: 'counted_elsewhere', message: 'This request is already counted elsewhere.' }
     }
     if (isRequestDuplicate(err)) {
       return { ok: false, reason: 'already_recorded', message: 'This request is already counted as an included edit.' }
@@ -65,42 +67,7 @@ export async function recordIncludedEdit(
   return {
     ok: false,
     reason: 'already_used',
-    message: allowed > 1 ? 'Both included edits for this billing period are already used.' : 'The included edit for this billing period is already used.',
+    message: allowed === 2 ? 'Both included edits for this billing period are already used.' : allowed > 1 ? 'All included edits for this billing period are already used.' : 'The included edit for this billing period is already used.',
   }
 }
 
-// ------------------------------------------------------------------ Big change (Oct 4 add-on)
-
-export type BigChangeResult =
-  | { ok: true }
-  | { ok: false; reason: 'not_included' | 'already_used' | 'already_recorded' | 'counted_elsewhere' | 'no_period' | 'error'; message: string }
-
-export interface BigChangeStore {
-  insertUse(row: { user_id: string; period_start: string; request_id: string }): Promise<DbError>
-}
-
-/**
- * Records the period's Big change (one larger edit of up to about an hour) for a request in
- * big_change_uses: UNIQUE (user_id, period_start) refuses a second one in the period, and the
- * trigger refuses a request already counted as a small edit. Service role only (admin action).
- */
-export async function recordBigChange(
-  store: BigChangeStore,
-  input: { userId: string; requestId: string; bigChangesPerMonth: number; periodStart: Date | null }
-): Promise<BigChangeResult> {
-  if (input.bigChangesPerMonth < 1) {
-    return { ok: false, reason: 'not_included', message: "This customer doesn't have the Big change add-on." }
-  }
-  const period = periodStartDate(input.periodStart)
-  if (!period) return { ok: false, reason: 'no_period', message: 'No current billing period found in Stripe.' }
-  const err = await store.insertUse({ user_id: input.userId, period_start: period, request_id: input.requestId })
-  if (!err) return { ok: true }
-  if (err.code === COUNTED_IN_OTHER_TABLE_CODE) {
-    return { ok: false, reason: 'counted_elsewhere', message: 'This request is already counted as a small edit.' }
-  }
-  if (isRequestDuplicate(err)) return { ok: false, reason: 'already_recorded', message: 'This request is already counted as a big change.' }
-  if (err.code === INCLUDED_EDIT_ALREADY_USED_CODE) {
-    return { ok: false, reason: 'already_used', message: 'The big change for this billing period is already used.' }
-  }
-  return { ok: false, reason: 'error', message: err.message ?? 'Could not record the big change.' }
-}

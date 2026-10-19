@@ -1,3 +1,4 @@
+import { monthlyEditAllowance } from './edit-allowance'
 /**
  * Freeplug hosting ladder: the ONE place every tier value lives (Aria's card, Oct 3 2026; approved
  * design, final values still Ezequiel's call). Prices, step names, Stripe lookup keys, AI-edit
@@ -171,6 +172,11 @@ export const ADDONS: readonly AddonDef[] = [
 ]
 
 /** Add-ons shown as Coming soon on the Plans card (display only: no price, no switch, never sold). */
+/** Oct 18 (Cheke): retired add-ons, never shown or sold again. Stripe prices/subscriptions are left as they are. */
+export const RETIRED_ADDON_IDS: readonly AddonId[] = ['small_edit', 'big_change']
+/** Add-ons shown on the Plans card (none since Oct 18). */
+export const VISIBLE_ADDONS: readonly AddonDef[] = ADDONS.filter((a) => !RETIRED_ADDON_IDS.includes(a.id))
+
 export const COMING_SOON_ADDONS = [{ id: 'visitor_snapshot', monthlyCents: 500 }] as const
 export const COMING_SOON_ADDON_IDS = COMING_SOON_ADDONS.map((a) => a.id)
 
@@ -376,7 +382,7 @@ export type Entitlements = {
   legacyAddon: LegacyAddonTierId | null
   monthlyCents: number
   priorityRank: number
-  /** Included small edits per billing period: the step's (0 or 1) + the "+1 small edit" add-on. */
+  /** Edits per billing period: the plan's (edit-allowance.ts; Infinity = unlimited). Legacy Plus/Pro: 1. */
   includedEditsPerMonth: number
   /** Big changes per billing period (the Big change add-on): 0 or 1. */
   bigChangesPerMonth: number
@@ -436,7 +442,8 @@ export function entitlementsFor(input: EntitlementInput): Entitlements {
       legacyAddon: null,
       monthlyCents: step.monthlyCents,
       priorityRank: step.rank,
-      includedEditsPerMonth: perks.has('includedSmallEdit') ? 1 : 0,
+      // Oct 18 plan structure: plan edits per month (Growth = unlimited -> Infinity). See edit-allowance.ts.
+      includedEditsPerMonth: monthlyEditAllowance(step.id),
       bigChangesPerMonth: 0,
       addons: [],
       addonCents: 0,
@@ -481,12 +488,12 @@ export function withAddons(ent: Entitlements, addons: readonly AddonId[], addonC
   if (!ent.step || ent.legacy) return ent
   const list = ADDONS.filter((a) => addons.includes(a.id))
   if (list.length === 0) return ent
+  // Oct 18: "+1 small edit" and "Big change" are retired. They are still recognized on a subscription
+  // (billing display, Stripe untouched) but grant no edits and no Big change any more.
   return {
     ...ent,
     addons: list.map((a) => a.id),
     addonCents: addonCents ?? list.reduce((n, a) => n + a.monthlyCents, 0),
-    includedEditsPerMonth: ent.includedEditsPerMonth + list.reduce((n, a) => n + a.extraSmallEdits, 0),
-    bigChangesPerMonth: Math.min(1, ent.bigChangesPerMonth + list.reduce((n, a) => n + a.bigChanges, 0)),
   }
 }
 

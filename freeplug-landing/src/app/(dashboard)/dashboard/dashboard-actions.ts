@@ -14,9 +14,12 @@ import { RESUME_PLAN_ANCHOR_HREF, subscriptionEndingMessage } from '@/lib/dashbo
 import { planDisplayName, planNameOf, subscriptionListName, type PlanDisplayItem } from '@/lib/stripe/plan-line'
 import { isTipPrice } from '@/lib/plans/tips'
 import { isAddonPrice } from '@/lib/plans/addons'
-import { ADDON_NAMES, renewalCarriedLine, renewalLineText } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
+import { translatorFor } from '@/i18n/translate'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
-import type { Entitlements } from '@/lib/plans/ladder'
+import type { Entitlements, PlanStepId } from '@/lib/plans/ladder'
+import { editsIncluded, type EditsIncluded } from '@/lib/plans/edit-allowance'
 import { periodStartDate } from '@/lib/plans/included-edits'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { formatPlanEndDate, isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
@@ -62,7 +65,10 @@ export type SubscriptionDetail = {
   /** Included small edit this billing period (Fast lane+ or legacy Plus/Pro); null = not included / unknown. */
   includedEdit?: { used: number; available: number } | null
   /** Big change add-on (Oct 4): used this period of the available one. */
-  bigChange?: { used: number; available: number } | null
+  /** Oct 18: plan edits + edit pack - used this period ("Included" on the dashboard). */
+  editsIncluded?: EditsIncluded | null
+  /** Plan step id, for the edit pack line. */
+  editStepId?: PlanStepId | null
   /** Add-ons that end at the period end (turned off, or dropped by a planned switch). */
   addonsEnding?: { names: string[]; date: string } | null
   /** A downgrade waiting for the next billing date (Lina §3c); null = none or unknown. */
@@ -138,6 +144,11 @@ export async function getEnhancedDashboardData(
   } = await supabase.auth.getUser()
 
   if (!user) return null
+
+  // Every string this builds is in the request's language (Spanish build: alerts, activity, dates).
+  const locale = await currentLocale()
+  const t = translatorFor(locale)
+  const { ADDON_NAMES, renewalLineText, renewalCarriedLine } = ladderCopy(locale)
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -246,7 +257,7 @@ export async function getEnhancedDashboardData(
         if ((sub.status === 'active' || sub.status === 'trialing') && sub.schedule) {
           try {
             const p = await pendingPlanChange(stripe, sub)
-            const date = p ? formatPlanEndDate(new Date(p.effectiveAt)) : ''
+            const date = p ? formatPlanEndDate(new Date(p.effectiveAt), locale) : ''
             if (p?.isSwitch) pendingChange = { stepName: stepById(p.step).name, date }
             if (p && p.removedAddons.length > 0) addonsEnding = { names: p.removedAddons.map((a) => ADDON_NAMES[a]), date }
           } catch (e) {
@@ -260,7 +271,7 @@ export async function getEnhancedDashboardData(
           planName,
           // Sable 6:19 PM: grandfathered list / Recent activity name "Hosting + Pro add-on" (+ tip); the
           // ending alert keeps planName (the product names, read by grandfatheredAlertName).
-          listName: subscriptionListName(planItems.length > 0 ? planDisplayName(planItems) : planName, tipDollars, addonCents),
+          listName: subscriptionListName(planItems.length > 0 ? planDisplayName(planItems, locale) : planName, tipDollars, addonCents, locale),
           ladderStep,
           status: sub.status,
           amount,
@@ -273,7 +284,8 @@ export async function getEnhancedDashboardData(
           created: stripeTimestampToDate(sub.created) ?? new Date(0),
           entitlements,
           includedEdit: null,
-          bigChange: null,
+          editsIncluded: null,
+          editStepId: null,
           pendingChange,
           addonsEnding,
         })
@@ -283,30 +295,33 @@ export async function getEnhancedDashboardData(
         }
       }
 
-      // Included small edit: one per billing period, counted in included_edit_uses (owner can
-      // select own rows). A missing table or a read error just hides the line.
+      // Edits "Included" (Oct 18): plan edits + edit pack - edits used this billing period (included_edit_uses,
+      // owner can select own rows). Growth = Unlimited. A read error just hides the line. Legacy plans keep
+      // the old one-edit line. The edit pack has no Stripe price yet, so hasEditPack is false for now.
       for (const detail of subscriptions) {
-        const avail = detail.entitlements?.includedEditsPerMonth ?? 0
+        const ent = detail.entitlements
         const start = periodStartDate(detail.currentPeriodStart)
-        if (avail < 1 || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
+        if (!ent || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
+        if (ent.step && !ent.legacy) {
+          const { count, error: useErr } = await supabase
+            .from('included_edit_uses')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('period_start', start)
+          if (!useErr) {
+            detail.editsIncluded = editsIncluded({ stepId: ent.step.id, hasEditPack: false, used: count ?? 0 })
+            detail.editStepId = ent.step.id
+          }
+          continue
+        }
+        const avail = ent.includedEditsPerMonth ?? 0
+        if (avail < 1) continue
         const { count, error: useErr } = await supabase
           .from('included_edit_uses')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .eq('period_start', start)
         if (!useErr) detail.includedEdit = { used: count ?? 0, available: avail }
-      }
-      // Big change add-on (Oct 4): counted in big_change_uses the same way; hidden on any error.
-      for (const detail of subscriptions) {
-        const avail = detail.entitlements?.bigChangesPerMonth ?? 0
-        const start = periodStartDate(detail.currentPeriodStart)
-        if (avail < 1 || !start || (detail.status !== 'active' && detail.status !== 'trialing')) continue
-        const { count, error: useErr } = await supabase
-          .from('big_change_uses')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('period_start', start)
-        if (!useErr) detail.bigChange = { used: count ?? 0, available: avail }
       }
 
       // No ledger rows yet (e.g. the invoice.paid webhook has not landed): the earliest start of the
@@ -342,8 +357,8 @@ export async function getEnhancedDashboardData(
       recentActivity.push({
         id: `payment-${record.id ?? record.created_at}`,
         type: 'payment',
-        title: 'Payment received',
-        description: paymentActivityLabel(record.amount_cents, record.created_at),
+        title: t('dashboard.activity.title.paymentReceived'),
+        description: paymentActivityLabel(record.amount_cents, record.created_at, locale, t),
         date: new Date(record.created_at),
         amount: record.amount_cents,
       })
@@ -357,11 +372,11 @@ export async function getEnhancedDashboardData(
         type: req.status === 'submitted' ? 'request_submitted' : 'request_updated',
         title:
           req.status === 'submitted'
-            ? 'Request submitted'
+            ? t('dashboard.activity.title.requestSubmitted')
             : req.status === 'in_review'
-              ? 'Request in review'
-              : 'Request closed',
-        description: req.business_name || 'Website request',
+              ? t('dashboard.activity.title.requestReview')
+              : t('dashboard.activity.title.requestClosed'),
+        description: req.business_name || t('dashboard.activity.description.websiteRequest'),
         date: new Date(req.updated_at),
       })
     }
@@ -371,7 +386,7 @@ export async function getEnhancedDashboardData(
     recentActivity.push({
       id: `sub-${sub.id}`,
       type: 'subscription_created',
-      title: 'Subscription started',
+      title: t('dashboard.activity.title.subscriptionStarted'),
       description: sub.listName ?? sub.productName,
       date: sub.created,
     })
@@ -393,11 +408,11 @@ export async function getEnhancedDashboardData(
       const carried = profile?.stripe_customer_id ? await upcomingWithCarried(profile.stripe_customer_id, activeSubscription.id) : null
       const amount = carried?.totalCents ?? activeSubscription.amount
       // Aria 3:13 PM: the locked renewal line (the Plans key and date format), no days countdown.
-      const date = activeSubscription.currentPeriodEnd ? formatPlanEndDate(activeSubscription.currentPeriodEnd) : null
+      const date = activeSubscription.currentPeriodEnd ? formatPlanEndDate(activeSubscription.currentPeriodEnd, locale) : null
       alerts.push({
         id: 'upcoming-billing',
         type: 'info',
-        title: 'Upcoming billing',
+        title: t('dashboard.activity.title.upcomingBilling'),
         message: renewalLineText(amount, date),
         ...(carried ? { detail: renewalCarriedLine(carried.carriedCents) } : {}),
       })
@@ -413,9 +428,9 @@ export async function getEnhancedDashboardData(
     alerts.push({
       id: 'subscription-ending',
       type: 'warning',
-      title: 'Subscription ending',
-      message: subscriptionEndingMessage(cancelingSubscription.planName ?? cancelingSubscription.productName, daysUntilEnd, cancelingSubscription.ladderStep === true),
-      actionLabel: 'Resume plan',
+      title: t('dashboard.activity.title.subscriptionEnding'),
+      message: subscriptionEndingMessage(cancelingSubscription.planName ?? cancelingSubscription.productName, daysUntilEnd, cancelingSubscription.ladderStep === true, locale),
+      actionLabel: t('dashboard.activity.actionLabel.resumePlan'),
       actionHref: RESUME_PLAN_ANCHOR_HREF,
     })
   }
@@ -425,9 +440,9 @@ export async function getEnhancedDashboardData(
     alerts.push({
       id: 'get-started',
       type: 'action',
-      title: 'Get started',
-      message: 'Submit a website request to begin your journey with Freeplug.',
-      actionLabel: 'Request a website',
+      title: t('dashboard.activity.title.getStarted'),
+      message: t('dashboard.activity.message.submitWebsiteRequestBegin'),
+      actionLabel: t('dashboard.activity.actionLabel.requestWebsite'),
       actionHref: '/dashboard/request-website',
     })
   }

@@ -2,6 +2,9 @@ import type Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { ensureProfile } from '@/lib/supabase/ensure-profile'
 import { appBaseUrl } from '@/lib/stripe/config'
+import { DEFAULT_LOCALE, type AppLocale } from '@/i18n/config'
+import { readProfileLocale } from '@/i18n/profile-locale'
+import { stripeLocaleParam } from '@/lib/stripe/locale'
 
 export type CheckoutPaths = {
   base: string
@@ -14,6 +17,8 @@ export async function getCheckoutSessionContext(): Promise<{
   paths: CheckoutPaths
   user: { id: string; email?: string | null } | null
   stripeCustomerId: string | null
+  /** profiles.locale (gated; 'en' when the Spanish gate is off or the user is signed out). */
+  locale?: AppLocale
 }> {
   const base = appBaseUrl()
   const supabase = await createClient()
@@ -26,6 +31,7 @@ export async function getCheckoutSessionContext(): Promise<{
       paths: { base, successPath: '/', cancelPath: '/' },
       user: null,
       stripeCustomerId: null,
+      locale: DEFAULT_LOCALE,
     }
   }
 
@@ -40,6 +46,7 @@ export async function getCheckoutSessionContext(): Promise<{
     paths: { base, successPath: '/dashboard', cancelPath: '/dashboard' },
     user,
     stripeCustomerId: prof?.stripe_customer_id ?? null,
+    locale: await readProfileLocale(supabase, user.id),
   }
 }
 
@@ -57,6 +64,8 @@ export function applyUserToCheckoutSession(
     metadata: user
       ? { ...metadata, supabase_user_id: user.id }
       : metadata,
+    // Checkout in the customer's language (card R7); nothing added with the Spanish gate off.
+    ...stripeLocaleParam(ctx.locale ?? DEFAULT_LOCALE),
   }
 
   if (!user) return merged

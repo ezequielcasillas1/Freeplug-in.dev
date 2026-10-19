@@ -5,6 +5,7 @@ import { AdminConfigError } from '../AdminConfigError'
 import { AdminRequestRow, type AdminRequestRowData } from '../AdminRequestRow'
 import { AdminMailBanner } from '../AdminMailBanner'
 import { compareQueue, resolvePlanStep } from '@/lib/plans/ladder'
+import { fetchBuyoutCredit } from '@/lib/buyout/ownership'
 
 export default async function AdminRequestsPage() {
   const mailOn = isMailConfigured()
@@ -47,6 +48,15 @@ export default async function AdminRequestsPage() {
     for (const p of profs ?? []) stepByUser.set(p.id as string, (p.plan_step as string | null) ?? null)
   }
 
+  // Buyout eligibility reads ownership_ledger: cleared payments only (14+ days), refunds/disputes subtracted.
+  let creditByUser = new Map<string, number>()
+  const buyoutUsers = [...new Set(list.filter((r) => r.is_buyout).map((r) => r.user_id as string))]
+  try {
+    creditByUser = await fetchBuyoutCredit(admin as unknown as Parameters<typeof fetchBuyoutCredit>[0], buyoutUsers)
+  } catch (e) {
+    console.error('[admin/requests] buyout credit lookup failed', e instanceof Error ? e.message : e)
+  }
+
   const enrichedRequests: AdminRequestRowData[] = list
     .map((r) => {
       const a = authForRequests.get(r.user_id)
@@ -58,6 +68,7 @@ export default async function AdminRequestsPage() {
         planStepId: step?.id ?? null,
         planStepName: step?.name ?? null,
         priorityRank: step?.rank ?? -1,
+        buyoutClearedCents: r.is_buyout ? (creditByUser.get(r.user_id) ?? null) : null,
       }
     })
     .sort(compareQueue)
