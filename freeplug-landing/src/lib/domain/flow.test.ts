@@ -25,7 +25,7 @@ describe('submitDomainRequest', () => {
     [{ kind: 'buy_for_me', domain: 'anatacos.com', backupDomain: 'anatacostx.com', consent: true }, 'es', 'domain-we-buy', 'Estamos consiguiendo anatacos.com para ti'],
   ] as const)('%o sends the right template + locale with Reply-To', async (input, locale, template, subject) => {
     const { deps, flush } = setup({}, { locale })
-    expect(await submitDomainRequest(input, ctx, deps)).toMatchObject({ ok: true, id: 'req-1' })
+    expect(await submitDomainRequest(input, ctx, deps)).toEqual({ ok: true, id: 'req-1' })
     await flush()
     const mail = vi.mocked(deps.sendMail).mock.calls[0][0]
     expect(mail).toMatchObject({ to: 'ana@example.com', template, locale, subject, replyTo: DOMAIN_EMAIL_REPLY_TO, idempotencyKey: 'domain-request:req-1' })

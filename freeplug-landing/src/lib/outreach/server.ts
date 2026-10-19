@@ -1134,7 +1134,7 @@ export async function adminListDomainRequests() {
   const client = db()
   const { data } = await client
     .from('domain_requests')
-    .select('id, user_id, kind, domain, status, created_at, domain_included')
+    .select('id, user_id, kind, domain, status, created_at')
     .order('created_at', { ascending: false })
     .limit(50)
   const rows = data ?? []
@@ -1152,7 +1152,6 @@ export async function adminListDomainRequests() {
     domain: string | null
     status: string
     created_at: string
-    domain_included: boolean | null
     email: string | null
   }[]
 }
@@ -1168,41 +1167,6 @@ export async function insertDomainRequestAsService(row: import('@/lib/domain/flo
     return { id: (data?.id as string | undefined) ?? null, error: error?.message ?? null }
   } catch (e) {
     return { id: null, error: e instanceof Error ? e.message : 'service role unavailable' }
-  }
-}
-
-/** buy_for_me: one DB call saves the row and claims a first-100 "domain included" spot atomically. */
-export async function insertBuyForMeAsService(
-  row: import('@/lib/domain/flow').DomainRow
-): Promise<{ id: string | null; error: string | null; offer: import('@/lib/domain/flow').DomainOfferClaim | null }> {
-  try {
-    const { data, error } = await db()
-      .rpc('create_buy_for_me_request', {
-        p_user_id: row.user_id,
-        p_domain: row.domain,
-        p_backup_domain: row.backup_domain ?? '',
-        p_locale: row.locale,
-        p_consent_text: row.consent_text,
-        p_consent_locale: row.consent_locale,
-      })
-      .maybeSingle()
-    if (error || !data) return { id: null, error: error?.message ?? 'no row', offer: null }
-    const d = data as { id: string; included: boolean; reason: 'included' | 'already_claimed' | 'offer_ended'; claimed: number; cap: number }
-    return { id: d.id, error: null, offer: { included: d.included, reason: d.reason, claimed: d.claimed, cap: d.cap } }
-  } catch (e) {
-    return { id: null, error: e instanceof Error ? e.message : 'service role unavailable', offer: null }
-  }
-}
-
-/** First-100 offer count for the domain page and admin (null when unavailable). */
-export async function getDomainOfferStatus(): Promise<import('@/lib/domain/flow').DomainOfferStatus | null> {
-  try {
-    const { data, error } = await db().rpc('domain_offer_status').maybeSingle()
-    if (error || !data) return null
-    const d = data as { claimed: number; cap: number }
-    return { claimed: Number(d.claimed), cap: Number(d.cap) }
-  } catch {
-    return null
   }
 }
 

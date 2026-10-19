@@ -6,7 +6,7 @@ import { currentLocale } from '@/i18n/current-locale'
 import { sendMail } from '@/lib/email/mailer'
 import { scheduleAfterResponse } from '@/lib/background'
 import { alertOwner } from '@/lib/owner-alerts/events'
-import { getClaimedSiteForUser, insertBuyForMeAsService, insertDomainRequestAsService } from '@/lib/outreach/server'
+import { getClaimedSiteForUser, insertDomainRequestAsService } from '@/lib/outreach/server'
 import { submitDomainRequest, type DomainLocale, type DomainSubmitResult } from '@/lib/domain/flow'
 
 const asLocale = (v: unknown): DomainLocale | null => (v === 'es' ? 'es' : v === 'en' ? 'en' : null)
@@ -28,8 +28,7 @@ export async function requestDomainSetup(input: unknown): Promise<DomainSubmitRe
   const res = await submitDomainRequest(input, { userId: user.id, email: user.email ?? null, locale }, {
     // Customers have no INSERT grant (migration 20261019120000): the row is written with the service
     // role, only after auth + the consent check above. user_id always comes from the session.
-    // buy_for_me claims a first-100 "domain included" spot in the same DB call (row lock, cap 100).
-    insert: (row) => (row.kind === 'buy_for_me' ? insertBuyForMeAsService({ ...row, user_id: user.id }) : insertDomainRequestAsService({ ...row, user_id: user.id })),
+    insert: (row) => insertDomainRequestAsService({ ...row, user_id: user.id }),
     customer: async () => {
       const [{ data: prof }, { data: wr }, site] = await Promise.all([
         supabase.from('profiles').select('locale').eq('id', user.id).maybeSingle(),

@@ -124,39 +124,8 @@ export type DomainRow = {
   consent_locale: DomainLocale | null
 }
 
-/** First-100 "domain included" offer (Cheke, Oct 19 12:02 PM CT). Claimed atomically in the DB. */
-export const DOMAIN_OFFER_CAP = 100
-export type DomainOfferClaim = { included: boolean; reason: 'included' | 'already_claimed' | 'offer_ended'; claimed: number; cap: number }
-export type DomainOfferStatus = { claimed: number; cap: number }
-export const offerSpotsLeft = (s: DomainOfferStatus | null) => (s ? Math.max(0, s.cap - s.claimed) : 0)
-export const offerActive = (s: DomainOfferStatus | null) => offerSpotsLeft(s) > 0
-
-/**
- * Same decision as create_buy_for_me_request() (migration 20261019130000), which runs it under a
- * row lock: included only if the user has no included domain yet and a spot is left.
- */
-export function decideDomainClaim(s: DomainOfferStatus, userAlreadyIncluded: boolean): DomainOfferClaim {
-  const included = !userAlreadyIncluded && s.claimed < s.cap
-  return { included, reason: included ? 'included' : userAlreadyIncluded ? 'already_claimed' : 'offer_ended', claimed: s.claimed + (included ? 1 : 0), cap: s.cap }
-}
-
-/** Admin header, e.g. "Domain included (first 100): 37 / 100 claimed, 63 left". */
-export function adminOfferSummary(s: DomainOfferStatus | null): string {
-  if (!s) return 'Domain included (first 100): count unavailable'
-  const left = offerSpotsLeft(s)
-  return `Domain included (first ${s.cap}): ${s.claimed} / ${s.cap} claimed, ${left === 0 ? 'offer ended' : `${left} left`}`
-}
-
-/** Owner alert line, e.g. "yes, 37 of 100". */
-export function domainIncludedText(c: DomainOfferClaim | null | undefined): string {
-  if (!c) return 'unknown (offer count unavailable)'
-  if (c.included) return `yes, ${c.claimed} of ${c.cap}`
-  return c.reason === 'already_claimed' ? `no, this customer already has an included domain (${c.claimed} of ${c.cap})` : `no, offer ended (${c.claimed} of ${c.cap})`
-}
-
 export type DomainSubmitDeps = {
-  /** buy_for_me rows go through the DB claim function and return the claim. */
-  insert: (row: DomainRow) => Promise<{ id: string | null; error: string | null; offer?: DomainOfferClaim | null }>
+  insert: (row: DomainRow) => Promise<{ id: string | null; error: string | null }>
   /** Customer details for the email; may be slow, runs in the background. */
   customer: () => Promise<{ email: string | null; firstName: string | null; business: string | null; freeplugUrl: string | null; locale: DomainLocale | null }>
   sendMail: (p: {
@@ -174,7 +143,7 @@ export type DomainSubmitDeps = {
   now: () => Date
 }
 
-export type DomainSubmitResult = { ok: true; id: string | null; included?: boolean } | { ok: false; error: 'invalid' | typeof DOMAIN_INVALID | typeof CONSENT_REQUIRED | 'save_failed' }
+export type DomainSubmitResult = { ok: true; id: string | null } | { ok: false; error: 'invalid' | typeof DOMAIN_INVALID | typeof CONSENT_REQUIRED | 'save_failed' }
 
 export async function submitDomainRequest(
   input: unknown,
@@ -219,7 +188,6 @@ export async function submitDomainRequest(
         ['Domain', row.domain],
         ['Where bought', row.registrar],
         ['Backup choice', row.backup_domain],
-        ['Domain included', c.kind === 'buy_for_me' ? domainIncludedText(saved.offer) : null],
         ['Consent', row.consent_at ? `${row.consent_at} (${row.consent_locale}): ${row.consent_text}` : null],
         ['Language', ctx.locale],
         ['Next step', c.kind === 'buy_for_me' ? 'Buy by hand (no automatic purchase). If taken, email options first.' : null],
@@ -254,7 +222,7 @@ export async function submitDomainRequest(
   } catch (e) {
     console.error('[domain-request] schedule failed', e instanceof Error ? e.message : e)
   }
-  return c.kind === 'buy_for_me' ? { ok: true, id: saved.id, included: Boolean(saved.offer?.included) } : { ok: true, id: saved.id }
+  return { ok: true, id: saved.id }
 }
 
 /** Status step for the page: pending = Request saved, connecting, live/done = Live. */

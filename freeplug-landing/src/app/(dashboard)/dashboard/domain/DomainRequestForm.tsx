@@ -3,14 +3,14 @@
 import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { requestDomainSetup } from './actions'
-import { BUY_FOR_ME_CONSENT, CONSENT_REQUIRED, DOMAIN_INVALID, DOMAIN_KINDS, offerActive, offerSpotsLeft, type DomainKind, type DomainOfferStatus } from '@/lib/domain/flow'
+import { BUY_FOR_ME_CONSENT, CONSENT_REQUIRED, DOMAIN_INVALID, DOMAIN_KINDS, type DomainKind } from '@/lib/domain/flow'
 
 const INPUT =
   'mt-1 block w-full rounded-lg border border-[#d9c8b6] px-3 py-2.5 text-[15px] font-normal text-gray-900 outline-none focus:ring-2 focus:ring-[#c2643a]'
 const FIELD = 'mt-3 block text-sm font-semibold text-[#3a2e26]'
 const HELP = 'mt-1 block text-[13px] font-normal text-[#9a8676]'
 
-export function DomainRequestForm({ freeplugUrl, offer = null }: { freeplugUrl?: string | null; offer?: DomainOfferStatus | null }) {
+export function DomainRequestForm({ freeplugUrl }: { freeplugUrl?: string | null }) {
   const t = useTranslations('domainFlow')
   const locale = useLocale() === 'es' ? 'es' : 'en'
   const [kind, setKind] = useState<DomainKind>('have_domain')
@@ -60,17 +60,6 @@ export function DomainRequestForm({ freeplugUrl, offer = null }: { freeplugUrl?:
                   ) : null}
                 </span>
                 <span className="block text-sm text-[#5a4637]">{helper[k]}</span>
-                {k === 'buy_for_me' && offer ? (
-                  offerActive(offer) ? (
-                    <span className="mt-1 block text-sm font-medium text-[#2f6b3a]" data-testid="domain-offer">
-                      {t('buy.offerIncluded', { cap: offer.cap })} {t('buy.offerSpotsLeft', { count: offerSpotsLeft(offer) })}
-                    </span>
-                  ) : (
-                    <span className="mt-1 block text-sm text-[#9a8676]" data-testid="domain-offer-ended">
-                      {t('buy.offerEnded', { cap: offer.cap })}
-                    </span>
-                  )
-                ) : null}
               </span>
             </label>
             {kind === k && k === 'have_domain' ? (
