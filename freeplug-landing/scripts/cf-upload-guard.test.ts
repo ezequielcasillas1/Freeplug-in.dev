@@ -281,16 +281,17 @@ describe('upload guard (scripts/cf-upload-guard.mjs)', () => {
 
   it('package.json: preview and production uploads are separate, explicit scripts; nothing deploys', async () => {
     const { scripts } = (await import('../package.json')).default as { scripts: Record<string, string> }
-    expect(scripts['upload:preview']).toBe('opennextjs-cloudflare build && node scripts/cf-upload-guard.mjs --target=preview && wrangler versions upload --env preview')
+    expect(scripts['upload:preview']).toBe('opennextjs-cloudflare build && opennextjs-cloudflare populateCache local && node scripts/cf-upload-guard.mjs --target=preview && wrangler versions upload --env preview')
     expect(scripts['cf:upload:production']).toBe('node scripts/cf-upload-production.mjs')
     expect(scripts.upload).toMatch(/^echo 'Refused: pick a target.*exit 1$/)
     expect(scripts.deploy).toMatch(/exit 1$/)
     expect(Object.values(scripts).join('\n')).not.toMatch(/FREEPLUG_UPLOAD_ALLOW_LIVE_PUBLIC/)
     expect(Object.values(scripts).join('\n')).not.toMatch(/wrangler deploy|versions deploy(?! <id>)/)
     const runner = readFileSync(path.join(__dirname, 'cf-upload-production.mjs'), 'utf8')
-    // The only commands it spawns: the build, then `wrangler versions upload` with no --env (top-level = production).
+    // The only commands it spawns: the build, populateCache local (static-assets copy), then `wrangler versions upload` with no --env (top-level = production).
     expect([...runner.matchAll(/run\('([^']+)', \[([^\]]*)\]/g)].map((m) => `${m[1]} ${m[2]}`)).toEqual([
       "opennextjs-cloudflare 'build'",
+      "opennextjs-cloudflare 'populateCache', 'local'",
       "wrangler 'versions', 'upload'",
     ])
   })

@@ -58,9 +58,9 @@ describe('messagesFor (card C7: missing or unreviewed Spanish fails, no quiet fa
     expect(messagesFor('es', env, { en, es: { a: 'Á' }, status: { status: 'draft' } })).toEqual({ a: 'Á', b: { c: 'C {x}' } })
     expect(messagesFor('es', { ...env, FREEPLUG_I18N_ES_PENDING_MARK: '1' }, { en, es: { a: 'Á' } })).toEqual({ a: 'Á', b: { c: '[pending Sable] C {x}' } })
   })
-  it('the real Spanish catalog is still a draft, so the gate cannot be turned on for real yet', () => {
-    expect(ES_STATUS.status).toBe('draft')
-    expect(() => messagesFor('es', {})).toThrow(SpanishPendingError)
+  it('the real Spanish catalog is reviewed (Cheke sign-off Oct 19 2026, 7:00 AM CT), so the gate can serve it', () => {
+    expect(ES_STATUS.status).toBe('reviewed')
+    expect(() => messagesFor('es', {})).not.toThrow()
   })
 })
 
