@@ -20,6 +20,7 @@ export const OWNER_ALERT_KINDS = [
   'dispute_closed',
   'maintenance_quote_paid',
   'opt_out',
+  'domain_request',
 ] as const
 export type OwnerAlertKind = (typeof OWNER_ALERT_KINDS)[number]
 
@@ -40,6 +41,7 @@ export const OWNER_ALERT_LABELS: Record<OwnerAlertKind, string> = {
   dispute_closed: 'Dispute closed',
   maintenance_quote_paid: 'Maintenance quote paid',
   opt_out: 'Unsubscribe',
+  domain_request: 'Domain request',
 }
 
 /** Refunds, disputes and failed payments get a red "Needs attention" line at the top. */

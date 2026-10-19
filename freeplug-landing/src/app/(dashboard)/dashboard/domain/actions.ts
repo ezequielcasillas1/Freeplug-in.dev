@@ -1,34 +1,54 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { domainRequestSchema } from '@/lib/outreach/schemas'
-import { GENERIC_TRY_AGAIN } from '@/lib/outreach/copy'
 import { currentLocale } from '@/i18n/current-locale'
-import { translatorFor } from '@/i18n/translate'
-import { SUPPORT_EMAIL } from '@/lib/site'
+import { sendMail } from '@/lib/email/mailer'
+import { scheduleAfterResponse } from '@/lib/background'
+import { alertOwner } from '@/lib/owner-alerts/events'
+import { getClaimedSiteForUser } from '@/lib/outreach/server'
+import { submitDomainRequest, type DomainLocale, type DomainSubmitResult } from '@/lib/domain/flow'
 
-const DOMAIN_INVALID_EN = 'Enter a domain like yourbusiness.com'
+const asLocale = (v: unknown): DomainLocale | null => (v === 'es' ? 'es' : v === 'en' ? 'en' : null)
 
-/** "Set up my domain": one row in domain_requests (RLS: own rows, status pending). Admin handles it by hand. */
-export async function requestDomainSetup(input: unknown): Promise<{ ok: true } | { ok: false; error: string }> {
-  const locale = await currentLocale()
-  const t = translatorFor(locale, 'claim')
-  const tryAgain = locale === 'en' ? GENERIC_TRY_AGAIN : t('genericTryAgain', { supportEmail: SUPPORT_EMAIL })
-  const parsed = domainRequestSchema.safeParse(input)
-  if (!parsed.success) {
-    const msg = parsed.error.issues[0]?.message
-    if (locale === 'en') return { ok: false, error: msg ?? GENERIC_TRY_AGAIN }
-    return { ok: false, error: msg === DOMAIN_INVALID_EN ? t('enterDomainLikeYourbusinessCom') : tryAgain }
-  }
+/**
+ * "Save my choice" on /dashboard/domain: one domain_requests row (customer's own client, RLS), then
+ * in the background the customer's email (profiles.locale, else the page locale) and an owner alert.
+ * Buy-for-me consent is checked here too. Nothing is bought automatically.
+ */
+export async function requestDomainSetup(input: unknown): Promise<DomainSubmitResult> {
+  const locale: DomainLocale = (await currentLocale()) === 'es' ? 'es' : 'en'
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: tryAgain }
-  const { error } = await supabase.from('domain_requests').insert({
-    user_id: user.id,
-    kind: parsed.data.kind,
-    domain: parsed.data.kind === 'have_domain' ? parsed.data.domain : null,
+  if (!user) return { ok: false, error: 'save_failed' }
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+  const res = await submitDomainRequest(input, { userId: user.id, email: user.email ?? null, locale }, {
+    insert: async (row) => {
+      const { data, error } = await supabase.from('domain_requests').insert(row).select('id').maybeSingle()
+      return { id: (data?.id as string | undefined) ?? null, error: error?.message ?? null }
+    },
+    customer: async () => {
+      const [{ data: prof }, { data: wr }, site] = await Promise.all([
+        supabase.from('profiles').select('locale').eq('id', user.id).maybeSingle(),
+        supabase.from('website_requests').select('business_name').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        getClaimedSiteForUser(user.id).catch(() => null),
+      ])
+      const full = String(meta.first_name ?? meta.full_name ?? meta.name ?? '').trim()
+      return {
+        email: user.email ?? null,
+        firstName: full ? full.split(/\s+/)[0] : null,
+        business: (site?.business_name as string | undefined) ?? (wr?.business_name as string | undefined) ?? null,
+        freeplugUrl: (site?.live_url as string | null | undefined) ?? null,
+        locale: asLocale(prof?.locale),
+      }
+    },
+    sendMail: (p) => sendMail(p),
+    alertOwner,
+    background: scheduleAfterResponse,
+    now: () => new Date(),
   })
-  return error ? { ok: false, error: tryAgain } : { ok: true }
+  if (res.ok) revalidatePath('/dashboard/domain')
+  return res
 }

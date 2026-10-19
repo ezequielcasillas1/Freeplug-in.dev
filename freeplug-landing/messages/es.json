@@ -1364,5 +1364,48 @@
       "prompt": "¿Cambiar a español?",
       "dismiss": "No, gracias"
     }
+  },
+  "domainFlow": {
+    "title": "Configura tu dominio",
+    "intro": "Tu dominio es tu dirección web, como tunegocio.com. Elige la opción que mejor te quede.",
+    "have": {
+      "label": "Ya tengo un dominio",
+      "helper": "Lo conectamos a tu sitio.",
+      "domain": "Tu dominio",
+      "registrar": "¿Dónde lo compraste?",
+      "registrarPlaceholder": "Ejemplo: GoDaddy",
+      "registrarHelp": "Opcional. Nunca compartas tu contraseña."
+    },
+    "buy": {
+      "label": "Cómprenme un dominio",
+      "helper": "Nosotros lo compramos y lo conectamos por ti.",
+      "beta": "BETA",
+      "domain": "Dominio que te gustaría",
+      "backup": "Segunda opción",
+      "backupHelp": "Opcional. Si ya no está disponible, te mandamos opciones por correo antes de comprar nada.",
+      "betaLead": "Oferta beta:",
+      "betaNote": "Por ahora, Freeplug compra tu dominio y paga la renovación anual en todos los planes. Estamos probando si podemos seguir haciéndolo en nuestros planes de menor precio. Si deja de ser posible, a los clientes del plan de menor precio les podríamos pedir que paguen la renovación anual del dominio con la tarjeta registrada. Te avisaremos antes de cobrarte cualquier cosa.",
+      "consentRequired": "(Obligatorio para esta opción)"
+    },
+    "self": {
+      "label": "Yo compro mi dominio",
+      "helper": "Te mandamos instrucciones paso a paso por correo."
+    },
+    "save": "Guardar mi elección",
+    "keepsWorking": "Tu sitio sigue funcionando en {url} todo el tiempo.",
+    "freeUrlFallback": "tu dirección web gratis de Freeplug",
+    "savedNote": "Listo, lo guardamos. Revisa tu correo para ver los siguientes pasos.",
+    "status": {
+      "title": "Estado de tu dominio",
+      "saved": "Solicitud guardada",
+      "connecting": "Conectando",
+      "live": "Funcionando en {domain}",
+      "yourDomain": "tu dominio"
+    },
+    "errors": {
+      "domainInvalid": "Escribe un dominio como tunegocio.com",
+      "consentRequired": "Marca la casilla para continuar con esta opción.",
+      "tryAgain": "Algo salió mal. Inténtalo de nuevo. Si sigue pasando, escríbenos a support@freeplug-in.dev."
+    }
   }
 }

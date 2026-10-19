@@ -1364,5 +1364,48 @@
       "prompt": "Prefer Spanish?",
       "dismiss": "No thanks"
     }
+  },
+  "domainFlow": {
+    "title": "Set up your domain",
+    "intro": "Your domain is your web address, like yourbusiness.com. Pick the option that fits you.",
+    "have": {
+      "label": "I already have a domain",
+      "helper": "We'll connect it to your site.",
+      "domain": "Your domain",
+      "registrar": "Where did you buy it?",
+      "registrarPlaceholder": "Example: GoDaddy",
+      "registrarHelp": "Optional. Never share your password."
+    },
+    "buy": {
+      "label": "Buy a domain for me",
+      "helper": "We buy it and connect it for you.",
+      "beta": "BETA",
+      "domain": "Domain you'd like",
+      "backup": "Backup choice",
+      "backupHelp": "Optional. If it's taken, we'll email you options before buying anything.",
+      "betaLead": "Beta offer:",
+      "betaNote": "For now, Freeplug buys your domain and pays the yearly renewal on every plan. We're testing whether we can keep doing this on our lower-priced plans. If it stops being affordable, customers on the lowest-priced plan may be asked to pay the yearly domain renewal with the card on file. We'll tell you before we charge anything.",
+      "consentRequired": "(Required for this option)"
+    },
+    "self": {
+      "label": "I'll buy my own domain",
+      "helper": "We'll email you step-by-step instructions."
+    },
+    "save": "Save my choice",
+    "keepsWorking": "Your site keeps working at {url} the whole time.",
+    "freeUrlFallback": "your free Freeplug web address",
+    "savedNote": "Saved. Check your email for the next steps.",
+    "status": {
+      "title": "Your domain status",
+      "saved": "Request saved",
+      "connecting": "Connecting",
+      "live": "Live on {domain}",
+      "yourDomain": "your domain"
+    },
+    "errors": {
+      "domainInvalid": "Enter a domain like yourbusiness.com",
+      "consentRequired": "Check the box to continue with this option.",
+      "tryAgain": "Something went wrong. Please try again. If it keeps happening, email support@freeplug-in.dev."
+    }
   }
 }

@@ -1148,7 +1148,7 @@ export async function adminListDomainRequests() {
   return rows.map((r) => ({ ...r, email: emails.get(r.user_id as string) ?? null })) as {
     id: string
     user_id: string
-    kind: 'have_domain' | 'need_domain'
+    kind: 'have_domain' | 'buy_for_me' | 'buy_self' | 'need_domain'
     domain: string | null
     status: string
     created_at: string
