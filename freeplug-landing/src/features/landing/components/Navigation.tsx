@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { Menu, X, Sparkles } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
@@ -69,9 +69,10 @@ export function Navigation() {
             <motion.div
               whileHover={{ rotate: [0, -10, 10, 0] }}
               transition={{ duration: 0.5 }}
-              className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ba3d3d] to-[#8a2e2e] flex items-center justify-center shadow-lg shadow-[#ba3d3d]/30"
+              className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg shadow-[#ba3d3d]/30"
             >
-              <Sparkles className="w-4 h-4 text-white" />
+              {/* FP mark (Oct 22 2026), replaces the Sparkles tile. Plain img: keeps /_next/image off Cloudflare Images. */}
+              <img src="/images/brand/fp-logo-64.png" alt="" width={32} height={32} className="w-8 h-8 rounded-full" />
             </motion.div>
             <span className="text-2xl font-bold text-[#ba3d3d] group-hover:text-[#8a2e2e] transition-colors">{t('footer.freeplug')}</span>
           </Link>
