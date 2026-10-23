@@ -1,13 +1,22 @@
+/** Cheke's Cal.com booking page (Oct 23, 2026). Change here, or override with NEXT_PUBLIC_CALCOM_LINK. */
+export const DEFAULT_CALCOM_LINK = 'https://cal.com/fplgn.dev'
+
 /**
- * Cal.com embed (card: "embedded scheduler, Cal.com; no custom calendar"). Set
- * NEXT_PUBLIC_CALCOM_LINK to the event path, e.g. "freeplug/consultation". Unset = test mode: the
- * booking page shows a plain time picker that simulates a booking (local preview only).
+ * Cal.com embed (card: "embedded scheduler, Cal.com; no custom calendar"). NEXT_PUBLIC_CALCOM_LINK
+ * may be a cal.com path or URL; unset or empty falls back to DEFAULT_CALCOM_LINK. Set it to "off"
+ * for test mode: the booking page shows a plain time picker that simulates a booking (local only).
  */
 export function calcomLink(): string | null {
-  const raw = process.env.NEXT_PUBLIC_CALCOM_LINK?.trim()
-  if (!raw) return null
+  const env = process.env.NEXT_PUBLIC_CALCOM_LINK?.trim()
+  if (env && /^(off|none|test)$/i.test(env)) return null
+  const raw = env || DEFAULT_CALCOM_LINK
   const path = raw.replace(/^https?:\/\/(app\.)?cal\.com\//, '').replace(/^\/+|\/+$/g, '')
-  return /^[a-z0-9_-]+(\/[a-z0-9_-]+)*$/i.test(path) ? path : null
+  return /^[a-z0-9_.-]+(\/[a-z0-9_.-]+)*$/i.test(path) && !/(^|\/)\.\.?(\/|$)/.test(path) ? path : null
+}
+
+/** The plain booking page URL (opened in a new tab). */
+export function calcomPageUrl(link: string): string {
+  return new URL(`https://cal.com/${link}`).toString()
 }
 
 /** The iframe URL for the embed, prefilled with the client's email and the request reference. */

@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from 'react'
 import { LIVE_METHOD_LABELS } from '@/lib/consultation/copy'
 import { useConsultationCopy } from '@/lib/consultation/use-consultation-copy'
-import { calcomEmbedUrl, parseCalcomMessage } from '@/lib/consultation/scheduler'
+import { calcomEmbedUrl, calcomPageUrl, parseCalcomMessage } from '@/lib/consultation/scheduler'
 import { bookLiveSession, type ConsultActionState } from '../actions'
 
 type Method = keyof typeof LIVE_METHOD_LABELS
@@ -81,6 +81,15 @@ export function LiveBookingForm({
           <h2 className="text-lg font-semibold text-gray-900">{copy.SCHEDULER_HEADING}</h2>
           {calLink ? (
             <>
+              <a
+                href={calcomPageUrl(calLink)}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="calcom-link"
+                className="inline-flex min-h-[44px] items-center rounded-md border border-[#ba3d3d] px-5 text-sm font-semibold text-[#ba3d3d] hover:bg-red-50"
+              >
+                {copy.PATH_LIVE_CTA}
+              </a>
               <iframe
                 title="Book a time"
                 src={calcomEmbedUrl(calLink, { email: initial.email, method, ref: initial.consultationRef })}
