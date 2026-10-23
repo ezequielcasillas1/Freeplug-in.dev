@@ -15,7 +15,8 @@ import type { AppLocale } from '@/i18n/config'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH, RESUMED_REMOVAL_OWED_FOCUS_PATH, RESUMED_REMOVAL_OWED_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
-import { sendDowngradeRefundAlert } from '@/lib/stripe/downgrade-refund-alert'
+import { onDowngradeRefund } from '@/lib/dashboard/billing-activity-server'
+import { parseDowngradeCreditChoice } from '@/lib/stripe/downgrade-refund'
 import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewAddonChange, previewPlanStepChange, previewTipChange, type AddonAction, type AddonChangeRefusal, type TipChangeRefusal } from '@/lib/stripe/change-plan'
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
@@ -233,7 +234,7 @@ export async function previewPlanChange(planStep: string): Promise<PlanPreviewRe
   }
 }
 
-export async function changeHostingPlan(planStep: string, prorationDate?: number): Promise<ChangeHostingPlanResult> {
+export async function changeHostingPlan(planStep: string, prorationDate?: number, creditChoice?: string): Promise<ChangeHostingPlanResult> {
   const locale = await currentLocale()
   const { CHANGE_PLAN_UNAVAILABLE, UPGRADE_IN_PROGRESS } = ladderCopy(locale)
   const step = resolvePlanStep(planStep)
@@ -254,7 +255,7 @@ export async function changeHostingPlan(planStep: string, prorationDate?: number
   // second change while it is held gets UPGRADE_IN_PROGRESS and never reaches Stripe. Fails closed.
   let lock
   try {
-    lock = await withPlanChangeLock(lockStore(), user.id, () => runHostingPlanChange(supabase, user.id, customerId, step, prorationDate))
+    lock = await withPlanChangeLock(lockStore(), user.id, () => runHostingPlanChange(supabase, user.id, customerId, step, prorationDate, creditChoice))
   } catch (e) {
     console.error('[changeHostingPlan] failed', e instanceof Error ? e.message : e)
     return { ok: false, message: CHANGE_PLAN_UNAVAILABLE }
@@ -271,7 +272,8 @@ async function runHostingPlanChange(
   userId: string,
   customerId: string,
   step: NonNullable<ReturnType<typeof resolvePlanStep>>,
-  prorationDate: number | undefined
+  prorationDate: number | undefined,
+  creditChoice?: string
 ): Promise<ChangeHostingPlanResult> {
   const locale = await currentLocale()
   const { ADDON_TURN_OFF_FIRST, CHANGE_PLAN_DOWNGRADED_REFUNDED, CHANGE_PLAN_ENDING, CHANGE_PLAN_PAYMENT_FAILED, CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST, CHANGE_PLAN_SCHEDULED, CHANGE_PLAN_UNAVAILABLE, CHANGE_PLAN_UNCHANGED, CHANGE_PLAN_UPGRADED, STEP_NOT_SELLABLE_MESSAGE, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } = ladderCopy(locale)
@@ -284,12 +286,12 @@ async function runHostingPlanChange(
       await syncPlanSnapshotForCustomer(stripe, customerId)
     }
     // L-1 (Aria 9:57): a pending add-on removal that can't be put back after the upgrade is saved as owed + alerted.
-    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe), onRemovalOwed: recordRemovalOwedNow('upgrade'), onRestoreFailed: sendPendingRestoreFailedAlert, onDowngradeRefund: sendDowngradeRefundAlert }, live[0], step.id, { prorationDate, userId })
+    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe), onRemovalOwed: recordRemovalOwedNow('upgrade'), onRestoreFailed: sendPendingRestoreFailedAlert, onDowngradeRefund }, live[0], step.id, { prorationDate, userId, creditChoice: parseDowngradeCreditChoice(creditChoice) })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (r.ok && r.kind === 'upgraded') return { ok: true, message: CHANGE_PLAN_UPGRADED(step.name) }
     if (r.ok && r.kind === 'scheduled') return { ok: true, message: CHANGE_PLAN_SCHEDULED(step.name, formatPlanEndDate(new Date(r.effectiveAt), locale)) }
-    if (r.ok && r.kind === 'downgraded_refunded') return { ok: true, message: CHANGE_PLAN_DOWNGRADED_REFUNDED(step.name, formatUsdIn(locale, r.refundCents, 2)) }
+    if (r.ok && r.kind === 'downgraded_refunded') return { ok: true, message: CHANGE_PLAN_DOWNGRADED_REFUNDED(step.name, formatUsdIn(locale, r.refundCents, 2), r.choice) }
     if (r.ok) return { ok: true, message: CHANGE_PLAN_UNCHANGED }
     if (r.code === 'ending') return { ok: false, message: CHANGE_PLAN_ENDING }
     if (r.code === 'not_sellable') return { ok: false, message: STEP_NOT_SELLABLE_MESSAGE(step.name) }

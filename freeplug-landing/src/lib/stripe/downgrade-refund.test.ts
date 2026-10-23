@@ -12,6 +12,7 @@ const priceItem = (id: string, cents: number, lookup: string | null, siId = 'si_
 const sub = (id: PlanStepId, extra: unknown[] = []) =>
   ({
     id: 'sub_1',
+    customer: 'cus_1',
     status: 'active',
     cancel_at_period_end: false,
     cancel_at: null,
@@ -19,7 +20,7 @@ const sub = (id: PlanStepId, extra: unknown[] = []) =>
     items: { data: [priceItem(`price_${id}`, step(id).monthlyCents, step(id).lookupKey), ...extra] },
   }) as unknown as Stripe.Subscription
 
-type Opts = { invoices?: unknown[]; amountRefunded?: number; existing?: unknown[]; refundFails?: boolean; updateFails?: boolean }
+type Opts = { invoices?: unknown[]; amountRefunded?: number; existing?: unknown[]; refundFails?: boolean; updateFails?: boolean; balanceTxns?: unknown[] }
 function fakeStripe(o: Opts = {}) {
   const refundsCreated: { params: Record<string, unknown>; key?: string }[] = []
   const stripe = {
@@ -33,6 +34,14 @@ function fakeStripe(o: Opts = {}) {
         refundsCreated.push({ params, key: opts?.idempotencyKey })
         if (o.refundFails) throw new Error('refund declined')
         return { id: 're_1', amount: params.amount }
+      }),
+    },
+    customers: {
+      listBalanceTransactions: vi.fn(async () => ({ data: o.balanceTxns ?? [] })),
+      createBalanceTransaction: vi.fn(async (customer: string, params: Record<string, unknown>, opts?: { idempotencyKey?: string }) => {
+        refundsCreated.push({ params: { customer, ...params }, key: opts?.idempotencyKey })
+        if (o.refundFails) throw new Error('credit declined')
+        return { id: 'cbtxn_1', amount: params.amount }
       }),
     },
     subscriptions: {
@@ -73,24 +82,51 @@ describe('isRefundDowngrade (eligibility)', () => {
 })
 
 describe('changePlanStep: $100 -> $35 refund path', () => {
-  it('refunds $50 against the latest paid invoice charge, then switches now with a new period', async () => {
+  it('wallet choice: $50 credit on the Freeplug wallet (customer balance), no card refund, switches now', async () => {
     const { stripe, raw, refundsCreated } = fakeStripe()
     const onDowngradeRefund = vi.fn(async () => {})
-    const r = await changePlanStep(deps(stripe, { onDowngradeRefund }), sub('growth'), 'starter', { userId: 'u1' })
-    expect(r).toEqual({ ok: true, kind: 'downgraded_refunded', step: 'starter', refundCents: 5000, refundId: 're_1', invoiceId: 'in_100' })
+    const r = await changePlanStep(deps(stripe, { onDowngradeRefund }), sub('growth'), 'starter', { userId: 'u1', creditChoice: 'wallet' })
+    expect(r).toEqual({ ok: true, kind: 'downgraded_refunded', step: 'starter', refundCents: 5000, refundId: 'cbtxn_1', invoiceId: 'in_100', choice: 'wallet' })
+    expect(raw.refunds.create).not.toHaveBeenCalled()
     expect(refundsCreated).toHaveLength(1)
-    expect(refundsCreated[0].params).toMatchObject({ charge: 'ch_100', amount: 5000, metadata: { kind: DOWNGRADE_REFUND_KIND, subscription: 'sub_1', invoice: 'in_100' } })
+    expect(refundsCreated[0].params).toMatchObject({ customer: 'cus_1', amount: -5000, currency: 'usd', metadata: { kind: DOWNGRADE_REFUND_KIND, choice: 'wallet', subscription: 'sub_1', invoice: 'in_100' } })
     expect(refundsCreated[0].key).toBe('downgrade-refund:sub_1:in_100')
-    expect(raw.subscriptions.update).toHaveBeenCalledWith('sub_1', expect.objectContaining({ billing_cycle_anchor: 'now', proration_behavior: 'none', items: [{ id: 'si_1', price: 'price_starter', quantity: 1 }] }), { idempotencyKey: 'downgrade-now:sub_1:in_100' })
+    expect(raw.subscriptions.update).toHaveBeenCalledWith('sub_1', expect.objectContaining({ billing_cycle_anchor: 'now', proration_behavior: 'none', items: [{ id: 'si_1', price: 'price_starter', quantity: 1 }], metadata: { downgrade_credit_choice: 'wallet', downgrade_credit_invoice: 'in_100' } }), { idempotencyKey: 'downgrade-now:sub_1:in_100' })
     expect(raw.subscriptionSchedules.create).not.toHaveBeenCalled()
-    expect(onDowngradeRefund).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'done', refundCents: 5000, invoiceId: 'in_100' }))
+    expect(onDowngradeRefund).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'done', refundCents: 5000, choice: 'wallet' }))
   })
 
-  it('caps the refund at the amount paid', async () => {
-    const { stripe, refundsCreated } = fakeStripe({ invoices: [{ id: 'in_c', amount_paid: 3000, charge: 'ch_c' }] })
+  it('buyout choice: no money moves (no refund, no credit); the switch records the choice', async () => {
+    const { stripe, raw } = fakeStripe()
+    const onDowngradeRefund = vi.fn(async () => {})
+    const r = await changePlanStep(deps(stripe, { onDowngradeRefund }), sub('growth'), 'starter', { userId: 'u1', creditChoice: 'buyout' })
+    expect(r).toMatchObject({ ok: true, kind: 'downgraded_refunded', refundCents: 5000, refundId: null, choice: 'buyout' })
+    expect(raw.refunds.create).not.toHaveBeenCalled()
+    expect(raw.customers.createBalanceTransaction).not.toHaveBeenCalled()
+    expect(raw.subscriptions.update).toHaveBeenCalledWith('sub_1', expect.objectContaining({ metadata: { downgrade_credit_choice: 'buyout', downgrade_credit_invoice: 'in_100' } }), expect.anything())
+    expect(onDowngradeRefund).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'done', choice: 'buyout' }))
+  })
+
+  it('no choice sent = buyout (default)', async () => {
+    const { stripe, raw } = fakeStripe()
     const r = await changePlanStep(deps(stripe), sub('growth'), 'starter')
+    expect(r).toMatchObject({ kind: 'downgraded_refunded', choice: 'buyout' })
+    expect(raw.customers.createBalanceTransaction).not.toHaveBeenCalled()
+  })
+
+  it('caps the credit at the amount paid', async () => {
+    const { stripe, refundsCreated } = fakeStripe({ invoices: [{ id: 'in_c', amount_paid: 3000, charge: 'ch_c' }] })
+    const r = await changePlanStep(deps(stripe), sub('growth'), 'starter', { creditChoice: 'wallet' })
     expect(r).toMatchObject({ kind: 'downgraded_refunded', refundCents: 3000 })
-    expect(refundsCreated[0].params.amount).toBe(3000)
+    expect(refundsCreated[0].params.amount).toBe(-3000)
+  })
+
+  it('wallet retry after a failed switch: credit already on the balance, not added twice', async () => {
+    const balanceTxns = [{ id: 'cbtxn_old', amount: -5000, metadata: { kind: DOWNGRADE_REFUND_KIND, subscription: 'sub_1', invoice: 'in_100' } }]
+    const { stripe, raw } = fakeStripe({ balanceTxns })
+    const r = await changePlanStep(deps(stripe), sub('growth'), 'starter', { creditChoice: 'wallet' })
+    expect(raw.customers.createBalanceTransaction).not.toHaveBeenCalled()
+    expect(r).toMatchObject({ kind: 'downgraded_refunded', refundId: 'cbtxn_old' })
   })
 
   it('drops the tip item on the switch (a plan change resets the tip)', async () => {
@@ -105,30 +141,21 @@ describe('changePlanStep: $100 -> $35 refund path', () => {
     ['no paid invoice', { invoices: [] }],
     ['$0 invoice', { invoices: [{ id: 'in_0', amount_paid: 0, charge: null }] }],
     ['charge already refunded', { amountRefunded: 1000 }],
-    ['refund call fails', { refundFails: true }],
+    ['wallet credit call fails', { refundFails: true }],
   ] as [string, Opts][])('%s: falls back to the normal deferred downgrade, no switch now', async (_n, o) => {
     const { stripe, raw } = fakeStripe(o)
     const log = vi.fn()
-    const r = await changePlanStep(deps(stripe, { log }), sub('growth'), 'starter')
+    const r = await changePlanStep(deps(stripe, { log }), sub('growth'), 'starter', { creditChoice: 'wallet' })
     expect(r).toMatchObject({ ok: true, kind: 'scheduled', step: 'starter' })
     expect(raw.subscriptions.update).not.toHaveBeenCalled()
     expect(raw.subscriptionSchedules.create).toHaveBeenCalled()
     expect(log).toHaveBeenCalled()
   })
 
-  it('retry after a failed switch: our refund exists, so it switches without refunding again', async () => {
-    const existing = [{ id: 're_old', amount: 5000, status: 'succeeded', metadata: { kind: DOWNGRADE_REFUND_KIND, subscription: 'sub_1', invoice: 'in_100' } }]
-    const { stripe, raw, refundsCreated } = fakeStripe({ existing, amountRefunded: 5000 })
-    const r = await changePlanStep(deps(stripe), sub('growth'), 'starter')
-    expect(refundsCreated).toHaveLength(0)
-    expect(r).toMatchObject({ kind: 'downgraded_refunded', refundCents: 5000, refundId: null })
-    expect(raw.subscriptions.update).toHaveBeenCalledTimes(1)
-  })
-
-  it('refund ok but switch fails: alerted, refund_switch_failed', async () => {
+  it('credit ok but switch fails: alerted, refund_switch_failed', async () => {
     const { stripe } = fakeStripe({ updateFails: true })
     const onDowngradeRefund = vi.fn(async () => {})
-    const r = await changePlanStep(deps(stripe, { onDowngradeRefund }), sub('growth'), 'starter')
+    const r = await changePlanStep(deps(stripe, { onDowngradeRefund }), sub('growth'), 'starter', { creditChoice: 'wallet' })
     expect(r).toMatchObject({ ok: false, code: 'refund_switch_failed', refundCents: 5000 })
     expect(onDowngradeRefund).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'switch_failed' }))
   })
@@ -153,7 +180,7 @@ describe('findDowngradeRefund', () => {
 
 describe('downgradeRefundAlert', () => {
   it('names the subscription, invoice and amount', () => {
-    const a = downgradeRefundAlert({ subscriptionId: 'sub_1', userId: 'u1', invoiceId: 'in_1', chargeId: 'ch_1', refundId: 're_1', refundCents: 5000, outcome: 'done' })
+    const a = downgradeRefundAlert({ subscriptionId: 'sub_1', userId: 'u1', invoiceId: 'in_1', chargeId: 'ch_1', refundId: 're_1', refundCents: 5000, outcome: 'done', choice: 'wallet' })
     expect(a.subject).toContain('$50.00')
     expect(a.text).toContain('in_1')
   })

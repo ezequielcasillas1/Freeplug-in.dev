@@ -24,7 +24,7 @@ import { periodStartDate } from '@/lib/plans/included-edits'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { formatPlanEndDate, isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
 import { stepById, stepByLookupKey } from '@/lib/plans/ladder'
-import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel } from '@/lib/dashboard/billing-activity'
+import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel, REFUND_ACTIVITY_COLUMNS, refundActivityLabel } from '@/lib/dashboard/billing-activity'
 import { daysSince, firstPaymentDate } from '@/lib/dashboard/customer-since'
 
 
@@ -77,7 +77,7 @@ export type SubscriptionDetail = {
 
 export type ActivityItem = {
   id: string
-  type: 'payment' | 'request_submitted' | 'request_updated' | 'subscription_created'
+  type: 'payment' | 'refund' | 'request_submitted' | 'request_updated' | 'subscription_created'
   title: string
   description: string
   date: Date
@@ -170,6 +170,17 @@ export async function getEnhancedDashboardData(
     .order('created_at', { ascending: false })
     .limit(10)
   if (billingError) logActivityQueryError('billing_ledger', billingError)
+
+  // Refund rows (Cheke, Oct 23): e.g. the $50 back on a $100 -> $35 downgrade. A failed read (table not
+  // migrated yet) only drops these rows; it never hides the rest of Recent activity.
+  const { data: refundRecords, error: refundError } = await supabase
+    .from('billing_activity')
+    .select(REFUND_ACTIVITY_COLUMNS)
+    .eq('profile_id', user.id)
+    .eq('kind', 'refund')
+    .order('created_at', { ascending: false })
+    .limit(10)
+  if (refundError) logActivityQueryError('billing_activity', refundError)
 
   const { data: requests, error: requestsError } = await supabase
     .from('website_requests')
@@ -359,6 +370,19 @@ export async function getEnhancedDashboardData(
         type: 'payment',
         title: t('dashboard.activity.title.paymentReceived'),
         description: paymentActivityLabel(record.amount_cents, record.created_at, locale, t),
+        date: new Date(record.created_at),
+        amount: record.amount_cents,
+      })
+    }
+  }
+
+  if (refundRecords) {
+    for (const record of refundRecords as { id: string; created_at: string; amount_cents: number; reason: string | null; credit_choice: string | null }[]) {
+      recentActivity.push({
+        id: `refund-${record.id}`,
+        type: 'refund',
+        title: t('dashboard.activity.title.refund'),
+        description: refundActivityLabel(record.amount_cents, record.created_at, record.reason, locale, t, record.credit_choice),
         date: new Date(record.created_at),
         amount: record.amount_cents,
       })

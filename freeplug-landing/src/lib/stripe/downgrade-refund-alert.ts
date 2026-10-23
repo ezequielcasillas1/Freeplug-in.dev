@@ -7,16 +7,16 @@ export function downgradeRefundAlert(o: DowngradeRefundEvent): { subject: string
   const usd = `$${(o.refundCents / 100).toFixed(2)}`
   const subject =
     o.outcome === 'done'
-      ? `Downgrade $100 -> $35: refunded ${usd} (${o.subscriptionId})`
-      : `ACTION NEEDED: refunded ${usd} but $100 -> $35 switch failed (${o.subscriptionId})`
+      ? `Downgrade $100 -> $35: ${usd} ${o.choice === 'wallet' ? 'to wallet' : 'toward buyout'} (${o.subscriptionId})`
+      : `ACTION NEEDED: ${usd} ${o.choice === 'wallet' ? 'credited to wallet' : 'set toward buyout'} but $100 -> $35 switch failed (${o.subscriptionId})`
   const text = [
     `Subscription: ${o.subscriptionId}`,
     `User: ${o.userId ?? 'unknown'}`,
     `Invoice: ${o.invoiceId}`,
     `Charge: ${o.chargeId}`,
-    `Refund: ${o.refundId ?? 'existing (retry)'} for ${usd}`,
+    `Client choice: ${o.choice === 'wallet' ? `Freeplug wallet credit (customer balance) ${o.refundId ?? 'existing (retry)'}` : 'toward buyout (no money moved)'} for ${usd}`,
     o.outcome === 'done' ? 'Switched to Starter ($35) now; new billing period starts today.' : `Still on $100. Error: ${o.error ?? 'unknown'}. A retry by the customer switches without refunding again.`,
-    'Buyout: the retained $50 of this month still counts toward ownership; only the refunded part is subtracted (charge.refunded webhook).',
+    o.choice === 'wallet' ? 'Buyout: the $100 paid counts toward ownership; the $50 wallet credit pays later invoices and is not counted twice.' : 'Buyout: the full $100 paid keeps counting toward ownership.',
   ].join('\n')
   return { subject, text }
 }

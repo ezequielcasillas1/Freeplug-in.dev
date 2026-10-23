@@ -180,7 +180,16 @@
         "paused": "paused",
         "canceled": "canceled"
       },
-      "dateLine": "{label}: {date}"
+      "dateLine": "{label}: {date}",
+      "refund": {
+        "amountOnDate": "Refund of {amount} on {date}",
+        "amount": "Refund of {amount}",
+        "plain": "Refund",
+        "downgrade": "{line} for your switch to a lower plan",
+        "backToCard": "{amount} credit",
+        "toWallet": "{line}, added to your Freeplug wallet",
+        "toBuyout": "{line}, added toward your buyout"
+      }
     },
     "activity": {
       "title": {
@@ -191,7 +200,8 @@
         "subscriptionStarted": "Subscription started",
         "upcomingBilling": "Upcoming billing",
         "subscriptionEnding": "Subscription ending",
-        "getStarted": "Get started"
+        "getStarted": "Get started",
+        "refund": "Refund"
       },
       "description": {
         "websiteRequest": "Website request"
@@ -634,8 +644,7 @@
       "buttonOn": "Switch to {name} on {date}",
       "helpUp": "Starts right away. Today you pay only the difference for the rest of this billing period, and your billing date stays the same.",
       "helpDown": "Starts on your next billing date, when the lower price begins. Nothing is charged today, and you keep your current plan until then.",
-      "helpDownRefund": "Starts today: we refund $50 of this month's $100 charge, and your $35 plan starts a new billing period now.",
-      "downgradedRefunded": "You're now on {name}. We refunded {amount} to your card; it can take 5 to 10 days to show up.",
+      "helpDownRefund": "Starts today: your $35 plan starts a new billing period now, and $50 of this month's $100 is yours. Choose where it goes:",
       "calculating": "Checking the amount…",
       "confirmLine": "Switch to {name} now? We'll charge {todayAmount} today, then {monthly}/month starting {date}.",
       "confirmFallback": "Switch to {name} now? We'll charge the difference for the rest of this billing period today.",
@@ -644,7 +653,13 @@
       "previewExpired": "That amount is out of date. Use the Switch button again to see the current amount.",
       "inProgress": "Your plan change is already going through. Refresh in a moment to see it.",
       "confirmZero": "Switch to {name} now? Nothing is charged today. Then {monthly}/month starting {date}.",
-      "replacesPending": "This replaces your planned switch to {pendingName}."
+      "replacesPending": "This replaces your planned switch to {pendingName}.",
+      "creditChoiceLegend": "Where should your $50 go?",
+      "creditChoiceBuyout": "Toward my buyout (it counts toward owning my website)",
+      "creditChoiceWallet": "My Freeplug wallet (pays my next bills first)",
+      "creditChoiceDefault": "If you don't choose, it goes toward your buyout.",
+      "downgradedToBuyout": "You're now on {name}. {amount} was added toward your buyout.",
+      "downgradedToWallet": "You're now on {name}. {amount} was added to your Freeplug wallet; it pays your next bills first."
     },
     "billing": {
       "pendingNotice": "You have a switch to {name} planned for {date}, so billing is handled here until then. You can update your card and see your invoices below.",

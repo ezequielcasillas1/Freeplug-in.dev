@@ -180,7 +180,16 @@
         "paused": "en pausa",
         "canceled": "cancelado"
       },
-      "dateLine": "{label}: {date}"
+      "dateLine": "{label}: {date}",
+      "refund": {
+        "amountOnDate": "Reembolso de {amount} el {date}",
+        "amount": "Reembolso de {amount}",
+        "plain": "Reembolso",
+        "downgrade": "{line} por tu cambio a un plan más bajo",
+        "backToCard": "Crédito de {amount}",
+        "toWallet": "{line}, agregado a tu billetera Freeplug",
+        "toBuyout": "{line}, sumado a la compra de tu sitio"
+      }
     },
     "activity": {
       "title": {
@@ -191,7 +200,8 @@
         "subscriptionStarted": "Suscripción iniciada",
         "upcomingBilling": "Próximo cobro",
         "subscriptionEnding": "Suscripción por terminar",
-        "getStarted": "Empieza aquí"
+        "getStarted": "Empieza aquí",
+        "refund": "Reembolso"
       },
       "description": {
         "websiteRequest": "Solicitud de sitio web"
@@ -634,8 +644,7 @@
       "buttonOn": "Cambiar a {name} el {date}",
       "helpUp": "Empieza de inmediato. Hoy solo pagas la diferencia por lo que queda de este periodo de facturación, y tu fecha de cobro sigue igual.",
       "helpDown": "Empieza en tu próxima fecha de cobro, cuando comienza el precio más bajo. Hoy no se cobra nada y conservas tu plan actual hasta entonces.",
-      "helpDownRefund": "Empieza hoy: te devolvemos $50 del cobro de $100 de este mes y tu plan de $35 inicia un nuevo periodo de facturación ahora.",
-      "downgradedRefunded": "Ya estás en {name}. Te devolvimos {amount} a tu tarjeta; puede tardar de 5 a 10 días en aparecer.",
+      "helpDownRefund": "Empieza hoy: tu plan de $35 inicia un nuevo periodo de facturación ahora, y $50 de los $100 de este mes son tuyos. Elige a dónde van:",
       "calculating": "Revisando el monto…",
       "confirmLine": "¿Cambiar a {name} ahora? Te cobraremos {todayAmount} hoy y luego {monthly} al mes a partir del {date}.",
       "confirmFallback": "¿Cambiar a {name} ahora? Hoy te cobraremos la diferencia por lo que queda de este periodo de facturación.",
@@ -644,7 +653,13 @@
       "previewExpired": "Ese monto ya no está actualizado. Vuelve a tocar el botón Cambiar para ver el monto actual.",
       "inProgress": "Tu cambio de plan ya está en proceso. Recarga en un momento para verlo.",
       "confirmZero": "¿Cambiar a {name} ahora? Hoy no se cobra nada. Luego {monthly} al mes a partir del {date}.",
-      "replacesPending": "Esto reemplaza el cambio que tenías planeado a {pendingName}."
+      "replacesPending": "Esto reemplaza el cambio que tenías planeado a {pendingName}.",
+      "creditChoiceLegend": "¿A dónde quieres que vayan tus $50?",
+      "creditChoiceBuyout": "A la compra de mi sitio (cuenta para que el sitio sea mío)",
+      "creditChoiceWallet": "A mi billetera Freeplug (crédito para mis próximos cobros)",
+      "creditChoiceDefault": "Si no eliges, se suman a la compra de tu sitio.",
+      "downgradedToBuyout": "Ya estás en {name}. Se agregaron {amount} a la compra de tu sitio.",
+      "downgradedToWallet": "Ya estás en {name}. Se agregaron {amount} a tu billetera Freeplug; se usan primero en tus próximos cobros."
     },
     "billing": {
       "pendingNotice": "Tienes un cambio a {name} planeado para el {date}, así que hasta entonces la facturación se maneja aquí. Abajo puedes actualizar tu tarjeta y ver tus facturas.",

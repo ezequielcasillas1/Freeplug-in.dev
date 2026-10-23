@@ -116,7 +116,7 @@ type Props = {
    * With a live plan: switch it to the selected step (server action changeHostingPlan). Upgrades
    * now and prorated (after the confirm, with its proration date), downgrades at the next billing date.
    */
-  onChangePlan?: (planStep: PlanStepId, prorationDate?: number) => Promise<ChangeHostingPlanResult>
+  onChangePlan?: (planStep: PlanStepId, prorationDate?: number, creditChoice?: 'buyout' | 'wallet') => Promise<ChangeHostingPlanResult>
   /** With a live plan: read-only upgrade preview (server action previewPlanChange). */
   onPreviewChange?: (planStep: PlanStepId) => Promise<PlanPreviewResponse>
   /** With a live plan: a downgrade waiting for the next billing date (date already formatted). */
@@ -192,11 +192,13 @@ export function HostingCheckoutCard({
   onChangeAddon,
 }: Props) {
   const ladder = useLadderCopy()
-  const { PLAN_GLOSS, CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_DOWN_REFUND, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine, addonTodayTotal, CHANGE_PLAN_SWITCHING } = ladder
+  const { PLAN_GLOSS, CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_DOWN_REFUND, CHANGE_PLAN_CREDIT_LEGEND, CHANGE_PLAN_CREDIT_BUYOUT, CHANGE_PLAN_CREDIT_WALLET, CHANGE_PLAN_CREDIT_DEFAULT, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine, addonTodayTotal, CHANGE_PLAN_SWITCHING } = ladder
   const t = useTranslations()
   // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
   // customer is already on. The server refuses them too (checkout, claim, publish, switching).
   const pickable = (id: PlanStepId) => id === currentStepId || PLAN_STEPS.some((s) => s.id === id && s.sellable)
+  // $100 -> $35: where the $50 goes (Cheke, Oct 23). Default buyout.
+  const [creditChoice, setCreditChoice] = useState<'buyout' | 'wallet'>('buyout')
   const [planStep, setPlanStep] = useState<PlanStepId>(
     currentStepId ?? PLAN_STEPS.find((s) => s.sellable)?.id ?? PLAN_STEPS[0].id
   )
@@ -271,13 +273,13 @@ export function HostingCheckoutCard({
     ...(tipText ? [PLAN_CHANGE_TIP_ENDS(tipText)] : []),
   ]
 
-  async function runChange(step: PlanStepId, prorationDate?: number) {
+  async function runChange(step: PlanStepId, prorationDate?: number, choice?: 'buyout' | 'wallet') {
     if (!onChangePlan) return
     setError(null)
     setNotice(null)
     setLoading(true)
     try {
-      const r = await onChangePlan(step, prorationDate)
+      const r = choice ? await onChangePlan(step, prorationDate, choice) : await onChangePlan(step, prorationDate)
       if (r.code === 'stale_preview') {
         closeConfirm(true)
         return
@@ -297,7 +299,7 @@ export function HostingCheckoutCard({
   async function onSwitch() {
     if (!onChangePlan) return
     if (direction !== 'upgrade' || !onPreviewChange) {
-      await runChange(planStep)
+      await runChange(planStep, undefined, refundDowngrade ? creditChoice : undefined)
       return
     }
     // Upgrade: preview first, charge only on Confirm (Lina §3a). Never a made-up amount.
@@ -728,6 +730,18 @@ export function HostingCheckoutCard({
             <p className="mt-2 text-sm text-gray-500" data-testid="switch-help">
               {switchHelp}
             </p>
+          ) : null}
+          {refundDowngrade && canSwitch ? (
+            <fieldset className="mt-3 rounded-lg border border-zinc-200 p-3" data-testid="downgrade-credit-choice">
+              <legend className="px-1 text-sm font-medium text-gray-900">{CHANGE_PLAN_CREDIT_LEGEND}</legend>
+              {(['buyout', 'wallet'] as const).map((c) => (
+                <label key={c} className="mt-1 flex items-start gap-2 text-sm text-gray-700">
+                  <input type="radio" name="downgrade-credit-choice" value={c} checked={creditChoice === c} onChange={() => setCreditChoice(c)} disabled={loading} className="mt-1" data-testid={`credit-choice-${c}`} />
+                  <span>{c === 'buyout' ? CHANGE_PLAN_CREDIT_BUYOUT : CHANGE_PLAN_CREDIT_WALLET}</span>
+                </label>
+              ))}
+              <p className="mt-1 text-xs text-gray-500">{CHANGE_PLAN_CREDIT_DEFAULT}</p>
+            </fieldset>
           ) : null}
           {downgradeTipLine ? (
             <p className="mt-1 text-sm text-gray-500" data-testid="switch-help-tip">

@@ -40,3 +40,18 @@ export async function findDowngradeRefund(stripe: Stripe, subscriptionId: string
   if (amountCents <= 0) return { skip: 'nothing_paid' }
   return { invoiceId: inv.id as string, chargeId, amountCents }
 }
+
+/** Where the $50 of a $100 -> $35 downgrade goes (Cheke, Oct 23): toward the buyout, or Freeplug wallet credit. */
+export type DowngradeCreditChoice = 'buyout' | 'wallet'
+/** No choice sent = buyout (no money moves; the full $100 keeps counting toward ownership). */
+export const DEFAULT_DOWNGRADE_CREDIT_CHOICE: DowngradeCreditChoice = 'buyout'
+export function parseDowngradeCreditChoice(v: unknown): DowngradeCreditChoice {
+  return v === 'wallet' ? 'wallet' : DEFAULT_DOWNGRADE_CREDIT_CHOICE
+}
+
+/** Our wallet credit for this subscription+invoice already on the customer balance (retry after a failed switch). */
+export async function findWalletCredit(stripe: Stripe, customer: string, subscriptionId: string, invoiceId: string): Promise<string | null> {
+  const list = await stripe.customers.listBalanceTransactions(customer, { limit: 100 })
+  const hit = list.data.find((t) => t.metadata?.kind === DOWNGRADE_REFUND_KIND && t.metadata?.subscription === subscriptionId && t.metadata?.invoice === invoiceId)
+  return hit?.id ?? null
+}

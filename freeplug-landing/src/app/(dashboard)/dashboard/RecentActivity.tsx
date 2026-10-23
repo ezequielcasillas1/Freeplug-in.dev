@@ -1,4 +1,4 @@
-import { DollarSign, FileText, CreditCard, Clock, CircleAlert } from 'lucide-react'
+import { DollarSign, FileText, CreditCard, Clock, CircleAlert, RotateCcw } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale, type AppLocale } from '@/i18n/config'
 import { formatDateIn, formatUsdIn } from '@/i18n/format'
@@ -32,6 +32,11 @@ const activityConfig = {
     icon: DollarSign,
     color: 'text-green-600',
     bg: 'bg-green-50',
+  },
+  refund: {
+    icon: RotateCcw,
+    color: 'text-sky-700',
+    bg: 'bg-sky-50',
   },
   request_submitted: {
     icon: FileText,
@@ -109,7 +114,11 @@ export function RecentActivity({ activities, loadFailed = false }: Props) {
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 truncate">{activity.description}</p>
-                {activity.amount ? (
+                {activity.amount && activity.type === 'refund' ? (
+                  <p className="text-sm font-medium text-sky-700 mt-0.5" data-testid="activity-refund-amount">
+                    {t('refund.backToCard', { amount: formatUsdIn(locale, Math.abs(activity.amount), 2) } as never)}
+                  </p>
+                ) : activity.amount ? (
                   <p className="text-sm font-medium text-green-600 mt-0.5">
                     +{formatUsdIn(locale, activity.amount, 2)}
                   </p>

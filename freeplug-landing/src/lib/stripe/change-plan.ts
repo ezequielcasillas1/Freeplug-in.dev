@@ -19,7 +19,7 @@ import {
 } from './addon-refund-info'
 import { REMOVAL_RESCHEDULE_TRIES, withRetries } from './retry'
 import { isRefundDowngrade } from '../plans/downgrade-refund-rule'
-import { DOWNGRADE_REFUND_KIND, downgradeRefundIdempotencyKey, downgradeSwitchIdempotencyKey, findDowngradeRefund } from './downgrade-refund'
+import { DEFAULT_DOWNGRADE_CREDIT_CHOICE, DOWNGRADE_REFUND_KIND, downgradeRefundIdempotencyKey, downgradeSwitchIdempotencyKey, findDowngradeRefund, findWalletCredit, type DowngradeCreditChoice } from './downgrade-refund'
 import { carriedPendingCents, upcomingBill } from './next-bill'
 import type { RemovalOwedInput, RemovalOwedUnrecorded } from './addon-removal-owed'
 import { ADDON_MIN_CHARGE_CENTS, addonCapCheck, addonCentsInTipTotal, addonCentsOfItems, addonIdsOfItems, addonItemsOf, addonOfPrice, parseAddonIds } from '../plans/addons'
@@ -118,7 +118,7 @@ export type ChangePlanResult =
     }
   | { ok: true; kind: 'scheduled'; step: PlanStepId; effectiveAt: string }
   /** $100 -> $35 (downgrade-refund-rule.ts): switched now, new period from now, refundCents back on the card. */
-  | { ok: true; kind: 'downgraded_refunded'; step: PlanStepId; refundCents: number; refundId: string | null; invoiceId: string }
+  | { ok: true; kind: 'downgraded_refunded'; step: PlanStepId; refundCents: number; refundId: string | null; invoiceId: string; choice: DowngradeCreditChoice }
   | { ok: true; kind: 'unchanged'; step: PlanStepId }
   | { ok: false; code: 'payment_failed'; message: string; pendingRestored: boolean | null }
   /** The $50 refund went through but the immediate switch failed: alerted; a retry switches without refunding again. */
@@ -534,6 +534,8 @@ export type DowngradeRefundEvent = {
   chargeId: string
   refundId: string | null
   refundCents: number
+  /** Where the $50 went (client choice at downgrade time). */
+  choice: DowngradeCreditChoice
   /** 'done' = refunded + switched; 'switch_failed' = refunded, still on $100 (fix by hand or retry). */
   outcome: 'done' | 'switch_failed'
   error?: string
@@ -564,7 +566,7 @@ export async function changePlanStep(
   sub: Sub,
   targetId: PlanStepId,
   /** prorationDate: from previewPlanStepChange (upgrades only); userId: for the idempotency key. */
-  opts: { prorationDate?: number; userId?: string } = {}
+  opts: { prorationDate?: number; userId?: string; creditChoice?: DowngradeCreditChoice } = {}
 ): Promise<ChangePlanResult> {
   const { stripe } = deps
   const log = deps.log ?? ((m: string) => console.error(m))
@@ -824,41 +826,47 @@ export async function changePlanStep(
     if ('skip' in found) {
       log(`[change-plan] downgrade refund skipped on ${sub.id} (${found.skip}); deferred downgrade instead`)
     } else {
-      let refundId: string | null = null
-      if (!found.alreadyDone) {
+      // Cheke, Oct 23 (correction): the $50 goes EITHER toward the buyout OR to the Freeplug wallet
+      // (Stripe customer balance credit, used on the next invoices). Client picks; default = buyout.
+      // No card refund. 'buyout' moves no money: the full $100 stays paid, so it all counts toward ownership.
+      const choice: DowngradeCreditChoice = opts.creditChoice === 'wallet' ? 'wallet' : DEFAULT_DOWNGRADE_CREDIT_CHOICE
+      let creditId: string | null = null
+      if (choice === 'wallet' && !found.alreadyDone) {
         try {
-          const refund = await stripe.refunds.create(
-            {
-              charge: found.chargeId,
-              amount: found.amountCents,
-              reason: 'requested_by_customer',
-              metadata: { kind: DOWNGRADE_REFUND_KIND, subscription: sub.id, invoice: found.invoiceId, from_step: current!.id, to_step: target.id, user_id: opts.userId ?? '' },
-            },
-            { idempotencyKey: downgradeRefundIdempotencyKey(sub.id, found.invoiceId) }
-          )
-          refundId = refund.id
+          const customer = typeof sub.customer === 'string' ? sub.customer : (sub.customer as { id: string } | null | undefined)?.id
+          if (!customer) throw new Error('no customer on subscription')
+          const prior = await findWalletCredit(stripe, customer, sub.id, found.invoiceId)
+          if (prior) creditId = prior
+          else {
+            const txn = await stripe.customers.createBalanceTransaction(
+              customer,
+              { amount: -found.amountCents, currency: 'usd', description: 'Plan switch $100 -> $35: $50 to your Freeplug wallet', metadata: { kind: DOWNGRADE_REFUND_KIND, choice, subscription: sub.id, invoice: found.invoiceId, user_id: opts.userId ?? '' } },
+              { idempotencyKey: downgradeRefundIdempotencyKey(sub.id, found.invoiceId) }
+            )
+            creditId = txn.id
+          }
         } catch (e) {
-          log(`[change-plan] downgrade refund FAILED on ${sub.id} (${e instanceof Error ? e.message : String(e)}); deferred downgrade instead`)
-          refundId = 'failed'
+          log(`[change-plan] downgrade wallet credit FAILED on ${sub.id} (${e instanceof Error ? e.message : String(e)}); deferred downgrade instead`)
+          creditId = 'failed'
         }
       }
-      if (refundId !== 'failed') {
-        const event = { subscriptionId: sub.id, userId: opts.userId ?? null, invoiceId: found.invoiceId, chargeId: found.chargeId, refundId, refundCents: found.amountCents }
+      if (creditId !== 'failed') {
+        const event = { subscriptionId: sub.id, userId: opts.userId ?? null, invoiceId: found.invoiceId, chargeId: found.chargeId, refundId: creditId, refundCents: found.amountCents, choice }
         try {
           if (pendingSchedule) await releaseSchedule(stripe, pendingSchedule.id)
           await stripe.subscriptions.update(
             sub.id,
-            { items: upgradeItems(sub, priceId), billing_cycle_anchor: 'now', proration_behavior: 'none' },
+            { items: upgradeItems(sub, priceId), billing_cycle_anchor: 'now', proration_behavior: 'none', metadata: { downgrade_credit_choice: choice, downgrade_credit_invoice: found.invoiceId } },
             { idempotencyKey: downgradeSwitchIdempotencyKey(sub.id, found.invoiceId) }
           )
         } catch (e) {
           const error = e instanceof Error ? e.message : String(e)
-          log(`[change-plan] DOWNGRADE REFUNDED BUT SWITCH FAILED on ${sub.id}: ${error}`)
+          log(`[change-plan] DOWNGRADE CREDITED BUT SWITCH FAILED on ${sub.id}: ${error}`)
           await deps.onDowngradeRefund?.({ ...event, outcome: 'switch_failed', error }).catch(() => undefined)
-          return { ok: false, code: 'refund_switch_failed', message: 'Your refund went through, but the plan switch did not. Try again.', refundCents: found.amountCents }
+          return { ok: false, code: 'refund_switch_failed', message: 'Your $50 credit is saved, but the plan switch did not go through. Try again.', refundCents: found.amountCents }
         }
-        await deps.onDowngradeRefund?.({ ...event, outcome: 'done' }).catch((e: unknown) => log(`[change-plan] downgrade refund alert failed on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`))
-        return { ok: true, kind: 'downgraded_refunded', step: target.id, refundCents: found.amountCents, refundId, invoiceId: found.invoiceId }
+        await deps.onDowngradeRefund?.({ ...event, outcome: 'done' }).catch((e: unknown) => log(`[change-plan] downgrade credit alert failed on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`))
+        return { ok: true, kind: 'downgraded_refunded', step: target.id, refundCents: found.amountCents, refundId: creditId, invoiceId: found.invoiceId, choice }
       }
     }
   }

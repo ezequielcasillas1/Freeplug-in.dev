@@ -1,36 +1,31 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { memoryOwnershipStore, ownershipTotals, recordInvoicePayment, recordRefunds, buyoutCreditCents } from './ownership'
+import { memoryOwnershipStore, ownershipTotals, recordInvoicePayment, buyoutCreditCents } from './ownership'
 
 /**
- * Cheke, Oct 23 2026: on the $100 -> $35 downgrade the client keeps paying for half the month ($50 retained)
- * and gets $50 back on the card. The retained $50 counts toward the buyout (every dollar paid counts);
- * the refunded $50 does not (it went back to them).
+ * Cheke, Oct 23 2026 (corrected): on the $100 -> $35 downgrade the $50 goes EITHER toward the buyout OR to the
+ * Freeplug wallet. Neither is a card refund, so the $100 charge stays whole in the ownership ledger.
+ * - buyout: the full $100 counts toward ownership.
+ * - wallet: the $100 counts too, and the $50 wallet credit then pays later bills; Stripe lowers those invoices'
+ *   amount_paid, so the same $50 is never counted twice.
  */
-describe('$100 -> $35 downgrade refund and the buyout total', () => {
+describe('$100 -> $35 downgrade credit and the buyout total', () => {
   const day = (d: number) => Math.floor(Date.UTC(2026, 9, d) / 1000)
-  async function setup() {
+  it('buyout choice: the whole $100 (incl. the $50) counts; then the new $35', async () => {
     const store = memoryOwnershipStore()
     await recordInvoicePayment(store, 'p1', { id: 'in_100', amount_paid: 10000, status_transitions: { paid_at: day(1) } }, 'ch_100')
-    await recordRefunds(store, { id: 'ch_100', amount: 10000, created: day(1) }, [{ id: 're_50', amount: 5000, status: 'succeeded', created: day(10), charge: 'ch_100' }])
     await recordInvoicePayment(store, 'p1', { id: 'in_35', amount_paid: 3500, status_transitions: { paid_at: day(10) } }, 'ch_35')
-    return [...store.rows.values()]
-  }
-  it('retained $50 + the new $35 count toward ownership; the $50 refund does not', async () => {
-    const rows = await setup()
-    expect(ownershipTotals(rows, new Date(Date.UTC(2026, 9, 11))).paidCents).toBe(5000 + 3500)
+    const rows = [...store.rows.values()]
+    expect(ownershipTotals(rows, new Date(Date.UTC(2026, 9, 11))).paidCents).toBe(13500)
+    expect(buyoutCreditCents(rows, new Date(Date.UTC(2026, 9, 16)))).toBe(10000)
   })
-  it('the retained $50 becomes buyout-eligible once its charge clears (14 days)', async () => {
-    const rows = await setup()
-    expect(buyoutCreditCents(rows, new Date(Date.UTC(2026, 9, 16)))).toBe(5000)
-    expect(buyoutCreditCents(rows, new Date(Date.UTC(2026, 9, 25)))).toBe(8500)
-  })
-  it('a replayed refund webhook does not subtract twice', async () => {
+  it('wallet choice: $100 counts; the next $35 bill is paid from the wallet ($0 card) and adds nothing', async () => {
     const store = memoryOwnershipStore()
     await recordInvoicePayment(store, 'p1', { id: 'in_100', amount_paid: 10000, status_transitions: { paid_at: day(1) } }, 'ch_100')
-    const r = { id: 're_50', amount: 5000, status: 'succeeded', created: day(10), charge: 'ch_100' }
-    await recordRefunds(store, { id: 'ch_100', amount: 10000, created: day(1) }, [r])
-    await recordRefunds(store, { id: 'ch_100', amount: 10000, created: day(1) }, [r])
-    expect(ownershipTotals([...store.rows.values()]).paidCents).toBe(5000)
+    // new $35 period starts now: covered by the -$50 balance -> amount_paid 0 -> no ledger row
+    expect(await recordInvoicePayment(store, 'p1', { id: 'in_35a', amount_paid: 0, status_transitions: { paid_at: day(10) } }, null)).toBe('unchanged')
+    // next month: $15 left in the wallet, card pays $20
+    await recordInvoicePayment(store, 'p1', { id: 'in_35b', amount_paid: 2000, status_transitions: { paid_at: day(40) } }, 'ch_35b')
+    expect(ownershipTotals([...store.rows.values()], new Date(Date.UTC(2026, 11, 1))).paidCents).toBe(12000)
   })
 })
