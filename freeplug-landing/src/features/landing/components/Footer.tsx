@@ -67,6 +67,8 @@ export function Footer() {
         >
           <motion.div variants={fadeInUp} className="lg:col-span-2">
             <Link href={publicHref('/', locale)} className="flex items-center gap-2 mb-6 group">
+              {/* FP mark (Oct 22 2026). Plain img: keeps /_next/image off Cloudflare Images. */}
+              <img src="/images/brand/fp-logo-64.png" alt="" width={36} height={36} className="w-9 h-9 shrink-0 rounded-full ring-1 ring-white/10" />
               <span className="text-3xl font-bold text-[#ba3d3d] group-hover:text-[#d44d4d] transition-colors">{t('freeplug')}</span>
             </Link>
             <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
