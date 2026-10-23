@@ -6,6 +6,8 @@ import { safeNext } from '@/lib/auth/safe-next'
 import { syncLocaleCookieFromProfile } from '@/i18n/locale-cookie-sync'
 import { alertOwner } from '@/lib/owner-alerts/events'
 import { requestAwareBaseUrl } from '@/lib/site'
+import { SIGNUPS_PAUSED } from '@/lib/auth/signups-paused'
+import { isNewOAuthSignup } from '@/lib/auth/oauth-new-user'
 import {
   RESET_COOKIE_NAME,
   isRecoveryAccessToken,
@@ -29,6 +31,11 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Sign-ups paused: a Google account created by this sign-in is signed out (nothing deleted).
+      if (SIGNUPS_PAUSED && isNewOAuthSignup(data.user)) {
+        await supabase.auth.signOut()
+        return NextResponse.redirect(`${origin}/signup?blocked=google`)
+      }
       // Google / email-link sign-in: cookie follows profiles.locale.
       await syncLocaleCookieFromProfile(supabase, data.user?.id)
       // Owner alert: a Google account created just now (email sign-ups alert from signUp; same dedupe key).
