@@ -1,6 +1,7 @@
 'use server'
 
 import { alertOwner } from '@/lib/owner-alerts/events'
+import { alertRequest } from '@/lib/owner-alerts/request-alert'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -209,6 +210,25 @@ export async function submitWebsiteRequest(
       ['Language', locale === 'es' ? 'Spanish' : 'English'],
     ],
     adminPath: '/admin/requests',
+  })
+  const requesterId = user.id
+  alertRequest({
+    kind: maintenance ? 'maintenance_quote_request' : 'website_request',
+    dedupeKey: `website-request:${saved.requestId ?? user.id}:${crypto.randomUUID()}`,
+    resolveName: async () => {
+      const { data } = await createAdminClient().auth.admin.getUserById(requesterId)
+      const meta = (data.user?.user_metadata ?? {}) as Record<string, unknown>
+      const n = meta.full_name ?? meta.name
+      return typeof n === 'string' && n.trim() ? n.trim() : null
+    },
+    email: user.email ?? null,
+    phone: parsed.data.contact_phone || null,
+    business: parsed.data.business_name,
+    details: [
+      ['Google Business', parsed.data.google_business_url || null],
+      [maintenance ? 'What they need' : 'Notes', parsed.data.notes || null],
+      ['Language', locale === 'es' ? 'Spanish' : 'English'],
+    ],
   })
 
   revalidatePath('/dashboard')
