@@ -1455,7 +1455,7 @@
     "savedDraftMessage": "Guardado. Puedes regresar cuando quieras desde tu panel.",
     "saveDraftLabel": "Guardar y terminar después",
     "schedulerHeading": "Escoge un horario",
-    "schedulerTestModeNote": "Modo de prueba: el calendario de Cal.com no está conectado (falta NEXT_PUBLIC_CALCOM_LINK). Escoge un horario abajo para simular una cita.",
+    "schedulerTestModeNote": "La reserva en vivo está desactivada en esta versión de prueba. Aun así puedes enviar tus datos con el formulario.",
     "switchToForm": "¿Prefieres escribirlo? Mejor llena los detalles",
     "switchToLive": "¿Prefieres hablarlo? Mejor agenda una sesión en vivo",
     "textConsentText": "Acepto que Freeplug me mande mensajes de texto a este número sobre mi solicitud de sitio web. Pueden aplicar tarifas de mensajes y datos. Responde STOP para dejar de recibirlos en cualquier momento.",
@@ -1474,6 +1474,14 @@
     "requestCancelConfirm": "¿Enviar una solicitud de cancelación al equipo de Freeplug?",
     "requestCancelSent": "Gracias. Recibimos tu solicitud de cancelación y te contactaremos. Tu sitio se queda como está hasta entonces.",
     "requestCancelError": "No pudimos enviar tu solicitud de cancelación. Inténtalo de nuevo.",
-    "emailCancelRequestTeamSubject": "Cancel requested during build: {business}"
+    "emailCancelRequestTeamSubject": "Cancel requested during build: {business}",
+    "liveMethodLegend": "¿Cómo quieres hablar? *",
+    "schedulerIframeTitle": "Reserva un horario",
+    "opensInNewTab": "(se abre en una pestaña nueva)",
+    "bookingRefHint": "¿Ya reservaste? Si tu horario no se llenó solo, pega aquí el enlace de confirmación o la hora.",
+    "sessionTimeLabel": "Hora de la sesión",
+    "bookedThanks": "Reservado. ¡Gracias!",
+    "bookingRefLine": "Reserva: {value}",
+    "backToDashboard": "← Volver al panel"
   }
 }

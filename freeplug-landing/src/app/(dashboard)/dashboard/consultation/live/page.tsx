@@ -10,7 +10,8 @@ import { LiveBookingForm } from './LiveBookingForm'
 export const metadata: Metadata = { title: 'Book a live session | Freeplug' }
 
 export default async function ConsultationLivePage({ searchParams }: { searchParams: Promise<{ new?: string; edit?: string; booked?: string }> }) {
-  const copy = consultationCopy(await currentLocale())
+  const locale = await currentLocale()
+  const copy = consultationCopy(locale)
   const q = await searchParams
   const own = await loadOwnConsultation()
   if (!own) redirect('/login')
@@ -22,18 +23,18 @@ export default async function ConsultationLivePage({ searchParams }: { searchPar
   if (booked && q.edit !== '1') {
     const method = copy.LIVE_METHOD_LABELS[c.live_method ?? 'phone']
     const when = c.booked_at
-      ? new Date(c.booked_at).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short', timeZone: 'America/Chicago' }) + ' CT'
+      ? new Date(c.booked_at).toLocaleString(locale === 'es' ? 'es-US' : 'en-US', { dateStyle: 'full', timeStyle: 'short', timeZone: 'America/Chicago' }) + ' CT'
       : null
     return (
       <div className="max-w-2xl">
-        {q.booked ? <p className="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-800" role="status">Booked. Thanks!</p> : null}
+        {q.booked ? <p className="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-800" role="status">{copy.BOOKED_THANKS}</p> : null}
         <h1 className="text-3xl font-bold text-gray-900 mb-2">{copy.LIVE_BOOKED_HEADING}</h1>
         <p className="text-gray-600 mb-4" data-testid="live-booked">{copy.liveBookedBody(when, method)}</p>
-        {c.booking_ref ? <p className="text-sm text-gray-500 mb-4">Booking: {c.booking_ref}</p> : null}
+        {c.booking_ref ? <p className="text-sm text-gray-500 mb-4">{copy.bookingRefLine(c.booking_ref)}</p> : null}
         <div className="flex flex-col gap-2 text-sm">
           <Link href="/dashboard/consultation/live?edit=1" className="text-[#ba3d3d] hover:underline">{copy.RESCHEDULE_LABEL}</Link>
           <Link href="/dashboard/consultation?switch=1" className="text-[#ba3d3d] hover:underline">{copy.SWITCH_TO_FORM}</Link>
-          <Link href="/dashboard" className="text-gray-500 hover:underline">← Back to dashboard</Link>
+          <Link href="/dashboard" className="text-gray-500 hover:underline">{copy.BACK_TO_DASHBOARD}</Link>
         </div>
       </div>
     )

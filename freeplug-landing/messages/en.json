@@ -1455,7 +1455,7 @@
     "savedDraftMessage": "Saved. You can come back any time from your dashboard.",
     "saveDraftLabel": "Save and finish later",
     "schedulerHeading": "Pick a time",
-    "schedulerTestModeNote": "Test mode: the Cal.com scheduler is not connected (NEXT_PUBLIC_CALCOM_LINK is not set). Pick a time below to simulate a booking.",
+    "schedulerTestModeNote": "Live booking is off in this test build. You can still send your details with the form.",
     "switchToForm": "Prefer to type it out? Fill in the details instead",
     "switchToLive": "Prefer to talk it through? Book a live session instead",
     "textConsentText": "I agree that Freeplug may send me text messages at this number about my website request. Message and data rates may apply. Reply STOP to opt out at any time.",
@@ -1474,6 +1474,14 @@
     "requestCancelConfirm": "Send a cancel request to the Freeplug team?",
     "requestCancelSent": "Thanks. We got your cancel request and will contact you. Your build stays as it is until then.",
     "requestCancelError": "We couldn't send your cancel request. Please try again.",
-    "emailCancelRequestTeamSubject": "Cancel requested during build: {business}"
+    "emailCancelRequestTeamSubject": "Cancel requested during build: {business}",
+    "liveMethodLegend": "How do you want to talk? *",
+    "schedulerIframeTitle": "Book a time",
+    "opensInNewTab": "(opens in a new tab)",
+    "bookingRefHint": "Already booked? If your time didn't fill in on its own, paste your booking confirmation link or the time here.",
+    "sessionTimeLabel": "Session time",
+    "bookedThanks": "Booked. Thanks!",
+    "bookingRefLine": "Booking: {value}",
+    "backToDashboard": "← Back to dashboard"
   }
 }

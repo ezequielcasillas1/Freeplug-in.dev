@@ -48,7 +48,7 @@ export function LiveBookingForm({
   return (
     <form action={action} className="space-y-8" data-testid="live-booking-form">
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-gray-900 mb-2">How do you want to talk? *</legend>
+        <legend className="text-sm font-medium text-gray-900 mb-2">{copy.LIVE_METHOD_LEGEND}</legend>
         {METHODS.map((m) => (
           <label key={m} className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm min-h-[44px] has-[:checked]:border-[#ba3d3d]">
             <input type="radio" name="live_method" value={m} defaultChecked={initial.live_method === m} onChange={() => setMethod(m)} className="mt-1" />
@@ -89,14 +89,15 @@ export function LiveBookingForm({
                 className="inline-flex min-h-[44px] items-center rounded-md border border-[#ba3d3d] px-5 text-sm font-semibold text-[#ba3d3d] hover:bg-red-50"
               >
                 {copy.PATH_LIVE_CTA}
+                <span className="sr-only"> {copy.OPENS_IN_NEW_TAB}</span>
               </a>
               <iframe
-                title="Book a time"
+                title={copy.SCHEDULER_IFRAME_TITLE}
                 src={calcomEmbedUrl(calLink, { email: initial.email, method, ref: initial.consultationRef })}
                 className="h-[640px] w-full rounded-lg border border-zinc-200 bg-white"
               />
               <label className="block text-sm">
-                <span className="text-gray-700">Booked already? Paste your booking confirmation link or time if it did not fill in automatically.</span>
+                <span className="text-gray-700">{copy.BOOKING_REF_HINT}</span>
                 <input name="booking_ref" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} className={input + ' mt-1'} />
               </label>
               <input type="hidden" name="booked_at" value={bookedAt} />
@@ -110,7 +111,7 @@ export function LiveBookingForm({
                 value={bookedAt}
                 onChange={(e) => setBookedAt(e.target.value)}
                 className={input + ' max-w-xs'}
-                aria-label="Session time"
+                aria-label={copy.SESSION_TIME_LABEL}
               />
               <input type="hidden" name="booked_at" value={bookedAt ? new Date(bookedAt).toISOString() : ''} />
               <input type="hidden" name="booking_ref" value={bookedAt ? 'test-mode' : ''} />

@@ -49,7 +49,16 @@ export const TEXT_CONSENT_TEXT =
 export const CONSENT_REQUIRED_ERROR = 'Please check the box so we can contact you at this number.'
 export const SCHEDULER_HEADING = 'Pick a time'
 export const SCHEDULER_TEST_MODE_NOTE =
-  'Test mode: the Cal.com scheduler is not connected (NEXT_PUBLIC_CALCOM_LINK is not set). Pick a time below to simulate a booking.'
+  'Live booking is off in this test build. You can still send your details with the form.'
+export const LIVE_METHOD_LEGEND = 'How do you want to talk? *'
+export const SCHEDULER_IFRAME_TITLE = 'Book a time'
+export const OPENS_IN_NEW_TAB = '(opens in a new tab)'
+export const BOOKING_REF_HINT =
+  "Already booked? If your time didn't fill in on its own, paste your booking confirmation link or the time here."
+export const SESSION_TIME_LABEL = 'Session time'
+export const BOOKED_THANKS = 'Booked. Thanks!'
+export const bookingRefLine = (value: string) => `Booking: ${value}`
+export const BACK_TO_DASHBOARD = '← Back to dashboard'
 export const BOOKING_CONFIRM_LABEL = 'Confirm booking'
 export const LIVE_BOOKED_HEADING = 'Your session is booked'
 export const liveBookedBody = (when: string | null, method: string) =>

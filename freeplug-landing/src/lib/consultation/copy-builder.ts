@@ -18,6 +18,7 @@ export function buildConsultationCopy(t: Translate): ConsultationCopy {
   }
   out.liveBookedBody = (when: string | null, method: string) =>
     t('liveBookedBody', { hasWhen: when ? 'yes' : 'no', when: when ?? '', method })
+  out.bookingRefLine = (value: string) => t('bookingRefLine', { value })
   // Team-only subjects stay English by design (Sable, Oct 22): fplgn.dev inboxes only.
   out.EMAIL_AGREED_TEAM_SUBJECT = COPY.EMAIL_AGREED_TEAM_SUBJECT
   out.EMAIL_LIVE_BOOKED_TEAM_SUBJECT = COPY.EMAIL_LIVE_BOOKED_TEAM_SUBJECT
