@@ -53,10 +53,14 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
       fn(copy.addonTurnedOffRefundEmailSubject),
       // Aria 10:09 (option A): the resume status promises a refund if the owed add-on is charged (the 10th)
       fn(copy.RESUME_REMOVAL_OWED_STATUS),
+      // Ezequiel Oct 23: the $100 -> $35 downgrade refunds $50 now (downgrade-refund-rule.ts); these 2 say so.
+      copy.CHANGE_PLAN_HELP_DOWN_REFUND,
+      fn(copy.CHANGE_PLAN_DOWNGRADED_REFUNDED),
     ])
     // Sable 10:47: the L-1 reason no longer says "refunded" (back to 10; it must stay off this list)
     // Oct 18: the add-on card charge notes were removed with the add-ons (9 left).
-    expect(exempt.size).toBe(9)
+    // Oct 23: + the 2 $100 -> $35 refund lines (11).
+    expect(exempt.size).toBe(11)
     expect(exempt.has(fn(copy.ADDON_REFUND_REASONS.turned_off))).toBe(false)
     const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i
     expect(new Set(all.filter((s) => banned.test(s)))).toEqual(exempt)

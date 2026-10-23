@@ -1,5 +1,7 @@
 'use server'
 
+import { formatUsdIn } from '@/i18n/format'
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
@@ -13,6 +15,7 @@ import type { AppLocale } from '@/i18n/config'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH, RESUMED_REMOVAL_OWED_FOCUS_PATH, RESUMED_REMOVAL_OWED_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
+import { sendDowngradeRefundAlert } from '@/lib/stripe/downgrade-refund-alert'
 import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewAddonChange, previewPlanStepChange, previewTipChange, type AddonAction, type AddonChangeRefusal, type TipChangeRefusal } from '@/lib/stripe/change-plan'
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
@@ -271,7 +274,7 @@ async function runHostingPlanChange(
   prorationDate: number | undefined
 ): Promise<ChangeHostingPlanResult> {
   const locale = await currentLocale()
-  const { ADDON_TURN_OFF_FIRST, CHANGE_PLAN_ENDING, CHANGE_PLAN_PAYMENT_FAILED, CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST, CHANGE_PLAN_SCHEDULED, CHANGE_PLAN_UNAVAILABLE, CHANGE_PLAN_UNCHANGED, CHANGE_PLAN_UPGRADED, STEP_NOT_SELLABLE_MESSAGE, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } = ladderCopy(locale)
+  const { ADDON_TURN_OFF_FIRST, CHANGE_PLAN_DOWNGRADED_REFUNDED, CHANGE_PLAN_ENDING, CHANGE_PLAN_PAYMENT_FAILED, CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST, CHANGE_PLAN_SCHEDULED, CHANGE_PLAN_UNAVAILABLE, CHANGE_PLAN_UNCHANGED, CHANGE_PLAN_UPGRADED, STEP_NOT_SELLABLE_MESSAGE, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } = ladderCopy(locale)
   try {
     const live = (await listLiveSubscriptions(customerId)).filter((s) => s.status === 'active' || s.status === 'trialing')
     if (live.length !== 1) return { ok: false, message: CHANGE_PLAN_UNAVAILABLE }
@@ -281,11 +284,12 @@ async function runHostingPlanChange(
       await syncPlanSnapshotForCustomer(stripe, customerId)
     }
     // L-1 (Aria 9:57): a pending add-on removal that can't be put back after the upgrade is saved as owed + alerted.
-    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe), onRemovalOwed: recordRemovalOwedNow('upgrade'), onRestoreFailed: sendPendingRestoreFailedAlert }, live[0], step.id, { prorationDate, userId })
+    const r = await changePlanStep({ stripe, priceIdFor: (id) => getStepPriceId(id, stripe), onRemovalOwed: recordRemovalOwedNow('upgrade'), onRestoreFailed: sendPendingRestoreFailedAlert, onDowngradeRefund: sendDowngradeRefundAlert }, live[0], step.id, { prorationDate, userId })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (r.ok && r.kind === 'upgraded') return { ok: true, message: CHANGE_PLAN_UPGRADED(step.name) }
     if (r.ok && r.kind === 'scheduled') return { ok: true, message: CHANGE_PLAN_SCHEDULED(step.name, formatPlanEndDate(new Date(r.effectiveAt), locale)) }
+    if (r.ok && r.kind === 'downgraded_refunded') return { ok: true, message: CHANGE_PLAN_DOWNGRADED_REFUNDED(step.name, formatUsdIn(locale, r.refundCents, 2)) }
     if (r.ok) return { ok: true, message: CHANGE_PLAN_UNCHANGED }
     if (r.code === 'ending') return { ok: false, message: CHANGE_PLAN_ENDING }
     if (r.code === 'not_sellable') return { ok: false, message: STEP_NOT_SELLABLE_MESSAGE(step.name) }

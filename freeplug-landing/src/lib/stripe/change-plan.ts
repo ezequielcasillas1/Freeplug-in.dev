@@ -18,6 +18,8 @@ import {
   addonRefundSplit,
 } from './addon-refund-info'
 import { REMOVAL_RESCHEDULE_TRIES, withRetries } from './retry'
+import { isRefundDowngrade } from '../plans/downgrade-refund-rule'
+import { DOWNGRADE_REFUND_KIND, downgradeRefundIdempotencyKey, downgradeSwitchIdempotencyKey, findDowngradeRefund } from './downgrade-refund'
 import { carriedPendingCents, upcomingBill } from './next-bill'
 import type { RemovalOwedInput, RemovalOwedUnrecorded } from './addon-removal-owed'
 import { ADDON_MIN_CHARGE_CENTS, addonCapCheck, addonCentsInTipTotal, addonCentsOfItems, addonIdsOfItems, addonItemsOf, addonOfPrice, parseAddonIds } from '../plans/addons'
@@ -115,8 +117,12 @@ export type ChangePlanResult =
       removalOwed?: boolean
     }
   | { ok: true; kind: 'scheduled'; step: PlanStepId; effectiveAt: string }
+  /** $100 -> $35 (downgrade-refund-rule.ts): switched now, new period from now, refundCents back on the card. */
+  | { ok: true; kind: 'downgraded_refunded'; step: PlanStepId; refundCents: number; refundId: string | null; invoiceId: string }
   | { ok: true; kind: 'unchanged'; step: PlanStepId }
   | { ok: false; code: 'payment_failed'; message: string; pendingRestored: boolean | null }
+  /** The $50 refund went through but the immediate switch failed: alerted; a retry switches without refunding again. */
+  | { ok: false; code: 'refund_switch_failed'; message: string; refundCents: number }
   | { ok: false; code: 'not_live' | 'ending' | 'price' | 'not_sellable' | 'stale_preview' | 'in_progress' | 'addons_over_cap'; message: string }
 
 /**
@@ -521,6 +527,18 @@ export type PendingRestoreFailed = {
   removalOwedSaved: boolean | null
 }
 
+export type DowngradeRefundEvent = {
+  subscriptionId: string
+  userId: string | null
+  invoiceId: string
+  chargeId: string
+  refundId: string | null
+  refundCents: number
+  /** 'done' = refunded + switched; 'switch_failed' = refunded, still on $100 (fix by hand or retry). */
+  outcome: 'done' | 'switch_failed'
+  error?: string
+}
+
 /** Upgrades in flight in this isolate, by idempotency key: a double Confirm returns before anything is released. */
 const upgradesInFlight = new Set<string>()
 
@@ -540,6 +558,8 @@ export async function changePlanStep(
      * without this dep the failure is still logged loudly.
      */
     onRestoreFailed?: (o: PendingRestoreFailed) => Promise<unknown>
+    /** $100 -> $35 refund downgrade: owner alert + billing activity (internal). Failures are logged, never block. */
+    onDowngradeRefund?: (o: DowngradeRefundEvent) => Promise<unknown>
   },
   sub: Sub,
   targetId: PlanStepId,
@@ -788,6 +808,58 @@ export async function changePlanStep(
     }
     } finally {
       upgradesInFlight.delete(upgradeKey)
+    }
+  }
+
+  // $100 -> $35 (Ezequiel, Oct 23): refund $50 of this month's charge and switch now (new period from
+  // now). Refund FIRST (idempotent per subscription+invoice), then switch: a retry after a failed switch
+  // finds our refund and only switches. Nothing refundable = the normal deferred downgrade below (logged).
+  // A pending add-on removal also falls back (the immediate switch would drop it).
+  if (isRefundDowngrade(current, subscriptionMonthlyCents(sub), target)) {
+    const pendingSchedule = await settle()
+    const pendingPhase = pendingSchedule ? await pendingFromSchedule(stripe, pendingSchedule, now).catch(() => null) : null
+    const liveAddonsNow = addonIdsOfItems(sub.items.data)
+    const removalPending = pendingPhase ? !liveAddonsNow.every((a) => pendingPhase.addons.includes(a)) : false
+    const found = removalPending ? ({ skip: 'addon_removal_pending' } as const) : await findDowngradeRefund(stripe, sub.id).catch((e: unknown) => ({ skip: `lookup_failed: ${e instanceof Error ? e.message : String(e)}` }))
+    if ('skip' in found) {
+      log(`[change-plan] downgrade refund skipped on ${sub.id} (${found.skip}); deferred downgrade instead`)
+    } else {
+      let refundId: string | null = null
+      if (!found.alreadyDone) {
+        try {
+          const refund = await stripe.refunds.create(
+            {
+              charge: found.chargeId,
+              amount: found.amountCents,
+              reason: 'requested_by_customer',
+              metadata: { kind: DOWNGRADE_REFUND_KIND, subscription: sub.id, invoice: found.invoiceId, from_step: current!.id, to_step: target.id, user_id: opts.userId ?? '' },
+            },
+            { idempotencyKey: downgradeRefundIdempotencyKey(sub.id, found.invoiceId) }
+          )
+          refundId = refund.id
+        } catch (e) {
+          log(`[change-plan] downgrade refund FAILED on ${sub.id} (${e instanceof Error ? e.message : String(e)}); deferred downgrade instead`)
+          refundId = 'failed'
+        }
+      }
+      if (refundId !== 'failed') {
+        const event = { subscriptionId: sub.id, userId: opts.userId ?? null, invoiceId: found.invoiceId, chargeId: found.chargeId, refundId, refundCents: found.amountCents }
+        try {
+          if (pendingSchedule) await releaseSchedule(stripe, pendingSchedule.id)
+          await stripe.subscriptions.update(
+            sub.id,
+            { items: upgradeItems(sub, priceId), billing_cycle_anchor: 'now', proration_behavior: 'none' },
+            { idempotencyKey: downgradeSwitchIdempotencyKey(sub.id, found.invoiceId) }
+          )
+        } catch (e) {
+          const error = e instanceof Error ? e.message : String(e)
+          log(`[change-plan] DOWNGRADE REFUNDED BUT SWITCH FAILED on ${sub.id}: ${error}`)
+          await deps.onDowngradeRefund?.({ ...event, outcome: 'switch_failed', error }).catch(() => undefined)
+          return { ok: false, code: 'refund_switch_failed', message: 'Your refund went through, but the plan switch did not. Try again.', refundCents: found.amountCents }
+        }
+        await deps.onDowngradeRefund?.({ ...event, outcome: 'done' }).catch((e: unknown) => log(`[change-plan] downgrade refund alert failed on ${sub.id}: ${e instanceof Error ? e.message : String(e)}`))
+        return { ok: true, kind: 'downgraded_refunded', step: target.id, refundCents: found.amountCents, refundId, invoiceId: found.invoiceId }
+      }
     }
   }
 

@@ -129,6 +129,7 @@ function build(t: Translate, locale: AppLocale) {
     CHANGE_PLAN_HELP: t('plans.change.help'),
     CHANGE_PLAN_UPGRADED: (name: string) => t('plans.change.upgraded', { name }),
     CHANGE_PLAN_SCHEDULED: (name: string, date: string) => t('plans.change.scheduled', { name, date }),
+    CHANGE_PLAN_DOWNGRADED_REFUNDED: (name: string, amount: string) => t('plans.change.downgradedRefunded', { name, amount }),
     CHANGE_PLAN_UNCHANGED: t('plans.change.unchanged'),
     CHANGE_PLAN_ENDING: t('plans.change.ending'),
     CHANGE_PLAN_PAYMENT_FAILED: t('plans.change.paymentFailed'),
@@ -173,6 +174,7 @@ function build(t: Translate, locale: AppLocale) {
     CHANGE_PLAN_BUTTON_ON: (name: string, date: string) => t('plans.change.buttonOn', { name, date }),
     CHANGE_PLAN_HELP_UP: t('plans.change.helpUp'),
     CHANGE_PLAN_HELP_DOWN: t('plans.change.helpDown'),
+    CHANGE_PLAN_HELP_DOWN_REFUND: t('plans.change.helpDownRefund'),
     UPGRADE_CALCULATING: t('plans.change.calculating'),
     UPGRADE_CONFIRM_LINE: (name: string, today: string, monthly: string, date: string) =>
       t('plans.change.confirmLine', { name, todayAmount: today, monthly, date }),
@@ -421,6 +423,8 @@ export const CHANGE_PLAN_BUTTON_NOW = EN.CHANGE_PLAN_BUTTON_NOW
 export const CHANGE_PLAN_BUTTON_ON = EN.CHANGE_PLAN_BUTTON_ON
 export const CHANGE_PLAN_HELP_UP = EN.CHANGE_PLAN_HELP_UP
 export const CHANGE_PLAN_HELP_DOWN = EN.CHANGE_PLAN_HELP_DOWN
+export const CHANGE_PLAN_HELP_DOWN_REFUND = EN.CHANGE_PLAN_HELP_DOWN_REFUND
+export const CHANGE_PLAN_DOWNGRADED_REFUNDED = EN.CHANGE_PLAN_DOWNGRADED_REFUNDED
 export const UPGRADE_CALCULATING = EN.UPGRADE_CALCULATING
 export const UPGRADE_CONFIRM_LINE = EN.UPGRADE_CONFIRM_LINE
 export const UPGRADE_CONFIRM_FALLBACK = EN.UPGRADE_CONFIRM_FALLBACK

@@ -634,6 +634,8 @@
       "buttonOn": "Switch to {name} on {date}",
       "helpUp": "Starts right away. Today you pay only the difference for the rest of this billing period, and your billing date stays the same.",
       "helpDown": "Starts on your next billing date, when the lower price begins. Nothing is charged today, and you keep your current plan until then.",
+      "helpDownRefund": "Starts today: we refund $50 of this month's $100 charge, and your $35 plan starts a new billing period now.",
+      "downgradedRefunded": "You're now on {name}. We refunded {amount} to your card; it can take 5 to 10 days to show up.",
       "calculating": "Checking the amount…",
       "confirmLine": "Switch to {name} now? We'll charge {todayAmount} today, then {monthly}/month starting {date}.",
       "confirmFallback": "Switch to {name} now? We'll charge the difference for the rest of this billing period today.",

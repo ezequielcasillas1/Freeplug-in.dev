@@ -634,6 +634,8 @@
       "buttonOn": "Cambiar a {name} el {date}",
       "helpUp": "Empieza de inmediato. Hoy solo pagas la diferencia por lo que queda de este periodo de facturación, y tu fecha de cobro sigue igual.",
       "helpDown": "Empieza en tu próxima fecha de cobro, cuando comienza el precio más bajo. Hoy no se cobra nada y conservas tu plan actual hasta entonces.",
+      "helpDownRefund": "Empieza hoy: te devolvemos $50 del cobro de $100 de este mes y tu plan de $35 inicia un nuevo periodo de facturación ahora.",
+      "downgradedRefunded": "Ya estás en {name}. Te devolvimos {amount} a tu tarjeta; puede tardar de 5 a 10 días en aparecer.",
       "calculating": "Revisando el monto…",
       "confirmLine": "¿Cambiar a {name} ahora? Te cobraremos {todayAmount} hoy y luego {monthly} al mes a partir del {date}.",
       "confirmFallback": "¿Cambiar a {name} ahora? Hoy te cobraremos la diferencia por lo que queda de este periodo de facturación.",

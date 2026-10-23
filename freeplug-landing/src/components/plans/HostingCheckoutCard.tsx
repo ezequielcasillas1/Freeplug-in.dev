@@ -24,6 +24,7 @@ import { PLAN_STEPS, type AddonId, type PlanStep, type PlanStepId } from '@/lib/
 import { addonConfigCents } from '@/lib/plans/addons'
 import { tipRangeFor } from '@/lib/plans/tips'
 import { PRORATION_DATE_MAX_AGE_SECONDS, planMove, type PlanMove } from '@/lib/plans/plan-direction'
+import { isRefundDowngrade } from '@/lib/plans/downgrade-refund-rule'
 import { MOST_POPULAR_STEP } from '@/lib/plans/ladder-copy'
 import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { formatAmount, formatAmountCents } from '@/lib/format/keep-together'
@@ -191,7 +192,7 @@ export function HostingCheckoutCard({
   onChangeAddon,
 }: Props) {
   const ladder = useLadderCopy()
-  const { PLAN_GLOSS, CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine, addonTodayTotal, CHANGE_PLAN_SWITCHING } = ladder
+  const { PLAN_GLOSS, CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_DOWN_REFUND, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine, addonTodayTotal, CHANGE_PLAN_SWITCHING } = ladder
   const t = useTranslations()
   // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
   // customer is already on. The server refuses them too (checkout, claim, publish, switching).
@@ -566,18 +567,20 @@ export function HostingCheckoutCard({
       : 'rounded-2xl bg-white p-6 sm:p-8 shadow-sm border border-zinc-200/80'
 
   // ------------------------------------------------------------------ action area
+  // $100 -> $35 (downgrade-refund-rule.ts): applied now with a $50 refund, so the button says "now".
+  const refundDowngrade = direction === 'downgrade' && isRefundDowngrade(currentStep, nowCents, selected)
   const switchLabel =
     direction === 'same'
       ? CHANGE_PLAN_PICK_TO_SWITCH
-      : direction === 'upgrade'
+      : direction === 'upgrade' || refundDowngrade
         ? CHANGE_PLAN_BUTTON_NOW(selected.name)
         : renewalDate
           ? CHANGE_PLAN_BUTTON_ON(selected.name, renewalDateShort ?? renewalDate)
           : CHANGE_PLAN_BUTTON(selected.name)
-  const switchHelp = direction === 'upgrade' ? CHANGE_PLAN_HELP_UP : direction === 'downgrade' ? CHANGE_PLAN_HELP_DOWN : null
+  const switchHelp = direction === 'upgrade' ? CHANGE_PLAN_HELP_UP : refundDowngrade ? CHANGE_PLAN_HELP_DOWN_REFUND : direction === 'downgrade' ? CHANGE_PLAN_HELP_DOWN : null
   // Downgrades have no confirm, so the tip line sits under the downgrade button, with the "what
   // happens" line (Lina §3a pattern), and again in the pending box once the switch is planned.
-  const downgradeTipLine = direction === 'downgrade' && tipText && renewalDate ? PLAN_CHANGE_TIP_ENDS_ON(tipText, renewalDate) : null
+  const downgradeTipLine = direction === 'downgrade' && !refundDowngrade && tipText && renewalDate ? PLAN_CHANGE_TIP_ENDS_ON(tipText, renewalDate) : null
   const noRealSwitch = direction === 'same' || !pickable(selected.id)
   const switchDisabled = loading || keeping || direction === 'same' || !pickable(selected.id) || confirm.phase !== 'idle'
 
