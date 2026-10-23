@@ -16,7 +16,7 @@ export function downgradeRefundAlert(o: DowngradeRefundEvent): { subject: string
     `Charge: ${o.chargeId}`,
     `Refund: ${o.refundId ?? 'existing (retry)'} for ${usd}`,
     o.outcome === 'done' ? 'Switched to Starter ($35) now; new billing period starts today.' : `Still on $100. Error: ${o.error ?? 'unknown'}. A retry by the customer switches without refunding again.`,
-    'The refund lowers "paid toward ownership" through the charge.refunded webhook.',
+    'Buyout: the retained $50 of this month still counts toward ownership; only the refunded part is subtracted (charge.refunded webhook).',
   ].join('\n')
   return { subject, text }
 }
