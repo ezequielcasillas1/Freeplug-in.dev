@@ -9,10 +9,12 @@ import { fadeInUp, staggerContainer } from '../animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
+import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
 
 export function CTASection() {
   const t = useTranslations('public.landing.cTA')
   const locale = toAppLocale(useLocale())
+  const tb = useTranslations('booking')
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#ba3d3d] via-[#a53434] to-[#8a2e2e]" />
@@ -88,6 +90,14 @@ export function CTASection() {
             {t('requestFreeWebsite')}
             <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Link>
+          <BookLiveSessionLink
+            label={tb('bookLiveSession')}
+            newTabHint={tb('opensInNewTab')}
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'bg-transparent text-white border border-white/60 hover:bg-white/10 transition-all px-8'
+            )}
+          />
         </motion.div>
         
         <motion.div

@@ -1396,5 +1396,11 @@
       "prompt": "¿Cambiar a español?",
       "dismiss": "No, gracias"
     }
+  },
+  "booking": {
+    "bookLiveSession": "Reserva una sesión en vivo",
+    "opensInNewTab": "(se abre en una pestaña nueva)",
+    "requestLine": "¿Prefieres hablarlo primero?",
+    "faqLine": "¿Prefieres hablar en vivo? Reserva un horario que te funcione."
   }
 }

@@ -10,6 +10,7 @@ import { ladderCopy } from '@/lib/plans/ladder-copy'
 import { currentLocale } from '@/i18n/current-locale'
 import { getTranslations } from 'next-intl/server'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
+import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
@@ -27,6 +28,7 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
   const { CANCEL_OPTIONS_LINK } = ladderCopy(locale)
   const t = await getTranslations('dashboard.request')
   const tp = await getTranslations('errors.plans')
+  const tb = await getTranslations('booking')
   const q = await searchParams
   const focusMaintenance = q.focus === 'maintenance'
 
@@ -134,6 +136,14 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
         defaultValues={defaultValues}
         locked={inReview}
       />
+      <p className="mt-6 text-sm text-gray-600">
+        {tb('requestLine')}{' '}
+        <BookLiveSessionLink
+          label={tb('bookLiveSession')}
+          newTabHint={tb('opensInNewTab')}
+          className="font-medium text-[#ba3d3d] underline underline-offset-2 hover:text-[#9a3232]"
+        />
+      </p>
       <p className="mt-8 text-sm text-gray-500">
         <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">
           {t('backDashboard')}

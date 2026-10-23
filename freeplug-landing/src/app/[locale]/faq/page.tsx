@@ -13,6 +13,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
 import { SUPPORT_EMAIL } from '@/lib/site'
+import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 
 /** Question/answer keys in display order; "what do I pay" and the buyout pair come from shared copy. */
@@ -102,6 +103,14 @@ export default function FAQPage() {
                 {t('public.faq.contactSupport')}
                 <ArrowRight className="w-4 h-4" />
               </a>
+              <p className="text-gray-600 mt-4">
+                {t('booking.faqLine')}{' '}
+                <BookLiveSessionLink
+                  label={t('booking.bookLiveSession')}
+                  newTabHint={t('booking.opensInNewTab')}
+                  className="font-medium text-[#ba3d3d] underline underline-offset-2 hover:text-[#9a3232]"
+                />
+              </p>
             </motion.div>
           </div>
         </section>

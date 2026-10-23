@@ -1396,5 +1396,11 @@
       "prompt": "Prefer Spanish?",
       "dismiss": "No thanks"
     }
+  },
+  "booking": {
+    "bookLiveSession": "Book a live session",
+    "opensInNewTab": "(opens in a new tab)",
+    "requestLine": "Prefer to talk it through first?",
+    "faqLine": "Prefer to talk live? Book a time that works for you."
   }
 }
