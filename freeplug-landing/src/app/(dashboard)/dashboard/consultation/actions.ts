@@ -7,7 +7,9 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checklistFromFormData, checklistSummaryRows, missingFields, parseChecklistDraft, type Checklist } from '@/lib/consultation/checklist'
-import * as copy from '@/lib/consultation/copy'
+import * as copyEn from '@/lib/consultation/copy'
+import { consultationCopy } from '@/lib/consultation/i18n'
+import { currentLocale } from '@/i18n/current-locale'
 import { sendConsultationMail, TEAM_INBOX } from '@/lib/consultation/mail'
 import { isPreAgreement, OPEN_REQUEST_STATUSES, INTAKE_STATUSES, isIntakeStatus } from '@/lib/consultation/status'
 import {
@@ -91,6 +93,7 @@ export async function chooseFormPath(): Promise<void> {
 
 /** Path A: save a draft ("save and come back") or send it for review (needs every required answer). */
 export async function saveConsultationForm(_prev: ConsultActionState, fd: FormData): Promise<ConsultActionState> {
+  const copy = consultationCopy(await currentLocale())
   const { supabase, user } = await signedIn()
   if (!user) return { error: 'You must be signed in.' }
   const { request, consultation } = await loadOwn(supabase, user.id)
@@ -143,7 +146,7 @@ const bookingSchema = z
       }
     }
     if ((v.live_method === 'phone' || v.live_method === 'text') && !v.consent) {
-      ctx.addIssue({ code: 'custom', path: ['consent'], message: copy.CONSENT_REQUIRED_ERROR })
+      ctx.addIssue({ code: 'custom', path: ['consent'], message: copyEn.CONSENT_REQUIRED_ERROR })
     }
     if (!v.booked_at && !v.booking_ref) {
       ctx.addIssue({ code: 'custom', path: ['booked_at'], message: 'Pick a time for your session.' })
@@ -161,6 +164,7 @@ async function clientIp(): Promise<{ ip: string | null; ua: string | null }> {
 
 /** Path B: pick a method, give a number (+ consent for phone/text), and record the booked slot. */
 export async function bookLiveSession(_prev: ConsultActionState, fd: FormData): Promise<ConsultActionState> {
+  const copy = consultationCopy(await currentLocale())
   const { supabase, user } = await signedIn()
   if (!user) return { error: 'You must be signed in.' }
   const { request, consultation } = await loadOwn(supabase, user.id)
@@ -174,7 +178,8 @@ export async function bookLiveSession(_prev: ConsultActionState, fd: FormData): 
     booked_at: String(fd.get('booked_at') ?? ''),
     booking_ref: String(fd.get('booking_ref') ?? ''),
   })
-  if (!parsed.success) return { error: parsed.error.issues.map((i) => i.message).join(' ') }
+  if (!parsed.success)
+    return { error: parsed.error.issues.map((i) => (i.message === copyEn.CONSENT_REQUIRED_ERROR ? copy.CONSENT_REQUIRED_ERROR : i.message)).join(' ') }
   const v = parsed.data
   const now = new Date().toISOString()
   const bookedAt = v.booked_at ? new Date(v.booked_at).toISOString() : null
@@ -253,6 +258,7 @@ export async function changeSomething(): Promise<void> {
 /** "Looks good": the gate. Stamps agreed_at / agreed_ip, moves the request to agreed, alerts the team. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function agreeToSummary(_prev?: ConsultActionState, _fd?: FormData): Promise<ConsultActionState> {
+  const copy = consultationCopy(await currentLocale())
   const { supabase, user } = await signedIn()
   if (!user) return { error: 'You must be signed in.' }
   const { request, consultation } = await loadOwn(supabase, user.id)

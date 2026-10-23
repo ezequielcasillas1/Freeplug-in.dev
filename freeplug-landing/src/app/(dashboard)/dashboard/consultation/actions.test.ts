@@ -81,7 +81,7 @@ beforeEach(() => {
 describe('path B: live booking', () => {
   it('phone and text need the consent box', async () => {
     const r = await bookLiveSession({}, fd({ live_method: 'text', contact_number: '+1 555 123 4567', booked_at: '2026-10-24T15:00:00Z' }))
-    expect(r.error).toMatch(/tick the box/)
+    expect(r.error).toMatch(/check the box/)
     expect(st.writes).toHaveLength(0)
   })
   it('needs a time and a valid number (webcam needs no number)', async () => {

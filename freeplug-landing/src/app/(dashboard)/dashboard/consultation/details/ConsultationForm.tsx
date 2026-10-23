@@ -3,10 +3,11 @@
 import { useActionState } from 'react'
 import { ChecklistFields } from '@/components/consultation/ChecklistFields'
 import type { Checklist } from '@/lib/consultation/checklist'
-import * as copy from '@/lib/consultation/copy'
+import { useConsultationCopy } from '@/lib/consultation/use-consultation-copy'
 import { saveConsultationForm, type ConsultActionState } from '../actions'
 
 export function ConsultationForm({ initial }: { initial: Checklist }) {
+  const copy = useConsultationCopy()
   const [state, action, pending] = useActionState(saveConsultationForm, {} as ConsultActionState)
   return (
     <form action={action} className="space-y-8" data-testid="consultation-form">

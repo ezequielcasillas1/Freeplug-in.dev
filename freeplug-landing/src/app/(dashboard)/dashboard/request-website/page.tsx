@@ -14,7 +14,7 @@ import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
 import { RequestCancelButton } from './RequestCancelButton'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
 import { OPEN_REQUEST_STATUSES, STATUS_LABELS, type WebsiteRequestStatus, isIntakeStatus, isSelfClosableStatus } from '@/lib/consultation/status'
-import { CONSULT_CARD_HEADING } from '@/lib/consultation/copy'
+import { consultationTranslator } from '@/lib/consultation/i18n'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
 export async function generateMetadata(): Promise<Metadata> {
@@ -106,7 +106,7 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
           ) : null}
         </div>
         <Link href="/dashboard/consultation" className="font-semibold text-[#ba3d3d] hover:underline">
-          {CONSULT_CARD_HEADING} →
+          {consultationTranslator(locale)('consultCardHeading')} →
         </Link>
         <p className="mt-8 text-sm text-gray-500">
           <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">

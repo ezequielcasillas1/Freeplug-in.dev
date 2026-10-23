@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import * as copy from '@/lib/consultation/copy'
+import { consultationCopy } from '@/lib/consultation/i18n'
+import { currentLocale } from '@/i18n/current-locale'
 import { consultationStage } from '@/lib/consultation/status'
 import { ConsultationChooser } from './ConsultationChooser'
 import { loadOwnConsultation } from './load'
@@ -10,6 +11,7 @@ export const metadata: Metadata = { title: 'Your consultation | Freeplug' }
 
 /** "Next: your consultation": pick path A (details form) or path B (live session). */
 export default async function ConsultationPage({ searchParams }: { searchParams: Promise<{ switch?: string }> }) {
+  const copy = consultationCopy(await currentLocale())
   const q = await searchParams
   const own = await loadOwnConsultation()
   if (!own) redirect('/login')

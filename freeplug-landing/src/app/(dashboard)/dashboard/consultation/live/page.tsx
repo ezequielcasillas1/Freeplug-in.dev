@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import * as copy from '@/lib/consultation/copy'
+import { consultationCopy } from '@/lib/consultation/i18n'
+import { currentLocale } from '@/i18n/current-locale'
 import { calcomLink } from '@/lib/consultation/scheduler'
 import { loadOwnConsultation } from '../load'
 import { LiveBookingForm } from './LiveBookingForm'
@@ -9,6 +10,7 @@ import { LiveBookingForm } from './LiveBookingForm'
 export const metadata: Metadata = { title: 'Book a live session | Freeplug' }
 
 export default async function ConsultationLivePage({ searchParams }: { searchParams: Promise<{ new?: string; edit?: string; booked?: string }> }) {
+  const copy = consultationCopy(await currentLocale())
   const q = await searchParams
   const own = await loadOwnConsultation()
   if (!own) redirect('/login')

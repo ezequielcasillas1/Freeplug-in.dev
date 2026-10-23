@@ -46,7 +46,7 @@ export const PHONE_CONSENT_TEXT =
   'I agree that Freeplug may call me at this number about my website request. I can ask you to stop at any time.'
 export const TEXT_CONSENT_TEXT =
   'I agree that Freeplug may send me text messages at this number about my website request. Message and data rates may apply. Reply STOP to opt out at any time.'
-export const CONSENT_REQUIRED_ERROR = 'Please tick the box so we are allowed to contact you at this number.'
+export const CONSENT_REQUIRED_ERROR = 'Please check the box so we can contact you at this number.'
 export const SCHEDULER_HEADING = 'Pick a time'
 export const SCHEDULER_TEST_MODE_NOTE =
   'Test mode: the Cal.com scheduler is not connected (NEXT_PUBLIC_CALCOM_LINK is not set). Pick a time below to simulate a booking.'
@@ -57,14 +57,14 @@ export const liveBookedBody = (when: string | null, method: string) =>
 export const RESCHEDULE_LABEL = 'Change method or time'
 
 export const REVIEW_HEADING = 'Review your summary'
-export const REVIEW_INTRO_CLIENT = 'Here is everything you told us. Check it carefully before you confirm.'
-export const REVIEW_INTRO_TEAM = 'Here is what we agreed in your session. Check it carefully before you confirm.'
+export const REVIEW_INTRO_CLIENT = "Here's everything you told us. Check it carefully before you confirm."
+export const REVIEW_INTRO_TEAM = "Here's what we agreed on in your session. Check it carefully before you confirm."
 export const LOOKS_GOOD_LABEL = 'Looks good'
 export const CHANGE_SOMETHING_LABEL = 'Change something'
 export const LOOKS_GOOD_NOTE =
   'Clicking Looks good confirms this plan. Nothing is built, charged or bought until you do.'
-export const AGREED_HEADING = 'Thanks, you are all set'
-export const AGREED_BODY = 'We have your agreed plan and will be in touch about the build. Here is a copy for your records.'
+export const AGREED_HEADING = "Thanks, you're all set"
+export const AGREED_BODY = "We have your agreed plan and we'll be in touch about the build. Here's a copy for your records."
 export const NOT_READY_ERROR = 'This summary is not ready to confirm yet.'
 export const INCOMPLETE_PREFIX = 'Please answer: '
 export const NO_OPEN_REQUEST = 'Submit a website request first, then come back here for your consultation.'

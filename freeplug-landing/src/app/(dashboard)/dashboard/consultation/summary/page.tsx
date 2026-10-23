@@ -2,13 +2,15 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ChecklistSummary } from '@/components/consultation/ChecklistSummary'
-import * as copy from '@/lib/consultation/copy'
+import { consultationCopy } from '@/lib/consultation/i18n'
+import { currentLocale } from '@/i18n/current-locale'
 import { loadOwnConsultation } from '../load'
 import { SummaryActions } from './SummaryActions'
 
 export const metadata: Metadata = { title: 'Review your summary | Freeplug' }
 
 export default async function ConsultationSummaryPage() {
+  const copy = consultationCopy(await currentLocale())
   const own = await loadOwnConsultation()
   if (!own) redirect('/login')
   const c = own.consultation

@@ -1,10 +1,11 @@
 'use client'
 
 import { useActionState } from 'react'
-import * as copy from '@/lib/consultation/copy'
+import { useConsultationCopy } from '@/lib/consultation/use-consultation-copy'
 import { agreeToSummary, changeSomething, type ConsultActionState } from '../actions'
 
 export function SummaryActions() {
+  const copy = useConsultationCopy()
   const [state, agree, pending] = useActionState(agreeToSummary, {} as ConsultActionState)
   return (
     <div className="mt-6 space-y-3">

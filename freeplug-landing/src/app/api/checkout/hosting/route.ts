@@ -30,6 +30,7 @@ import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
 import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
 import { ladderCopy } from '@/lib/plans/ladder-copy'
 import { currentLocale } from '@/i18n/current-locale'
+import { consultationTranslator } from '@/lib/consultation/i18n'
 
 export const runtime = 'nodejs'
 
@@ -166,7 +167,10 @@ export async function POST(request: Request) {
       // plan changes (lib/stripe/change-plan.ts) are never gated. Fails closed via the catch below.
       const gate = await checkConsultationGate(supabaseAuth, user.id)
       if (!gate.ok) {
-        return NextResponse.json({ error: gate.message, code: gate.code }, { status: 409 })
+        return NextResponse.json(
+          { error: consultationTranslator(await currentLocale())('consultationGateMessage'), code: gate.code },
+          { status: 409 }
+        )
       }
       if (!customerId) {
         customerId = ownCustomerId

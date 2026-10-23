@@ -1,8 +1,10 @@
 import Link from 'next/link'
-import * as copy from '@/lib/consultation/copy'
+import { consultationCopy } from '@/lib/consultation/i18n'
+import { currentLocale } from '@/i18n/current-locale'
 import { chooseFormPath } from './actions'
 
-export function ConsultationChooser({ businessName }: { businessName: string }) {
+export async function ConsultationChooser({ businessName }: { businessName: string }) {
+  const copy = consultationCopy(await currentLocale())
   return (
     <div className="max-w-3xl">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">{copy.CONSULT_CARD_HEADING}</h1>

@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import * as copy from '@/lib/consultation/copy'
+import { consultationCopy } from '@/lib/consultation/i18n'
+import { currentLocale } from '@/i18n/current-locale'
 import { loadOwnConsultation } from '../load'
 import { ConsultationForm } from './ConsultationForm'
 
 export const metadata: Metadata = { title: 'Website details | Freeplug' }
 
 export default async function ConsultationDetailsPage() {
+  const copy = consultationCopy(await currentLocale())
   const own = await loadOwnConsultation()
   if (!own) redirect('/login')
   if (!own.request || !own.consultation) redirect('/dashboard/consultation')

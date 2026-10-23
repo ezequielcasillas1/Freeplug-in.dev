@@ -123,10 +123,10 @@ describe('recordBuyoutRequest duplicate guard', () => {
     })
   }
 
-  it('the block message comes from the catalog in Spanish too (English fallback, TODO Sable)', async () => {
+  it('the block message comes from the catalog in Spanish (Sable copy)', async () => {
     const { store } = memoryStore([{ ...closedRequest, id: 'open', status: 'consultation' }])
     const r = await recordBuyoutRequest(store, 'u1', new Date(), 'es')
-    expect(r).toMatchObject({ ok: false, error: 'You have an open website request. Finish or close it first.' })
+    expect(r).toMatchObject({ ok: false, error: 'Tienes una solicitud de sitio web abierta. Termínala o ciérrala primero.' })
   })
 
   it('a later click returns alreadyRequested and writes nothing', async () => {

@@ -7,7 +7,7 @@ import { currentLocale } from '@/i18n/current-locale'
 import { translatorFor } from '@/i18n/translate'
 import { SUPPORT_EMAIL } from '@/lib/site'
 import { checkConsultationGate } from '@/lib/consultation/gate'
-import { CONSULTATION_GATE_MESSAGE } from '@/lib/consultation/copy'
+import { consultationTranslator } from '@/lib/consultation/i18n'
 
 const DOMAIN_INVALID_EN = 'Enter a domain like yourbusiness.com'
 
@@ -33,7 +33,7 @@ export async function requestDomainSetup(input: unknown): Promise<{ ok: true } |
   if (parsed.data.kind === 'need_domain') {
     try {
       const gate = await checkConsultationGate(supabase, user.id)
-      if (!gate.ok) return { ok: false, error: gate.message, code: gate.code }
+      if (!gate.ok) return { ok: false, error: consultationTranslator(locale)('consultationGateMessage'), code: gate.code }
     } catch {
       return { ok: false, error: tryAgain }
     }
@@ -44,7 +44,7 @@ export async function requestDomainSetup(input: unknown): Promise<{ ok: true } |
     domain: parsed.data.kind === 'have_domain' ? parsed.data.domain : null,
   })
   if (error?.hint === 'consultation_not_agreed') {
-    return { ok: false, error: CONSULTATION_GATE_MESSAGE, code: 'consultation_not_agreed' }
+    return { ok: false, error: consultationTranslator(locale)('consultationGateMessage'), code: 'consultation_not_agreed' }
   }
   return error ? { ok: false, error: tryAgain } : { ok: true }
 }

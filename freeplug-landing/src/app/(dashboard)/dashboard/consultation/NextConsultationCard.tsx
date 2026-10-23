@@ -1,19 +1,22 @@
 import Link from 'next/link'
-import * as copy from '@/lib/consultation/copy'
+import { consultationCopy } from '@/lib/consultation/i18n'
+import { currentLocale } from '@/i18n/current-locale'
+import type { ConsultationCopy } from '@/lib/consultation/copy-builder'
 import type { ConsultationStage } from '@/lib/consultation/status'
 
-const STAGE_LINE: Record<ConsultationStage, { line: string; href: string; cta: string }> = {
+const stageLine = (copy: ConsultationCopy): Record<ConsultationStage, { line: string; href: string; cta: string }> => ({
   choose: { line: copy.CONSULT_CARD_BODY, href: '/dashboard/consultation', cta: 'Choose how →' },
   form_draft: { line: 'You started filling in the details. Pick up where you left off.', href: '/dashboard/consultation/details', cta: 'Continue the form →' },
   live_booking: { line: 'Pick how you want to talk and book a time.', href: '/dashboard/consultation/live', cta: 'Book a session →' },
   live_waiting: { line: 'Your live session is booked. We will send a summary to check afterwards.', href: '/dashboard/consultation/live', cta: 'See your booking →' },
   review: { line: 'Your summary is ready. Check it and click Looks good, or change something.', href: '/dashboard/consultation/summary', cta: `${copy.REVIEW_HEADING} →` },
   agreed: { line: copy.AGREED_BODY, href: '/dashboard/consultation/summary', cta: 'View your agreed plan →' },
-}
+})
 
 /** Dashboard card: "Next: your consultation" with the two paths, or where the client is now. */
-export function NextConsultationCard({ stage }: { stage: ConsultationStage }) {
-  const s = STAGE_LINE[stage]
+export async function NextConsultationCard({ stage }: { stage: ConsultationStage }) {
+  const copy = consultationCopy(await currentLocale())
+  const s = stageLine(copy)[stage]
   return (
     <section className="rounded-xl border border-[#ba3d3d]/30 bg-white p-6 shadow-sm" data-testid="next-consultation" data-stage={stage}>
       <h2 className="text-lg font-semibold text-gray-900 mb-1">

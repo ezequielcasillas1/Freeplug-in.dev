@@ -1,12 +1,13 @@
 'use client'
 
 import { useActionState, useEffect, useState } from 'react'
-import * as copy from '@/lib/consultation/copy'
+import { LIVE_METHOD_LABELS } from '@/lib/consultation/copy'
+import { useConsultationCopy } from '@/lib/consultation/use-consultation-copy'
 import { calcomEmbedUrl, parseCalcomMessage } from '@/lib/consultation/scheduler'
 import { bookLiveSession, type ConsultActionState } from '../actions'
 
-type Method = keyof typeof copy.LIVE_METHOD_LABELS
-const METHODS = Object.keys(copy.LIVE_METHOD_LABELS) as Method[]
+type Method = keyof typeof LIVE_METHOD_LABELS
+const METHODS = Object.keys(LIVE_METHOD_LABELS) as Method[]
 
 const input = 'w-full rounded-md border border-zinc-300 px-3 py-2 text-sm bg-white'
 
@@ -17,6 +18,7 @@ export function LiveBookingForm({
   calLink: string | null
   initial: { live_method: Method | null; contact_number: string; email: string; consultationRef: string }
 }) {
+  const copy = useConsultationCopy()
   const [state, action, pending] = useActionState(bookLiveSession, {} as ConsultActionState)
   const [method, setMethod] = useState<Method | null>(initial.live_method)
   const [bookedAt, setBookedAt] = useState('')
