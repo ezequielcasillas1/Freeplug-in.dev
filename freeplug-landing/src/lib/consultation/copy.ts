@@ -14,6 +14,8 @@ export const PATH_FORM_CTA = 'Start the form'
 export const PATH_LIVE_TITLE = 'Talk to us live'
 export const PATH_LIVE_BODY =
   'Book a short session by phone, FaceTime, webcam or text. We take the notes and send you a summary to check.'
+export const OPTION_A_LABEL = 'Option A'
+export const OPTION_B_LABEL = 'Option B'
 export const PATH_LIVE_CTA = 'Book a session'
 export const PATH_LIVE_15_CTA = 'Book 15 minutes'
 export const PATH_LIVE_30_CTA = 'Book 30 minutes'
@@ -29,7 +31,7 @@ export const SWITCH_TO_FORM = 'Prefer to type it out? Fill in the details instea
 
 export const LIVE_PAGE_HEADING = 'Book a live session'
 export const LIVE_PAGE_INTRO =
-  'Choose how you want to talk, then pick a time. Sessions take about 20 minutes.'
+  'Choose how you want to talk, then pick a time. Sessions take 15 or 30 minutes (your pick).'
 export const LIVE_METHOD_LABELS = {
   phone: 'Phone call',
   facetime: 'FaceTime',

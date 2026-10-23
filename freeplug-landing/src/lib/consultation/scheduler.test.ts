@@ -51,3 +51,12 @@ describe('session lengths (Oct 23)', () => {
     expect(CALCOM_BOOKING_URL).toBe(DEFAULT_CALCOM_LINK)
   })
 })
+
+describe('liveSessionHref keeps the chosen length (QA M1)', () => {
+  it('reschedule and booked links carry length', async () => {
+    const { liveSessionHref } = await import('./scheduler')
+    expect(liveSessionHref({ edit: true, length: 15 })).toBe('/dashboard/consultation/live?edit=1&length=15')
+    expect(liveSessionHref({ booked: true, length: 30 })).toBe('/dashboard/consultation/live?booked=1&length=30')
+    expect(liveSessionHref({ edit: true, length: null })).toBe('/dashboard/consultation/live?edit=1')
+  })
+})

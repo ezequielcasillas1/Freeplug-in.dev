@@ -27,7 +27,7 @@ export default async function ConsultationSummaryPage() {
         </p>
         <ChecklistSummary checklist={own.checklist} />
         <p className="mt-6 text-sm text-gray-500">{copy.LOCKED_AFTER_AGREED}</p>
-        <p className="mt-4 text-sm"><Link href="/dashboard" className="text-[#ba3d3d] hover:underline">← Back to dashboard</Link></p>
+        <p className="mt-4 text-sm"><Link href="/dashboard" className="text-[#ba3d3d] hover:underline">{copy.BACK_TO_DASHBOARD}</Link></p>
       </div>
     )
   }

@@ -29,7 +29,7 @@ export default async function ConsultationDetailsPage() {
         </p>
       ) : null}
       <p className="mt-4 text-sm text-gray-500">
-        <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">← Back to dashboard</Link>
+        <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">{copy.BACK_TO_DASHBOARD}</Link>
       </p>
     </div>
   )

@@ -29,6 +29,16 @@ export function calcomEventLink(link: string | null, minutes: CalcomSessionLengt
   return `${link}/${minutes}min`
 }
 
+/** Live page URL that keeps the chosen session length (reschedule / after booking). */
+export function liveSessionHref(q: { edit?: boolean; booked?: boolean; length?: CalcomSessionLength | null }): string {
+  const p = new URLSearchParams()
+  if (q.edit) p.set('edit', '1')
+  if (q.booked) p.set('booked', '1')
+  if (q.length) p.set('length', String(q.length))
+  const s = p.toString()
+  return '/dashboard/consultation/live' + (s ? `?${s}` : '')
+}
+
 /** The plain booking page URL (opened in a new tab). */
 export function calcomPageUrl(link: string): string {
   return new URL(`https://cal.com/${link}`).toString()

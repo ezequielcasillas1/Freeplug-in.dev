@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { consultationCopy } from '@/lib/consultation/i18n'
 import { currentLocale } from '@/i18n/current-locale'
-import { calcomEventLink, calcomLink, parseSessionLength } from '@/lib/consultation/scheduler'
+import { calcomEventLink, calcomLink, liveSessionHref, parseSessionLength } from '@/lib/consultation/scheduler'
 import { loadOwnConsultation } from '../load'
 import { LiveBookingForm } from './LiveBookingForm'
 
@@ -32,7 +32,7 @@ export default async function ConsultationLivePage({ searchParams }: { searchPar
         <p className="text-gray-600 mb-4" data-testid="live-booked">{copy.liveBookedBody(when, method)}</p>
         {c.booking_ref ? <p className="text-sm text-gray-500 mb-4">{copy.bookingRefLine(c.booking_ref)}</p> : null}
         <div className="flex flex-col gap-2 text-sm">
-          <Link href="/dashboard/consultation/live?edit=1" className="text-[#ba3d3d] hover:underline">{copy.RESCHEDULE_LABEL}</Link>
+          <Link href={liveSessionHref({ edit: true, length: parseSessionLength(q.length) })} className="text-[#ba3d3d] hover:underline">{copy.RESCHEDULE_LABEL}</Link>
           <Link href="/dashboard/consultation?switch=1" className="text-[#ba3d3d] hover:underline">{copy.SWITCH_TO_FORM}</Link>
           <Link href="/dashboard" className="text-gray-500 hover:underline">{copy.BACK_TO_DASHBOARD}</Link>
         </div>
@@ -46,6 +46,7 @@ export default async function ConsultationLivePage({ searchParams }: { searchPar
       <p className="text-gray-600 mb-8">{copy.LIVE_PAGE_INTRO}</p>
       <LiveBookingForm
         calLink={calcomEventLink(calcomLink(), parseSessionLength(q.length))}
+        sessionLength={parseSessionLength(q.length)}
         initial={{
           live_method: c?.path === 'live' ? c.live_method : null,
           contact_number: c?.contact_number ?? '',

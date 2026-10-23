@@ -13,9 +13,12 @@ const input = 'w-full rounded-md border border-zinc-300 px-3 py-2 text-sm bg-whi
 
 export function LiveBookingForm({
   calLink,
+  sessionLength = null,
   initial,
 }: {
   calLink: string | null
+  /** Chosen session length (15/30); posted back so the booked screen and reschedule keep it. */
+  sessionLength?: number | null
   initial: { live_method: Method | null; contact_number: string; email: string; consultationRef: string }
 }) {
   const copy = useConsultationCopy()
@@ -47,6 +50,7 @@ export function LiveBookingForm({
 
   return (
     <form action={action} className="space-y-8" data-testid="live-booking-form">
+      {sessionLength ? <input type="hidden" name="session_length" value={sessionLength} /> : null}
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium text-gray-900 mb-2">{copy.LIVE_METHOD_LEGEND}</legend>
         {METHODS.map((m) => (

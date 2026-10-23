@@ -1,5 +1,7 @@
 'use server'
 
+import { liveSessionHref, parseSessionLength } from '@/lib/consultation/scheduler'
+
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -236,7 +238,7 @@ export async function bookLiveSession(_prev: ConsultActionState, fd: FormData): 
     }),
   })
   revalidateAll()
-  redirect('/dashboard/consultation/live?booked=1')
+  redirect(liveSessionHref({ booked: true, length: parseSessionLength(fd.get('session_length')) }))
 }
 
 /** "Change something": back to editing (the summary is no longer ready until resent). */

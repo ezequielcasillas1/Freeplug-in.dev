@@ -1435,7 +1435,7 @@
       "text": "Text messages"
     },
     "livePageHeading": "Book a live session",
-    "livePageIntro": "Choose how you want to talk, then pick a time. Sessions take about 20 minutes.",
+    "livePageIntro": "Choose how you want to talk, then pick a time. Sessions take 15 or 30 minutes (your pick).",
     "lockedAfterAgreed": "Your summary is agreed and can no longer be changed here. Email support@freeplug-in.dev for changes.",
     "looksGoodLabel": "Looks good",
     "looksGoodNote": "Clicking Looks good confirms this plan. Nothing is built, charged or bought until you do.",
@@ -1446,6 +1446,8 @@
     "pathFormTitle": "Fill in the details",
     "pathLiveBody": "Book a short session by phone, FaceTime, webcam or text. We take the notes and send you a summary to check.",
     "pathLiveCta": "Book a session",
+    "optionALabel": "Option A",
+    "optionBLabel": "Option B",
     "pathLive15Cta": "Book 15 minutes",
     "pathLive30Cta": "Book 30 minutes",
     "pathLiveTitle": "Talk to us live",

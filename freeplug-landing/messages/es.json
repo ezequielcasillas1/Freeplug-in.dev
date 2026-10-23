@@ -1435,7 +1435,7 @@
       "text": "Mensajes de texto"
     },
     "livePageHeading": "Agenda una sesión en vivo",
-    "livePageIntro": "Elige cómo quieres hablar y luego escoge un horario. Las sesiones duran unos 20 minutos.",
+    "livePageIntro": "Elige cómo quieres hablar y luego escoge un horario. Las sesiones duran 15 o 30 minutos (tú eliges).",
     "lockedAfterAgreed": "Tu resumen ya está acordado y ya no se puede cambiar aquí. Para hacer cambios, escribe a support@freeplug-in.dev.",
     "looksGoodLabel": "Se ve bien",
     "looksGoodNote": "Al hacer clic en Se ve bien, confirmas este plan. No hacemos, cobramos ni compramos nada hasta que lo hagas.",
@@ -1446,6 +1446,8 @@
     "pathFormTitle": "Llena los detalles",
     "pathLiveBody": "Agenda una sesión corta por teléfono, FaceTime, videollamada o mensajes de texto. Nosotros tomamos las notas y te mandamos un resumen para que lo revises.",
     "pathLiveCta": "Agendar una sesión",
+    "optionALabel": "Opción A",
+    "optionBLabel": "Opción B",
     "pathLive15Cta": "Reservar 15 minutos",
     "pathLive30Cta": "Reservar 30 minutos",
     "pathLiveTitle": "Habla con nosotros en vivo",
