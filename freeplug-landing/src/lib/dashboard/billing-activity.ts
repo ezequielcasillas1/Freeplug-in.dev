@@ -50,7 +50,7 @@ export const REFUND_ACTIVITY_COLUMNS = 'id, created_at, amount_cents, reason, cr
 
 /**
  * "Refund of $50.00 on Oct 23, 2026" + where it went for a downgrade: "... added toward your buyout" or
- * "... added to your Freeplug wallet".
+ * "... refunded to your original payment method".
  */
 export function refundActivityLabel(
   amountCents: number | null | undefined,
@@ -63,10 +63,14 @@ export function refundActivityLabel(
   const amount = typeof amountCents === 'number' && Number.isFinite(amountCents) ? formatUsdIn(locale, Math.abs(amountCents), 2) : null
   const date = createdAt ? new Date(createdAt) : null
   const day = date && !Number.isNaN(date.getTime()) ? formatLedgerDate(date, locale) : null
+  if (reason === 'downgrade' && choice === 'buyout') {
+    // Not a refund: the $50 stays paid and counts toward the buyout ("$50.00 on Oct 23, 2026, added toward your buyout").
+    const line = amount && day ? t('dashboard.home.refund.creditAmountOnDate', { amount, date: day }) : amount ? t('dashboard.home.refund.creditAmount', { amount }) : t('dashboard.home.refund.plain')
+    return t('dashboard.home.refund.toBuyout', { line })
+  }
   const base = amount && day ? t('dashboard.home.refund.amountOnDate', { amount, date: day }) : amount ? t('dashboard.home.refund.amount', { amount }) : t('dashboard.home.refund.plain')
   if (reason !== 'downgrade') return base
-  if (choice === 'wallet') return t('dashboard.home.refund.toWallet', { line: base })
-  if (choice === 'buyout') return t('dashboard.home.refund.toBuyout', { line: base })
+  if (choice === 'refund') return t('dashboard.home.refund.toOriginalMethod', { line: base })
   return t('dashboard.home.refund.downgrade', { line: base })
 }
 
@@ -76,13 +80,13 @@ export type RefundActivityRow = {
   kind: 'refund'
   reason: 'downgrade' | 'other'
   amount_cents: number
-  credit_choice: 'buyout' | 'wallet'
-  stripe_balance_txn_id: string | null
+  credit_choice: 'buyout' | 'refund'
+  stripe_refund_id: string | null
   stripe_invoice_id: string | null
 }
 
 /** The billing_activity row for a $100 -> $35 downgrade refund; keyed per subscription+invoice (same as the Stripe idempotency key). */
-export function downgradeRefundActivityRow(o: { subscriptionId: string; userId: string | null; invoiceId: string; refundId: string | null; refundCents: number; choice: 'buyout' | 'wallet' }): RefundActivityRow | null {
+export function downgradeRefundActivityRow(o: { subscriptionId: string; userId: string | null; invoiceId: string; refundId: string | null; refundCents: number; choice: 'buyout' | 'refund' }): RefundActivityRow | null {
   if (!o.userId || !(o.refundCents > 0)) return null
   return {
     activity_key: `downgrade-refund:${o.subscriptionId}:${o.invoiceId}`,
@@ -91,7 +95,7 @@ export function downgradeRefundActivityRow(o: { subscriptionId: string; userId: 
     reason: 'downgrade',
     amount_cents: o.refundCents,
     credit_choice: o.choice,
-    stripe_balance_txn_id: o.choice === 'wallet' ? o.refundId : null,
+    stripe_refund_id: o.choice === 'refund' ? o.refundId : null,
     stripe_invoice_id: o.invoiceId,
   }
 }

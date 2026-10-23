@@ -1,6 +1,6 @@
 -- Billing activity rows that are not payments (Cheke, Oct 23 2026): first use = the $50 of a
 -- $100 -> $35 downgrade, shown in the client's Recent activity with the client's choice
--- (credit_choice: 'buyout' = counts toward the buyout, 'wallet' = Freeplug wallet credit). One row per refund (activity_key unique),
+-- (credit_choice: 'buyout' = counts toward the buyout, 'refund' = refunded to the original payment method). One row per refund (activity_key unique),
 -- so a retried downgrade or a replay never adds a second row. Written by the server (service role) only;
 -- a client reads only their own rows. Additive: no existing table or row is changed.
 create table if not exists public.billing_activity (
@@ -10,8 +10,7 @@ create table if not exists public.billing_activity (
   kind text not null check (kind in ('refund')),
   reason text not null default 'other' check (reason in ('downgrade', 'other')),
   amount_cents integer not null check (amount_cents > 0),
-  credit_choice text null check (credit_choice in ('buyout', 'wallet')),
-  stripe_balance_txn_id text null,
+  credit_choice text null check (credit_choice in ('buyout', 'refund')),
   stripe_refund_id text null,
   stripe_invoice_id text null,
   created_at timestamptz not null default now()

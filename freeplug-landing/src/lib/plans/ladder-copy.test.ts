@@ -56,7 +56,8 @@ describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () =>
     ])
     // Sable 10:47: the L-1 reason no longer says "refunded" (back to 10; it must stay off this list)
     // Oct 18: the add-on card charge notes were removed with the add-ons (9 left).
-    // Oct 23: the $100 -> $35 lines say "buyout" / "wallet", never refund or credit (Cheke's correction): still 9.
+    // Oct 23 (final): the $100 -> $35 refund option says "refund" on purpose; it lives in the per-locale
+    // copy (plans.change.*), not in these module-level strings, so the count stays 9.
     expect(exempt.size).toBe(9)
     expect(exempt.has(fn(copy.ADDON_REFUND_REASONS.turned_off))).toBe(false)
     const banned = /refund|guarantee|money[- ]back|\bcredit(ed)?\b|we promise/i

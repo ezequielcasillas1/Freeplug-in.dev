@@ -83,6 +83,8 @@ export type ActivityItem = {
   description: string
   date: Date
   amount?: number
+  /** Refund rows only: 'buyout' = the $50 stayed paid toward the buyout (not a refund). */
+  creditChoice?: 'buyout' | 'refund'
 }
 
 export type DashboardAlert = {
@@ -382,10 +384,11 @@ export async function getEnhancedDashboardData(
       recentActivity.push({
         id: `refund-${record.id}`,
         type: 'refund',
-        title: t('dashboard.activity.title.refund'),
+        title: record.reason === 'downgrade' && record.credit_choice === 'buyout' ? t('dashboard.activity.title.buyoutCredit') : t('dashboard.activity.title.refund'),
         description: refundActivityLabel(record.amount_cents, record.created_at, record.reason, locale, t, record.credit_choice),
         date: new Date(record.created_at),
         amount: record.amount_cents,
+        creditChoice: record.reason === 'downgrade' && record.credit_choice === 'buyout' ? 'buyout' : 'refund',
       })
     }
   }

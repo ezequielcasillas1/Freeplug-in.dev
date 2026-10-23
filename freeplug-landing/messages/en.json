@@ -186,8 +186,11 @@
         "amount": "Refund of {amount}",
         "plain": "Refund",
         "downgrade": "{line} for your switch to a lower plan",
-        "backToCard": "{amount} credit",
-        "toWallet": "{line}, added to your Freeplug wallet",
+        "toOriginalMethod": "{line}, refunded to your original payment method",
+        "creditAmountOnDate": "{amount} on {date}",
+        "creditAmount": "{amount}",
+        "backToMethod": "{amount} back. Refunds can take 5–10 business days to show up.",
+        "towardBuyout": "{amount} toward your buyout",
         "toBuyout": "{line}, added toward your buyout"
       }
     },
@@ -201,7 +204,8 @@
         "upcomingBilling": "Upcoming billing",
         "subscriptionEnding": "Subscription ending",
         "getStarted": "Get started",
-        "refund": "Refund"
+        "refund": "Refund",
+        "buyoutCredit": "Credited to buyout"
       },
       "description": {
         "websiteRequest": "Website request"
@@ -665,10 +669,11 @@
       "replacesPending": "This replaces your planned switch to {pendingName}.",
       "creditChoiceLegend": "Where should your $50 go?",
       "creditChoiceBuyout": "Toward my buyout (it counts toward owning my website)",
-      "creditChoiceWallet": "My Freeplug wallet (pays my next bills first)",
+      "creditChoiceRefund": "Refund to my original payment method (card, Apple Pay, Cash App, PayPal)",
+      "creditChoiceRefundNote": "Refunds can take 5–10 business days to show up.",
       "creditChoiceDefault": "If you don't choose, it goes toward your buyout.",
       "downgradedToBuyout": "You're now on {name}. {amount} was added toward your buyout.",
-      "downgradedToWallet": "You're now on {name}. {amount} was added to your Freeplug wallet; it pays your next bills first."
+      "downgradedToRefund": "You're now on {name}. {amount} is being refunded to your original payment method. It can take 5–10 business days to show up."
     },
     "billing": {
       "pendingNotice": "You have a switch to {name} planned for {date}, so billing is handled here until then. You can update your card and see your invoices below.",

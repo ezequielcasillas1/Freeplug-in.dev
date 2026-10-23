@@ -113,10 +113,10 @@ export function RecentActivity({ activities, loadFailed = false }: Props) {
                     {formatRelativeTime(activity.date, t as T, locale)}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 truncate">{activity.description}</p>
+                <p className={`text-sm text-gray-600 ${activity.type === 'refund' ? '' : 'truncate'}`}>{activity.description}</p>
                 {activity.amount && activity.type === 'refund' ? (
                   <p className="text-sm font-medium text-sky-700 mt-0.5" data-testid="activity-refund-amount">
-                    {t('refund.backToCard', { amount: formatUsdIn(locale, Math.abs(activity.amount), 2) } as never)}
+                    {t(activity.creditChoice === 'buyout' ? 'refund.towardBuyout' : 'refund.backToMethod', { amount: formatUsdIn(locale, Math.abs(activity.amount), 2) } as never)}
                   </p>
                 ) : activity.amount ? (
                   <p className="text-sm font-medium text-green-600 mt-0.5">

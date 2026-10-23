@@ -186,8 +186,11 @@
         "amount": "Reembolso de {amount}",
         "plain": "Reembolso",
         "downgrade": "{line} por tu cambio a un plan más bajo",
-        "backToCard": "Crédito de {amount}",
-        "toWallet": "{line}, agregado a tu billetera Freeplug",
+        "toOriginalMethod": "{line}, devuelto a tu método de pago original",
+        "creditAmountOnDate": "{amount} el {date}",
+        "creditAmount": "{amount}",
+        "backToMethod": "{amount} de vuelta. Los reembolsos pueden tardar de 5 a 10 días hábiles en aparecer.",
+        "towardBuyout": "{amount} para la compra de tu sitio",
         "toBuyout": "{line}, sumado a la compra de tu sitio"
       }
     },
@@ -201,7 +204,8 @@
         "upcomingBilling": "Próximo cobro",
         "subscriptionEnding": "Suscripción por terminar",
         "getStarted": "Empieza aquí",
-        "refund": "Reembolso"
+        "refund": "Reembolso",
+        "buyoutCredit": "Sumado a tu compra"
       },
       "description": {
         "websiteRequest": "Solicitud de sitio web"
@@ -665,10 +669,11 @@
       "replacesPending": "Esto reemplaza el cambio que tenías planeado a {pendingName}.",
       "creditChoiceLegend": "¿A dónde quieres que vayan tus $50?",
       "creditChoiceBuyout": "A la compra de mi sitio (cuenta para que el sitio sea mío)",
-      "creditChoiceWallet": "A mi billetera Freeplug (crédito para mis próximos cobros)",
+      "creditChoiceRefund": "Reembolso a mi método de pago original (tarjeta, Apple Pay, Cash App, PayPal)",
+      "creditChoiceRefundNote": "Los reembolsos pueden tardar de 5 a 10 días hábiles en aparecer.",
       "creditChoiceDefault": "Si no eliges, se suman a la compra de tu sitio.",
       "downgradedToBuyout": "Ya estás en {name}. Se agregaron {amount} a la compra de tu sitio.",
-      "downgradedToWallet": "Ya estás en {name}. Se agregaron {amount} a tu billetera Freeplug; se usan primero en tus próximos cobros."
+      "downgradedToRefund": "Ya estás en {name}. Te estamos devolviendo {amount} a tu método de pago original. Puede tardar de 5 a 10 días hábiles en aparecer."
     },
     "billing": {
       "pendingNotice": "Tienes un cambio a {name} planeado para el {date}, así que hasta entonces la facturación se maneja aquí. Abajo puedes actualizar tu tarjeta y ver tus facturas.",
