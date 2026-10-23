@@ -21,10 +21,10 @@ afterEach(() => {
 })
 
 describe('request alert recipient', () => {
-  it('defaults to 72afterconsulting@gmail.com', () => {
+  it('defaults to fplgn.dev.clients@gmail.com', () => {
     vi.stubEnv('REQUEST_ALERT_EMAIL', '')
     expect(requestAlertRecipient()).toBe(DEFAULT_REQUEST_ALERT_EMAIL)
-    expect(DEFAULT_REQUEST_ALERT_EMAIL).toBe('72afterconsulting@gmail.com')
+    expect(DEFAULT_REQUEST_ALERT_EMAIL).toBe('fplgn.dev.clients@gmail.com')
   })
   it('override via REQUEST_ALERT_EMAIL; "off"/invalid disables', () => {
     vi.stubEnv('REQUEST_ALERT_EMAIL', 'x@example.com')
@@ -56,7 +56,7 @@ describe('request alert email', () => {
     expect(await sendRequestAlert(sample, 'website-request:r1:u', send)).toBe('sent')
     expect(send).toHaveBeenCalledTimes(1)
     const p = (send.mock.calls[0] as unknown[])[0] as Record<string, unknown>
-    expect(p.to).toBe('72afterconsulting@gmail.com')
+    expect(p.to).toBe('fplgn.dev.clients@gmail.com')
     expect(p.idempotencyKey).toBe('request-alert:website-request:r1:u')
     expect(p.replyTo).toBe('ana@example.com')
     expect(p.template).toBe('request-alert')

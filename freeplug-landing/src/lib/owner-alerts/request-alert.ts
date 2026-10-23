@@ -7,7 +7,7 @@ import { chicagoTime } from './format'
  * Separate from the owner alert (OWNER_ALERT_EMAIL), which is unchanged. Same mail path (sendMail /
  * Resend), runs after the response, never throws into the action, deduped by a Resend idempotency key.
  */
-export const DEFAULT_REQUEST_ALERT_EMAIL = '72afterconsulting@gmail.com'
+export const DEFAULT_REQUEST_ALERT_EMAIL = 'fplgn.dev.clients@gmail.com'
 
 /** REQUEST_ALERT_EMAIL (non-secret Worker var); unset = default; "off" or invalid = no request alerts. */
 export function requestAlertRecipient(): string | null {
