@@ -13,6 +13,12 @@ import { PaymentReceivedEmail } from './payment-received'
 import { RequestStatusUpdateEmail } from './request-status-update'
 import { SubscriptionCancelledEmail } from './subscription-cancelled'
 import { WelcomeEmail } from './welcome'
+import {
+  ConsultationAgreedClientEmail,
+  ConsultationAgreedTeamEmail,
+  ConsultationLiveBookedTeamEmail,
+  ConsultationSummaryReadyEmail,
+} from './consultation'
 
 /**
  * Template CI (Aria, round 5): every email template the app sends through Resend renders, for every enabled
@@ -60,7 +66,7 @@ function cases(): Case[] {
             }
       ),
     })
-    for (const newStatus of ['submitted', 'in_review', 'closed'] as const) {
+    for (const newStatus of ['submitted', 'in_review', 'consultation', 'agreed', 'building', 'closed'] as const) {
       out.push({
         template: 'request-status-update',
         variant: `${variant}/${newStatus}`,
@@ -99,13 +105,29 @@ function cases(): Case[] {
       el: () => AddonRefundedEmail({ userName: name, addonName: name ?? 'Big change', note: name ?? 'We refunded $5.75 to your card.' }),
       expectText: "couldn't turn on",
     })
+    const req = REQUIRED[variant]
+    const rows = [{ label: 'Notes', value: req }, { label: 'Type of website', value: 'Service business' }]
+    out.push({ template: 'consultation', variant: `summary-ready ${variant}`, el: () => ConsultationSummaryReadyEmail({ userName: name, businessName: req }), expectText: 'looks good' })
+    out.push({ template: 'consultation', variant: `agreed-client ${variant}`, el: () => ConsultationAgreedClientEmail({ userName: name, businessName: req, rows }), expectText: 'confirmed' })
+    out.push({
+      template: 'consultation',
+      variant: `agreed-team ${variant}`,
+      el: () => ConsultationAgreedTeamEmail({ businessName: req, clientEmail: 'c@example.com', path: 'live', agreedAt: '2026-10-22T20:00:00Z', rows }),
+      expectText: 'looks good',
+    })
+    out.push({
+      template: 'consultation',
+      variant: `live-booked ${variant}`,
+      el: () => ConsultationLiveBookedTeamEmail({ businessName: req, clientEmail: 'c@example.com', method: 'Phone call', when: null, bookingRef: req }),
+      expectText: 'live consultation booked',
+    })
   }
   out.push({ template: 'google-sign-in', variant: 'default', el: () => GoogleSignInEmail({}) })
   out.push({ template: 'google-sign-in', variant: 'baseUrl', el: () => GoogleSignInEmail({ baseUrl: 'http://localhost:3000' }) })
   return out
 }
 
-const COVERED = ['addon-refunded', 'welcome', 'payment-received', 'request-status-update', 'subscription-cancelled', 'billing-reminder', 'password-reset', 'google-sign-in']
+const COVERED = ['addon-refunded', 'welcome', 'payment-received', 'request-status-update', 'subscription-cancelled', 'billing-reminder', 'password-reset', 'google-sign-in', 'consultation']
 
 describe.each(EMAIL_LOCALES)('every email template renders with edge-case inputs (locale %s)', () => {
   it.each(cases().map((c) => [`${c.template} [${c.variant}]`, c] as const))('%s', async (_label, c) => {

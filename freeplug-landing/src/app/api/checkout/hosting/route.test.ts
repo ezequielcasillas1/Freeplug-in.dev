@@ -12,6 +12,7 @@ const customersCreate = vi.fn()
 const profileUpdate = vi.fn()
 const outreachWaiting = vi.fn()
 const pricesList = vi.fn()
+const consultGate = vi.fn()
 let ctxCustomerId: string | null = 'cus_test'
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -30,6 +31,9 @@ vi.mock('@/lib/supabase/admin', () => ({
       },
     }),
   }),
+}))
+vi.mock('@/lib/consultation/gate', () => ({
+  checkConsultationGate: (...args: unknown[]) => consultGate(...args),
 }))
 vi.mock('@/lib/outreach/server', () => ({
   hasOutreachPlanWaitingForPublish: (...args: unknown[]) => outreachWaiting(...args),
@@ -133,6 +137,7 @@ describe('POST /api/checkout/hosting', () => {
       profileUpdate,
       outreachWaiting,
       pricesList,
+      consultGate,
     ])
       m.mockReset()
     resetStepPriceCache()
@@ -142,6 +147,7 @@ describe('POST /api/checkout/hosting', () => {
       q.lookup_keys[0] === TIP_LOOKUP_KEY ? { data: [tipPrice] } : q.lookup_keys[0] === ADDONS[0].lookupKey ? { data: addonPrices } : ladderPrices()
     )
     outreachWaiting.mockResolvedValue(false)
+    consultGate.mockResolvedValue({ ok: true, requestId: null })
     customersList.mockResolvedValue({ data: [] })
     customersCreate.mockResolvedValue({ id: 'cus_new' })
     ctxCustomerId = 'cus_test'
@@ -169,6 +175,45 @@ describe('POST /api/checkout/hosting', () => {
     const res = await POST(req())
     expect(res.status).toBe(503)
     expect(sessionsCreate).not.toHaveBeenCalled()
+  })
+
+  describe('consultation gate (Oct 22 r2)', () => {
+    it('409 consultation_not_agreed for a new plan while the request has no Looks good', async () => {
+      subsList.mockResolvedValue({ data: [] })
+      consultGate.mockResolvedValue({ ok: false, requestId: 'r1', code: 'consultation_not_agreed', message: 'Please finish your consultation first.' })
+      const res = await POST(req())
+      expect(res.status).toBe(409)
+      const body = await res.json()
+      expect(body.code).toBe('consultation_not_agreed')
+      expect(consultGate).toHaveBeenCalledWith(expect.anything(), 'u1')
+      expect(customersCreate).not.toHaveBeenCalled()
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
+
+    it('creates the session once the request is agreed', async () => {
+      subsList.mockResolvedValue({ data: [] })
+      consultGate.mockResolvedValue({ ok: true, requestId: 'r1' })
+      const res = await POST(req())
+      expect(res.status).toBe(200)
+      expect(sessionsCreate).toHaveBeenCalled()
+    })
+
+    it('existing customer with a live plan: the one-plan answer, the gate never runs', async () => {
+      subsList.mockResolvedValue({ data: [{ id: 'sub_1', status: 'active' }] })
+      consultGate.mockResolvedValue({ ok: false, requestId: 'r1', code: 'consultation_not_agreed', message: 'x' })
+      const res = await POST(req())
+      expect(res.status).toBe(409)
+      expect((await res.json()).code).toBe('already_has_plan')
+      expect(consultGate).not.toHaveBeenCalled()
+    })
+
+    it('503 (fails closed) when the gate cannot be checked', async () => {
+      subsList.mockResolvedValue({ data: [] })
+      consultGate.mockRejectedValue(new Error('db down'))
+      const res = await POST(req())
+      expect(res.status).toBe(503)
+      expect(sessionsCreate).not.toHaveBeenCalled()
+    })
   })
 
   it('401 when signed out', async () => {

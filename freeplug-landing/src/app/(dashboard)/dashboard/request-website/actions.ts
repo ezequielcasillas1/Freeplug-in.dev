@@ -34,6 +34,7 @@ function issueText(t: Translate, issues: readonly { message: string }[]): string
   )
   return [...new Set(texts)].join(' ')
 }
+import { OPEN_REQUEST_STATUSES } from '@/lib/consultation/status'
 
 const requestSchema = z.object({
   business_name: z.string().min(1, 'errors.request.business_name.businessNameRequired').max(200),
@@ -82,10 +83,17 @@ async function saveWebsiteRequest(
     .from('website_requests')
     .select('id, status')
     .eq('user_id', userId)
-    .in('status', ['submitted', 'in_review'])
+    .in('status', [...OPEN_REQUEST_STATUSES])
     .maybeSingle()
 
   const t = await errorsT()
+  if (openRow && openRow.status !== 'submitted' && openRow.status !== 'in_review') {
+    return {
+      error:
+        'Your request is in the consultation step. Make changes from your consultation on the dashboard, or email support@freeplug-in.dev.',
+    }
+  }
+
   if (openRow?.status === 'in_review') {
     return { error: t('errors.request.error.requestAlreadyBeingReviewed') }
   }

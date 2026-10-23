@@ -12,6 +12,8 @@ import { getTranslations } from 'next-intl/server'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
 import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
+import { OPEN_REQUEST_STATUSES, STATUS_LABELS, type WebsiteRequestStatus } from '@/lib/consultation/status'
+import { CONSULT_CARD_HEADING } from '@/lib/consultation/copy'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
 export async function generateMetadata(): Promise<Metadata> {
@@ -38,14 +40,16 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
   } = await supabase.auth.getUser()
 
   let openRequestStatus: 'submitted' | 'in_review' | null = null
+  let consultationStatus: string | null = null
   let defaultValues: RequestWebsiteFormValues | undefined
   if (user) {
     const { data: open } = await supabase
       .from('website_requests')
       .select('status, business_name, contact_phone, google_business_url, notes')
       .eq('user_id', user.id)
-      .in('status', ['submitted', 'in_review'])
+      .in('status', [...OPEN_REQUEST_STATUSES])
       .maybeSingle()
+    if (open && open.status !== 'submitted' && open.status !== 'in_review') consultationStatus = open.status
     if (open?.status === 'submitted' || open?.status === 'in_review') {
       openRequestStatus = open.status
       // Pre-fill the form with the open request so saving never blanks existing details.
@@ -80,6 +84,26 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
   }
 
   const inReview = openRequestStatus === 'in_review'
+
+  if (consultationStatus) {
+    return (
+      <div className="max-w-2xl">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Your request is in progress</h1>
+        <p className="text-gray-600 mb-6">
+          Status: {STATUS_LABELS[consultationStatus as WebsiteRequestStatus] ?? consultationStatus}. Changes now go through
+          your consultation.
+        </p>
+        <Link href="/dashboard/consultation" className="font-semibold text-[#ba3d3d] hover:underline">
+          {CONSULT_CARD_HEADING} →
+        </Link>
+        <p className="mt-8 text-sm text-gray-500">
+          <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">
+            ← Back to dashboard
+          </Link>
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div>

@@ -6,6 +6,7 @@ import { sendMail, type MailResult } from './mailer'
 import { WelcomeEmail } from './templates/welcome'
 import { PaymentReceivedEmail } from './templates/payment-received'
 import { RequestStatusUpdateEmail } from './templates/request-status-update'
+import type { WebsiteRequestStatus } from '@/lib/consultation/status'
 import {
   SUBSCRIPTION_CANCELLED_SUBJECT,
   SubscriptionCancelledEmail,
@@ -65,7 +66,7 @@ export async function sendRequestStatusUpdateEmail(
   params: {
     userName?: string
     businessName: string
-    newStatus: 'submitted' | 'in_review' | 'closed'
+    newStatus: WebsiteRequestStatus
     message?: string
   },
   options?: SendOptions

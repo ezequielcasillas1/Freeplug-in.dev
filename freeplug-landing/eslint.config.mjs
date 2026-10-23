@@ -19,6 +19,7 @@ const eslintConfig = defineConfig([
       "src/app/(auth)/actions.ts",
       "src/app/(dashboard)/dashboard/buyout-actions.ts",
       "src/app/(dashboard)/dashboard/request-website/actions.ts",
+      "src/app/(dashboard)/dashboard/consultation/actions.ts",
       "src/app/api/webhooks/stripe/route.ts",
       "src/lib/email/webhook-email-ledger.ts",
       "src/lib/plans/plan-change-lock-server.ts",

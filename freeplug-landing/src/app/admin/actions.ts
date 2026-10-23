@@ -15,7 +15,9 @@ import { nextBusinessDayDue } from '@/lib/plans/due-by'
 import { redirect } from 'next/navigation'
 import { expireUnsellableCheckoutSessions, type ExpireUnsellableReport } from '@/lib/stripe/expire-unsellable-checkouts'
 
-const STATUSES = ['submitted', 'in_review', 'closed'] as const
+import { WEBSITE_REQUEST_STATUSES } from '@/lib/consultation/status'
+
+const STATUSES = WEBSITE_REQUEST_STATUSES
 
 const sendMailSchema = z.object({
   to: z.string().email(),
@@ -61,6 +63,7 @@ export async function adminSetWebsiteRequestStatus(
     .from('website_requests')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', requestId)
+  // The database refuses agreed / building until the client clicked "Looks good" (trigger message).
   if (error) return { ok: false, error: error.message }
   revalidatePath('/admin', 'layout')
   revalidatePath('/dashboard')

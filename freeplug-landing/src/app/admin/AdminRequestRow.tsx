@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { adminMarkSmallEdit, adminSetWebsiteRequestStatus } from './actions'
 import { AdminQuickEmail } from './AdminQuickEmail'
 import { AdminBuyoutBadge, AdminBuyoutPriceCell } from './AdminBuyoutCell'
+import { STATUS_LABELS, WEBSITE_REQUEST_STATUSES } from '@/lib/consultation/status'
 
 export type AdminRequestRowData = {
   id: string
@@ -32,7 +33,7 @@ export type AdminRequestRowData = {
   priorityRank?: number
 }
 
-const STATUSES = ['submitted', 'in_review', 'closed'] as const
+const STATUSES = WEBSITE_REQUEST_STATUSES
 
 export function AdminRequestRow({
   row,
@@ -117,13 +118,14 @@ export function AdminRequestRow({
           onChange={(e) => {
             const v = e.target.value as (typeof STATUSES)[number]
             startTransition(async () => {
-              await adminSetWebsiteRequestStatus(row.id, v)
+              const res = await adminSetWebsiteRequestStatus(row.id, v)
+              if (!res.ok) window.alert(res.error)
             })
           }}
         >
           {STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {STATUS_LABELS[s]}
             </option>
           ))}
         </select>

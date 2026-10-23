@@ -35,6 +35,8 @@ import {
 } from '@/lib/change-requests/customer'
 import { getTranslations } from 'next-intl/server'
 import type { Translate } from '@/i18n/translate'
+import { consultationStage, isWebsiteRequestStatus, OPEN_REQUEST_STATUSES, STATUS_LABELS } from '@/lib/consultation/status'
+import { NextConsultationCard } from './consultation/NextConsultationCard'
 
 type Props = {
   searchParams: Promise<{
@@ -50,7 +52,8 @@ function requestStatusLabel(t: Translate, status: string | undefined): string {
   if (status === 'submitted') return t('requestStatusLabel.submitted')
   if (status === 'in_review') return t('requestStatusLabel.inReview')
   if (status === 'closed') return t('requestStatusLabel.closed')
-  return '—'
+  // Consultation-step statuses: English copy from lib/consultation/copy until translated.
+  return isWebsiteRequestStatus(status) ? STATUS_LABELS[status] : '—'
 }
 
 export default async function DashboardPage({ searchParams }: Props) {
@@ -118,7 +121,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     .from('website_requests')
     .select('id, status, business_name, updated_at, is_buyout')
     .eq('user_id', user.id)
-    .in('status', ['submitted', 'in_review'])
+    .in('status', [...OPEN_REQUEST_STATUSES])
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -160,7 +163,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       ? organicTracker(
           {
             hasRequest: true,
-            building: latestRequest.status === 'in_review',
+            building: ['in_review', 'consultation', 'agreed', 'building'].includes(latestRequest.status),
             hostingSetUp: hasActivePlan,
             live: websiteAccess?.status === 'active',
           },
@@ -182,6 +185,16 @@ export default async function DashboardPage({ searchParams }: Props) {
     .select('stripe_charge_id, kind, amount_cents, clears_at')
     .eq('profile_id', user.id)
   const ownership = ownershipErr ? null : ownershipTotals((ownershipRows ?? []) as Pick<OwnershipEntry, 'stripe_charge_id' | 'kind' | 'amount_cents' | 'clears_at'>[])
+  // Consultation step (Oct 22 card): website requests (not buyout quotes) before the build.
+  let consultStage: ReturnType<typeof consultationStage> | null = null
+  if (openRequest && !openRequest.is_buyout && openRequest.status !== 'building') {
+    const { data: consult } = await supabase
+      .from('consultations')
+      .select('path, booked_at, booking_ref, ready_for_review_at, agreed_at')
+      .eq('request_id', openRequest.id)
+      .maybeSingle()
+    consultStage = consultationStage(consult)
+  }
 
   const intakeClosedInfo =
     !openRequest && latestRequest?.status === 'closed'
@@ -276,6 +289,8 @@ export default async function DashboardPage({ searchParams }: Props) {
         ownership={ownership}
       />
 
+      {consultStage ? <NextConsultationCard stage={consultStage} /> : null}
+
       <div className="grid gap-6 md:grid-cols-2">
         {outreachDash.showRequestCard ? (
           <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -312,7 +327,9 @@ export default async function DashboardPage({ searchParams }: Props) {
                 ? t('lastRequestClosedOpenNew')
                 : status === 'none'
                   ? t('tellUsAboutBusinessLink')
-                  : openRequest
+                  : openRequest && consultStage && consultStage !== 'agreed'
+                    ? 'Complete your consultation so we can agree your plan before we build.'
+                    : openRequest
                     ? t('updateRequestDetailsWhileStill')
                     : t('useRequestFormWhenReady')}
             </p>
