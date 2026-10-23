@@ -23,6 +23,7 @@ import {
   type RequestDetails,
 } from './buyout'
 import { computeWebsiteAccess } from '@/lib/website-access'
+import { isOpenRequestStatus } from '@/lib/consultation/status'
 
 type Row = RequestDetails & {
   id: string
@@ -42,12 +43,12 @@ function memoryStore(rows: Row[] = []) {
   let clock = 0
   const tick = () => new Promise((r) => setTimeout(r, 0))
   const open = (userId: string) =>
-    rows.find((r) => r.user_id === userId && (r.status === 'submitted' || r.status === 'in_review'))
+    rows.find((r) => r.user_id === userId && isOpenRequestStatus(r.status))
   const store: BuyoutStore = {
     async getOpenRequest(userId) {
       await tick()
       const r = open(userId)
-      return r ? { id: r.id, notes: r.notes, updated_at: r.updated_at, is_buyout: r.is_buyout === true } : null
+      return r ? { id: r.id, notes: r.notes, updated_at: r.updated_at, is_buyout: r.is_buyout === true, status: r.status } : null
     },
     async getLatestDetails(userId) {
       await tick()
@@ -95,16 +96,37 @@ describe('recordBuyoutRequest duplicate guard', () => {
     expect(rows.find((r) => r.status === 'submitted')?.business_name).toBe('Tacos Kyle')
   })
 
-  it('five parallel calls on an existing open request: marker added once, notes kept', async () => {
-    const { store, rows } = memoryStore([
-      { ...closedRequest, id: 'open', notes: 'Change request (Help chat):\nType: Photos', status: 'in_review', updated_at: 't0' },
-    ])
-    const results = await Promise.all(Array.from({ length: 5 }, () => recordBuyoutRequest(store, 'u1')))
-    expect(results.every((r) => r.ok)).toBe(true)
-    expect(results.filter((r) => r.ok && !r.alreadyRequested)).toHaveLength(1)
-    expect(rows[0].is_buyout).toBe(true)
-    expect(buyoutCount(rows)).toBe(1)
-    expect(rows[0].notes).toMatch(/^Change request \(Help chat\):\nType: Photos\n\nBuyout request \(dashboard\):/)
+  // Aria's ruling on f36a910 (Oct 22, 8:37 PM CT): an open website request is never turned into a buyout.
+  for (const [status, href] of [
+    ['submitted', '/dashboard/request-website'],
+    ['in_review', '/dashboard/request-website'],
+    ['consultation', '/dashboard/consultation'],
+    ['agreed', '/dashboard/consultation'],
+    ['building', '/dashboard/consultation'],
+  ] as const) {
+    it(`open ${status} website request: buyout blocked with a link to it, no data changes`, async () => {
+      const { store, rows } = memoryStore([
+        { ...closedRequest, id: 'open', notes: 'Change request (Help chat):\nType: Photos', status, updated_at: 't0' },
+      ])
+      const before = JSON.stringify(rows)
+      const results = await Promise.all(Array.from({ length: 3 }, () => recordBuyoutRequest(store, 'u1')))
+      for (const r of results) {
+        expect(r).toEqual({
+          ok: false,
+          error: 'You have an open website request. Finish or close it first.',
+          href,
+          linkLabel: 'View your request',
+        })
+      }
+      expect(JSON.stringify(rows)).toBe(before)
+      expect(buyoutCount(rows)).toBe(0)
+    })
+  }
+
+  it('the block message comes from the catalog in Spanish too (English fallback, TODO Sable)', async () => {
+    const { store } = memoryStore([{ ...closedRequest, id: 'open', status: 'consultation' }])
+    const r = await recordBuyoutRequest(store, 'u1', new Date(), 'es')
+    expect(r).toMatchObject({ ok: false, error: 'You have an open website request. Finish or close it first.' })
   })
 
   it('a later click returns alreadyRequested and writes nothing', async () => {
@@ -132,18 +154,12 @@ describe('recordBuyoutRequest duplicate guard', () => {
     expect(JSON.stringify(rows)).toBe(before)
   })
 
-  it('customer pasted the notes line into a normal request: not a buyout, so the server marks it', async () => {
+  it('customer pasted the notes line into a normal request: still not a buyout, and it is not converted', async () => {
     const { store, rows } = memoryStore([
       { ...closedRequest, id: 'open', notes: `${BUYOUT_NOTE_MARKER}\nRequested: pasted`, status: 'submitted', is_buyout: false },
     ])
-    expect(await recordBuyoutRequest(store, 'u1')).toEqual({ ok: true, alreadyRequested: false })
-    expect(rows[0].is_buyout).toBe(true)
-  })
-
-  it('refuses when the open request notes are full', async () => {
-    const { store } = memoryStore([{ ...closedRequest, notes: 'x'.repeat(4990), status: 'submitted' }])
-    const r = await recordBuyoutRequest(store, 'u1')
-    expect(r.ok).toBe(false)
+    expect(await recordBuyoutRequest(store, 'u1')).toMatchObject({ ok: false, href: '/dashboard/request-website' })
+    expect(rows[0].is_buyout).toBe(false)
   })
 })
 

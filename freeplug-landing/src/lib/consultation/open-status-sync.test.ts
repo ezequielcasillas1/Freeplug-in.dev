@@ -6,7 +6,7 @@ import type { PGlite } from '@electric-sql/pglite'
 import { asRole, migratedDb } from '../../../test/supabase-pglite'
 import { supabaseBuyoutStore } from '@/lib/buyout/supabase-store'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { isOpenRequestStatus, OPEN_REQUEST_STATUSES, PRE_AGREEMENT_STATUSES, WEBSITE_REQUEST_STATUSES } from './status'
+import { isOpenRequestStatus, isSelfClosableStatus, OPEN_REQUEST_STATUSES, SELF_CLOSABLE_STATUSES, PRE_AGREEMENT_STATUSES, WEBSITE_REQUEST_STATUSES } from './status'
 
 /**
  * Aria's ruling (Oct 22 r2): "open" = any status other than closed, everywhere, from ONE definition
@@ -45,12 +45,12 @@ describe('open request status: TS and SQL stay in sync', () => {
     expect((await db.query<{ v: boolean }>(`select public.website_request_is_open(null) as v`)).rows[0].v).toBe(false)
   })
 
-  it.each(['consultation', 'agreed', 'building'])('close RPCs close an open %s request; the unique index counts it as open', async (status) => {
+  it.each(['submitted', 'in_review', 'consultation', 'agreed'])('close RPCs close an open %s request; the unique index counts it as open', async (status) => {
     const u = crypto.randomUUID()
     await db.exec(`insert into auth.users(id, email) values ('${u}', '${u}@x.test'); insert into public.profiles(id) values ('${u}') on conflict do nothing;`)
     const r = await asRole(db, 'service_role', null, `insert into website_requests(user_id, business_name, status) values ('${u}', 'Biz', 'submitted') returning id`)
     const id = String(r.rows[0].id)
-    if (status !== 'consultation') {
+    if (status === 'agreed') {
       await asRole(db, 'service_role', null, `insert into consultations(request_id, user_id, path, ready_for_review_at, agreed_at) values ('${id}', '${u}', 'form', now(), now())`)
     }
     expect((await asRole(db, 'service_role', null, `update website_requests set status = '${status}' where id = '${id}'`)).ok).toBe(true)
@@ -63,6 +63,38 @@ describe('open request status: TS and SQL stay in sync', () => {
     await db.exec(`select set_config('request.jwt.claim.sub', '${u}', false)`)
     expect((await db.query(`select public.cancel_own_website_request()`)).rows).toHaveLength(1)
     expect((await db.query<{ status: string }>(`select status from website_requests where id = '${r2.rows[0].id}'`)).rows[0].status).toBe('closed')
+  })
+
+  it('self-closable: TS SELF_CLOSABLE_STATUSES = open minus building = public.website_request_is_self_closable', async () => {
+    expect([...SELF_CLOSABLE_STATUSES]).toEqual(OPEN_REQUEST_STATUSES.filter((s) => s !== 'building'))
+    for (const s of WEBSITE_REQUEST_STATUSES) {
+      const r = await db.query<{ v: boolean }>(`select public.website_request_is_self_closable($1) as v`, [s])
+      expect(r.rows[0].v, s).toBe(isSelfClosableStatus(s))
+    }
+    expect((await db.query<{ v: boolean }>(`select public.website_request_is_self_closable(null) as v`)).rows[0].v).toBe(false)
+  })
+
+  it('close RPCs refuse a building request (hint building) and leave it building; the index still counts it as open', async () => {
+    const u = crypto.randomUUID()
+    await db.exec(`insert into auth.users(id, email) values ('${u}', '${u}@x.test'); insert into public.profiles(id) values ('${u}') on conflict do nothing;`)
+    const r = await asRole(db, 'service_role', null, `insert into website_requests(user_id, business_name, status) values ('${u}', 'Biz', 'submitted') returning id`)
+    const id = String(r.rows[0].id)
+    await asRole(db, 'service_role', null, `insert into consultations(request_id, user_id, path, ready_for_review_at, agreed_at) values ('${id}', '${u}', 'form', now(), now())`)
+    expect((await asRole(db, 'service_role', null, `update website_requests set status = 'building' where id = '${id}'`)).ok).toBe(true)
+    expect((await asRole(db, 'service_role', null, `insert into website_requests(user_id, business_name) values ('${u}', 'Second')`)).ok).toBe(false)
+    await expect(db.query(`select public.cancel_website_request_for_user('${u}')`)).rejects.toMatchObject({
+      message: expect.stringMatching(/being built/),
+      hint: 'building',
+    })
+    await db.exec(`select set_config('request.jwt.claim.sub', '${u}', false)`)
+    await expect(db.query(`select public.cancel_own_website_request()`)).rejects.toMatchObject({ hint: 'building' })
+    expect((await db.query<{ status: string }>(`select status from website_requests where id = '${id}'`)).rows[0].status).toBe('building')
+  })
+
+  it('customers still cannot call the close RPCs directly', async () => {
+    const u = crypto.randomUUID()
+    expect((await asRole(db, 'authenticated', u, `select public.cancel_website_request_for_user('${u}')`)).ok).toBe(false)
+    expect((await asRole(db, 'authenticated', u, `select public.cancel_own_website_request()`)).ok).toBe(false)
   })
 
   it('buyout store reads and updates the open request with the shared TS list', async () => {

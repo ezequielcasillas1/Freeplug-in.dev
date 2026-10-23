@@ -81,6 +81,33 @@ export const CONSULTATION_GATE_MESSAGE =
   'Please finish your consultation first. Once you click Looks good on your summary, you can choose a plan or a domain.'
 export const CONSULTATION_GATE_CTA = 'Go to your consultation'
 
+/** Close / Request to cancel (Aria, Oct 22 8:37 PM CT: no self-close at building) and the buyout block. */
+export const BUYOUT_BLOCKED_OPEN_REQUEST =
+  "You have an open website request. Finish or close it first."
+export const BUYOUT_BLOCKED_OPEN_REQUEST_LINK =
+  "View your request"
+export const CLOSE_REQUEST_INTRO =
+  "No longer need this website? You can close your request."
+export const CLOSE_REQUEST_BUTTON =
+  "Close request"
+export const CLOSE_REQUEST_CONFIRM =
+  "Close this request? You can start a new one later."
+export const CLOSE_REQUEST_ERROR =
+  "We couldn't close your request. Please try again."
+export const CLOSE_BUILDING_REFUSED =
+  "Your website is being built, so this request can't be closed here. Use Request to cancel."
+export const REQUEST_CANCEL_INTRO =
+  "Your website is being built, so the request can't be closed from here. Ask us to cancel and the team will get back to you."
+export const REQUEST_CANCEL_BUTTON =
+  "Request to cancel"
+export const REQUEST_CANCEL_CONFIRM =
+  "Send a cancel request to the Freeplug team?"
+export const REQUEST_CANCEL_SENT =
+  "Thanks. We got your cancel request and will contact you. Your build stays as it is until then."
+export const REQUEST_CANCEL_ERROR =
+  "We couldn't send your cancel request. Please try again."
+export const EMAIL_CANCEL_REQUEST_TEAM_SUBJECT = (business: string) => `Cancel requested during build: ${business}`
+
 /*
  * i18n: every string above is mirrored in messages/en.json and messages/es.json under
  * `consultation.*` (camelCase of the export name). es.json holds the English text as a fallback,

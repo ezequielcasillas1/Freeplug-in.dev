@@ -1461,6 +1461,19 @@
     "textConsentText": "I agree that Freeplug may send me text messages at this number about my website request. Message and data rates may apply. Reply STOP to opt out at any time.",
     "liveBookedBody": "{hasWhen, select, yes {See you {when}} other {See you soon}} by {method}. After the session we will send you a written summary to check.",
     "emailAgreedTeamSubject": "Consultation agreed: {business}",
-    "emailLiveBookedTeamSubject": "Live consultation booked: {business}"
+    "emailLiveBookedTeamSubject": "Live consultation booked: {business}",
+    "buyoutBlockedOpenRequest": "You have an open website request. Finish or close it first.",
+    "buyoutBlockedOpenRequestLink": "View your request",
+    "closeRequestIntro": "No longer need this website? You can close your request.",
+    "closeRequestButton": "Close request",
+    "closeRequestConfirm": "Close this request? You can start a new one later.",
+    "closeRequestError": "We couldn't close your request. Please try again.",
+    "closeBuildingRefused": "Your website is being built, so this request can't be closed here. Use Request to cancel.",
+    "requestCancelIntro": "Your website is being built, so the request can't be closed from here. Ask us to cancel and the team will get back to you.",
+    "requestCancelButton": "Request to cancel",
+    "requestCancelConfirm": "Send a cancel request to the Freeplug team?",
+    "requestCancelSent": "Thanks. We got your cancel request and will contact you. Your build stays as it is until then.",
+    "requestCancelError": "We couldn't send your cancel request. Please try again.",
+    "emailCancelRequestTeamSubject": "Cancel requested during build: {business}"
   }
 }

@@ -1,5 +1,7 @@
 import type { AppLocale } from '@/i18n/config'
 import { translatorFor } from '@/i18n/translate'
+import { consultationTranslator } from '@/lib/consultation/i18n'
+import { isIntakeStatus } from '@/lib/consultation/status'
 import { intlLocale } from '@/i18n/format'
 import type { WebsiteAccess } from '@/lib/website-access'
 import { BUYOUT_UNLIMITED_CENTS, buyoutTierSentence, formatTierPrice, type BuyoutTier } from './tiers'
@@ -106,6 +108,8 @@ export type OpenRequestRow = {
   updated_at: string
   /** website_requests.is_buyout: the only buyout signal. */
   is_buyout: boolean
+  /** website_requests.status (picks the link shown when a buyout is blocked). */
+  status?: string | null
 }
 export type RequestDetails = {
   business_name: string | null
@@ -137,7 +141,12 @@ export type BuyoutStore = {
 
 export type BuyoutRequestResult =
   | { ok: true; alreadyRequested: boolean }
-  | { ok: false; error: string }
+  | { ok: false; error: string; /** Link to the open request that blocks the buyout. */ href?: string; linkLabel?: string }
+
+/** Where the customer manages an open request: intake form or consultation page. */
+export function openRequestHref(status: string | null | undefined): string {
+  return isIntakeStatus(status) ? '/dashboard/request-website' : '/dashboard/consultation'
+}
 
 export async function recordBuyoutRequest(
   store: BuyoutStore,
@@ -156,19 +165,16 @@ export async function recordBuyoutRequest(
     const open = await store.getOpenRequest(userId)
     if (open?.is_buyout) return { ok: true, alreadyRequested: true }
 
+    // Aria's ruling on f36a910 (Oct 22): a website request (consultation or not) is never turned
+    // into a buyout. The customer finishes or closes it first. No data changes.
     if (open) {
-      const existing = open.notes?.trim() ?? ''
-      const notes = existing ? `${existing}\n\n${block}` : block
-      if (notes.length > NOTES_MAX) {
-        return {
-          ok: false,
-          error: t('requestNotesFullEmail'),
-        }
+      const tc = consultationTranslator(locale)
+      return {
+        ok: false,
+        error: tc('buyoutBlockedOpenRequest'),
+        href: openRequestHref(open.status),
+        linkLabel: tc('buyoutBlockedOpenRequestLink'),
       }
-      if (await store.markBuyoutIfUnchanged(open, notes, now)) {
-        return { ok: true, alreadyRequested: false }
-      }
-      continue
     }
 
     const latest = await store.getLatestDetails(userId)

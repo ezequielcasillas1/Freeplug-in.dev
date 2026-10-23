@@ -16,7 +16,7 @@ export function supabaseBuyoutStore(db: SupabaseClient): BuyoutStore {
     async getOpenRequest(userId) {
       const { data, error } = await db
         .from('website_requests')
-        .select('id, notes, updated_at, is_buyout')
+        .select('id, notes, updated_at, is_buyout, status')
         .eq('user_id', userId)
         .in('status', OPEN_STATUSES)
         .maybeSingle()

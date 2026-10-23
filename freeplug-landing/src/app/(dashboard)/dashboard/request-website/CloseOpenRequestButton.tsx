@@ -5,10 +5,11 @@ import { useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { cancelOwnWebsiteRequest } from './actions'
+import type { SelfClosableStatus } from '@/lib/consultation/status'
 
 type Props = {
-  /** submitted: full withdraw; in_review: still allowed to close from customer side */
-  status: 'submitted' | 'in_review'
+  /** Any self-closable status (submitted, in_review, consultation, agreed). Never building. */
+  status: SelfClosableStatus
   className?: string
 }
 
@@ -18,12 +19,16 @@ export function CloseOpenRequestButton({ status, className }: Props) {
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
+  const tc = useTranslations('consultation')
   const reviewing = status === 'in_review'
+  const consulting = status === 'consultation' || status === 'agreed'
 
   return (
     <div className={className}>
       <p className="text-sm text-gray-600 mb-2">
-        {reviewing
+        {consulting
+          ? tc('closeRequestIntro')
+          : reviewing
           ? t('CloseOpenRequestButton.noLongerWantUs')
           : t('CloseOpenRequestButton.closeRequestBeforeFinish')}
       </p>
@@ -33,6 +38,7 @@ export function CloseOpenRequestButton({ status, className }: Props) {
         size="sm"
         className="border border-zinc-300 bg-white text-gray-800 hover:bg-zinc-50"
         disabled={pending}
+        data-testid="close-request-button"
         onClick={() => {
           if (!window.confirm(t('closeConfirm'))) return
           setError(null)

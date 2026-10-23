@@ -111,6 +111,34 @@ export function ConsultationLiveBookedTeamEmail(p: {
   )
 }
 
+/** Team: the customer asked to cancel while the site is being built (status unchanged). */
+export function ConsultationCancelRequestTeamEmail(p: {
+  businessName: string
+  clientEmail: string
+  requestId: string
+  baseUrl?: string
+}) {
+  const base = emailBaseUrl(p.baseUrl)
+  return (
+    <BaseEmailLayout baseUrl={base} preview={`Cancel requested during build - ${p.businessName}`}>
+      <Text style={heading}>Cancel requested during build</Text>
+      <Text style={paragraph}>The customer asked to cancel. The request is still building; nothing was changed.</Text>
+      <Rows
+        rows={[
+          { label: 'Business', value: p.businessName },
+          { label: 'Client', value: p.clientEmail },
+          { label: 'Request', value: p.requestId },
+        ]}
+      />
+      <Section style={{ margin: '32px 0' }}>
+        <Button style={button} href={`${base}/admin/consultations`}>
+          Open the consultations queue
+        </Button>
+      </Section>
+    </BaseEmailLayout>
+  )
+}
+
 const heading = { color: '#1a1a1a', fontSize: '24px', fontWeight: '600' as const, lineHeight: '32px', margin: '0 0 24px' }
 const paragraph = { color: '#525f7f', fontSize: '16px', lineHeight: '24px', margin: '0 0 16px' }
 const box = { backgroundColor: '#f8fafc', borderRadius: '8px', padding: '16px 20px', margin: '24px 0' }

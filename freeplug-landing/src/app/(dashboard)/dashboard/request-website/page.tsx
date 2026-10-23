@@ -11,8 +11,9 @@ import { currentLocale } from '@/i18n/current-locale'
 import { getTranslations } from 'next-intl/server'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
 import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
+import { RequestCancelButton } from './RequestCancelButton'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
-import { OPEN_REQUEST_STATUSES, STATUS_LABELS, type WebsiteRequestStatus, isIntakeStatus } from '@/lib/consultation/status'
+import { OPEN_REQUEST_STATUSES, STATUS_LABELS, type WebsiteRequestStatus, isIntakeStatus, isSelfClosableStatus } from '@/lib/consultation/status'
 import { CONSULT_CARD_HEADING } from '@/lib/consultation/copy'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
@@ -64,7 +65,7 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
 
   // Closing a request is blocked while a Stripe plan is active (also enforced in the close action).
   let plan: ActiveSubscriptionStatus = { active: false, setToEnd: false, endsAt: null }
-  if (user && openRequestStatus) {
+  if (user && (openRequestStatus || consultationStatus)) {
     const { data: prof } = await supabase
       .from('profiles')
       .select('stripe_customer_id')
@@ -93,6 +94,17 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
           Status: {STATUS_LABELS[consultationStatus as WebsiteRequestStatus] ?? consultationStatus}. Changes now go through
           your consultation.
         </p>
+        <div className="mb-6 max-w-lg rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-3">
+          {consultationStatus === 'building' ? (
+            <RequestCancelButton />
+          ) : plan.active ? (
+            <p className="text-sm text-gray-700">
+              {plan.setToEnd ? closeBlockedPlanEndingMessage(plan.endsAt, locale) : tp('closeBlockedActivePlanMessage')}
+            </p>
+          ) : isSelfClosableStatus(consultationStatus) ? (
+            <CloseOpenRequestButton status={consultationStatus} />
+          ) : null}
+        </div>
         <Link href="/dashboard/consultation" className="font-semibold text-[#ba3d3d] hover:underline">
           {CONSULT_CARD_HEADING} →
         </Link>

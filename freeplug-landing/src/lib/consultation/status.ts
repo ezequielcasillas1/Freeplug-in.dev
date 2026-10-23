@@ -78,3 +78,16 @@ export type IntakeStatus = (typeof INTAKE_STATUSES)[number]
 export function isIntakeStatus(status: string | null | undefined): status is IntakeStatus {
   return (INTAKE_STATUSES as readonly string[]).includes(status ?? '')
 }
+
+/**
+ * Statuses a customer can close themselves (Aria's ruling on f36a910): open, except building. At
+ * building the dashboard offers "Request to cancel" instead. SQL twin:
+ * public.website_request_is_self_closable() (migration 20261022230000).
+ */
+export type SelfClosableStatus = Exclude<OpenRequestStatus, 'building'>
+export const SELF_CLOSABLE_STATUSES: readonly SelfClosableStatus[] = OPEN_REQUEST_STATUSES.filter(
+  (s): s is SelfClosableStatus => s !== 'building'
+)
+export function isSelfClosableStatus(status: string | null | undefined): status is SelfClosableStatus {
+  return (SELF_CLOSABLE_STATUSES as readonly string[]).includes(status ?? '')
+}

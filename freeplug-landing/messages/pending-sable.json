@@ -89,6 +89,19 @@
     "consultation.textConsentText": "TODO Sable: Spanish pending; es.json has the English text",
     "consultation.liveBookedBody": "TODO Sable: Spanish pending; es.json has the English text",
     "consultation.emailAgreedTeamSubject": "TODO Sable: Spanish pending; es.json has the English text",
-    "consultation.emailLiveBookedTeamSubject": "TODO Sable: Spanish pending; es.json has the English text"
+    "consultation.emailLiveBookedTeamSubject": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.buyoutBlockedOpenRequest": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.buyoutBlockedOpenRequestLink": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.closeRequestIntro": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.closeRequestButton": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.closeRequestConfirm": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.closeRequestError": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.closeBuildingRefused": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.requestCancelIntro": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.requestCancelButton": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.requestCancelConfirm": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.requestCancelSent": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.requestCancelError": "TODO Sable: Spanish pending; es.json has the English text",
+    "consultation.emailCancelRequestTeamSubject": "TODO Sable: Spanish pending; es.json has the English text"
   }
 }

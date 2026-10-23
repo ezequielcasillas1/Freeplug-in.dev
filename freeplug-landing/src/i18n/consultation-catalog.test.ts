@@ -24,6 +24,7 @@ describe('consultation strings in the i18n catalogs (Oct 22 r2)', () => {
     expect(t('liveBookedBody', { hasWhen: 'yes', when: 'Fri 3 PM', method: 'phone' })).toBe(COPY.liveBookedBody('Fri 3 PM', 'phone'))
     expect(t('liveBookedBody', { hasWhen: 'no', when: '', method: 'text' })).toBe(COPY.liveBookedBody(null, 'text'))
     expect(t('emailAgreedTeamSubject', { business: 'Biz' })).toBe(COPY.EMAIL_AGREED_TEAM_SUBJECT('Biz'))
+    expect(t('emailCancelRequestTeamSubject', { business: 'Biz' })).toBe(COPY.EMAIL_CANCEL_REQUEST_TEAM_SUBJECT('Biz'))
     expect(t('emailLiveBookedTeamSubject', { business: 'Biz' })).toBe(COPY.EMAIL_LIVE_BOOKED_TEAM_SUBJECT('Biz'))
   })
   it('es.json has every consultation key (Spanish stays servable), each tracked as TODO for Sable', () => {
