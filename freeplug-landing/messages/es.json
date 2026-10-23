@@ -259,7 +259,7 @@
     },
     "access": {
       "accessEndingMessage": "Tu hosting está cancelado. Tu sitio web sigue en línea hasta el {date} y después se desconecta. Reanuda tu plan antes de esa fecha para mantenerlo en línea.",
-      "accessOfflineMessage": "Tu sitio web está fuera de línea porque se canceló tu hosting. Vuelve a contratar el hosting para recuperarlo.",
+      "accessOfflineMessage": "Tu sitio web está fuera de línea porque se canceló tu hosting. Vuelve a contratar el hosting para reactivarlo.",
       "restartHostingLabel": "Reactivar hosting",
       "resumePlanLabel": "Reanudar plan"
     },
