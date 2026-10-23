@@ -3,13 +3,13 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { consultationCopy } from '@/lib/consultation/i18n'
 import { currentLocale } from '@/i18n/current-locale'
-import { calcomLink } from '@/lib/consultation/scheduler'
+import { calcomEventLink, calcomLink, parseSessionLength } from '@/lib/consultation/scheduler'
 import { loadOwnConsultation } from '../load'
 import { LiveBookingForm } from './LiveBookingForm'
 
 export const metadata: Metadata = { title: 'Book a live session | Freeplug' }
 
-export default async function ConsultationLivePage({ searchParams }: { searchParams: Promise<{ new?: string; edit?: string; booked?: string }> }) {
+export default async function ConsultationLivePage({ searchParams }: { searchParams: Promise<{ new?: string; edit?: string; booked?: string; length?: string }> }) {
   const locale = await currentLocale()
   const copy = consultationCopy(locale)
   const q = await searchParams
@@ -45,7 +45,7 @@ export default async function ConsultationLivePage({ searchParams }: { searchPar
       <h1 className="text-3xl font-bold text-gray-900 mb-2">{copy.LIVE_PAGE_HEADING}</h1>
       <p className="text-gray-600 mb-8">{copy.LIVE_PAGE_INTRO}</p>
       <LiveBookingForm
-        calLink={calcomLink()}
+        calLink={calcomEventLink(calcomLink(), parseSessionLength(q.length))}
         initial={{
           live_method: c?.path === 'live' ? c.live_method : null,
           contact_number: c?.contact_number ?? '',

@@ -190,6 +190,7 @@ export const TRACKER_LIVE_WAITING = 'Waiting for us to publish your site.'
 export const HAVE_DOMAIN_LABEL = 'I already have a domain'
 export const TRACKER_ORGANIC_STEPS = [
   'Request sent',
+  'Consultation',
   'Building',
   'Your review',
   'Hosting set up',

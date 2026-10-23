@@ -14,6 +14,21 @@ export function calcomLink(): string | null {
   return /^[a-z0-9_.-]+(\/[a-z0-9_.-]+)*$/i.test(path) && !/(^|\/)\.\.?(\/|$)/.test(path) ? path : null
 }
 
+/** Live-session lengths offered on the consultation choice page (cal.com/fplgn.dev/15min, /30min). */
+export const CALCOM_SESSION_LENGTHS = [15, 30] as const
+export type CalcomSessionLength = (typeof CALCOM_SESSION_LENGTHS)[number]
+
+export function parseSessionLength(v: unknown): CalcomSessionLength | null {
+  const n = Number(v)
+  return (CALCOM_SESSION_LENGTHS as readonly number[]).includes(n) ? (n as CalcomSessionLength) : null
+}
+
+/** Event-type link for a session length: "fplgn.dev" + 15 -> "fplgn.dev/15min". Null link stays null (test mode). */
+export function calcomEventLink(link: string | null, minutes: CalcomSessionLength | null): string | null {
+  if (!link || !minutes || link.split('/').length > 1) return link
+  return `${link}/${minutes}min`
+}
+
 /** The plain booking page URL (opened in a new tab). */
 export function calcomPageUrl(link: string): string {
   return new URL(`https://cal.com/${link}`).toString()

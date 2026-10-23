@@ -25,7 +25,7 @@ import { requestBuyoutQuote } from './buyout-actions'
 import { YourWebsiteCard } from './YourWebsiteCard'
 import { QuickActions } from './QuickActions'
 import { getClaimedSiteForUser, getSiteDetails } from '@/lib/outreach/server'
-import { organicTracker, outreachTracker } from '@/lib/outreach/tracker'
+import { isConsultationDone, organicTracker, outreachTracker } from '@/lib/outreach/tracker'
 import { ChangeRequestsCard } from './ChangeRequestsCard'
 import { ownershipTotals, type OwnershipEntry } from '@/lib/buyout/ownership'
 import {
@@ -149,6 +149,16 @@ export default async function DashboardPage({ searchParams }: Props) {
   const outreachDetails = outreachSite ? await getSiteDetails(outreachSite.id) : null
   const hasActivePlan = (enhancedData?.subscriptions ?? []).some((s) => s.status === 'active' || s.status === 'trialing')
   const outreachLive = outreachSite?.publish_status === 'live'
+  // Consultation step (Oct 22 card): website requests (not buyout quotes) before the build.
+  let consultStage: ReturnType<typeof consultationStage> | null = null
+  if (openRequest && !openRequest.is_buyout && openRequest.status !== 'building') {
+    const { data: consult } = await supabase
+      .from('consultations')
+      .select('path, booked_at, booking_ref, ready_for_review_at, agreed_at')
+      .eq('request_id', openRequest.id)
+      .maybeSingle()
+    consultStage = consultationStage(consult)
+  }
   const trackerSteps = outreachSite
     ? outreachTracker(
         {
@@ -163,7 +173,11 @@ export default async function DashboardPage({ searchParams }: Props) {
       ? organicTracker(
           {
             hasRequest: true,
-            building: ['in_review', 'consultation', 'agreed', 'building'].includes(latestRequest.status),
+            consultationDone: isConsultationDone(
+              latestRequest.id === openRequest?.id ? consultStage : null,
+              latestRequest.status
+            ),
+            building: ['agreed', 'building'].includes(latestRequest.status),
             hostingSetUp: hasActivePlan,
             live: websiteAccess?.status === 'active',
           },
@@ -185,16 +199,6 @@ export default async function DashboardPage({ searchParams }: Props) {
     .select('stripe_charge_id, kind, amount_cents, clears_at')
     .eq('profile_id', user.id)
   const ownership = ownershipErr ? null : ownershipTotals((ownershipRows ?? []) as Pick<OwnershipEntry, 'stripe_charge_id' | 'kind' | 'amount_cents' | 'clears_at'>[])
-  // Consultation step (Oct 22 card): website requests (not buyout quotes) before the build.
-  let consultStage: ReturnType<typeof consultationStage> | null = null
-  if (openRequest && !openRequest.is_buyout && openRequest.status !== 'building') {
-    const { data: consult } = await supabase
-      .from('consultations')
-      .select('path, booked_at, booking_ref, ready_for_review_at, agreed_at')
-      .eq('request_id', openRequest.id)
-      .maybeSingle()
-    consultStage = consultationStage(consult)
-  }
 
   const intakeClosedInfo =
     !openRequest && latestRequest?.status === 'closed'

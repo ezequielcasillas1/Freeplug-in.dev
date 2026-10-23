@@ -15,6 +15,8 @@ export const PATH_LIVE_TITLE = 'Talk to us live'
 export const PATH_LIVE_BODY =
   'Book a short session by phone, FaceTime, webcam or text. We take the notes and send you a summary to check.'
 export const PATH_LIVE_CTA = 'Book a session'
+export const PATH_LIVE_15_CTA = 'Book 15 minutes'
+export const PATH_LIVE_30_CTA = 'Book 30 minutes'
 
 export const FORM_PAGE_HEADING = 'Tell us about your website'
 export const FORM_PAGE_INTRO =

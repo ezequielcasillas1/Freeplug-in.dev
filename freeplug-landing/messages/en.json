@@ -821,6 +821,7 @@
     "haveDomainLabel": "I already have a domain",
     "trackerOrganicSteps": {
       "requestSent": "Request sent",
+      "consultation": "Consultation",
       "building": "Building",
       "yourReview": "Your review",
       "hostingSetUp": "Hosting set up",
@@ -1445,6 +1446,8 @@
     "pathFormTitle": "Fill in the details",
     "pathLiveBody": "Book a short session by phone, FaceTime, webcam or text. We take the notes and send you a summary to check.",
     "pathLiveCta": "Book a session",
+    "pathLive15Cta": "Book 15 minutes",
+    "pathLive30Cta": "Book 30 minutes",
     "pathLiveTitle": "Talk to us live",
     "phoneConsentText": "I agree that Freeplug may call me at this number about my website request. I can ask you to stop at any time.",
     "rescheduleLabel": "Change method or time",

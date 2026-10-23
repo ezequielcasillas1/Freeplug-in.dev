@@ -36,3 +36,18 @@ describe('Cal.com scheduler', () => {
     expect(parseCalcomMessage('https://cal.com', { type: 'other' })).toBeNull()
   })
 })
+
+describe('session lengths (Oct 23)', () => {
+  it('maps 15/30 to cal.com/fplgn.dev event slugs', async () => {
+    const { calcomEventLink, parseSessionLength } = await import('./scheduler')
+    expect(calcomEventLink('fplgn.dev', parseSessionLength('15'))).toBe('fplgn.dev/15min')
+    expect(calcomEventLink('fplgn.dev', parseSessionLength('30'))).toBe('fplgn.dev/30min')
+    expect(calcomEventLink('fplgn.dev', parseSessionLength('45'))).toBe('fplgn.dev')
+    expect(calcomEventLink(null, 15)).toBeNull()
+  })
+  it('booking.ts reuses the scheduler URL (one constant)', async () => {
+    const { CALCOM_BOOKING_URL } = await import('@/lib/booking')
+    const { DEFAULT_CALCOM_LINK } = await import('./scheduler')
+    expect(CALCOM_BOOKING_URL).toBe(DEFAULT_CALCOM_LINK)
+  })
+})

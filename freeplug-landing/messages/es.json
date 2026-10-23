@@ -821,6 +821,7 @@
     "haveDomainLabel": "Ya tengo un dominio",
     "trackerOrganicSteps": {
       "requestSent": "Solicitud enviada",
+      "consultation": "Consulta",
       "building": "En construcción",
       "yourReview": "Tu revisión",
       "hostingSetUp": "Hosting listo",
@@ -1445,6 +1446,8 @@
     "pathFormTitle": "Llena los detalles",
     "pathLiveBody": "Agenda una sesión corta por teléfono, FaceTime, videollamada o mensajes de texto. Nosotros tomamos las notas y te mandamos un resumen para que lo revises.",
     "pathLiveCta": "Agendar una sesión",
+    "pathLive15Cta": "Reservar 15 minutos",
+    "pathLive30Cta": "Reservar 30 minutos",
     "pathLiveTitle": "Habla con nosotros en vivo",
     "phoneConsentText": "Acepto que Freeplug me llame a este número sobre mi solicitud de sitio web. Puedo pedir que dejen de llamarme en cualquier momento.",
     "rescheduleLabel": "Cambiar forma u horario",
