@@ -22,6 +22,8 @@ import { markQuoteInvoice, type QuoteWebhookDb } from '@/lib/maintenance-quotes/
 import { ownerAlertForStripeEvent } from '@/lib/owner-alerts/stripe-events'
 import { scheduleOwnerAlert } from '@/lib/owner-alerts/send'
 import { ownerAlertCustomer } from '@/lib/owner-alerts/customer'
+import { supabaseDunningStore } from '@/lib/billing/dunning'
+import { dunningFromInvoiceEvent } from '@/lib/billing/dunning-webhook'
 
 export const runtime = 'nodejs'
 
@@ -268,6 +270,14 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Quote not saved' }, { status: 500 })
         }
       }
+      // Failed payment policy (Cheke, Oct 23): a paid hosting invoice closes any open grace/past-due/paused case.
+      try {
+        await dunningFromInvoiceEvent(supabaseDunningStore(admin), 'invoice.paid', inv, async () => null)
+      } catch (e) {
+        // Not fatal: the cron re-checks Stripe before moving any case forward (stillUnpaid), so a paid
+        // client is never paused because this write failed.
+        console.error('[webhook] dunning resolve FAILED (cron will re-check Stripe)', e instanceof Error ? e.message : e)
+      }
       const customerId = getCustomerId(inv.customer)
       if (!customerId || inv.amount_paid <= 0) {
         break
@@ -320,6 +330,22 @@ export async function POST(request: Request) {
       } catch (e) {
         console.error('[webhook] ownership ledger (invoice)', e instanceof Error ? e.message : e)
         return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      break
+    }
+    case 'invoice.payment_failed': {
+      // Failed payment policy (Cheke, Oct 23; src/lib/billing/dunning.ts): day 0 of the 14-day grace. No email here.
+      const inv = event.data.object as Stripe.Invoice
+      try {
+        const r = await dunningFromInvoiceEvent(supabaseDunningStore(admin), 'invoice.payment_failed', inv, async (customerId) => {
+          const { data, error } = await admin.from('profiles').select('id').eq('stripe_customer_id', customerId).limit(1)
+          if (error) throw new Error(error.message)
+          return (data?.[0] as { id: string } | undefined)?.id ?? null
+        })
+        console.info('[webhook] dunning', inv.id, r)
+      } catch (e) {
+        console.error('[webhook] dunning open', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Dunning not saved' }, { status: 500 })
       }
       break
     }

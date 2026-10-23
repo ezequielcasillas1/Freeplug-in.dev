@@ -265,6 +265,15 @@
         "saved": "Guardado"
       },
       "title": "Configuración"
+    },
+    "dunning": {
+      "graceTitle": "No se pudo cobrar tu hosting",
+      "graceMessage": "No te preocupes, tu sitio sigue en línea. Por favor paga antes del {date} para mantener tu cuenta al día.",
+      "pastDueTitle": "Pago de hosting vencido",
+      "pastDueMessage": "Tu pago de hosting está vencido. Por favor paga antes del {date}, o tu sitio se pausará ese día. No se borrará.",
+      "pausedTitle": "Tu sitio está en pausa",
+      "pausedMessage": "Tu sitio está en pausa porque no se hizo el pago del hosting. Está guardado, no borrado. Paga el hosting cuando quieras para recuperarlo.",
+      "payNow": "Pagar ahora"
     }
   },
   "errors": {

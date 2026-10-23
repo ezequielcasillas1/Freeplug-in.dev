@@ -24,6 +24,7 @@ import { periodStartDate } from '@/lib/plans/included-edits'
 import { pendingPlanChange } from '@/lib/stripe/change-plan'
 import { formatPlanEndDate, isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscription'
 import { stepById, stepByLookupKey } from '@/lib/plans/ladder'
+import { dunningAlert, fetchOpenDunningView } from '@/lib/billing/dunning-copy'
 import { BILLING_ACTIVITY_COLUMNS, paymentActivityLabel, REFUND_ACTIVITY_COLUMNS, refundActivityLabel } from '@/lib/dashboard/billing-activity'
 import { daysSince, firstPaymentDate } from '@/lib/dashboard/customer-since'
 
@@ -419,6 +420,10 @@ export async function getEnhancedDashboardData(
   recentActivity.sort((a, b) => b.date.getTime() - a.date.getTime())
 
   const alerts: DashboardAlert[] = []
+
+  // Failed hosting payment (Cheke, Oct 23; src/lib/billing/dunning.ts): first, so it is seen.
+  const dunning = dunningAlert(await fetchOpenDunningView(supabase, user.id), locale, t)
+  if (dunning) alerts.push(dunning)
 
   const activeSubscription = subscriptions.find(
     (s) => s.status === 'active' && !s.cancelAtPeriodEnd

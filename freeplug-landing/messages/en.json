@@ -265,6 +265,15 @@
         "label": "Language",
         "saved": "Saved"
       }
+    },
+    "dunning": {
+      "graceTitle": "Your hosting payment didn't go through",
+      "graceMessage": "No worries, your website is still online. Please pay by {date} to keep your account in good standing.",
+      "pastDueTitle": "Hosting payment past due",
+      "pastDueMessage": "Your hosting payment is past due. Please pay before {date}, or your website will be paused on that day. It won't be deleted.",
+      "pausedTitle": "Your website is paused",
+      "pausedMessage": "Your website is paused because the hosting payment wasn't made. It's saved, not deleted. Pay the hosting fee anytime to bring it back.",
+      "payNow": "Pay now"
     }
   },
   "errors": {

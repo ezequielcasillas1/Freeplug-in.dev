@@ -18,6 +18,7 @@ import { SupportCard } from './SupportCard'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { hasWeekendReplies } from '@/lib/plans/response-days'
 import { syncStripeCustomerFromCheckoutSession } from '@/lib/stripe/sync-checkout-customer'
+import { fetchOpenDunningView } from '@/lib/billing/dunning-copy'
 import { dashboardAccessAlert, getWebsiteAccessForCustomer, type WebsiteAccess } from '@/lib/website-access'
 import { WebsiteAccessAlert } from './WebsiteAccessAlert'
 import { DashboardBuyoutCard } from './BuyoutCard'
@@ -111,8 +112,12 @@ export default async function DashboardPage({ searchParams }: Props) {
       console.error('[dashboard] website access lookup failed', e instanceof Error ? e.message : e)
     }
   }
+  // Failed payment day 17+ (Cheke, Oct 23): paused = no site access until paid. The paused notice comes from
+  // the dunning alert (dashboard-actions), so the "hosting was canceled" offline card is not shown too.
+  const dunningPaused = (await fetchOpenDunningView(supabase, user.id))?.state === 'paused'
+  if (dunningPaused && websiteAccess) websiteAccess = { ...websiteAccess, status: 'offline', accessEndsAt: null }
   // Offline only; a plan set to end shows the one "Subscription ending" alert instead (next round).
-  const accessAlert = dashboardAccessAlert(websiteAccess, locale)
+  const accessAlert = dunningPaused ? null : dashboardAccessAlert(websiteAccess, locale)
 
   const { data: openRequest } = await supabase
     .from('website_requests')

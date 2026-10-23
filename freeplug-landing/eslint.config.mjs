@@ -30,6 +30,9 @@ const eslintConfig = defineConfig([
       "src/lib/unsubscribe/store.ts",
       // Oct 19: owner alerts read the customer (Auth name/email, plan) for the owner-only email.
       "src/lib/owner-alerts/events.ts",
+      // Oct 23: billing_activity writes (Refund row) and the failed-payment cron (hosting_dunning), service role only.
+      "src/lib/dashboard/billing-activity-server.ts",
+      "src/app/api/cron/dunning/route.ts",
       "src/**/*.test.{ts,tsx}",
     ],
     rules: {
