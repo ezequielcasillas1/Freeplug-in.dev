@@ -1,4 +1,5 @@
 'use server'
+import { SIGNUPS_PAUSED } from '@/lib/auth/signups-paused'
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -223,6 +224,7 @@ function formNext(formData: FormData | undefined): string | null {
 }
 
 export async function signUp(formData: FormData) {
+  if (SIGNUPS_PAUSED) redirect('/signup')
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
   const confirm = String(formData.get('confirm') ?? '')
