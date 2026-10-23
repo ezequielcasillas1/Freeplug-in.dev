@@ -1074,6 +1074,38 @@
         "performanceMatters": "Performance That <span>Matters</span>",
         "sitesBuiltMobileFriendlyReasonably": "Sites are built to be mobile-friendly and reasonably fast. We don't invent uptime or score guarantees.",
         "responsiveLayoutsClearQuoteRequest": "Responsive layouts · Clear quote request pages · Monthly hosting keeps it online"
+      },
+      "offerings": {
+        "heading": "What we build",
+        "intro": "Pick what fits you. Every project comes with hosting, updates and the option to own it.",
+        "cta": "Start this kind of project →",
+        "saasTag": "Simple apps only",
+        "types": {
+          "local": {
+            "title": "Local business websites",
+            "line": "A site that helps nearby customers find you, call you, or ask for a quote."
+          },
+          "agency": {
+            "title": "Small agencies",
+            "line": "Sites for your clients, built by us under your agency."
+          },
+          "creator": {
+            "title": "Landing pages for creators",
+            "line": "One clean page for your work, your links and how to reach you."
+          },
+          "booking": {
+            "title": "Booking sites for freelancers",
+            "line": "Let clients see your services and book a time with you."
+          },
+          "store": {
+            "title": "One-product stores",
+            "line": "A simple store to sell one product online."
+          },
+          "saas": {
+            "title": "Small SaaS apps",
+            "line": "Simple web apps with a few core features. Bigger builds get a quote first."
+          }
+        }
       }
     }
   },

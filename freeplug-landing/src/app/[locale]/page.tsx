@@ -12,6 +12,7 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ogLocale, publicAlternates } from '@/i18n/seo'
 import { toAppLocale } from '@/i18n/config'
+import { OfferingsSection } from '@/features/landing/components/OfferingsSection'
 import { HostingPlansSectionUi } from '@/features/landing/components/HostingPlansSectionUi'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -33,6 +34,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <main>
         {/* Lina order: Hero → What Freeplug does → TX → Outside US → How it works → Closing CTA */}
         <HeroSection />
+        {/* What we build (Oct 22): right after the hero */}
+        <OfferingsSection />
         <AboutSection />
         <OutreachSection />
         <CTASection />

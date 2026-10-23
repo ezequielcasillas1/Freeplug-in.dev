@@ -1074,6 +1074,38 @@
         "performanceMatters": "Rendimiento que <span>importa</span>",
         "sitesBuiltMobileFriendlyReasonably": "Los sitios están hechos para verse bien en celular y ser razonablemente rápidos. No inventamos garantías de disponibilidad ni de puntajes.",
         "responsiveLayoutsClearQuoteRequest": "Diseños adaptables · Páginas claras para pedir cotización · El hosting mensual lo mantiene en línea"
+      },
+      "offerings": {
+        "heading": "Lo que hacemos",
+        "intro": "Elige lo que te queda. Cada proyecto incluye hosting, cambios y la opción de quedarte con él.",
+        "cta": "Empezar este tipo de proyecto →",
+        "saasTag": "Solo apps sencillas",
+        "types": {
+          "local": {
+            "title": "Sitios para negocios locales",
+            "line": "Un sitio que ayuda a tus clientes cercanos a encontrarte, llamarte o pedir una cotización."
+          },
+          "agency": {
+            "title": "Agencias pequeñas",
+            "line": "Sitios para tus clientes, hechos por nosotros para tu agencia."
+          },
+          "creator": {
+            "title": "Páginas para creadores",
+            "line": "Una página clara para tu trabajo, tus enlaces y cómo contactarte."
+          },
+          "booking": {
+            "title": "Sitios de reservas para freelancers",
+            "line": "Tus clientes ven tus servicios y reservan una cita contigo."
+          },
+          "store": {
+            "title": "Tiendas de un producto",
+            "line": "Una tienda sencilla para vender un producto en línea."
+          },
+          "saas": {
+            "title": "Apps SaaS pequeñas",
+            "line": "Apps web sencillas con pocas funciones principales. Los proyectos más grandes se cotizan primero."
+          }
+        }
       }
     }
   },
