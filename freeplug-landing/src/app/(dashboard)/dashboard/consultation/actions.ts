@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 import { checklistFromFormData, checklistSummaryRows, missingFields, parseChecklistDraft, type Checklist } from '@/lib/consultation/checklist'
 import * as copy from '@/lib/consultation/copy'
 import { sendConsultationMail, TEAM_INBOX } from '@/lib/consultation/mail'
-import { isPreAgreement, OPEN_REQUEST_STATUSES } from '@/lib/consultation/status'
+import { isPreAgreement, OPEN_REQUEST_STATUSES, INTAKE_STATUSES, isIntakeStatus } from '@/lib/consultation/status'
 import {
   ConsultationAgreedClientEmail,
   ConsultationAgreedTeamEmail,
@@ -50,13 +50,13 @@ async function loadOwn(supabase: ServerSupabase, userId: string) {
 
 /** submitted / in_review -> consultation (service role: clients can't change the status column). */
 async function markRequestInConsultation(requestId: string, status: string) {
-  if (status !== 'submitted' && status !== 'in_review') return
+  if (!isIntakeStatus(status)) return
   const admin = createAdminClient()
   const { error } = await admin
     .from('website_requests')
     .update({ status: 'consultation', updated_at: new Date().toISOString() })
     .eq('id', requestId)
-    .in('status', ['submitted', 'in_review'])
+    .in('status', [...INTAKE_STATUSES])
   if (error) console.error('[consultation] status update failed', error.message)
 }
 

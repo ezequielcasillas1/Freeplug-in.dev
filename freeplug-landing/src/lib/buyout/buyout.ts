@@ -114,7 +114,7 @@ export type RequestDetails = {
 }
 
 export type BuyoutStore = {
-  /** The customer's open (submitted or in_review) request, if any. */
+  /** The customer's open request (any status but closed, OPEN_REQUEST_STATUSES), if any. */
   getOpenRequest(userId: string): Promise<OpenRequestRow | null>
   /** Business details of the customer's latest request (any status), to reuse on a new request. */
   getLatestDetails(userId: string): Promise<RequestDetails | null>

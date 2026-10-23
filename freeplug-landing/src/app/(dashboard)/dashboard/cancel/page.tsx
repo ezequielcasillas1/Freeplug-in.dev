@@ -1,3 +1,4 @@
+import { OPEN_REQUEST_STATUSES } from '@/lib/consultation/status'
 import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
@@ -36,7 +37,7 @@ export default async function CancelPage({ searchParams }: { searchParams?: Prom
     .from('website_requests')
     .select('is_buyout')
     .eq('user_id', user.id)
-    .in('status', ['submitted', 'in_review'])
+    .in('status', [...OPEN_REQUEST_STATUSES])
     .maybeSingle()
 
   return (

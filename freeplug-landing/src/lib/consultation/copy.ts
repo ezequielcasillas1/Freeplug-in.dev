@@ -80,3 +80,11 @@ export const EMAIL_LIVE_BOOKED_TEAM_SUBJECT = (business: string) => `Live consul
 export const CONSULTATION_GATE_MESSAGE =
   'Please finish your consultation first. Once you click Looks good on your summary, you can choose a plan or a domain.'
 export const CONSULTATION_GATE_CTA = 'Go to your consultation'
+
+/*
+ * i18n: every string above is mirrored in messages/en.json and messages/es.json under
+ * `consultation.*` (camelCase of the export name). es.json holds the English text as a fallback,
+ * listed in messages/pending-sable.json → spanishEnglishFallback (TODO Sable).
+ * src/i18n/consultation-catalog.test.ts fails if this file and the catalogs drift.
+ * Locale-aware callers can use consultationTranslator(locale).
+ */

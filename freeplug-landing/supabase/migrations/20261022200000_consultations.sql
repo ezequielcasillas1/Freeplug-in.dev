@@ -9,6 +9,27 @@
 -- and moves the request to 'agreed'. Only then may it move to 'building' (trigger below).
 
 -- 1) website_requests: new statuses, and they count as "open" (one open request per customer).
+-- 0) ONE shared definition of "open" and "pre-agreement" (Aria's ruling, Oct 22 r2): open = any
+--    status other than closed. Every SQL check below (and the redefined older RPCs in section 10) calls
+--    these; the TS side is OPEN_REQUEST_STATUSES / PRE_AGREEMENT_STATUSES in lib/consultation/status.ts.
+--    src/lib/consultation/open-status-sync.test.ts fails if the two sides drift.
+create or replace function public.website_request_is_open(p_status text)
+returns boolean
+language sql
+immutable
+parallel safe
+as $$ select p_status is not null and p_status <> 'closed' $$;
+
+create or replace function public.website_request_is_pre_agreement(p_status text)
+returns boolean
+language sql
+immutable
+parallel safe
+as $$ select p_status in ('submitted', 'in_review', 'consultation') $$;
+
+grant execute on function public.website_request_is_open(text) to anon, authenticated, service_role;
+grant execute on function public.website_request_is_pre_agreement(text) to anon, authenticated, service_role;
+
 alter table public.website_requests drop constraint if exists website_requests_status_check;
 alter table public.website_requests
   add constraint website_requests_status_check
@@ -17,7 +38,7 @@ alter table public.website_requests
 drop index if exists public.website_requests_one_open_per_user;
 create unique index website_requests_one_open_per_user
   on public.website_requests (user_id)
-  where status in ('submitted', 'in_review', 'consultation', 'agreed', 'building');
+  where public.website_request_is_open(status);
 
 -- 2) consultations: one per request.
 create table if not exists public.consultations (
@@ -79,7 +100,7 @@ create policy "consultations_insert_own" on public.consultations
     and exists (
       select 1 from public.website_requests r
       where r.id = request_id and r.user_id = auth.uid()
-        and r.status in ('submitted', 'in_review', 'consultation')
+        and public.website_request_is_pre_agreement(r.status)
     )
   );
 
@@ -229,7 +250,7 @@ begin
   end if;
   update public.website_requests
   set status = 'agreed', updated_at = v_at
-  where id = v_request and status in ('submitted', 'in_review', 'consultation');
+  where id = v_request and public.website_request_is_pre_agreement(status);
   update public.profiles
   set evaluation_status = 'agreed', evaluation_progress = greatest(evaluation_progress, 75), updated_at = v_at
   where id = p_user_id;
@@ -242,8 +263,7 @@ grant execute on function public.admin_save_consultation_checklist(uuid, jsonb, 
 revoke execute on function public.agree_consultation_for_user(uuid, uuid, text) from public, anon, authenticated;
 grant execute on function public.agree_consultation_for_user(uuid, uuid, text) to service_role;
 
--- 8) Closing an open request now also covers the consultation stage (not agreed/building: those
---    are closed by the team).
+-- 8) Closing an open request covers every open status (Aria's ruling, Oct 22 r2: open = not closed).
 create or replace function public.cancel_website_request_for_user(p_user_id uuid)
 returns void
 language plpgsql
@@ -259,7 +279,7 @@ begin
   update public.website_requests
   set status = 'closed', updated_at = now()
   where user_id = p_user_id
-    and status in ('submitted', 'in_review', 'consultation');
+    and public.website_request_is_open(status);
   get diagnostics n = row_count;
   if n = 0 then
     raise exception using message = 'No open request to close.', errcode = 'P0001';
@@ -295,7 +315,7 @@ begin
     select w.id into new.website_request_id
     from public.website_requests w
     where w.user_id = new.user_id
-      and w.status in ('submitted', 'in_review', 'consultation', 'agreed', 'building')
+      and public.website_request_is_open(w.status)
     order by w.created_at desc
     limit 1;
   end if;
@@ -308,7 +328,7 @@ begin
     raise exception using message = 'That website request is not yours.', errcode = '42501';
   end if;
   if new.kind = 'need_domain'
-     and r.status in ('submitted', 'in_review', 'consultation', 'agreed', 'building')
+     and public.website_request_is_open(r.status)
      and coalesce(r.is_buyout, false) = false
      and r.source is distinct from 'outreach'
      and not exists (
@@ -329,3 +349,131 @@ drop trigger if exists domain_requests_require_agreed_consultation on public.dom
 create trigger domain_requests_require_agreed_consultation
   before insert or update of kind, website_request_id on public.domain_requests
   for each row execute function public.domain_requests_require_agreed_consultation();
+
+-- 10) Older RPCs that hard-coded "open" as ('submitted', 'in_review') now use the shared definition.
+--     Bodies are copied unchanged from their latest definitions except that one predicate:
+--       cancel_own_website_request    20260404100000 (service_role only since 20260924210000)
+--       acknowledge_website_transfer  20260404100000 (service_role only since 20261003220000)
+--       claim_outreach_site           20260927050500
+--     search_path stays '' (20261013090000). create or replace keeps owners and grants.
+create or replace function public.cancel_own_website_request()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  n int;
+begin
+  update public.website_requests
+  set status = 'closed', updated_at = now()
+  where user_id = auth.uid()
+    and public.website_request_is_open(status);
+  get diagnostics n = row_count;
+  if n = 0 then
+    raise exception using
+      message = 'No open request to close.',
+      errcode = 'P0001';
+  end if;
+end;
+$$;
+
+create or replace function public.acknowledge_website_transfer()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  n int;
+begin
+  update public.profiles
+  set
+    website_transfer_acknowledged_at = now(),
+    updated_at = now()
+  where id = auth.uid()
+    and website_transfer_notes is not null
+    and length(trim(website_transfer_notes)) > 0
+    and website_value_target_cents is not null
+    and website_value_target_cents > 0
+    and coalesce(cumulative_website_value_paid_cents, 0) >= website_value_target_cents;
+  get diagnostics n = row_count;
+  if n = 0 then
+    raise exception using
+      message = 'Cannot confirm handoff: website value must be reached and transfer notes must be set.',
+      errcode = 'P0001';
+  end if;
+
+  update public.website_requests
+  set status = 'closed', updated_at = now()
+  where user_id = auth.uid()
+    and public.website_request_is_open(status);
+end;
+$$;
+
+create or replace function public.claim_outreach_site(p_site_id uuid, p_user_id uuid)
+returns table (site_id uuid, website_request_id uuid, already_claimed boolean)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  s public.outreach_sites;
+  confirmed timestamptz;
+  req_id uuid;
+begin
+  if p_site_id is null or p_user_id is null then
+    raise exception using message = 'Invalid claim.', errcode = '22023';
+  end if;
+
+  select u.email_confirmed_at into confirmed from auth.users u where u.id = p_user_id;
+  if confirmed is null then
+    raise exception using message = 'Confirm your email before claiming.', errcode = 'P0001', hint = 'email_unconfirmed';
+  end if;
+
+  select * into s from public.outreach_sites where id = p_site_id for update;
+  if not found then
+    raise exception using message = 'This preview link has expired.', errcode = 'P0001', hint = 'link_invalid';
+  end if;
+
+  if s.claimed_by is not null then
+    if s.claimed_by = p_user_id then
+      select w.id into req_id from public.website_requests w
+      where w.user_id = p_user_id and w.outreach_site_id = p_site_id
+      order by w.created_at desc limit 1;
+      return query select p_site_id, req_id, true;
+      return;
+    end if;
+    raise exception using message = 'This website was already claimed.', errcode = 'P0001', hint = 'claimed_by_other';
+  end if;
+
+  update public.outreach_sites
+  set claimed_by = p_user_id, claimed_at = now(), updated_at = now()
+  where id = p_site_id
+    and claimed_by is null
+    and revoked_at is null
+    and expires_at > now();
+  if not found then
+    raise exception using message = 'This preview link has expired.', errcode = 'P0001', hint = 'link_invalid';
+  end if;
+
+  insert into public.profiles (id) values (p_user_id) on conflict (id) do nothing;
+
+  select w.id into req_id from public.website_requests w
+  where w.user_id = p_user_id and public.website_request_is_open(w.status)
+  order by w.updated_at desc limit 1
+  for update;
+
+  if req_id is null then
+    insert into public.website_requests (user_id, business_name, status, source, outreach_site_id)
+    values (p_user_id, s.business_name, 'submitted', 'outreach', p_site_id)
+    returning id into req_id;
+  else
+    update public.website_requests
+    set outreach_site_id = p_site_id, updated_at = now()
+    where id = req_id;
+  end if;
+
+  return query select p_site_id, req_id, false;
+end;
+$$;

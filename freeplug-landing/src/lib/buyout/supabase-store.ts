@@ -1,7 +1,9 @@
+import { OPEN_REQUEST_STATUSES } from '@/lib/consultation/status'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BuyoutStore } from './buyout'
 
-const OPEN_STATUSES = ['submitted', 'in_review']
+// Open = any status but closed (shared definition, lib/consultation/status.ts).
+const OPEN_STATUSES = [...OPEN_REQUEST_STATUSES]
 
 /**
  * BuyoutStore on the existing website_requests table. Pass the service-role client: the caller has

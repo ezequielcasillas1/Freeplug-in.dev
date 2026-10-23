@@ -7,8 +7,16 @@
 export const WEBSITE_REQUEST_STATUSES = ['submitted', 'in_review', 'consultation', 'agreed', 'building', 'closed'] as const
 export type WebsiteRequestStatus = (typeof WEBSITE_REQUEST_STATUSES)[number]
 
-/** Statuses that count as the customer's one open request. */
-export const OPEN_REQUEST_STATUSES = ['submitted', 'in_review', 'consultation', 'agreed', 'building'] as const
+/**
+ * THE definition of "open" (Aria's ruling, Oct 22 r2): any status other than closed. Use this
+ * constant (or isOpenRequestStatus) everywhere in TS. The SQL twin is
+ * public.website_request_is_open() in migration 20261022200000; open-status-sync.test.ts fails if
+ * they drift.
+ */
+export type OpenRequestStatus = Exclude<WebsiteRequestStatus, 'closed'>
+export const OPEN_REQUEST_STATUSES: readonly OpenRequestStatus[] = WEBSITE_REQUEST_STATUSES.filter(
+  (s): s is OpenRequestStatus => s !== 'closed'
+)
 /** Before "Looks good": the client can still pick or change a consultation path. */
 export const PRE_AGREEMENT_STATUSES = ['submitted', 'in_review', 'consultation'] as const
 
@@ -59,4 +67,14 @@ export function consultationStage(
 /** Open = any status except closed (the one-open-request-per-user set). */
 export function isOpenRequestStatus(status: string | null | undefined): boolean {
   return (OPEN_REQUEST_STATUSES as readonly string[]).includes(status ?? '')
+}
+
+/**
+ * Intake: before the consultation step starts (the request form is still editable). NOT "open";
+ * use OPEN_REQUEST_STATUSES for that.
+ */
+export const INTAKE_STATUSES = ['submitted', 'in_review'] as const
+export type IntakeStatus = (typeof INTAKE_STATUSES)[number]
+export function isIntakeStatus(status: string | null | undefined): status is IntakeStatus {
+  return (INTAKE_STATUSES as readonly string[]).includes(status ?? '')
 }

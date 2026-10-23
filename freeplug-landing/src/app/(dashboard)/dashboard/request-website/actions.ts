@@ -34,7 +34,7 @@ function issueText(t: Translate, issues: readonly { message: string }[]): string
   )
   return [...new Set(texts)].join(' ')
 }
-import { OPEN_REQUEST_STATUSES } from '@/lib/consultation/status'
+import { isIntakeStatus, isOpenRequestStatus, OPEN_REQUEST_STATUSES } from '@/lib/consultation/status'
 
 const requestSchema = z.object({
   business_name: z.string().min(1, 'errors.request.business_name.businessNameRequired').max(200),
@@ -87,7 +87,7 @@ async function saveWebsiteRequest(
     .maybeSingle()
 
   const t = await errorsT()
-  if (openRow && openRow.status !== 'submitted' && openRow.status !== 'in_review') {
+  if (openRow && !isIntakeStatus(openRow.status)) {
     return {
       error:
         'Your request is in the consultation step. Make changes from your consultation on the dashboard, or email support@freeplug-in.dev.',
@@ -301,7 +301,7 @@ export async function sendHelpChangeRequest(
     .join('\n')
 
   // Keep the open request's details and notes; start fresh notes on a new request.
-  const isOpen = latest.status === 'submitted' || latest.status === 'in_review'
+  const isOpen = isOpenRequestStatus(latest.status)
   const existingNotes = isOpen ? latest.notes?.trim() ?? '' : ''
   const notes = existingNotes ? `${existingNotes}\n\n${changeBlock}` : changeBlock
   if (notes.length > 5000) {

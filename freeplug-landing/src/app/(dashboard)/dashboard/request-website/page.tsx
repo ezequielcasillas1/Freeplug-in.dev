@@ -12,7 +12,7 @@ import { getTranslations } from 'next-intl/server'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
 import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
-import { OPEN_REQUEST_STATUSES, STATUS_LABELS, type WebsiteRequestStatus } from '@/lib/consultation/status'
+import { OPEN_REQUEST_STATUSES, STATUS_LABELS, type WebsiteRequestStatus, isIntakeStatus } from '@/lib/consultation/status'
 import { CONSULT_CARD_HEADING } from '@/lib/consultation/copy'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
@@ -49,8 +49,8 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
       .eq('user_id', user.id)
       .in('status', [...OPEN_REQUEST_STATUSES])
       .maybeSingle()
-    if (open && open.status !== 'submitted' && open.status !== 'in_review') consultationStatus = open.status
-    if (open?.status === 'submitted' || open?.status === 'in_review') {
+    if (open && !isIntakeStatus(open.status)) consultationStatus = open.status
+    if (open && isIntakeStatus(open.status)) {
       openRequestStatus = open.status
       // Pre-fill the form with the open request so saving never blanks existing details.
       defaultValues = {
