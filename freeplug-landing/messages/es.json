@@ -888,7 +888,7 @@
         "bookingSites": "¿Hacen sitios de reservas para freelancers?"
       },
       "answer": {
-        "freeplugReachesLocalBusiness": "Freeplug ayuda a negocios locales, pequeñas agencias, apps, creadores, freelancers y tiendas de un solo producto a tener sitio web, y 72 After lo construye gratis. El contacto local cubre el centro de Texas: San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+        "freeplugReachesLocalBusiness": "Freeplug ayuda a negocios locales, pequeñas agencias, apps, creadores, freelancers y tiendas de un solo producto a tener sitio web, y 72 After lo construye gratis. Ahora estamos contactando negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs, Texas. Pensamos expandirnos pronto por todo Texas y, si es posible, por todo EE. UU.",
         "yesWebsiteDevelopmentFree": "Sí. Hacer el sitio web es gratis. 72 After diseña y construye tu sitio web sin costo. Cuando tu sitio esté en línea, pagas el hosting mensual, que es obligatorio. El mantenimiento o la compra del sitio cuestan aparte solo si los pides. No hay cargos ocultos ni cobros sorpresa.",
         "hostingRequiredKeepWebsite": "El hosting es obligatorio para mantener tu sitio web en línea. Puedes cancelar cuando quieras. Tu sitio sigue en línea hasta que termine el periodo que pagaste y luego se desconecta. Si vuelves a contratar el hosting, lo recuperamos.",
         "everySiteDifferentSo": "Cada sitio es diferente, así que te daremos un tiempo estimado después de revisar tu solicitud. La mayor parte del tiempo depende de qué tan rápido recibamos los datos de tu negocio y tus aprobaciones. Te mantendremos al tanto en cada paso.",
@@ -935,13 +935,13 @@
         },
         "aboutFreeplug": "Sobre Freeplug",
         "freeplugDoes": "Qué hace <span>Freeplug</span>",
-        "freeplug72AfterWorkTogether": "Freeplug y 72 After trabajan juntos: Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
+        "freeplug72AfterWorkTogether": "Freeplug y 72 After trabajan juntos: Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Ahora contactamos negocios en el centro de Texas y pensamos expandirnos pronto por todo Texas y, si es posible, por todo EE. UU.",
         "freeplugOutreachSide": "Freeplug es la parte de contacto. Buscamos negocios, agencias, creadores y freelancers con un sitio web débil o sin sitio web y los invitamos a recibir un sitio gratis. Cuando un dueño dice que sí, 72 After crea el sitio con una plantilla sólida, sus servicios reales y páginas claras para pedir una cotización. Freeplug inicia la conversación. 72 After hace el sitio."
       },
       "cTA": {
         "freeplug72After": "Freeplug · 72 After",
         "readyFreeWebsite": "¿Quieres un sitio web gratis?",
-        "localOwnersSanMarcosKyle": "Si tienes un negocio local en San Marcos, Kyle, New Braunfels, San Antonio o Austin, pide tu sitio. ¿Estás fuera de EE. UU.? Dinos tu ciudad y revisamos la red.",
+        "localOwnersSanMarcosKyle": "Ahora estamos contactando negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs. ¿Tu ciudad no aparece? Pide tu sitio de todos modos. ¿Estás fuera de EE. UU.? Dinos tu ciudad y revisamos la red.",
         "requestFreeWebsite": "Pide un sitio web gratis",
         "freeplugFindsBusinesses72After": "Freeplug encuentra los negocios. 72 After construye los sitios."
       },
@@ -960,9 +960,9 @@
           "faq": "Preguntas frecuentes"
         },
         "freeplug": "Freeplug",
-        "freeplugHandlesOwnerOutreach72": "Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
+        "freeplugHandlesOwnerOutreach72": "Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Ahora en el centro de Texas, con planes de crecer por todo Texas y, si es posible, por EE. UU.",
         "supportFreeplugDev": "support@freeplug-in.dev",
-        "centralTexasOutsideUsVia": "San Marcos, Texas",
+        "centralTexasOutsideUsVia": "Centro de Texas",
         "headingCompany": "Empresa",
         "headingLegal": "Legal",
         "legalComingSoonTitle": "Próximamente",
@@ -1028,9 +1028,9 @@
         },
         "serviceAreas": "Zonas de servicio",
         "whereWorkTexas": "Páginas web gratis para negocios locales en el <span>centro de Texas</span>",
-        "wereFocusedCentralTexasFirst": "Empezamos por el centro de Texas: San Marcos y ciudades cercanas.",
+        "wereFocusedCentralTexasFirst": "Ahora estamos contactando negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs.",
         "stockPhoto": "{name}: foto de archivo",
-        "moreTexasCitiesCapacityGrows": "Más ciudades de Texas a medida que crezcamos. Pregúntanos si tu ciudad no aparece.",
+        "moreTexasCitiesCapacityGrows": "Pensamos expandirnos pronto por todo Texas y, si es posible, por todo EE. UU. Pregúntanos si tu ciudad no aparece.",
         "international": "Internacional",
         "beyondTexasUs": "Más allá de Texas y EE. UU.",
         "freeplugReachBusinessesOutsideUs": "Freeplug puede llegar a negocios fuera de EE. UU. a través de socios y canales de nuestra red. El alcance internacional depende del idioma, las reglas locales y la capacidad de los socios; no prometemos todos los países ni un plazo fijo. Si estás fuera de EE. UU. y quieres un sitio gratis a través de la red, empieza una solicitud y te diremos qué se puede hacer.",
