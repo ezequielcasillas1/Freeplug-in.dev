@@ -21,7 +21,7 @@
   // nodejs_compat: the Next.js Node runtime (node:crypto, Buffer, streams, net). global_fetch_strictly_public:
   // fetch() can't reach Cloudflare-internal/private addresses (OpenNext's recommended flags).
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS", "html_handling": "none" },
   // OpenNext calls itself through this binding (must match "name").
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "freeplug" }],
   // Cloudflare Images: re-encodes uploaded photos (src/lib/outreach/image-codec-cloudflare.ts)
