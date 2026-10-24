@@ -4,7 +4,7 @@ import { spanishEnabled } from '@/i18n/gate'
 import { localizedPath } from '@/i18n/routing'
 
 /** Public, indexable pages only. Always the real public domain, never a dev/preview host. */
-export const SITEMAP_PATHS = ['/', '/faq', '/signup'] as const
+export const SITEMAP_PATHS = ['/', '/faq'] as const // /signup removed during auth maintenance (Oct 24)
 
 const url = (path: string) => (path === '/' ? `${SITE_URL_FALLBACK}/` : `${SITE_URL_FALLBACK}${path}`)
 

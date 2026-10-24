@@ -7,7 +7,6 @@ describe('sitemap and robots', () => {
     expect(sitemap().map((e) => e.url)).toEqual([
       'https://freeplug-in.dev/',
       'https://freeplug-in.dev/faq',
-      'https://freeplug-in.dev/signup',
     ])
   })
 
@@ -18,8 +17,6 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/es',
       'https://freeplug-in.dev/faq',
       'https://freeplug-in.dev/es/faq',
-      'https://freeplug-in.dev/signup',
-      'https://freeplug-in.dev/es/signup',
     ])
     expect(s[3].alternates?.languages).toEqual({
       en: 'https://freeplug-in.dev/faq',
@@ -27,6 +24,11 @@ describe('sitemap and robots', () => {
       'x-default': 'https://freeplug-in.dev/faq',
     })
     expect(buildSitemap('off')).toEqual(sitemap())
+  })
+
+  it('never lists signup or any login route (auth maintenance)', () => {
+    const urls = buildSitemap('on').map((e) => e.url).join(' ')
+    expect(urls).not.toMatch(/signup|login/)
   })
 
   it('keeps private areas out and points to the sitemap', () => {
