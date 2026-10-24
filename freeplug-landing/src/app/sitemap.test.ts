@@ -7,6 +7,7 @@ describe('sitemap and robots', () => {
     expect(sitemap().map((e) => e.url)).toEqual([
       'https://freeplug-in.dev/',
       'https://freeplug-in.dev/faq',
+      'https://freeplug-in.dev/privacy',
     ])
   })
 
@@ -17,6 +18,8 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/es',
       'https://freeplug-in.dev/faq',
       'https://freeplug-in.dev/es/faq',
+      'https://freeplug-in.dev/privacy',
+      'https://freeplug-in.dev/es/privacy',
     ])
     expect(s[3].alternates?.languages).toEqual({
       en: 'https://freeplug-in.dev/faq',

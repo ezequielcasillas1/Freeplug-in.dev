@@ -22,7 +22,7 @@ const footerLinks = {
   ],
   legal: [
     { label: 'termsConditions', href: null },
-    { label: 'privacyPolicy', href: null },
+    { label: 'privacyPolicy', href: '/privacy' },
     { label: 'cookiePolicy', href: null },
   ],
   contact: [
@@ -122,7 +122,7 @@ export function Footer() {
                 <li key={link.label}>
                   {link.href ? (
                     <a
-                      href={link.href}
+                      href={publicHref(link.href, locale)}
                       className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1 group"
                     >
                       {t(`label.${link.label}`)}

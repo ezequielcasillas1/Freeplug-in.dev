@@ -12,7 +12,7 @@ import { routing } from '@/i18n/routing'
 import { ogLocale } from '@/i18n/seo'
 
 /**
- * Public, indexable pages: '/', '/faq', '/signup', '/request-website' (English, unprefixed via the
+ * Public, indexable pages: '/', '/faq', '/privacy', '/signup', '/request-website' (English, unprefixed via the
  * proxy rewrite) and their /es twins when the Spanish gate is ON. Gate OFF -> only 'en' exists and
  * /es is a 404 (dynamicParams = false). Pages stay statically rendered (setRequestLocale).
  */

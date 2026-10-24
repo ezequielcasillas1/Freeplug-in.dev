@@ -11,7 +11,7 @@ const handleI18nRouting = createIntlMiddleware(routing)
 /**
  * Order (Spanish build, card §5 C2):
  *   1. 413 guard (unchanged, first: an oversized server-action body never reaches anything else).
- *   2. next-intl, ONLY for the public localized pages ('/', '/faq', '/signup', '/request-website'
+ *   2. next-intl, ONLY for the public localized pages ('/', '/faq', '/privacy', '/signup', '/request-website'
  *      and their /es twins; /en/... redirects to the unprefixed URL). It rewrites '/faq' to the
  *      internal '/en/faq'. App pages (/dashboard, /login, /claim, /auth, /admin, /api) never pass
  *      through it, so Supabase redirect URLs and the Auth allow-list do not change.

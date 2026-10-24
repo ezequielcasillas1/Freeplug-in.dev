@@ -1,0 +1,46 @@
+/** Privacy policy (Oct 24 2026): renders in EN and ES, and never names a vendor brand. */
+import { renderToStaticMarkup } from 'react-dom/server'
+import { describe, expect, it, vi } from 'vitest'
+import en from '../../../../messages/en.json'
+import es from '../../../../messages/es.json'
+import { buildSitemap } from '@/app/sitemap'
+
+const CATALOGS = { en, es } as Record<string, unknown>
+const get = (obj: unknown, path: string) => path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], obj)
+
+vi.mock('next-intl/server', () => ({
+  setRequestLocale: () => {},
+  getTranslations: async ({ locale, namespace }: { locale: string; namespace: string }) => {
+    const base = get(CATALOGS[locale], namespace)
+    const t = (k: string) => get(base, k) as string
+    t.raw = (k: string) => get(base, k)
+    return t
+  },
+}))
+vi.mock('@/features/landing/components/Navigation', () => ({ Navigation: () => null }))
+vi.mock('@/features/landing/components/Footer', () => ({ Footer: () => null }))
+vi.mock('@/components/i18n/TranslationNotice', () => ({ TranslationNotice: () => null }))
+
+const BRANDS = /cloudflare|supabase|stripe|resend|turnstile|cal\.com|calcom|vercel|namecheap|hetzner|thumbtack|gmail|openai|anthropic/i
+
+describe('privacy policy page', () => {
+  for (const locale of ['en', 'es'] as const) {
+    it(`renders in ${locale} with the address, contact and every section, naming no vendor brands`, async () => {
+      const { default: PrivacyPage } = await import('./page')
+      const html = renderToStaticMarkup(await PrivacyPage({ params: Promise.resolve({ locale }) }))
+      expect(html).toContain('2380 Staples Road, Unit 3108, San Marcos, TX 78666')
+      expect(html).toContain('support@freeplug-in.dev')
+      expect(html).toMatch(/72 After/)
+      expect(html).toMatch(locale === 'en' ? /October 24, 2026/ : /24 de octubre de 2026/)
+      expect(html.match(/<h2/g)?.length).toBe(11)
+      expect(html).not.toMatch(BRANDS)
+      expect(JSON.stringify(get(CATALOGS[locale], 'public.privacy'))).not.toMatch(BRANDS)
+    })
+  }
+
+  it('is in the sitemap in both languages', () => {
+    const urls = buildSitemap('on').map((e) => e.url)
+    expect(urls).toContain('https://freeplug-in.dev/privacy')
+    expect(urls).toContain('https://freeplug-in.dev/es/privacy')
+  })
+})

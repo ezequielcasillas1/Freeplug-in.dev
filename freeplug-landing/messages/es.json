@@ -914,7 +914,9 @@
       "previewTitle": "Vista previa de tu sitio web | Freeplug",
       "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
-      "faqDescription": "Respuestas sobre el sitio web gratis de Freeplug, lo que pagas después del lanzamiento, los tiempos y cómo pedir tu sitio."
+      "faqDescription": "Respuestas sobre el sitio web gratis de Freeplug, lo que pagas después del lanzamiento, los tiempos y cómo pedir tu sitio.",
+      "privacyTitle": "Aviso de privacidad | Freeplug",
+      "privacyDescription": "Cómo Freeplug recopila, usa y protege tu información, con quién la compartimos, las cookies y cómo ver, corregir o borrar tus datos."
     },
     "notFound": {
       "heading": "Página no encontrada",
@@ -1140,6 +1142,68 @@
         },
         "oneTime": "pago único",
         "note": "Es lo máximo que pagarías. La compra incluye solo los archivos de tu sitio web."
+      }
+    },
+    "privacy": {
+      "badge": "Legal",
+      "title": "Aviso de privacidad",
+      "updated": "Última actualización: 24 de octubre de 2026",
+      "intro": "Este aviso explica qué información recopila Freeplug, para qué la usamos y qué opciones tienes. Lo escribimos en lenguaje sencillo. Si algo no queda claro, escríbenos a support@freeplug-in.dev.",
+      "sections": {
+        "whoWeAre": {
+          "h": "Quiénes somos",
+          "p1": "Freeplug es un servicio de 72 After, con domicilio en 2380 Staples Road, Unit 3108, San Marcos, TX 78666, Estados Unidos. Creamos y alojamos sitios web para negocios pequeños, creadores y freelancers, principalmente en Texas y el resto de Estados Unidos. En este aviso, \"nosotros\" significa Freeplug y 72 After."
+        },
+        "whatWeCollect": {
+          "h": "Qué información recopilamos",
+          "p1": "Datos de tu cuenta: tu correo electrónico y una contraseña cuando creas una cuenta, o tu nombre y correo de Google si eliges iniciar sesión con Google.",
+          "p2": "Detalles de tu solicitud y consulta: el nombre de tu negocio, tu teléfono de contacto, el enlace a tu perfil de negocio en Google si lo compartes, tus notas y tus respuestas sobre páginas, estilo, contenido, dominio y plan.",
+          "p3": "Datos del negocio para tu sitio: por ejemplo tu teléfono, dirección, horario, zona de servicio, servicios, un correo para cotizaciones y las fotos que subas. Antes de contactar a un negocio, podemos tomar este tipo de datos de listados públicos de negocios para preparar un borrador del sitio, y el dueño puede confirmarlos, cambiarlos o quitarlos.",
+          "p4": "Datos de pago: cuando pagas, nuestro procesador de pagos recopila los datos de tu tarjeta y de facturación. Nunca vemos ni guardamos el número completo de tu tarjeta. Guardamos un registro de tu plan, tus pagos y el avance de tu compra.",
+          "p5": "Mensajes: los correos y solicitudes de cambios que nos envías, y los correos que te enviamos sobre tu cuenta y tu sitio.",
+          "p6": "Datos técnicos: información básica que recibe cualquier sitio web, como la dirección IP, el tipo de navegador y las páginas que abres. La usamos para seguridad, protección contra spam y para resolver problemas."
+        },
+        "howWeUse": {
+          "h": "Para qué la usamos",
+          "p1": "Para crear, alojar y actualizar tu sitio web; manejar tu cuenta, tus pagos y tu compra; enviarte correos sobre tu cuenta, el servicio y la facturación; responder tus preguntas; mantener el sitio seguro y bloquear spam y abusos; y cumplir con obligaciones legales y fiscales.",
+          "p2": "Los correos que enviamos a negocios incluyen una forma de darse de baja, y la respetamos."
+        },
+        "howWeShare": {
+          "h": "Con quién la compartimos",
+          "p1": "No vendemos tu información personal ni la compartimos para publicidad.",
+          "p2": "Solo compartimos información con proveedores que nos ayudan a operar Freeplug, y solo lo que necesitan para su trabajo: un proveedor de alojamiento web y seguridad, un proveedor de base de datos e inicio de sesión, un procesador de pagos, un proveedor de envío de correos, un servicio de protección contra spam y bots, un proveedor de citas (si reservas una sesión en vivo) y Google, si eliges iniciar sesión con Google.",
+          "p3": "También podemos compartir información si la ley lo exige, para proteger nuestros derechos o la seguridad de los usuarios, o como parte de una venta o fusión de nuestro negocio."
+        },
+        "cookies": {
+          "h": "Cookies",
+          "p1": "Usamos pocas cookies, solo las que el sitio necesita para funcionar: cookies de inicio de sesión que mantienen tu sesión abierta, cookies de seguridad de corta duración para restablecer contraseñas y ver vistas previas de sitios, y una cookie de idioma que recuerda si elegiste inglés o español.",
+          "p2": "Nuestra protección contra spam y bots puede usar sus propias cookies o tecnología similar para distinguir personas de bots.",
+          "p3": "No usamos cookies de publicidad ni rastreadores de analítica de terceros."
+        },
+        "retention": {
+          "h": "Cuánto tiempo la guardamos",
+          "p1": "Guardamos la información de tu cuenta y tu sitio mientras tu cuenta esté activa o alojemos tu sitio, y un tiempo razonable después para que puedas regresar. Los registros de pagos e impuestos se guardan el tiempo que exige la ley. Los registros de seguridad y protección contra spam se guardan poco tiempo. Puedes pedirnos que borremos tu información antes (ver Tus derechos)."
+        },
+        "security": {
+          "h": "Seguridad",
+          "p1": "Usamos conexiones cifradas (HTTPS), controles de acceso y cookies firmadas de corta duración, y quitamos los datos ocultos de ubicación de las fotos que subes. Ningún sistema es perfectamente seguro, pero trabajamos para proteger tu información y corregir problemas rápido."
+        },
+        "yourRights": {
+          "h": "Tus derechos",
+          "p1": "Puedes pedirnos ver la información personal que tenemos sobre ti, corregirla o borrarla. Escribe a support@freeplug-in.dev desde el correo de tu cuenta y dinos qué necesitas. Te responderemos en un tiempo razonable. Borrar tu cuenta puede desconectar tu sitio web."
+        },
+        "children": {
+          "h": "Menores de edad",
+          "p1": "Freeplug no es para menores de 13 años, y no recopilamos a sabiendas información de ellos. Si crees que un menor nos dio información, escríbenos y la borraremos."
+        },
+        "changes": {
+          "h": "Cambios a este aviso",
+          "p1": "Si cambiamos este aviso, lo actualizaremos en esta página y cambiaremos la fecha de arriba. Si el cambio es importante, avisaremos por correo a quienes tengan cuenta."
+        },
+        "contact": {
+          "h": "Contacto",
+          "p1": "Freeplug (un servicio de 72 After), 2380 Staples Road, Unit 3108, San Marcos, TX 78666. Correo: support@freeplug-in.dev."
+        }
       }
     }
   },

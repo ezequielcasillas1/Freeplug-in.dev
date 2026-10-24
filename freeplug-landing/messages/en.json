@@ -914,7 +914,9 @@
       "previewTitle": "Your website preview | Freeplug",
       "requestWebsiteTitle": "Request a website | Freeplug",
       "faqTitle": "FAQ: How Freeplug Works | Freeplug",
-      "faqDescription": "Answers about Freeplug's free website build, what you pay for after launch, timelines, and how to request your site."
+      "faqDescription": "Answers about Freeplug's free website build, what you pay for after launch, timelines, and how to request your site.",
+      "privacyTitle": "Privacy Policy | Freeplug",
+      "privacyDescription": "How Freeplug collects, uses and protects your information, what we share and with whom, cookies, and how to access, correct or delete your data."
     },
     "notFound": {
       "heading": "Page not found",
@@ -1140,6 +1142,68 @@
         },
         "oneTime": "one time",
         "note": "That’s the most you’d ever pay. The buyout covers your website files only."
+      }
+    },
+    "privacy": {
+      "badge": "Legal",
+      "title": "Privacy Policy",
+      "updated": "Last updated: October 24, 2026",
+      "intro": "This policy explains what information Freeplug collects, why we collect it, and the choices you have. We wrote it in plain English. If anything is unclear, email us at support@freeplug-in.dev.",
+      "sections": {
+        "whoWeAre": {
+          "h": "Who we are",
+          "p1": "Freeplug is a service of 72 After, based at 2380 Staples Road, Unit 3108, San Marcos, TX 78666, United States. We build and host websites for small businesses, creators and freelancers, mainly in Texas and the rest of the United States. In this policy, \"we\" and \"us\" mean Freeplug and 72 After."
+        },
+        "whatWeCollect": {
+          "h": "What we collect",
+          "p1": "Account information: your email address and a password when you create an account, or your name and email address from Google if you choose to sign in with Google.",
+          "p2": "Website request and consultation details: your business name, contact phone number, your Google Business Profile link if you share it, notes, and your answers about pages, look, content, domain and plan.",
+          "p3": "Business details for your site: things like your phone number, address, hours, service area, services, a quote email address, and photos you upload. Before we reach out to a business, we may gather this kind of information from public business listings to build a draft site, and the owner can confirm, change or remove it.",
+          "p4": "Payment information: when you pay, our payment processor collects your card details and billing information. We never see or store your full card number. We keep a record of your plan, payments and buyout progress.",
+          "p5": "Messages: emails and change requests you send us, and emails we send you about your account and site.",
+          "p6": "Technical information: basic request data that every website receives, such as IP address, browser type and the pages you open. We use it for security, spam protection and fixing problems."
+        },
+        "howWeUse": {
+          "h": "How we use it",
+          "p1": "To build, host and update your website; to run your account, billing and buyout; to send you account, service and billing emails; to answer your questions; to keep the site secure and block spam and abuse; and to meet legal and tax obligations.",
+          "p2": "Business outreach emails include a way to unsubscribe, and we honor it."
+        },
+        "howWeShare": {
+          "h": "How we share it",
+          "p1": "We do not sell your personal information, and we do not share it for advertising.",
+          "p2": "We share information only with service providers that help us run Freeplug, and only what they need to do their job: a website hosting and security provider, a database and sign-in provider, a payment processor, an email delivery provider, a spam and bot protection service, a scheduling provider (if you book a live session), and Google, if you choose to sign in with Google.",
+          "p3": "We may also share information if the law requires it, to protect our rights or users' safety, or as part of a sale or merger of our business."
+        },
+        "cookies": {
+          "h": "Cookies",
+          "p1": "We use a small number of cookies that the site needs to work: sign-in cookies that keep you logged in, short-lived security cookies for password resets and site previews, and a language cookie that remembers whether you chose English or Spanish.",
+          "p2": "Our spam and bot protection check may use its own cookies or similar technology to tell people from bots.",
+          "p3": "We do not use advertising cookies or third-party analytics trackers."
+        },
+        "retention": {
+          "h": "How long we keep it",
+          "p1": "We keep account and website information for as long as your account is active or we host your site, and for a reasonable time afterwards so you can come back. Payment and tax records are kept as long as the law requires. Security and spam-protection records are kept for a short time. You can ask us to delete your information sooner (see Your rights)."
+        },
+        "security": {
+          "h": "Security",
+          "p1": "We use encrypted connections (HTTPS), access controls, and signed, short-lived cookies, and we remove hidden location data from uploaded photos. No system is perfectly secure, but we work to protect your information and fix problems quickly."
+        },
+        "yourRights": {
+          "h": "Your rights",
+          "p1": "You can ask to see the personal information we have about you, correct it, or delete it. Email support@freeplug-in.dev from the address on your account and tell us what you need. We will answer within a reasonable time. Deleting your account may take your website offline."
+        },
+        "children": {
+          "h": "Children",
+          "p1": "Freeplug is not for children under 13, and we do not knowingly collect information from them. If you believe a child has given us information, email us and we will delete it."
+        },
+        "changes": {
+          "h": "Changes to this policy",
+          "p1": "If we change this policy, we will update it on this page and change the date at the top. If a change is significant, we will let account holders know by email."
+        },
+        "contact": {
+          "h": "Contact us",
+          "p1": "Freeplug (a 72 After service), 2380 Staples Road, Unit 3108, San Marcos, TX 78666. Email: support@freeplug-in.dev."
+        }
       }
     }
   },

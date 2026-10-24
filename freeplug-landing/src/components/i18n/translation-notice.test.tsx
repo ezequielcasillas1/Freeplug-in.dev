@@ -130,7 +130,7 @@ describe('legal line: NEVER on checkout', () => {
 })
 
 describe('legal line: Terms and Privacy (once Spanish versions exist)', () => {
-  it('any terms/privacy page renders the notice (none exist yet: both are "coming soon")', () => {
+  it('any terms/privacy page renders the notice (privacy exists since Oct 24; terms still "coming soon")', () => {
     const pages: string[] = []
     const walk = (dir: string) => {
       for (const name of readdirSync(dir)) {
