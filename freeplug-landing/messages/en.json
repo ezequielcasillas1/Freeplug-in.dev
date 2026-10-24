@@ -986,7 +986,7 @@
         "outreachHubFreeplugDevBuilds": "Outreach hub = freeplug-in.dev · Builds = 72 After"
       },
       "hostingPlans": {
-        "stripeCheckout": "Stripe checkout",
+        "stripeCheckout": "Secure checkout",
         "hostingMaintenance": "Hosting & maintenance"
       },
       "navigation": {
@@ -1053,24 +1053,24 @@
       },
       "techStack": {
         "name": {
-          "envatoTemplate": "Envato template",
-          "htmlCss": "HTML & CSS",
-          "bootstrap5": "Bootstrap 5",
-          "cloudflare": "Cloudflare",
-          "cloudflareTurnstile": "Cloudflare Turnstile",
-          "resend": "Resend"
+          "envatoTemplate": "Professional design",
+          "htmlCss": "Clean, fast code",
+          "bootstrap5": "Looks great on phones",
+          "cloudflare": "Fast, secure hosting",
+          "cloudflareTurnstile": "Spam and bot protection",
+          "resend": "Reliable email delivery"
         },
         "description": {
-          "premiumTemplatesDevelopersAccess": "Premium templates our developers can access, enhanced with your details.",
+          "premiumTemplatesDevelopersAccess": "A polished, professional design, tailored with your details.",
           "plainLightweightPagesLoad": "Plain, lightweight pages that load quickly.",
           "layoutFitsPhonesTablets": "A layout that fits phones, tablets and computers.",
-          "hostsSiteProvidesSsl": "Hosts your site and provides the SSL certificate for https.",
+          "hostsSiteProvidesSsl": "Fast hosting with a secure https address included.",
           "filtersOutSpamBots": "Filters out spam bots on your quote form, without picture puzzles.",
           "emailsEachQuoteRequest": "Emails each quote request to you.",
-          "lightweightPagesServedFrom": "Lightweight pages served from Cloudflare's network.",
+          "lightweightPagesServedFrom": "Lightweight pages served from a fast global network.",
           "responsiveLayoutAdjustsPhones": "A responsive layout that adjusts to phones, tablets and computers.",
           "clearPageTitlesDescriptions": "Clear page titles, descriptions and business details that search engines can read.",
-          "httpsEveryPageThrough": "HTTPS on every page through Cloudflare's SSL."
+          "httpsEveryPageThrough": "HTTPS on every page, with the security certificate included."
         },
         "title": {
           "fastLoading": "Fast Loading",
@@ -1078,8 +1078,8 @@
           "seoBasicsIncluded": "SEO Basics Included",
           "secureConnection": "Secure Connection"
         },
-        "ourTechnology": "Our Technology",
-        "builtProvenTools": "Built On <span>Proven Tools</span>",
+        "ourTechnology": "What you get",
+        "builtProvenTools": "Built to <span>work for you</span>",
         "everyLocalBusinessSiteBuild": "Every site we build uses the same setup: lightweight pages, a layout that works on phones, a quote form that filters out spam, and a secure https address.",
         "performanceMatters": "Performance That <span>Matters</span>",
         "sitesBuiltMobileFriendlyReasonably": "Sites are built to be mobile-friendly and reasonably fast. We don't invent uptime or score guarantees.",

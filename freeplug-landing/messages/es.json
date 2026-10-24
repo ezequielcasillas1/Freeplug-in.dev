@@ -986,7 +986,7 @@
         "outreachHubFreeplugDevBuilds": "Contacto = freeplug-in.dev · Construcción = 72 After"
       },
       "hostingPlans": {
-        "stripeCheckout": "Pago con Stripe",
+        "stripeCheckout": "Pago seguro",
         "hostingMaintenance": "Hosting y mantenimiento"
       },
       "navigation": {
@@ -1053,24 +1053,24 @@
       },
       "techStack": {
         "name": {
-          "envatoTemplate": "Plantilla de Envato",
-          "htmlCss": "HTML y CSS",
-          "bootstrap5": "Bootstrap 5",
-          "cloudflare": "Cloudflare",
-          "cloudflareTurnstile": "Cloudflare Turnstile",
-          "resend": "Resend"
+          "envatoTemplate": "Diseño profesional",
+          "htmlCss": "Código limpio y rápido",
+          "bootstrap5": "Se ve muy bien en celulares",
+          "cloudflare": "Hosting rápido y seguro",
+          "cloudflareTurnstile": "Protección contra spam y bots",
+          "resend": "Correos que sí llegan"
         },
         "description": {
-          "premiumTemplatesDevelopersAccess": "Plantillas premium a las que tienen acceso nuestros desarrolladores, adaptadas con tus datos.",
+          "premiumTemplatesDevelopersAccess": "Un diseño pulido y profesional, adaptado con tus datos.",
           "plainLightweightPagesLoad": "Páginas simples y ligeras que cargan rápido.",
           "layoutFitsPhonesTablets": "Un diseño que se adapta a celulares, tabletas y computadoras.",
-          "hostsSiteProvidesSsl": "Aloja tu sitio y da el certificado SSL para https.",
+          "hostsSiteProvidesSsl": "Hosting rápido con una dirección https segura incluida.",
           "filtersOutSpamBots": "Filtra los bots de spam en tu formulario de cotización, sin rompecabezas de imágenes.",
           "emailsEachQuoteRequest": "Te envía por correo cada solicitud de cotización.",
-          "lightweightPagesServedFrom": "Páginas ligeras servidas desde la red de Cloudflare.",
+          "lightweightPagesServedFrom": "Páginas ligeras servidas desde una red global rápida.",
           "responsiveLayoutAdjustsPhones": "Un diseño adaptable a celulares, tabletas y computadoras.",
           "clearPageTitlesDescriptions": "Títulos de página, descripciones y datos del negocio claros que los buscadores pueden leer.",
-          "httpsEveryPageThrough": "HTTPS en todas las páginas con el SSL de Cloudflare."
+          "httpsEveryPageThrough": "HTTPS en todas las páginas, con el certificado de seguridad incluido."
         },
         "title": {
           "fastLoading": "Carga rápida",
@@ -1078,8 +1078,8 @@
           "seoBasicsIncluded": "SEO básico incluido",
           "secureConnection": "Conexión segura"
         },
-        "ourTechnology": "Nuestra tecnología",
-        "builtProvenTools": "Hecho con <span>herramientas probadas</span>",
+        "ourTechnology": "Lo que recibes",
+        "builtProvenTools": "Hecho para <span>trabajar para ti</span>",
         "everyLocalBusinessSiteBuild": "Cada sitio que construimos usa la misma base: páginas ligeras, un diseño que funciona en celulares, un formulario de cotización que filtra el spam y una dirección https segura.",
         "performanceMatters": "Rendimiento que <span>importa</span>",
         "sitesBuiltMobileFriendlyReasonably": "Los sitios están hechos para verse bien en celular y ser razonablemente rápidos. No inventamos garantías de disponibilidad ni de puntajes.",
