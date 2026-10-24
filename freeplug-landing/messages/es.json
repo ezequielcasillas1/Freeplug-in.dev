@@ -884,7 +884,7 @@
         "monthlyPlanIncludes": "¿Qué incluye el plan mensual?",
         "howBuyoutWorks": "¿Cómo funciona la compra?",
         "ownDomain": "¿El dominio es mío?",
-        "spanishSite": "¿Pueden hacer mi sitio en español?",
+        "spanishSite": "¿Pueden hacer mi sitio web para clientes que hablan español?",
         "bookingSites": "¿Hacen sitios de reservas para freelancers?"
       },
       "answer": {
@@ -894,7 +894,7 @@
         "everySiteDifferentSo": "Cada sitio es diferente, así que te daremos un tiempo estimado después de revisar tu solicitud. La mayor parte del tiempo depende de qué tan rápido recibamos los datos de tu negocio y tus aprobaciones. Te mantendremos al tanto en cada paso.",
         "createAccountFillOut": "Crea una cuenta y llena el formulario de solicitud de sitio web. Cuéntanos sobre tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud. Cuando se apruebe, te contactaremos para hablar de tu proyecto y empezar el diseño.",
         "ownDomain": "Mientras estés en un plan mensual, tu dominio está registrado a nombre de Freeplug. Cuando completes la compra, puedes pasarlo a tu nombre o dejarlo como está. Si compras tu propio dominio a tu nombre, recibes un 20% de descuento en la compra.",
-        "spanishSite": "Freeplug trabaja en inglés y en español. Dinos en tu solicitud que quieres tu sitio en español y te confirmamos qué es posible para tu proyecto.",
+        "spanishSite": "Dinos en tu solicitud en qué idioma quieres los textos de tu sitio y te confirmamos qué es posible para tu proyecto antes de empezar.",
         "bookingSites": "Sí. Los sitios de reservas para freelancers son una de las cosas que hacemos: tus clientes ven tus servicios y reservan una hora contigo. Hacerlo es gratis, y el hosting mensual lo mantiene en línea."
       },
       "helpCenter": "Centro de ayuda",

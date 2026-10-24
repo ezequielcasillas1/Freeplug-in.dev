@@ -78,7 +78,7 @@ describe('titles (G2)', () => {
     ['src/app/(dashboard)/dashboard/photos/page.tsx', 'dashboard.meta.photosTitle'],
     ['src/app/(dashboard)/dashboard/website/page.tsx', 'dashboard.meta.websiteTitle'],
   ])('%s sets its own "… | Freeplug" title from en.json (%s)', (rel, key) => {
-    expect(enValue(key)).toMatch(/^[^|]+ \| Freeplug$/)
+    expect(enValue(key)).toMatch(/^[^|]+( \| [^|]+)* \| Freeplug$/) // home title has an extra segment (SEO, Oct 24)
     const leaf = key.split('.').pop()!
     expect(read(rel)).toMatch(new RegExp(`'${leaf}'|${key.replace(/\./g, '\\.')}`))
   })
