@@ -908,9 +908,9 @@
       "siteTitle": "Free Website Outreach | Freeplug",
       "siteDescription": "Get a free website: small business sites, landing pages, booking sites, simple SaaS apps, one-product stores and agency sites. Built by 72 After in Texas.",
       "ogTitle": "Get a Website for Free | Small Business Sites | Freeplug",
-      "ogDescription": "Get a free website for your small business, then pay monthly or buy out your pages with no monthly fee. Landing pages, booking sites and stores too.",
+      "ogDescription": "Get a free website for your small business. Pay monthly, or buy your site files once. Landing pages, booking sites and stores too.",
       "homeTitle": "Get a Website for Free | Small Business Sites | Freeplug",
-      "homeDescription": "Get a free website for your small business, then pay monthly or buy out your pages with no monthly fee. Landing pages, booking sites and stores too.",
+      "homeDescription": "Get a free website for your small business. Pay monthly, or buy your site files once. Landing pages, booking sites and stores too.",
       "previewTitle": "Your website preview | Freeplug",
       "requestWebsiteTitle": "Request a website | Freeplug",
       "faqTitle": "FAQ: How Freeplug Works | Freeplug",
@@ -943,7 +943,7 @@
       "cTA": {
         "freeplug72After": "Freeplug · 72 After",
         "readyFreeWebsite": "Ready for a free website?",
-        "localOwnersSanMarcosKyle": "We're currently reaching out to businesses in San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley and Dripping Springs. Not on the list? Request a site anyway. Outside the US? Tell us your city and we'll check the network.",
+        "localOwnersSanMarcosKyle": "We're currently reaching out to businesses in San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley and Dripping Springs. Not on the list? Request a site anyway.",
         "requestFreeWebsite": "Request a free website",
         "freeplugFindsBusinesses72After": "Freeplug finds the businesses. 72 After builds the sites."
       },
@@ -1131,14 +1131,14 @@
       },
       "buyoutTiers": {
         "eyebrow": "Buyout",
-        "heading": "Buy out your pages, <span>no monthly fee</span>",
+        "heading": "Buy out your pages, <span>own your files</span>",
         "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
         "tier": {
           "quick": "Up to 5 pages",
           "up_to_7": "Up to 7 pages",
           "up_to_11": "Up to 11 pages",
           "up_to_15": "12 to 15 pages",
-          "unlimited": "16+ pages (unlimited)"
+          "unlimited": "Unlimited: 16 or more pages"
         },
         "oneTime": "one time",
         "note": "That’s the most you’d ever pay. The buyout covers your website files only."

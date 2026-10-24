@@ -350,7 +350,7 @@
     "websiteGoesOfflineEndPaid": "Tu sitio web se desconecta al final del periodo que pagaste.",
     "searchEnginesMayDropWebsite": "Los buscadores pueden dejar de mostrar tu sitio si pasa mucho tiempo fuera de línea.",
     "whileItsOfflineCustomersCant": "Mientras esté fuera de línea, tus clientes no podrán encontrarte ahí.",
-    "websiteSavedBringBackSigning": "Tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting.",
+    "websiteSavedBringBackSigning": "Tu sitio web queda guardado y puedes reactivarlo si vuelves a contratar el hosting.",
     "cancelSubscription": "Cancela tu suscripción",
     "changedMindLater": "¿Cambiaste de opinión?",
     "cancelComeBackSignUp": "Si cancelas, puedes volver. Contrata el hosting otra vez y recuperamos tu sitio web.",
@@ -370,11 +370,11 @@
       "withTip": "{plan} + {addons} en complementos + {tip} de propina = {total} al mes",
       "noTip": "{plan} + {addons} en complementos = {total} al mes"
     },
-    "accessWarning": "Si cancelas, tu sitio web sigue en línea hasta el {date} y después se desconecta. Puedes recuperarlo si vuelves a contratar el hosting.",
-    "resumeUntilText": "Puedes reanudar tu plan hasta el {date}. Después de esa fecha, tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting.",
+    "accessWarning": "Si cancelas, tu sitio web sigue en línea hasta el {date} y después se desconecta. Puedes reactivarlo si vuelves a contratar el hosting.",
+    "resumeUntilText": "Puedes reanudar tu plan hasta el {date}. Después de esa fecha, tu sitio web queda guardado y puedes reactivarlo si vuelves a contratar el hosting.",
     "resumeHeading": "¿Quieres reanudar?",
     "offlineHeading": "Recupera tu sitio web",
-    "offlineSavedText": "Tu sitio web queda guardado y puedes recuperarlo si vuelves a contratar el hosting.",
+    "offlineSavedText": "Tu sitio web queda guardado y puedes reactivarlo si vuelves a contratar el hosting.",
     "resumeRemovalOwedStatus": "Tu plan está activo de nuevo. Todavía estamos desactivando {name}. Si se cobra antes de terminar, te lo reembolsamos."
   },
   "help": {
@@ -895,7 +895,7 @@
         "createAccountFillOut": "Crea una cuenta y llena el formulario de solicitud de sitio web. Cuéntanos sobre tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud. Cuando se apruebe, te contactaremos para hablar de tu proyecto y empezar el diseño.",
         "ownDomain": "Mientras estés en un plan mensual, tu dominio está registrado a nombre de Freeplug. Cuando completes la compra, puedes pasarlo a tu nombre o dejarlo como está. Si compras tu propio dominio a tu nombre, recibes un 20% de descuento en la compra.",
         "spanishSite": "Dinos en tu solicitud en qué idioma quieres los textos de tu sitio y te confirmamos qué es posible para tu proyecto antes de empezar.",
-        "bookingSites": "Sí. Los sitios de reservas para freelancers son una de las cosas que hacemos: tus clientes ven tus servicios y reservan una hora contigo. Hacerlo es gratis, y el hosting mensual lo mantiene en línea."
+        "bookingSites": "Sí. Los sitios de reservas para freelancers son una de las cosas que hacemos: tus clientes ven tus servicios y reservan un horario contigo. Hacerlo es gratis, y el hosting mensual lo mantiene en línea."
       },
       "helpCenter": "Centro de ayuda",
       "frequentlyAskedQuestions": "Preguntas <span>frecuentes</span>",
@@ -908,9 +908,9 @@
       "siteTitle": "Sitios web gratis para negocios | Freeplug",
       "siteDescription": "Tu sitio web gratis: páginas para negocios, landing pages, sitios de reservas, apps SaaS sencillas, tiendas y agencias. Hecho por 72 After en Texas.",
       "ogTitle": "Página Web Gratis para tu Negocio | Freeplug",
-      "ogDescription": "Crea tu página web gratis para tu negocio local. Paga mensual o compra tus páginas sin cuota mensual. Landing pages, reservas y tiendas.",
+      "ogDescription": "Tu página web gratis para tu negocio local. Paga cada mes o compra los archivos de tu sitio con un pago único. Landing pages, reservas y tiendas.",
       "homeTitle": "Página Web Gratis para tu Negocio | Freeplug",
-      "homeDescription": "Crea tu página web gratis para tu negocio local. Paga mensual o compra tus páginas sin cuota mensual. Landing pages, reservas y tiendas.",
+      "homeDescription": "Tu página web gratis para tu negocio local. Paga cada mes o compra los archivos de tu sitio con un pago único. Landing pages, reservas y tiendas.",
       "previewTitle": "Vista previa de tu sitio web | Freeplug",
       "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
@@ -943,7 +943,7 @@
       "cTA": {
         "freeplug72After": "Freeplug · 72 After",
         "readyFreeWebsite": "¿Quieres un sitio web gratis?",
-        "localOwnersSanMarcosKyle": "Ahora estamos contactando negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs. ¿Tu ciudad no aparece? Pide tu sitio de todos modos. ¿Estás fuera de EE. UU.? Dinos tu ciudad y revisamos la red.",
+        "localOwnersSanMarcosKyle": "Ahora estamos contactando negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs. ¿Tu ciudad no aparece? Pide tu sitio de todos modos.",
         "requestFreeWebsite": "Pide un sitio web gratis",
         "freeplugFindsBusinesses72After": "Freeplug encuentra los negocios. 72 After construye los sitios."
       },
@@ -976,8 +976,8 @@
       },
       "hero": {
         "freeplugOutreach72AfterBuilds": "Freeplug contacta · 72 After construye",
-        "headline": "Tu página web gratis.<br/><span>Paga mensual o cómprala.</span>",
-        "freeplugReachesOwnersWhoNeed": "Hecha en el centro de Texas para negocios locales, creadores, freelancers, apps SaaS pequeñas y tiendas de un solo producto.",
+        "headline": "Tu página web gratis.<br/><span>Paga cada mes o cómprala.</span>",
+        "freeplugReachesOwnersWhoNeed": "Hecho en el centro de Texas para negocios locales, creadores, freelancers, apps SaaS pequeñas y tiendas de un solo producto.",
         "label": {
           "modernTech": "Tecnología moderna",
           "lightningFast": "Súper rápido",
@@ -1060,7 +1060,7 @@
           "bootstrap5": "Se ve muy bien en celulares",
           "cloudflare": "Hosting rápido y seguro",
           "cloudflareTurnstile": "Protección contra spam y bots",
-          "resend": "Correos que sí llegan"
+          "resend": "Envío de correos confiable"
         },
         "description": {
           "premiumTemplatesDevelopersAccess": "Un diseño pulido y profesional, adaptado con tus datos.",
@@ -1131,14 +1131,14 @@
       },
       "buyoutTiers": {
         "eyebrow": "Compra",
-        "heading": "Compra tus páginas, <span>sin cuota mensual</span>",
+        "heading": "Compra tus páginas, <span>quédate con tus archivos</span>",
         "intro": "¿Prefieres que el sitio sea tuyo? Compra los archivos de tu sitio web con un pago único, según cuántas páginas tenga. Cada dólar que ya pagaste cuenta para la compra.",
         "tier": {
           "quick": "Hasta 5 páginas",
           "up_to_7": "Hasta 7 páginas",
           "up_to_11": "Hasta 11 páginas",
           "up_to_15": "De 12 a 15 páginas",
-          "unlimited": "16+ páginas (ilimitado)"
+          "unlimited": "Unlimited: 16 páginas o más"
         },
         "oneTime": "pago único",
         "note": "Es lo máximo que pagarías. La compra incluye solo los archivos de tu sitio web."
