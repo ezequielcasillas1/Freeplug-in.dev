@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   openGraph: { title: meta.ogTitle, description: meta.ogDescription, type: 'website' },
   twitter: { card: 'summary', title: meta.ogTitle, description: meta.ogDescription },
   other: { 'impact-site-verification': 'd892626b-8110-45f7-af0e-59dae87eef5f' },
+  verification: { google: 'lFB6wM69QJzDbroaFaF6eZ_t2tgBqoDxT3tA9JcSqTM' },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
