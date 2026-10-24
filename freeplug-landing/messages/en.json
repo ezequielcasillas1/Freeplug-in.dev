@@ -879,14 +879,23 @@
         "whatDoIPay": "What do I pay for?",
         "happensCancelHosting": "What happens if I cancel hosting?",
         "longDoesTakeBuild": "How long does it take to build my website?",
-        "getStarted": "How do I get started?"
+        "getStarted": "How do I get started?",
+        "websiteReallyFree": "Is the website really free?",
+        "monthlyPlanIncludes": "What does the monthly plan include?",
+        "howBuyoutWorks": "How does the buyout work?",
+        "ownDomain": "Do I own my domain?",
+        "spanishSite": "Can you build my site in Spanish?",
+        "bookingSites": "Do you build booking sites for freelancers?"
       },
       "answer": {
         "freeplugReachesLocalBusiness": "Freeplug helps local businesses, small agencies, apps, creators, freelancers and one-product stores get a website, and 72 After builds it for free. Local outreach covers Central Texas: San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
         "yesWebsiteDevelopmentFree": "Yes. Website development is free. 72 After designs and builds your website at no charge. After your site is live, you pay for monthly hosting, which is required. Maintenance or a buyout costs extra only if you ask for it. There are no hidden fees or surprise charges.",
         "hostingRequiredKeepWebsite": "Hosting is required to keep your website online. You can cancel any time. Your website stays online until your paid period ends, then goes offline. If you sign up for hosting again, we bring it back.",
         "everySiteDifferentSo": "Every site is different, so we'll give you a timeline after we review your request. Most of the time depends on how quickly we get your business details and approvals. We'll keep you updated along the way.",
-        "createAccountFillOut": "Create an account and fill out the website request form. Tell us about your business and what you need. Our team will review your request. Once it's approved, we'll contact you to discuss your project and start the design."
+        "createAccountFillOut": "Create an account and fill out the website request form. Tell us about your business and what you need. Our team will review your request. Once it's approved, we'll contact you to discuss your project and start the design.",
+        "ownDomain": "While you’re on a monthly plan, your domain is registered in Freeplug’s name. Once you complete your buyout, you can move it to your name or leave it as it is. If you buy your own domain in your name, you get 20% off your buyout.",
+        "spanishSite": "Freeplug works in English and Spanish. Tell us in your website request that you want your site in Spanish, and we’ll confirm what’s possible for your project.",
+        "bookingSites": "Yes. Booking sites for freelancers are one of the things we build: clients can see your services and book a time with you. Building it is free, and monthly hosting keeps it online."
       },
       "helpCenter": "Help center",
       "frequentlyAskedQuestions": "Frequently asked <span>questions</span>",
@@ -898,10 +907,10 @@
     "meta": {
       "siteTitle": "Free Website Outreach | Freeplug",
       "siteDescription": "Get a free website: small business sites, landing pages, booking sites, simple SaaS apps, one-product stores and agency sites. Built by 72 After in Texas.",
-      "ogTitle": "Free Small Business Websites & Landing Pages | Freeplug",
-      "ogDescription": "Free website for your small business, landing page, booking site, simple SaaS app or store. 72 After builds it.",
-      "homeTitle": "Free Small Business Websites & Landing Pages | Freeplug",
-      "homeDescription": "Get a free website: small business sites, landing pages, booking sites, simple SaaS apps, one-product stores and agency sites. Built by 72 After in Texas.",
+      "ogTitle": "Get a Website for Free | Small Business Sites | Freeplug",
+      "ogDescription": "Get a free website for your small business, then pay monthly or buy out your pages with no monthly fee. Landing pages, booking sites and stores too.",
+      "homeTitle": "Get a Website for Free | Small Business Sites | Freeplug",
+      "homeDescription": "Get a free website for your small business, then pay monthly or buy out your pages with no monthly fee. Landing pages, booking sites and stores too.",
       "previewTitle": "Your website preview | Freeplug",
       "requestWebsiteTitle": "Request a website | Freeplug",
       "faqTitle": "FAQ: How Freeplug Works | Freeplug",
@@ -965,8 +974,8 @@
       },
       "hero": {
         "freeplugOutreach72AfterBuilds": "Freeplug outreach · 72 After builds",
-        "headline": "Free websites for<br/><span>businesses and creators</span>",
-        "freeplugReachesOwnersWhoNeed": "Freeplug reaches owners who need a site. <span>72 After builds it for free.</span> Once it's live, monthly hosting keeps it online.",
+        "headline": "Get a website for free.<br/><span>Pay monthly or buy it out.</span>",
+        "freeplugReachesOwnersWhoNeed": "Built in Central Texas for local businesses, creators, freelancers, small SaaS apps and one-product stores.",
         "label": {
           "modernTech": "Modern Tech",
           "lightningFast": "Lightning Fast",
@@ -1018,7 +1027,7 @@
           "builds72AfterFreeMultiPage": "72 After builds a free multi-page site from a solid template, your real services, and clear Get-a-quote pages."
         },
         "serviceAreas": "Service areas",
-        "whereWorkTexas": "Where we work in <span>Texas</span>",
+        "whereWorkTexas": "Free websites for local businesses in <span>Central Texas</span>",
         "wereFocusedCentralTexasFirst": "We’re focused on Central Texas first — San Marcos and nearby cities.",
         "stockPhoto": "{name} — stock photo",
         "moreTexasCitiesCapacityGrows": "More Texas cities as capacity grows. Ask if your town isn’t listed.",
@@ -1032,7 +1041,7 @@
           "citySkylineStockPhoto": "City skyline — stock photo"
         },
         "howItConnects": "How it connects",
-        "howItWorks": "How it <span>works</span>",
+        "howItWorks": "How a <span>free website</span> works",
         "freeplugConnectsConversation72After": "Freeplug connects the conversation. 72 After does the build.",
         "step": "Step {step}"
       },
@@ -1077,7 +1086,7 @@
         "responsiveLayoutsClearQuoteRequest": "Responsive layouts · Clear quote request pages · Monthly hosting keeps it online"
       },
       "offerings": {
-        "heading": "What we build",
+        "heading": "Landing pages, booking sites and one-product stores",
         "intro": "Pick what fits you. Every project comes with hosting, updates and the option to own it.",
         "cta": "Start this kind of project →",
         "saasTag": "Simple apps only",
@@ -1117,6 +1126,20 @@
         "count": "{count, plural, one {# template} other {# templates}}",
         "mobileToggle": "Browse template categories",
         "newTab": "(opens in a new tab)"
+      },
+      "buyoutTiers": {
+        "eyebrow": "Buyout",
+        "heading": "Buy out your pages, <span>no monthly fee</span>",
+        "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
+        "tier": {
+          "quick": "Up to 5 pages",
+          "up_to_7": "Up to 7 pages",
+          "up_to_11": "Up to 11 pages",
+          "up_to_15": "12 to 15 pages",
+          "unlimited": "16+ pages (unlimited)"
+        },
+        "oneTime": "one time",
+        "note": "That’s the most you’d ever pay. The buyout covers your website files only."
       }
     }
   },

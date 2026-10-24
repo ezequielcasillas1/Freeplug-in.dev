@@ -879,14 +879,23 @@
         "whatDoIPay": "¿Qué pago?",
         "happensCancelHosting": "¿Qué pasa si cancelo el hosting?",
         "longDoesTakeBuild": "¿Cuánto tardan en hacer mi sitio web?",
-        "getStarted": "¿Cómo empiezo?"
+        "getStarted": "¿Cómo empiezo?",
+        "websiteReallyFree": "¿De verdad la página web es gratis?",
+        "monthlyPlanIncludes": "¿Qué incluye el plan mensual?",
+        "howBuyoutWorks": "¿Cómo funciona la compra?",
+        "ownDomain": "¿El dominio es mío?",
+        "spanishSite": "¿Pueden hacer mi sitio en español?",
+        "bookingSites": "¿Hacen sitios de reservas para freelancers?"
       },
       "answer": {
         "freeplugReachesLocalBusiness": "Freeplug ayuda a negocios locales, pequeñas agencias, apps, creadores, freelancers y tiendas de un solo producto a tener sitio web, y 72 After lo construye gratis. El contacto local cubre el centro de Texas: San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
         "yesWebsiteDevelopmentFree": "Sí. Hacer el sitio web es gratis. 72 After diseña y construye tu sitio web sin costo. Cuando tu sitio esté en línea, pagas el hosting mensual, que es obligatorio. El mantenimiento o la compra del sitio cuestan aparte solo si los pides. No hay cargos ocultos ni cobros sorpresa.",
         "hostingRequiredKeepWebsite": "El hosting es obligatorio para mantener tu sitio web en línea. Puedes cancelar cuando quieras. Tu sitio sigue en línea hasta que termine el periodo que pagaste y luego se desconecta. Si vuelves a contratar el hosting, lo recuperamos.",
         "everySiteDifferentSo": "Cada sitio es diferente, así que te daremos un tiempo estimado después de revisar tu solicitud. La mayor parte del tiempo depende de qué tan rápido recibamos los datos de tu negocio y tus aprobaciones. Te mantendremos al tanto en cada paso.",
-        "createAccountFillOut": "Crea una cuenta y llena el formulario de solicitud de sitio web. Cuéntanos sobre tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud. Cuando se apruebe, te contactaremos para hablar de tu proyecto y empezar el diseño."
+        "createAccountFillOut": "Crea una cuenta y llena el formulario de solicitud de sitio web. Cuéntanos sobre tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud. Cuando se apruebe, te contactaremos para hablar de tu proyecto y empezar el diseño.",
+        "ownDomain": "Mientras estés en un plan mensual, tu dominio está registrado a nombre de Freeplug. Cuando completes la compra, puedes pasarlo a tu nombre o dejarlo como está. Si compras tu propio dominio a tu nombre, recibes un 20% de descuento en la compra.",
+        "spanishSite": "Freeplug trabaja en inglés y en español. Dinos en tu solicitud que quieres tu sitio en español y te confirmamos qué es posible para tu proyecto.",
+        "bookingSites": "Sí. Los sitios de reservas para freelancers son una de las cosas que hacemos: tus clientes ven tus servicios y reservan una hora contigo. Hacerlo es gratis, y el hosting mensual lo mantiene en línea."
       },
       "helpCenter": "Centro de ayuda",
       "frequentlyAskedQuestions": "Preguntas <span>frecuentes</span>",
@@ -898,10 +907,10 @@
     "meta": {
       "siteTitle": "Sitios web gratis para negocios | Freeplug",
       "siteDescription": "Tu sitio web gratis: páginas para negocios, landing pages, sitios de reservas, apps SaaS sencillas, tiendas y agencias. Hecho por 72 After en Texas.",
-      "ogTitle": "Sitios web gratis para negocios y landing pages | Freeplug",
-      "ogDescription": "Sitio web gratis para tu negocio, landing page, sitio de reservas, app SaaS sencilla o tienda. 72 After lo hace.",
-      "homeTitle": "Sitios web gratis para negocios y landing pages | Freeplug",
-      "homeDescription": "Tu sitio web gratis: páginas para negocios, landing pages, sitios de reservas, apps SaaS sencillas, tiendas y agencias. Hecho por 72 After en Texas.",
+      "ogTitle": "Página Web Gratis para tu Negocio | Freeplug",
+      "ogDescription": "Crea tu página web gratis para tu negocio local. Paga mensual o compra tus páginas sin cuota mensual. Landing pages, reservas y tiendas.",
+      "homeTitle": "Página Web Gratis para tu Negocio | Freeplug",
+      "homeDescription": "Crea tu página web gratis para tu negocio local. Paga mensual o compra tus páginas sin cuota mensual. Landing pages, reservas y tiendas.",
       "previewTitle": "Vista previa de tu sitio web | Freeplug",
       "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
@@ -965,8 +974,8 @@
       },
       "hero": {
         "freeplugOutreach72AfterBuilds": "Freeplug contacta · 72 After construye",
-        "headline": "Sitios web gratis para<br/><span>negocios y creadores</span>",
-        "freeplugReachesOwnersWhoNeed": "Freeplug contacta a dueños que necesitan un sitio. <span>72 After lo construye gratis.</span> Cuando esté en línea, el hosting mensual lo mantiene funcionando.",
+        "headline": "Tu página web gratis.<br/><span>Paga mensual o cómprala.</span>",
+        "freeplugReachesOwnersWhoNeed": "Hecha en el centro de Texas para negocios locales, creadores, freelancers, apps SaaS pequeñas y tiendas de un solo producto.",
         "label": {
           "modernTech": "Tecnología moderna",
           "lightningFast": "Súper rápido",
@@ -1018,7 +1027,7 @@
           "builds72AfterFreeMultiPage": "72 After crea un sitio gratis de varias páginas con una plantilla sólida, tus servicios reales y páginas claras para pedir una cotización."
         },
         "serviceAreas": "Zonas de servicio",
-        "whereWorkTexas": "Dónde trabajamos en <span>Texas</span>",
+        "whereWorkTexas": "Páginas web gratis para negocios locales en el <span>centro de Texas</span>",
         "wereFocusedCentralTexasFirst": "Empezamos por el centro de Texas: San Marcos y ciudades cercanas.",
         "stockPhoto": "{name}: foto de archivo",
         "moreTexasCitiesCapacityGrows": "Más ciudades de Texas a medida que crezcamos. Pregúntanos si tu ciudad no aparece.",
@@ -1032,7 +1041,7 @@
           "citySkylineStockPhoto": "Horizonte de una ciudad: foto de archivo"
         },
         "howItConnects": "Cómo se conecta",
-        "howItWorks": "Cómo <span>funciona</span>",
+        "howItWorks": "Cómo funciona tu <span>página web gratis</span>",
         "freeplugConnectsConversation72After": "Freeplug inicia la conversación. 72 After construye el sitio.",
         "step": "Paso {step}"
       },
@@ -1077,7 +1086,7 @@
         "responsiveLayoutsClearQuoteRequest": "Diseños adaptables · Páginas claras para pedir cotización · El hosting mensual lo mantiene en línea"
       },
       "offerings": {
-        "heading": "Lo que hacemos",
+        "heading": "Landing pages, sitios de reservas y tiendas de un producto",
         "intro": "Elige lo que te queda. Cada proyecto incluye hosting, cambios y la opción de quedarte con él.",
         "cta": "Empezar este tipo de proyecto →",
         "saasTag": "Solo apps sencillas",
@@ -1117,6 +1126,20 @@
         "count": "{count, plural, one {# plantilla} other {# plantillas}}",
         "mobileToggle": "Ver categorías de plantillas",
         "newTab": "(se abre en una pestaña nueva)"
+      },
+      "buyoutTiers": {
+        "eyebrow": "Compra",
+        "heading": "Compra tus páginas, <span>sin cuota mensual</span>",
+        "intro": "¿Prefieres que el sitio sea tuyo? Compra los archivos de tu sitio web con un pago único, según cuántas páginas tenga. Cada dólar que ya pagaste cuenta para la compra.",
+        "tier": {
+          "quick": "Hasta 5 páginas",
+          "up_to_7": "Hasta 7 páginas",
+          "up_to_11": "Hasta 11 páginas",
+          "up_to_15": "De 12 a 15 páginas",
+          "unlimited": "16+ páginas (ilimitado)"
+        },
+        "oneTime": "pago único",
+        "note": "Es lo máximo que pagarías. La compra incluye solo los archivos de tu sitio web."
       }
     }
   },

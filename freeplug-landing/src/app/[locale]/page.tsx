@@ -14,6 +14,7 @@ import { ogLocale, publicAlternates } from '@/i18n/seo'
 import { toAppLocale } from '@/i18n/config'
 import { OfferingsSection } from '@/features/landing/components/OfferingsSection'
 import { TemplatesSection } from '@/features/landing/components/TemplatesSection'
+import { BuyoutTiersSection } from '@/features/landing/components/BuyoutTiersSection'
 import { HostingPlansSectionUi } from '@/features/landing/components/HostingPlansSectionUi'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -46,6 +47,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <TechStackSection />
         {/* Public plans block (no Supabase) so #hosting-plans nav/footer links resolve */}
         <HostingPlansSectionUi signedIn={false} hostingCheckoutAllowed={false} />
+        <BuyoutTiersSection />
         <ReviewsSection />
       </main>
       <Footer />

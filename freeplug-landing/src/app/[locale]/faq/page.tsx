@@ -19,10 +19,13 @@ import { fadeInUp, staggerContainer } from '@/features/landing/animations/landin
 /** Question/answer keys in display order; "what do I pay" and the buyout pair come from shared copy. */
 const FAQ_KEYS = [
   { id: 'what-is-freeplug', q: 'public.faq.question.whatIsFreeplug', a: 'public.faq.answer.freeplugReachesLocalBusiness' },
-  { id: 'is-it-free', q: 'public.faq.question.reallyFree', a: 'public.faq.answer.yesWebsiteDevelopmentFree' },
-  { id: 'what-do-i-pay', q: 'public.faq.question.whatDoIPay', a: null },
+  { id: 'is-it-free', q: 'public.faq.question.websiteReallyFree', a: 'public.faq.answer.yesWebsiteDevelopmentFree' },
+  { id: 'what-do-i-pay', q: 'public.faq.question.monthlyPlanIncludes', a: null },
   { id: 'cancel-hosting', q: 'public.faq.question.happensCancelHosting', a: 'public.faq.answer.hostingRequiredKeepWebsite' },
-  { id: 'buy-website', q: 'buyout.faqQuestion', a: 'buyout.faqAnswer' },
+  { id: 'buy-website', q: 'public.faq.question.howBuyoutWorks', a: 'buyout.faqAnswer' },
+  { id: 'own-domain', q: 'public.faq.question.ownDomain', a: 'public.faq.answer.ownDomain' },
+  { id: 'spanish-site', q: 'public.faq.question.spanishSite', a: 'public.faq.answer.spanishSite' },
+  { id: 'booking-sites', q: 'public.faq.question.bookingSites', a: 'public.faq.answer.bookingSites' },
   { id: 'how-long', q: 'public.faq.question.longDoesTakeBuild', a: 'public.faq.answer.everySiteDifferentSo' },
   { id: 'get-started', q: 'public.faq.question.getStarted', a: 'public.faq.answer.createAccountFillOut' },
 ] as const
@@ -31,8 +34,15 @@ export default function FAQPage() {
   const t = useTranslations()
   const { HELP_WHAT_DO_I_PAY } = useLadderCopy()
   const faqs = FAQ_KEYS.map((f) => ({ id: f.id, question: t(f.q), answer: f.a ? t(f.a) : HELP_WHAT_DO_I_PAY }))
+  // FAQPage JSON-LD built from the same strings shown on the page, so they always match.
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } })),
+  }
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }} />
       <Navigation />
       <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
         <section className="py-24 relative overflow-hidden">

@@ -16,7 +16,7 @@ afterEach(() => setTestLocale('en'))
 describe('OfferingsSection (What we build)', () => {
   it('renders 6 cards in order, each linking to the existing request flow', () => {
     render(<OfferingsSection />)
-    expect(screen.getByRole('heading', { level: 2, name: 'What we build' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 2, name: 'Landing pages, booking sites and one-product stores' })).toBeTruthy()
     const items = within(screen.getByTestId('offerings-grid')).getAllByRole('listitem')
     expect(items).toHaveLength(6)
     const titles = items.map((li) => within(li).getByRole('heading', { level: 3 }).textContent)
@@ -46,7 +46,7 @@ describe('OfferingsSection (What we build)', () => {
   it('Spanish uses Sable text and /es links', () => {
     setTestLocale('es')
     render(<OfferingsSection />)
-    expect(screen.getByRole('heading', { level: 2, name: 'Lo que hacemos' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 2, name: 'Landing pages, sitios de reservas y tiendas de un producto' })).toBeTruthy()
     expect(screen.getByText('Tiendas de un producto')).toBeTruthy()
     const link = within(screen.getByTestId('offering-store')).getByRole('link')
     expect(link.getAttribute('href')).toMatch(/^\/es\/request-website$/)
