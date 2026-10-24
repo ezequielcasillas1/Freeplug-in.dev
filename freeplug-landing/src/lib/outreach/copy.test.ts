@@ -39,7 +39,7 @@ const FROM_LINA = [
   // have "Waiting for us to publish your site." The 1:04 test below checks the words.
   'TRACKER_LIVE_WAITING',
 ]
-const NEW_FOR_SABLE: string[] = []
+const NEW_FOR_SABLE: string[] = ['NEED_DOMAIN_HELPER'] // Oct 24: owner's domain rule; awaiting Sable
 
 const norm = (s: string) => s.replace(/[’‘]/g, "'").replace(/[“”]/g, '"')
 const strings = Object.entries(copy).filter((e): e is [string, string] => typeof e[1] === 'string')

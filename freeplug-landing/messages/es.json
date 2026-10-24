@@ -804,7 +804,7 @@
     "manageBillingLabel": "Administrar facturación",
     "domainHelper": "Mientras no conectes tu propio dominio, tu sitio funciona en una dirección web gratis que te damos.",
     "needDomainLabel": "Necesito un dominio",
-    "needDomainHelper": "Tú compras tu dominio y es tuyo. Te enviaremos instrucciones paso a paso y nosotros lo conectamos.",
+    "needDomainHelper": "Registramos tu dominio a nombre de Freeplug y lo conectamos por ti. Después de la compra, puedes pasarlo a tu nombre o dejarlo con Freeplug.",
     "stepNames": {
       "account": "Cuenta",
       "yourDetails": "Tus datos",
@@ -1151,7 +1151,7 @@
     "cancelHeading": "Quédate con tu sitio web",
     "cancelBody": "¿Prefieres quedarte con tu sitio web en lugar de alojarlo con nosotros? Puedes comprar los archivos del sitio con un pago único según cuántas páginas tenga. Cada dólar que ya pagaste cuenta para la compra.",
     "faqQuestion": "¿Puedo quedarme con mi sitio web si dejo el hosting de Freeplug?",
-    "faqAnswer": "Sí. Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tenga tu sitio: hasta 5 páginas $500, hasta 7 páginas $700, hasta 11 páginas $950, de 12 a 15 páginas $1,200 y 16 páginas o más $2,000. Es lo máximo que pagarías. Cada dólar que ya nos pagaste cuenta para la compra. La compra incluye solo los archivos de tu sitio web. La transferencia de tu dominio se maneja aparte.",
+    "faqAnswer": "Sí. Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tenga tu sitio: hasta 5 páginas $500, hasta 7 páginas $700, hasta 11 páginas $950, de 12 a 15 páginas $1,200 y 16 páginas o más $2,000. Es lo máximo que pagarías. Cada dólar que ya nos pagaste cuenta para la compra. La compra incluye solo los archivos de tu sitio web. Tu dominio queda registrado a nombre de Freeplug hasta que completes la compra; después, puedes pasarlo a tu nombre o dejarlo con Freeplug. Si compraste tu propio dominio a tu nombre, recibes un 20% de descuento en la compra.",
     "requestRecordName": "Compra del sitio web"
   },
   "common": {
