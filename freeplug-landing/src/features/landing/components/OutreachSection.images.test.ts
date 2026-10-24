@@ -37,11 +37,11 @@ describe('OutreachSection city photos', () => {
     }
   })
 
-  it('the 7 referenced JPGs exist and really are 800x600 (so the attributes are true)', () => {
+  it('the 12 referenced JPGs exist and really are 800x600 (so the attributes are true)', () => {
     const referenced = [...new Set(source.match(/\/images\/outreach\/[a-z0-9-]+\.jpg/g) ?? [])].sort()
     const onDisk = readdirSync(photoDir).filter((f) => f.endsWith('.jpg')).map((f) => `/images/outreach/${f}`).sort()
     expect(referenced).toEqual(onDisk)
-    expect(onDisk).toHaveLength(7)
+    expect(onDisk).toHaveLength(12)
     for (const f of onDisk) expect(jpegSize(readFileSync(path.join(root, 'public', f)))).toEqual({ width: 800, height: 600 })
   })
 })
@@ -55,9 +55,9 @@ describe('OutreachSection Texas city photo credits', () => {
   })
 
   it('every city has an author, a CC license with link, and a Commons source, and the card renders them', () => {
-    expect(source.match(/author: '/g)).toHaveLength(5)
-    expect(source.match(/licenseUrl: 'https:\/\/creativecommons\.org\/licenses\//g)).toHaveLength(5)
-    expect(source.match(/source: 'https:\/\/commons\.wikimedia\.org\/wiki\/File:/g)).toHaveLength(5)
+    expect(source.match(/author: '/g)).toHaveLength(10)
+    expect(source.match(/licenseUrl: 'https:\/\/creativecommons\.org\/licenses\//g)).toHaveLength(10)
+    expect(source.match(/source: 'https:\/\/commons\.wikimedia\.org\/wiki\/File:/g)).toHaveLength(10)
     expect(source).toContain('.photo}: {city.credit.author}') // en 'Photo' / es 'Foto' (CREDIT_WORDS)
     expect(source).toContain('{city.credit.license}')
     const credits = readFileSync(path.join(photoDir, 'CREDITS.md'), 'utf8')
