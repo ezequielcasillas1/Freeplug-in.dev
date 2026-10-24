@@ -32,6 +32,7 @@ export async function generateMetadata({ params }: Omit<Props, 'children'>): Pro
     title: { default: t('siteTitle'), template: '%s' },
     description: t('siteDescription'),
     openGraph: { title: t('ogTitle'), description: t('ogDescription'), type: 'website', ...ogLocale(locale as AppLocale) },
+    twitter: { card: 'summary', title: t('ogTitle'), description: t('ogDescription') },
   }
 }
 

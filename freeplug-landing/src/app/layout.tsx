@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: { default: meta.siteTitle, template: '%s' },
   description: meta.siteDescription,
   openGraph: { title: meta.ogTitle, description: meta.ogDescription, type: 'website' },
+  twitter: { card: 'summary', title: meta.ogTitle, description: meta.ogDescription },
   other: { 'impact-site-verification': 'd892626b-8110-45f7-af0e-59dae87eef5f' },
 }
 
