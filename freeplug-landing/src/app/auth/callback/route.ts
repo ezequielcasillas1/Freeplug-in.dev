@@ -6,8 +6,9 @@ import { safeNext } from '@/lib/auth/safe-next'
 import { syncLocaleCookieFromProfile } from '@/i18n/locale-cookie-sync'
 import { alertOwner } from '@/lib/owner-alerts/events'
 import { requestAwareBaseUrl } from '@/lib/site'
-import { SIGNUPS_PAUSED } from '@/lib/auth/signups-paused'
-import { isNewOAuthSignup } from '@/lib/auth/oauth-new-user'
+import { AUTH_MAINTENANCE, SIGNUPS_PAUSED, signupPausedLoginPath } from '@/lib/auth/signups-paused'
+import { isAdminEmail } from '@/lib/auth/admin-login'
+import { shouldBlockSignIn } from '@/lib/auth/oauth-new-user'
 import {
   RESET_COOKIE_NAME,
   isRecoveryAccessToken,
@@ -32,9 +33,20 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
       // Sign-ups paused: a Google account created by this sign-in is signed out (nothing deleted).
-      if (SIGNUPS_PAUSED && isNewOAuthSignup(data.user)) {
+      // Auth maintenance (Oct 24): only ADMIN_EMAILS get a session; everyone else is signed out
+      // (Google, email links, recovery links alike). No owner alert for blocked attempts.
+      if (AUTH_MAINTENANCE && !isAdminEmail(data.user?.email)) {
         await supabase.auth.signOut()
-        return NextResponse.redirect(`${origin}/signup?blocked=google`)
+        return NextResponse.redirect(`${origin}/login`)
+      }
+      // Any account created on/after the cutoff, or with no profiles row, is signed out; no owner alert.
+      if (SIGNUPS_PAUSED && data.user) {
+        const { data: prof, error: profError } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle()
+        const hasProfile = profError ? null : Boolean(prof)
+        if (!isAdminEmail(data.user.email) && shouldBlockSignIn(data.user, hasProfile)) {
+          await supabase.auth.signOut()
+          return NextResponse.redirect(`${origin}${signupPausedLoginPath('en')}`)
+        }
       }
       // Google / email-link sign-in: cookie follows profiles.locale.
       await syncLocaleCookieFromProfile(supabase, data.user?.id)

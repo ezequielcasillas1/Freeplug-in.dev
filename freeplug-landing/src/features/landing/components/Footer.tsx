@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { motion } from 'framer-motion'
 import { Mail, MapPin, ArrowUpRight } from 'lucide-react'
 import { fadeIn, fadeInUp, staggerContainer } from '../animations/landing.variants'
@@ -25,7 +26,7 @@ const footerLinks = {
     { label: 'cookiePolicy', href: null },
   ],
   contact: [
-    { label: 'getStarted', href: '/signup' },
+    ...(AUTH_MAINTENANCE ? [] : [{ label: 'getStarted', href: '/request-website' } as const]),
     { label: 'support', href: 'mailto:support@freeplug-in.dev' },
     { label: 'faq', href: '/faq' },
   ],

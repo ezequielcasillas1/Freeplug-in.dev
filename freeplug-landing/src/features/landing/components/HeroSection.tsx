@@ -1,6 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
 import { ArrowRight, Sparkles, Code, Zap, Palette, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
@@ -140,7 +142,8 @@ export function HeroSection() {
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link
-                href={publicHref('/signup', locale)}
+                href={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : publicHref('/request-website', locale)}
+                {...(AUTH_MAINTENANCE ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 className={cn(
                   buttonVariants({ size: 'lg' }),
                   'group relative overflow-hidden bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] shadow-[0_8px_32px_rgba(186,61,61,0.35)] hover:shadow-[0_12px_40px_rgba(186,61,61,0.45)] transition-all duration-300 text-base px-8 border-0'

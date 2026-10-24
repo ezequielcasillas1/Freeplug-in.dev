@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { ArrowRight, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
@@ -80,8 +81,9 @@ export function CTASection() {
           variants={fadeInUp}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
+          {AUTH_MAINTENANCE ? null : (
           <Link
-            href={publicHref('/signup', locale)}
+            href={publicHref('/request-website', locale)}
             className={cn(
               buttonVariants({ size: 'lg' }),
               'bg-white text-[#ba3d3d] hover:bg-gray-100 group shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 transition-all px-8 border-0'
@@ -90,6 +92,7 @@ export function CTASection() {
             {t('requestFreeWebsite')}
             <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Link>
+          )}
           <BookLiveSessionLink
             label={tb('bookLiveSession')}
             newTabHint={tb('opensInNewTab')}

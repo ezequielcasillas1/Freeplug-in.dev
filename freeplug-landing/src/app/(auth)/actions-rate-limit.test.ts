@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-vi.mock('@/lib/auth/signups-paused', () => ({ SIGNUPS_PAUSED: false }))
+vi.mock('@/lib/auth/signups-paused', () => ({ SIGNUPS_PAUSED: false, AUTH_MAINTENANCE: false }))
 
 /**
  * Sign-in lockout (5 failures per email+IP / 15 min, failures only, cleared on success, fails open on a

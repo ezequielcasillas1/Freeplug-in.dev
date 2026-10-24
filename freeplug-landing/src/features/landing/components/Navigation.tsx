@@ -5,7 +5,9 @@ import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
 import { cn } from '@/lib/utils/cn'
 import { fadeIn } from '../animations/landing.variants'
 import { LaunchMarquee } from './LaunchMarquee'
@@ -92,29 +94,44 @@ export function Navigation() {
 
           <div className="hidden lg:flex items-center gap-3">
             <LanguagePicker />
-            <Link
-              href="/login"
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#ba3d3d] transition-colors"
-            >
-              {t('navigation.logIn')}
-            </Link>
-            <Button
-              size="sm"
-              variant="secondary"
-              type="button"
-              onClick={() => router.push('/dashboard')}
-              className="bg-gray-100 hover:bg-gray-200"
-            >
-              {t('navigation.dashboard')}
-            </Button>
-            <Button
-              size="sm"
-              type="button"
-              onClick={() => router.push(publicHref('/signup', locale))}
-              className="shadow-lg shadow-[#ba3d3d]/30 hover:shadow-xl hover:shadow-[#ba3d3d]/40 transition-all"
-            >
-              {t('footer.label.getStarted')}
-            </Button>
+            {AUTH_MAINTENANCE ? null : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#ba3d3d] transition-colors"
+                >
+                  {t('navigation.logIn')}
+                </Link>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  type="button"
+                  onClick={() => router.push('/dashboard')}
+                  className="bg-gray-100 hover:bg-gray-200"
+                >
+                  {t('navigation.dashboard')}
+                </Button>
+              </>
+            )}
+            {AUTH_MAINTENANCE ? (
+              <a
+                href={CALCOM_BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(buttonVariants({ size: 'sm' }), 'shadow-lg shadow-[#ba3d3d]/30 hover:shadow-xl hover:shadow-[#ba3d3d]/40 transition-all')}
+              >
+                {t('footer.label.getStarted')}
+              </a>
+            ) : (
+              <Button
+                size="sm"
+                type="button"
+                onClick={() => router.push(publicHref('/request-website', locale))}
+                className="shadow-lg shadow-[#ba3d3d]/30 hover:shadow-xl hover:shadow-[#ba3d3d]/40 transition-all"
+              >
+                {t('footer.label.getStarted')}
+              </Button>
+            )}
           </div>
 
           <motion.button
@@ -151,6 +168,7 @@ export function Navigation() {
               </motion.a>
             ))}
             <div className="pt-4 mt-4 border-t border-gray-100 space-y-3">
+              {AUTH_MAINTENANCE ? null : (
               <Link
                 href="/login"
                 onClick={() => setIsOpen(false)}
@@ -158,8 +176,21 @@ export function Navigation() {
               >
                 {t('navigation.logIn')}
               </Link>
+              )}
               <LanguagePicker className="px-4" />
               <div className="px-4 flex gap-3">
+                {AUTH_MAINTENANCE ? (
+                  <a
+                    href={CALCOM_BOOKING_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsOpen(false)}
+                    className={cn(buttonVariants({ size: 'sm' }), 'flex-1')}
+                  >
+                    {t('footer.label.getStarted')}
+                  </a>
+                ) : (
+                  <>
                 <Button
                   size="sm"
                   variant="secondary"
@@ -178,11 +209,13 @@ export function Navigation() {
                   type="button"
                   onClick={() => {
                     setIsOpen(false)
-                    router.push(publicHref('/signup', locale))
+                    router.push(publicHref('/request-website', locale))
                   }}
                 >
                   {t('footer.label.getStarted')}
                 </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

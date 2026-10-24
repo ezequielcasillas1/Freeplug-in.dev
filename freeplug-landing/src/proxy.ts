@@ -1,4 +1,5 @@
 import { type NextRequest } from 'next/server'
+import { adminLoginProxyResponse, esLoginRedirect } from '@/lib/auth/admin-login-proxy'
 import createIntlMiddleware from 'next-intl/middleware'
 import { updateSession } from '@/lib/supabase/middleware'
 import { oversizedActionResponse } from '@/lib/outreach/body-limit'
@@ -25,6 +26,12 @@ export async function proxy(request: NextRequest) {
   // with or without a Content-Length (Vera r2 N5: chunked bodies are counted as they stream).
   const tooLarge = await oversizedActionResponse(request)
   if (tooLarge) return withTerminalResponseHeaders(tooLarge, pathname)
+
+  // Private admin login (Oct 24): see admin-login-proxy.ts.
+  const adminLogin = adminLoginProxyResponse(request)
+  if (adminLogin) return adminLogin
+  const esLogin = esLoginRedirect(request)
+  if (esLogin) return esLogin
 
   // Not on the internal pass of next-intl's own rewrite, or '/' loops 307 -> '/' (see shouldRunIntlRouting).
   const intlResponse = shouldRunIntlRouting(pathname, request.headers) ? handleI18nRouting(request) : undefined

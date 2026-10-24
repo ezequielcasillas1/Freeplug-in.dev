@@ -1,6 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
 import { CreditCard } from 'lucide-react'
 import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
@@ -56,7 +58,7 @@ export function HostingPlansSectionUi({
             />
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <MaintenancePlanCard ctaHref={`/login?next=${MAINTENANCE_LOGIN_NEXT}`} />
+            <MaintenancePlanCard ctaHref={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : `/login?next=${MAINTENANCE_LOGIN_NEXT}`} />
           </motion.div>
         </div>
       </motion.div>

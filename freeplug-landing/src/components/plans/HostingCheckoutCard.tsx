@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { RemovalOwedBox } from './RemovalOwedBox'
@@ -903,9 +905,15 @@ export function HostingCheckoutCard({
       ) : canPay ? (
         payArea
       ) : !signedIn ? (
-        <Link href={LOGIN_THEN_REQUEST} className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
-          {t('plans.checkout.signRequestWebsite')}
-        </Link>
+        AUTH_MAINTENANCE ? (
+          <a href={CALCOM_BOOKING_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
+            {t('public.landing.cTA.requestFreeWebsite')}
+          </a>
+        ) : (
+          <Link href={LOGIN_THEN_REQUEST} className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
+            {t('plans.checkout.signRequestWebsite')}
+          </Link>
+        )
       ) : (
         <Link href="/dashboard/request-website" className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
           {t('plans.checkout.submitWebsiteRequestFirst')}

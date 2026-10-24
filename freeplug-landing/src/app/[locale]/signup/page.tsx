@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { SIGNUPS_PAUSED } from '@/lib/auth/signups-paused'
+import { redirect } from 'next/navigation'
+import { AUTH_MAINTENANCE, SIGNUPS_PAUSED, signupPausedLoginPath } from '@/lib/auth/signups-paused'
+import { AuthMaintenanceCard } from '@/app/(auth)/AuthMaintenanceCard'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { ogLocale, publicAlternates } from '@/i18n/seo'
@@ -61,22 +63,9 @@ export default async function SignUpPage({ params, searchParams }: Props) {
   const locale = toAppLocale((await params).locale)
   const t = await getTranslations({ locale, namespace: 'auth.signup' })
   const es = locale === 'es'
-  // Signups paused (Cheke, Oct 22, 2026): show a short coming-soon note instead of the form.
-  if (SIGNUPS_PAUSED) {
-    return (
-      <div className="rounded-2xl bg-white p-8 shadow-sm border border-zinc-200 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{es ? 'Registro en pausa' : 'Sign-up paused'}</h1>
-        <p className="text-sm text-gray-500 mb-6">
-          {es ? 'El registro está en pausa mientras damos mantenimiento al sitio.' : 'Sign-up is paused while we do some site maintenance.'}
-        </p>
-        <p className="text-sm text-gray-600">
-          {t('SignUpPage.alreadyHaveAccount')}{' '}
-          <Link href="/login" className="font-medium text-[#ba3d3d] hover:underline">{es ? 'Inicia sesión' : 'Log in'}</Link>.
-        </p>
-        <p className="mt-3"><Link href="/" className="text-sm text-gray-500 hover:text-[#ba3d3d]">← {t('backSite')}</Link></p>
-      </div>
-    )
-  }
+  // Signups paused (Cheke, Oct 22; hidden Oct 24): server redirect to /login with a notice.
+  if (AUTH_MAINTENANCE) return <AuthMaintenanceCard locale={locale === 'es' ? 'es' : 'en'} />
+  if (SIGNUPS_PAUSED) redirect(signupPausedLoginPath(locale, q.next))
   const google = await isGoogleSignInEnabled()
   // Claim mode (outreach step 1): only with next=/claim and a valid preview cookie.
   const claimSite = q.next === '/claim' ? await currentPreviewSite() : null

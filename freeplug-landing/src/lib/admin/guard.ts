@@ -1,19 +1,13 @@
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { adminEmailAllowlist } from '@/lib/auth/admin-login'
 
 function isLocalHost(host: string): boolean {
   const h = host.split(',')[0].trim().toLowerCase()
   return /^localhost(:\d+)?$/.test(h) || /^127\.0\.0\.1(:\d+)?$/.test(h)
 }
 
-function adminEmailAllowlist(): string[] {
-  const raw = process.env.ADMIN_EMAILS ?? ''
-  return raw
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-}
 
 /**
  * Shared identity + host gates for /admin and admin-only APIs.

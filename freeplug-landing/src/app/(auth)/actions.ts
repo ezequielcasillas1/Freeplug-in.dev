@@ -1,5 +1,6 @@
 'use server'
-import { SIGNUPS_PAUSED } from '@/lib/auth/signups-paused'
+import { AUTH_MAINTENANCE, SIGNUPS_PAUSED, signupPausedLoginPath } from '@/lib/auth/signups-paused'
+import { adminLoginPublicPath, isAdminEmail } from '@/lib/auth/admin-login'
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -177,6 +178,8 @@ function alertLimiterDown(): void {
 }
 
 export async function signIn(formData: FormData) {
+  // Auth maintenance (Oct 24): the public login form is hidden; refuse a posted form too.
+  if (AUTH_MAINTENANCE) redirect('/login')
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
   const next = safeNext(String(formData.get('next') ?? '/dashboard'))
@@ -224,7 +227,7 @@ function formNext(formData: FormData | undefined): string | null {
 }
 
 export async function signUp(formData: FormData) {
-  if (SIGNUPS_PAUSED) redirect('/signup')
+  if (SIGNUPS_PAUSED) redirect(signupPausedLoginPath('en'))
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
   const confirm = String(formData.get('confirm') ?? '')
@@ -315,10 +318,57 @@ export async function signOut() {
 }
 
 export async function signInWithGoogle(formData?: FormData) {
-  const next = formNext(formData)
+  if (AUTH_MAINTENANCE) redirect('/login')
+  return startGoogleSignIn(formNext(formData), '/login')
+}
+
+/** Private admin login (ADMIN_LOGIN_PATH): password sign-in, then anyone not in ADMIN_EMAILS is signed out. */
+export async function adminSignIn(formData: FormData) {
+  const back = adminLoginPublicPath()
+  if (!back) redirect('/login')
+  const email = String(formData.get('email') ?? '').trim()
+  const password = String(formData.get('password') ?? '')
+  if (!email || !password) redirect(back + '?error=' + encodeURIComponent('Email and password are required.'))
+
+  const ip = await clientIp()
+  const rateKey = signInKey(email, ip)
+  const ipKey = `ip|${ip}`
+  const lock = await signInLockState(rateKey)
+  const ipLock = lock === 'locked' ? 'ok' : await signInLockState(ipKey, AUTH_LIMITS.signInFailuresPerIp)
+  if (ipLock === 'locked') alertIpCapHit()
+  if (lock === 'locked' || ipLock === 'locked') redirect(back + '?error=' + encodeURIComponent(TOO_MANY_ATTEMPTS_MESSAGE))
+  if (lock === 'error' || ipLock === 'error') {
+    console.error('[signin-rate] limiter database unavailable; allowing sign-in (fail open)')
+    alertLimiterDown()
+  }
+
+  const supabase = await createClient()
+  const { data: signedIn, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    await rateCheck(AUTH_LIMITS.signInFailures, rateKey)
+    await rateCheck(AUTH_LIMITS.signInFailuresPerIp, ipKey)
+    redirect(back + '?error=' + encodeURIComponent(SIGN_IN_FAILED_MESSAGE))
+  }
+  await clearSignInFailures(rateKey)
+  if (!isAdminEmail(signedIn?.user?.email)) {
+    await supabase.auth.signOut()
+    redirect('/login')
+  }
+  revalidatePath('/', 'layout')
+  redirect('/admin')
+}
+
+export async function adminSignInWithGoogle() {
+  const back = adminLoginPublicPath()
+  if (!back) redirect('/login')
+  // The callback signs out anyone not in ADMIN_EMAILS while AUTH_MAINTENANCE is on.
+  return startGoogleSignIn('/admin', back)
+}
+
+async function startGoogleSignIn(next: string | null, errorPath: string) {
   if (!(await isGoogleSignInEnabled())) {
     redirect(
-      '/login?error=' + encodeURIComponent(GOOGLE_DISABLED_MESSAGE) + (next ? `&next=${encodeURIComponent(next)}` : '')
+      errorPath + '?error=' + encodeURIComponent(GOOGLE_DISABLED_MESSAGE) + (next ? `&next=${encodeURIComponent(next)}` : '')
     )
   }
 
@@ -341,7 +391,7 @@ export async function signInWithGoogle(formData?: FormData) {
 
   if (error) {
     console.error('[google-sign-in]', error.message)
-    redirect('/login?error=' + encodeURIComponent(GENERIC_ERROR_MESSAGE))
+    redirect(errorPath + '?error=' + encodeURIComponent(GENERIC_ERROR_MESSAGE))
   }
 
   if (data.url) {

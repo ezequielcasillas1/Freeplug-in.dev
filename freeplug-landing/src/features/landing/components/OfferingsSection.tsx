@@ -3,6 +3,8 @@ import { useLocale, useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
 import { HOME_OFFERINGS, HOME_OFFERING_ICONS } from '@/lib/offerings/home-offerings'
 
 // TODO(ask Cheke): the agency line is Sable's placeholder (white-label vs. referral, agency pricing).
@@ -42,12 +44,24 @@ export function OfferingsSection() {
                     </div>
                   </div>
                   <p className="mt-1 text-sm text-gray-600 md:mt-3 flex-1">{t(`types.${type}.line`)}</p>
-                  <Link
-                    href={publicHref('/request-website', locale)}
-                    className="mt-1 md:mt-4 inline-flex min-h-[32px] md:min-h-[44px] items-center text-sm font-semibold text-[#ba3d3d] hover:underline"
-                  >
-                    {t('cta')}
-                  </Link>
+                  {AUTH_MAINTENANCE ? (
+                    // Auth maintenance (Oct 24): /request-website needs a login, so book a call instead.
+                    <a
+                      href={CALCOM_BOOKING_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 md:mt-4 inline-flex min-h-[32px] md:min-h-[44px] items-center text-sm font-semibold text-[#ba3d3d] hover:underline"
+                    >
+                      {t('cta')}
+                    </a>
+                  ) : (
+                    <Link
+                      href={publicHref('/request-website', locale)}
+                      className="mt-1 md:mt-4 inline-flex min-h-[32px] md:min-h-[44px] items-center text-sm font-semibold text-[#ba3d3d] hover:underline"
+                    >
+                      {t('cta')}
+                    </Link>
+                  )}
                 </Card>
               </li>
             )

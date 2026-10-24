@@ -3,8 +3,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /** Round 6 (Aria): /auth/confirm type + next allowlists, open-redirect variants, neutral expired page. */
 const verifyOtp = vi.fn()
+const signOut = vi.fn(async () => ({ error: null }))
 const jarSet = vi.fn()
-vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({ auth: { verifyOtp } }) }))
+vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({ auth: { verifyOtp, signOut } }) }))
+const maint = vi.hoisted(() => ({ on: false }))
+vi.mock('@/lib/auth/signups-paused', () => ({
+  get AUTH_MAINTENANCE() {
+    return maint.on
+  },
+}))
 vi.mock('next/headers', () => ({ cookies: async () => ({ set: jarSet }) }))
 
 import { GET } from './route'
@@ -147,5 +154,31 @@ describe('expired, used or incomplete links: one neutral page', () => {
     const to = await visit(qs)
     expect(to).toMatch(/^\/link-expired\?for=(reset|claim|account)$/)
     expect(verifyOtp).not.toHaveBeenCalled()
+  })
+})
+
+describe('auth maintenance (Oct 24): email links only open a session for ADMIN_EMAILS', () => {
+  beforeEach(() => {
+    maint.on = true
+    vi.stubEnv('ADMIN_EMAILS', 'boss@freeplug.test')
+    signOut.mockClear()
+    jarSet.mockClear()
+  })
+  afterEach(() => {
+    maint.on = false
+    vi.unstubAllEnvs()
+  })
+  it('non-admin recovery link: signed out, maintenance page, no reset cookie', async () => {
+    verifyOtp.mockResolvedValueOnce({ data: { user: { id: 'u2', email: 'client@freeplug.test' } }, error: null })
+    const res = await GET(new Request(APP + '/auth/confirm?token_hash=t&type=recovery') as never)
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/login')
+    expect(signOut).toHaveBeenCalledTimes(1)
+    expect(jarSet).not.toHaveBeenCalled()
+  })
+  it('admin link works as before', async () => {
+    verifyOtp.mockResolvedValueOnce({ data: { user: { id: 'u1', email: 'boss@freeplug.test' } }, error: null })
+    const res = await GET(new Request(APP + '/auth/confirm?token_hash=t&type=email') as never)
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/dashboard')
+    expect(signOut).not.toHaveBeenCalled()
   })
 })

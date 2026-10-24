@@ -1,22 +1,30 @@
 import { describe, expect, it } from 'vitest'
-import { isNewOAuthSignup } from './oauth-new-user'
+import { DEFAULT_SIGNUP_BLOCK_CUTOFF, isPostCutoffUser, shouldBlockSignIn, signupBlockCutoffMs } from './oauth-new-user'
 
-const now = Date.parse('2026-10-23T18:00:00Z')
-describe('isNewOAuthSignup', () => {
-  it('flags a Google user created seconds ago', () => {
-    expect(isNewOAuthSignup({ created_at: '2026-10-23T17:59:50Z', app_metadata: { provider: 'google', providers: ['google'] } }, now)).toBe(true)
+const cutoff = Date.parse(DEFAULT_SIGNUP_BLOCK_CUTOFF)
+
+describe('signup block cutoff', () => {
+  it('defaults to 2026-10-22 00:00 CT and is configurable', () => {
+    expect(signupBlockCutoffMs(undefined)).toBe(Date.parse('2026-10-22T05:00:00Z'))
+    expect(signupBlockCutoffMs('garbage')).toBe(cutoff)
+    expect(signupBlockCutoffMs('2026-11-01T00:00:00Z')).toBe(Date.parse('2026-11-01T00:00:00Z'))
   })
-  it('allows an existing Google user', () => {
-    expect(isNewOAuthSignup({ created_at: '2026-01-01T00:00:00Z', app_metadata: { provider: 'google' } }, now)).toBe(false)
+  it('pre-cutoff user with a profile signs in (Google or email)', () => {
+    expect(shouldBlockSignIn({ created_at: '2026-01-01T00:00:00Z' }, true, cutoff)).toBe(false)
+    expect(shouldBlockSignIn({ created_at: '2026-10-22T04:59:59Z' }, true, cutoff)).toBe(false)
   })
-  it('allows an existing email user linking Google', () => {
-    expect(isNewOAuthSignup({ created_at: '2025-05-01T00:00:00Z', app_metadata: { provider: 'email', providers: ['email', 'google'] } }, now)).toBe(false)
+  it('pre-cutoff user is not blocked when the profile lookup failed', () => {
+    expect(shouldBlockSignIn({ created_at: '2026-01-01T00:00:00Z' }, null, cutoff)).toBe(false)
   })
-  it('ignores non-Google users', () => {
-    expect(isNewOAuthSignup({ created_at: '2026-10-23T17:59:50Z', app_metadata: { provider: 'email' } }, now)).toBe(false)
+  it('post-cutoff user is blocked, even days later and even with a profile', () => {
+    expect(isPostCutoffUser({ created_at: '2026-10-22T05:00:00Z' }, cutoff)).toBe(true)
+    expect(shouldBlockSignIn({ created_at: '2026-10-23T18:00:00Z' }, true, cutoff)).toBe(true)
   })
-  it('handles missing data', () => {
-    expect(isNewOAuthSignup(null, now)).toBe(false)
-    expect(isNewOAuthSignup({ created_at: 'bad', app_metadata: { provider: 'google' } }, now)).toBe(false)
+  it('a user with no profile row is blocked', () => {
+    expect(shouldBlockSignIn({ created_at: '2025-05-01T00:00:00Z' }, false, cutoff)).toBe(true)
+  })
+  it('unparsable created_at fails closed; no user is not blocked', () => {
+    expect(shouldBlockSignIn({ created_at: 'bad' }, true, cutoff)).toBe(true)
+    expect(shouldBlockSignIn(null, null, cutoff)).toBe(false)
   })
 })

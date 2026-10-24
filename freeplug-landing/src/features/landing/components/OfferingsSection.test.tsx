@@ -1,7 +1,15 @@
 import { render, screen, within } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { setTestLocale } from '../../../../test/intl-mock'
 import { OfferingsSection } from './OfferingsSection'
+
+const maint = vi.hoisted(() => ({ on: false }))
+vi.mock('@/lib/auth/signups-paused', async (orig) => ({
+  ...(await orig<object>()),
+  get AUTH_MAINTENANCE() {
+    return maint.on
+  },
+}))
 
 afterEach(() => setTestLocale('en'))
 
@@ -42,5 +50,19 @@ describe('OfferingsSection (What we build)', () => {
     expect(screen.getByText('Tiendas de un producto')).toBeTruthy()
     const link = within(screen.getByTestId('offering-store')).getByRole('link')
     expect(link.getAttribute('href')).toMatch(/^\/es\/request-website$/)
+  })
+})
+
+describe('OfferingsSection during auth maintenance', () => {
+  afterEach(() => {
+    maint.on = false
+  })
+  it('cards book a call (Cal.com, new tab) instead of the login-gated request flow', () => {
+    maint.on = true
+    setTestLocale('en')
+    const { container } = render(<OfferingsSection />)
+    const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'))
+    expect(hrefs.length).toBe(6)
+    expect(hrefs.every((h) => h?.startsWith('https://cal.com/'))).toBe(true)
   })
 })

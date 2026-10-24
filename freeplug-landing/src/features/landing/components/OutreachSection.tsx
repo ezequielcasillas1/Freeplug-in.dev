@@ -1,6 +1,8 @@
 'use client'
 
 import Image from 'next/image'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Globe2, Handshake, MapPin, MessageCircle, Wrench } from 'lucide-react'
@@ -238,7 +240,8 @@ export function OutreachSection() {
               </motion.p>
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href={publicHref('/signup', locale)}
+                  href={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : publicHref('/request-website', locale)}
+                {...(AUTH_MAINTENANCE ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                   className={cn(
                     buttonVariants({ size: 'lg' }),
                     'shadow-lg shadow-[#ba3d3d]/30'
