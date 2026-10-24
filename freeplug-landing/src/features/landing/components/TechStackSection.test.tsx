@@ -144,7 +144,7 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
     expect(within(h2).getByText('Proven Tools').className).toMatch(/from-\[#ba3d3d\]/)
     expect(
       screen.getByText(
-        /^Every local business site we build uses the same setup: lightweight pages, a layout that works on\s+phones, a quote form that filters out spam, and a secure https address\.$/,
+        /^Every site we build uses the same setup: lightweight pages, a layout that works on\s+phones, a quote form that filters out spam, and a secure https address\.$/,
       ),
     ).toBeInTheDocument()
     for (const [title, line] of [

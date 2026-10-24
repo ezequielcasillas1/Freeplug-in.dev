@@ -882,7 +882,7 @@
         "getStarted": "¿Cómo empiezo?"
       },
       "answer": {
-        "freeplugReachesLocalBusiness": "Freeplug contacta a dueños de negocios locales que necesitan un sitio web, y 72 After lo construye gratis. Trabajamos en el centro de Texas: San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+        "freeplugReachesLocalBusiness": "Freeplug ayuda a negocios locales, pequeñas agencias, apps, creadores, freelancers y tiendas de un solo producto a tener sitio web, y 72 After lo construye gratis. El contacto local cubre el centro de Texas: San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
         "yesWebsiteDevelopmentFree": "Sí. Hacer el sitio web es gratis. 72 After diseña y construye tu sitio web sin costo. Cuando tu sitio esté en línea, pagas el hosting mensual, que es obligatorio. El mantenimiento o la compra del sitio cuestan aparte solo si los pides. No hay cargos ocultos ni cobros sorpresa.",
         "hostingRequiredKeepWebsite": "El hosting es obligatorio para mantener tu sitio web en línea. Puedes cancelar cuando quieras. Tu sitio sigue en línea hasta que termine el periodo que pagaste y luego se desconecta. Si vuelves a contratar el hosting, lo recuperamos.",
         "everySiteDifferentSo": "Cada sitio es diferente, así que te daremos un tiempo estimado después de revisar tu solicitud. La mayor parte del tiempo depende de qué tan rápido recibamos los datos de tu negocio y tus aprobaciones. Te mantendremos al tanto en cada paso.",
@@ -897,11 +897,11 @@
     },
     "meta": {
       "siteTitle": "Sitios web gratis para negocios | Freeplug",
-      "siteDescription": "Freeplug encuentra a dueños de negocios locales que necesitan un sitio web. 72 After construye el sitio gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
-      "ogTitle": "Sitios web gratis para negocios locales | Freeplug",
-      "ogDescription": "¿Tienes un negocio local sin sitio web? Pide uno. 72 After lo construye gratis.",
-      "homeTitle": "Sitios web gratis para negocios locales en el centro de Texas | Freeplug",
-      "homeDescription": "Freeplug ayuda a dueños de negocios locales a tener un sitio web. 72 After lo construye gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+      "siteDescription": "Sitios web gratis para negocios locales, pequeñas agencias, apps sencillas, creadores, freelancers y tiendas de un solo producto. 72 After los construye. Estamos en el centro de Texas.",
+      "ogTitle": "Sitios web gratis para negocios y creadores | Freeplug",
+      "ogDescription": "¿Negocio, agencia, app, creador o tiendita? Pide tu sitio. 72 After lo construye gratis.",
+      "homeTitle": "Sitios web gratis para negocios, agencias y creadores | Freeplug",
+      "homeDescription": "Freeplug ayuda a negocios locales, pequeñas agencias, apps sencillas, creadores, freelancers y tiendas de un solo producto a tener sitio web. 72 After lo construye gratis.",
       "previewTitle": "Vista previa de tu sitio web | Freeplug",
       "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
@@ -927,7 +927,7 @@
         "aboutFreeplug": "Sobre Freeplug",
         "freeplugDoes": "Qué hace <span>Freeplug</span>",
         "freeplug72AfterWorkTogether": "Freeplug y 72 After trabajan juntos: Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
-        "freeplugOutreachSide": "Freeplug es la parte de contacto. Buscamos negocios locales con un sitio web débil o sin sitio web y los invitamos a recibir un sitio gratis. Cuando un dueño dice que sí, 72 After crea el sitio con una plantilla sólida, sus servicios reales y páginas claras para pedir una cotización. Freeplug inicia la conversación. 72 After hace el sitio."
+        "freeplugOutreachSide": "Freeplug es la parte de contacto. Buscamos negocios, agencias, creadores y freelancers con un sitio web débil o sin sitio web y los invitamos a recibir un sitio gratis. Cuando un dueño dice que sí, 72 After crea el sitio con una plantilla sólida, sus servicios reales y páginas claras para pedir una cotización. Freeplug inicia la conversación. 72 After hace el sitio."
       },
       "cTA": {
         "freeplug72After": "Freeplug · 72 After",
@@ -965,7 +965,7 @@
       },
       "hero": {
         "freeplugOutreach72AfterBuilds": "Freeplug contacta · 72 After construye",
-        "headline": "Sitios web gratis para<br/><span>negocios locales</span>",
+        "headline": "Sitios web gratis para<br/><span>negocios y creadores</span>",
         "freeplugReachesOwnersWhoNeed": "Freeplug contacta a dueños que necesitan un sitio. <span>72 After lo construye gratis.</span> Cuando esté en línea, el hosting mensual lo mantiene funcionando.",
         "label": {
           "modernTech": "Tecnología moderna",
@@ -1071,7 +1071,7 @@
         },
         "ourTechnology": "Nuestra tecnología",
         "builtProvenTools": "Hecho con <span>herramientas probadas</span>",
-        "everyLocalBusinessSiteBuild": "Cada sitio de negocio local que construimos usa la misma base: páginas ligeras, un diseño que funciona en celulares, un formulario de cotización que filtra el spam y una dirección https segura.",
+        "everyLocalBusinessSiteBuild": "Cada sitio que construimos usa la misma base: páginas ligeras, un diseño que funciona en celulares, un formulario de cotización que filtra el spam y una dirección https segura.",
         "performanceMatters": "Rendimiento que <span>importa</span>",
         "sitesBuiltMobileFriendlyReasonably": "Los sitios están hechos para verse bien en celular y ser razonablemente rápidos. No inventamos garantías de disponibilidad ni de puntajes.",
         "responsiveLayoutsClearQuoteRequest": "Diseños adaptables · Páginas claras para pedir cotización · El hosting mensual lo mantiene en línea"

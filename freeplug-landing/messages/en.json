@@ -882,7 +882,7 @@
         "getStarted": "How do I get started?"
       },
       "answer": {
-        "freeplugReachesLocalBusiness": "Freeplug reaches local business owners who need a website, and 72 After builds the site for free. We work in Central Texas: San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
+        "freeplugReachesLocalBusiness": "Freeplug helps local businesses, small agencies, apps, creators, freelancers and one-product stores get a website, and 72 After builds it for free. Local outreach covers Central Texas: San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
         "yesWebsiteDevelopmentFree": "Yes. Website development is free. 72 After designs and builds your website at no charge. After your site is live, you pay for monthly hosting, which is required. Maintenance or a buyout costs extra only if you ask for it. There are no hidden fees or surprise charges.",
         "hostingRequiredKeepWebsite": "Hosting is required to keep your website online. You can cancel any time. Your website stays online until your paid period ends, then goes offline. If you sign up for hosting again, we bring it back.",
         "everySiteDifferentSo": "Every site is different, so we'll give you a timeline after we review your request. Most of the time depends on how quickly we get your business details and approvals. We'll keep you updated along the way.",
@@ -897,11 +897,11 @@
     },
     "meta": {
       "siteTitle": "Free Website Outreach | Freeplug",
-      "siteDescription": "Freeplug finds local business owners who need a website. 72 After builds the free site. We serve San Marcos, Kyle, New Braunfels, San Antonio, and Austin.",
-      "ogTitle": "Free Websites for Local Businesses | Freeplug",
-      "ogDescription": "Local business without a website? Request one. 72 After builds it for free.",
-      "homeTitle": "Free Websites for Local Businesses in Central Texas | Freeplug",
-      "homeDescription": "Freeplug helps local business owners get a website. 72 After builds it for free. Serving San Marcos, Kyle, New Braunfels, San Antonio and Austin.",
+      "siteDescription": "Free websites for local businesses, small agencies, simple apps, creators, freelancers and one-product stores. 72 After builds them. Based in Central Texas.",
+      "ogTitle": "Free Websites for Businesses and Creators | Freeplug",
+      "ogDescription": "Business, agency, app, creator page or small store? Request a site. 72 After builds it free.",
+      "homeTitle": "Free Websites for Businesses, Agencies and Creators | Freeplug",
+      "homeDescription": "Freeplug gets local businesses, small agencies, simple apps, creators, freelancers and one-product stores a website. 72 After builds it for free.",
       "previewTitle": "Your website preview | Freeplug",
       "requestWebsiteTitle": "Request a website | Freeplug",
       "faqTitle": "FAQ: How Freeplug Works | Freeplug",
@@ -927,7 +927,7 @@
         "aboutFreeplug": "About Freeplug",
         "freeplugDoes": "What <span>Freeplug</span> does",
         "freeplug72AfterWorkTogether": "Freeplug and 72 After work together: Freeplug handles owner outreach; 72 After builds the free websites. We’re starting in Central Texas and growing from there.",
-        "freeplugOutreachSide": "Freeplug is the outreach side. We find local businesses with a weak or missing website and invite them to get a free site. When an owner says yes, 72 After builds the site from a solid template, their real services, and clear Get-a-quote pages. Freeplug connects the conversation. 72 After does the build."
+        "freeplugOutreachSide": "Freeplug is the outreach side. We find businesses, agencies, creators and freelancers with a weak or missing website and invite them to get a free site. When an owner says yes, 72 After builds the site from a solid template, their real services, and clear Get-a-quote pages. Freeplug connects the conversation. 72 After does the build."
       },
       "cTA": {
         "freeplug72After": "Freeplug · 72 After",
@@ -965,7 +965,7 @@
       },
       "hero": {
         "freeplugOutreach72AfterBuilds": "Freeplug outreach · 72 After builds",
-        "headline": "Free websites for<br/><span>local businesses</span>",
+        "headline": "Free websites for<br/><span>businesses and creators</span>",
         "freeplugReachesOwnersWhoNeed": "Freeplug reaches owners who need a site. <span>72 After builds it for free.</span> Once it's live, monthly hosting keeps it online.",
         "label": {
           "modernTech": "Modern Tech",
@@ -1071,7 +1071,7 @@
         },
         "ourTechnology": "Our Technology",
         "builtProvenTools": "Built On <span>Proven Tools</span>",
-        "everyLocalBusinessSiteBuild": "Every local business site we build uses the same setup: lightweight pages, a layout that works on phones, a quote form that filters out spam, and a secure https address.",
+        "everyLocalBusinessSiteBuild": "Every site we build uses the same setup: lightweight pages, a layout that works on phones, a quote form that filters out spam, and a secure https address.",
         "performanceMatters": "Performance That <span>Matters</span>",
         "sitesBuiltMobileFriendlyReasonably": "Sites are built to be mobile-friendly and reasonably fast. We don't invent uptime or score guarantees.",
         "responsiveLayoutsClearQuoteRequest": "Responsive layouts · Clear quote request pages · Monthly hosting keeps it online"
