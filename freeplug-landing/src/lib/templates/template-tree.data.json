@@ -1,0 +1,1081 @@
+{
+ "generated": "2026-10-23",
+ "categories": [
+  {
+   "id": "local",
+   "label_en": "Local businesses",
+   "label_es": "Negocios locales",
+   "niches": [
+    {
+     "id": "cleaning",
+     "label_en": "Cleaning",
+     "label_es": "Limpieza"
+    },
+    {
+     "id": "lawn_care",
+     "label_en": "Lawn care",
+     "label_es": "Jardinería"
+    },
+    {
+     "id": "contractors",
+     "label_en": "Contractors",
+     "label_es": "Contratistas"
+    },
+    {
+     "id": "salons_barbers",
+     "label_en": "Salons & barbers",
+     "label_es": "Salones y barberías"
+    },
+    {
+     "id": "restaurants",
+     "label_en": "Restaurants",
+     "label_es": "Restaurantes"
+    },
+    {
+     "id": "auto_repair",
+     "label_en": "Auto repair",
+     "label_es": "Taller mecánico"
+    },
+    {
+     "id": "medical_dental",
+     "label_en": "Medical & dental",
+     "label_es": "Médicos y dentistas"
+    },
+    {
+     "id": "insurance_tax",
+     "label_en": "Insurance & tax",
+     "label_es": "Seguros e impuestos"
+    },
+    {
+     "id": "legal",
+     "label_en": "Law firms",
+     "label_es": "Abogados"
+    },
+    {
+     "id": "real_estate",
+     "label_en": "Real estate",
+     "label_es": "Bienes raíces"
+    },
+    {
+     "id": "churches_nonprofits",
+     "label_en": "Churches & nonprofits",
+     "label_es": "Iglesias y organizaciones"
+    },
+    {
+     "id": "child_care",
+     "label_en": "Child care",
+     "label_es": "Guarderías"
+    },
+    {
+     "id": "events_weddings",
+     "label_en": "Events & weddings",
+     "label_es": "Eventos y bodas"
+    }
+   ]
+  },
+  {
+   "id": "saas",
+   "label_en": "SaaS & web apps",
+   "label_es": "SaaS y apps web",
+   "niches": [
+    {
+     "id": "mini_saas",
+     "label_en": "Mini SaaS",
+     "label_es": "Mini SaaS"
+    },
+    {
+     "id": "dashboards",
+     "label_en": "Dashboards",
+     "label_es": "Paneles"
+    },
+    {
+     "id": "app_landing",
+     "label_en": "App landing pages",
+     "label_es": "Páginas para apps"
+    }
+   ]
+  },
+  {
+   "id": "agency",
+   "label_en": "Agencies",
+   "label_es": "Agencias",
+   "niches": [
+    {
+     "id": "marketing",
+     "label_en": "Marketing",
+     "label_es": "Marketing"
+    },
+    {
+     "id": "design",
+     "label_en": "Design",
+     "label_es": "Diseño"
+    },
+    {
+     "id": "consulting",
+     "label_en": "Consulting",
+     "label_es": "Consultoría"
+    }
+   ]
+  },
+  {
+   "id": "creator",
+   "label_en": "Creators",
+   "label_es": "Creadores",
+   "niches": [
+    {
+     "id": "portfolios",
+     "label_en": "Portfolios",
+     "label_es": "Portafolios"
+    },
+    {
+     "id": "coaches",
+     "label_en": "Coaches",
+     "label_es": "Coaches"
+    },
+    {
+     "id": "podcasts",
+     "label_en": "Podcasts",
+     "label_es": "Podcasts"
+    }
+   ]
+  },
+  {
+   "id": "booking",
+   "label_en": "Freelancer booking sites",
+   "label_es": "Sitios de reservas para freelancers",
+   "niches": [
+    {
+     "id": "booking",
+     "label_en": "Booking sites",
+     "label_es": "Sitios de reservas"
+    }
+   ]
+  },
+  {
+   "id": "store",
+   "label_en": "One-product stores",
+   "label_es": "Tiendas de un solo producto",
+   "niches": [
+    {
+     "id": "store",
+     "label_en": "One-product stores",
+     "label_es": "Tiendas de un solo producto"
+    }
+   ]
+  }
+ ],
+ "templates": [
+  {
+   "template_id": "cleaning-6",
+   "name": "Cleanu - Cleaning Services HTML",
+   "category": "local",
+   "niche": "cleaning",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/f2e85944-c3ae-421c-9f2f-c475c0dd93bc?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=5f135cb2489f9815b8a6bb509fc7b136333d2549f47357fa7c0f93dd2f92e0c5",
+   "live_demo_url": "https://validthemes.net/site-template/landing-page/cleanu/?storefront=envato-elements",
+   "good_for_en": "Cleaning companies and home services; includes a conversion-focused, fully responsive layout.",
+   "good_for_es": "Empresas de limpieza y servicios del hogar; diseño responsivo enfocado en conversiones."
+  },
+  {
+   "template_id": "cleaning-12",
+   "name": "Cleanify - Cleaning Services HTML",
+   "category": "local",
+   "niche": "cleaning",
+   "edition": "HTML",
+   "author": "ThemeMascot",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/6271f90f-de39-4f34-8ea1-4daba361ad10?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=8232dba2fd5969c89805cc634cc18e95b9cdb10059d7dbbcb3af9ac96929548d",
+   "live_demo_url": "https://html.kodesolution.com/2025/cleanify-html/?storefront=envato-elements",
+   "good_for_en": "Cleaning services wanting ready-made web elements and a fully responsive layout.",
+   "good_for_es": "Servicios de limpieza que buscan elementos web listos y diseño responsivo."
+  },
+  {
+   "template_id": "cleaning-13",
+   "name": "Clenia - Cleaning Services HTML",
+   "category": "local",
+   "niche": "cleaning",
+   "edition": "HTML",
+   "author": "Devsdesign",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/57038f71-8eca-48d3-af71-f9a916bebfe1?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=45c022e5a00395e33413dafd3f6989e386950973526dfb5944e8cbef64c81145",
+   "live_demo_url": "https://devsdesign.net/products/html/clenia?storefront=envato-elements",
+   "good_for_en": "Office and home cleaning businesses; clean, modern design that is easy to customize.",
+   "good_for_es": "Negocios de limpieza de oficinas y hogares; diseño limpio, moderno y fácil de editar."
+  },
+  {
+   "template_id": "cleaning-14",
+   "name": "Tidytouch - Cleaning Services HTML",
+   "category": "local",
+   "niche": "cleaning",
+   "edition": "HTML",
+   "author": "bracketweb",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/cef0dddb-aa61-4f0d-9326-8e50fdffbd74?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=dd80a7de373bd33a481bfdae370f17e899b670fbe3b4d56af68ec47e004a0a4c",
+   "live_demo_url": "https://bracketweb.com/tidytouchhhtml/demo-landing.html?storefront=envato-elements",
+   "good_for_en": "House, maid, laundry and office cleaners; creative, modern service-business layout.",
+   "good_for_es": "Limpieza de casas, oficinas y lavanderías; diseño moderno y creativo para servicios."
+  },
+  {
+   "template_id": "restaurant_texmex-2",
+   "name": "Foores - Restaurant Site Template",
+   "category": "local",
+   "niche": "restaurants",
+   "edition": "HTML",
+   "author": "Ansonika",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/fc7c4495-3263-4135-b966-b77d733de9d4?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=440d1f3164f469368bcd6fb486af8a501172d33e2470f92b8ad07058f098cd65",
+   "live_demo_url": "http://www.ansonika.com/foores/?storefront=envato-elements",
+   "good_for_en": "Cafes and restaurants; includes working forms with a reservation wizard.",
+   "good_for_es": "Cafeterías y restaurantes; incluye formularios funcionales con asistente de reservaciones."
+  },
+  {
+   "template_id": "restaurant_texmex-4",
+   "name": "Babuka - Restaurant & Fast Food HTML",
+   "category": "local",
+   "niche": "restaurants",
+   "edition": "HTML",
+   "author": "themedevo",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/7fdd6c7f-5a37-44dd-b2a0-3f56b93ae767?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=96113d9f4572a3c36ef3f7352908daa5ae0ba21b8270ae730bda6b1ebdde9f67",
+   "live_demo_url": "https://babuka.netlify.app/?storefront=envato-elements",
+   "good_for_en": "Restaurants and fast food counters; ships with three complete homepage designs.",
+   "good_for_es": "Restaurantes y comida rápida; trae tres diseños completos de página de inicio."
+  },
+  {
+   "template_id": "food_truck-4",
+   "name": "Meals & Wheels / Street Festival & Fast Food",
+   "category": "local",
+   "niche": "restaurants",
+   "edition": "WordPress",
+   "author": "ThemeREX",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/d9c9e44e-c0f0-453b-869b-70afe3f50aa4?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=7b5d1fb2c7c9d0b82dadf05938069bba2b7ee00596f0140abb04b33c57095f30",
+   "live_demo_url": "http://meals-wheels.themerex.net/?storefront=envato-elements",
+   "good_for_en": "Food trucks and food delivery; stylish street-food WordPress theme.",
+   "good_for_es": "Food trucks y comida a domicilio; tema de WordPress con estilo de comida callejera."
+  },
+  {
+   "template_id": "food_truck-5",
+   "name": "Foodio - Fast Food Restaurant WordPress Theme",
+   "category": "local",
+   "niche": "restaurants",
+   "edition": "WordPress",
+   "author": "Bravis-Themes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/b7baaf43-1366-417d-bb6a-607401bcf1e6?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=3b133bcc67f4f09df98453d9069f405d72c4fab38a4a31b0db61772c76f94f96",
+   "live_demo_url": "https://demo.bravisthemes.com/foodio/?storefront=envato-elements",
+   "good_for_en": "Food trucks, takeaways and pop-up restaurants; responsive, retina-ready WordPress theme.",
+   "good_for_es": "Food trucks, comida para llevar y restaurantes pop-up; tema WordPress responsivo."
+  },
+  {
+   "template_id": "food_truck-8",
+   "name": "Foodu - Fast Food & Restaurant HTML",
+   "category": "local",
+   "niche": "restaurants",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/b21985c5-a97a-4fca-b01f-6afe8fa8c167?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=766603ce4ebe9cce23c111341b5b97ceee94519ef07497a29ea41db7b8754a98",
+   "live_demo_url": "https://validthemes.net/site-template/landing-page/foodu/?storefront=envato-elements",
+   "good_for_en": "Fast food restaurants and cafes; customizable template with RTL support.",
+   "good_for_es": "Restaurantes de comida rápida y cafeterías; plantilla personalizable con soporte RTL."
+  },
+  {
+   "template_id": "medical_clinic-7",
+   "name": "Madies - Health & Medical HTML",
+   "category": "local",
+   "niche": "medical_dental",
+   "edition": "HTML",
+   "author": "thememarch",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/8f2d3bb4-6825-42ff-8920-51e5b6822884?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=dd6c33113915e3ae031175ae7c82bb3a36a2be0368a5852cbb67d0796d21664f",
+   "live_demo_url": "https://madies.vercel.app/?storefront=envato-elements",
+   "good_for_en": "Clinics, doctors and dentists; built with appointment booking sections in mind.",
+   "good_for_es": "Clínicas, médicos y dentistas; pensada para secciones de citas en línea."
+  },
+  {
+   "template_id": "medical_clinic-9",
+   "name": "Clinica - Medical HTML Template",
+   "category": "local",
+   "niche": "medical_dental",
+   "edition": "HTML",
+   "author": "ThemeAtelier",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/9758e31e-cd0f-4576-8e4a-211f45f570b0?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=f7efc184481031d41117eabdd20cacfe071d721937271354c2b22c34ef0bf11a",
+   "live_demo_url": "http://themeatelier.net/site-templates/clinica/demo/?storefront=envato-elements",
+   "good_for_en": "Medical practices wanting a polished, multi-page professional clinic website.",
+   "good_for_es": "Consultorios médicos que buscan un sitio profesional de varias páginas."
+  },
+  {
+   "template_id": "dental-1",
+   "name": "Healthy Smiles - Dental",
+   "category": "local",
+   "niche": "medical_dental",
+   "edition": "WordPress",
+   "author": "cmsmasters",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/25937771-f4bd-4cd7-984a-51afb2a12218?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=ca6984a55e394da63e232d87fa85843d53c1224d674face4a421e138522bc17c",
+   "live_demo_url": "https://healthy-smiles.cmsmasters.net/?storefront=envato-elements",
+   "good_for_en": "Dental clinics on WordPress; Elementor theme with free Figma design file.",
+   "good_for_es": "Clínicas dentales en WordPress; tema Elementor con archivo Figma gratis."
+  },
+  {
+   "template_id": "dental-5",
+   "name": "Stomatology - Dentist & Dental Clinic",
+   "category": "local",
+   "niche": "medical_dental",
+   "edition": "WordPress",
+   "author": "axiomthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/f33d779a-7d28-4c08-aafc-8861c85a8a17?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=c1dcd059e71992676f331ad13d90efb5aa3fd0c1b4ae87eda7af9d780b79a2f6",
+   "live_demo_url": "https://stomatology.axiomthemes.com/?storefront=envato-elements",
+   "good_for_en": "Dentists and tooth-repair clinics; fresh, clean WordPress theme for healthcare.",
+   "good_for_es": "Dentistas y clínicas dentales; tema WordPress limpio para salud."
+  },
+  {
+   "template_id": "dental-8",
+   "name": "Dentexa - Dental Clinic HTML",
+   "category": "local",
+   "niche": "medical_dental",
+   "edition": "HTML",
+   "author": "template_path",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/0c7f9585-f204-489a-9906-280050edcafb?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=d6c97bf172d984510749022481d7578acdf49b44ff71f0cbd3e7edfe21db04df",
+   "live_demo_url": "https://html.tonatheme.com/2025/dentexa/?storefront=envato-elements",
+   "good_for_en": "Dentists, doctors and health clinics; HTML template for medical organizations.",
+   "good_for_es": "Dentistas, médicos y clínicas; plantilla HTML para organizaciones de salud."
+  },
+  {
+   "template_id": "hvac-2",
+   "name": "Coolair - Air Conditioning & Heating HVAC",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "WordPress",
+   "author": "reacthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/c63de40d-6bbd-4b64-b636-9c416880f380?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=2ef695658e65108a18732edca68eba56a70d34338dbb8ee6ef2f6a6e3d3fbad2",
+   "live_demo_url": "https://themewant.com/products/wordpress/landing/coolair/?storefront=envato-elements",
+   "good_for_en": "HVAC heating and cooling companies; professional, modern WordPress theme.",
+   "good_for_es": "Empresas de aire acondicionado y calefacción; tema WordPress moderno y profesional."
+  },
+  {
+   "template_id": "hvac-3",
+   "name": "Airtech - Plumber HVAC and Repair",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "WordPress",
+   "author": "Templatation",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/54b1e461-0f65-49d2-ad15-20eac6272ff2?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=b06d2b0757dd08d22ccb54f53b4f73d9324ecea6f6f060771e7bb255bb897ac9",
+   "live_demo_url": "https://airtech.bolvosites.com/?storefront=envato-elements",
+   "good_for_en": "Plumbers, heating, AC and roofing services; WordPress theme for service trades.",
+   "good_for_es": "Plomeros, calefacción, aire y techos; tema WordPress para oficios de servicio."
+  },
+  {
+   "template_id": "plumbing_electrical-2",
+   "name": "Ploming - Plumber & Handyman WP",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "WordPress",
+   "author": "Layerdrops",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/09a2afd9-8c3a-41ed-88c5-8bd87b8114c8?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=662372fa1157d9c7bb0e0a37798466020312f3e96f731ccb83815588b7c19746",
+   "live_demo_url": "https://plomingwp.pixydrops.com/?storefront=envato-elements",
+   "good_for_en": "Plumbers, electricians and handymen; multipurpose WordPress theme for home services.",
+   "good_for_es": "Plomeros, electricistas y técnicos; tema WordPress multiuso para servicios del hogar."
+  },
+  {
+   "template_id": "plumbing_electrical-4",
+   "name": "Plumbor - Plumber Service HTML5",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "HTML",
+   "author": "wpoceans",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/e04fa123-3742-466f-99da-dde5f29c9756?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=e95b7c2c8a6d95ad432876452a96462b0b81d9162b8392e7e5d2334fb160bd9f",
+   "live_demo_url": "https://wpolive.com/html/plumbor-live/index.html?storefront=envato-elements",
+   "good_for_en": "Plumbing and repair pros; clean, professional HTML5 service template.",
+   "good_for_es": "Plomería y reparaciones; plantilla HTML5 limpia y profesional."
+  },
+  {
+   "template_id": "plumbing_electrical-6",
+   "name": "Electricien - Electrician Electrical WP",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "WordPress",
+   "author": "KodeSolution",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/de957fa1-2b67-4b32-9798-64cbf3b4d34e?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=d21b5675206e4ef42785955bc36cf1357b3afc14c6c97f4af110b4a684a01292",
+   "live_demo_url": "https://dev242.kodesolution.com/electricien/intro/?storefront=envato-elements",
+   "good_for_en": "Electricians and electrical contractors; WordPress theme for electrical services.",
+   "good_for_es": "Electricistas y contratistas eléctricos; tema WordPress para servicios eléctricos."
+  },
+  {
+   "template_id": "roofing_remodel-2",
+   "name": "Roofex - Roofing WP",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "WordPress",
+   "author": "Case-Themes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/6cc63664-9c5d-4c75-9119-dbe2321271b9?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=b556223c30c76cc58fd6230e1d8899654c5f18da19c91a8fdce32a7d7594d6a1",
+   "live_demo_url": "https://demo.casethemes.net/roofex/landing-page/?storefront=envato-elements",
+   "good_for_en": "Roofing companies doing repair and replacement; light, fresh WordPress design.",
+   "good_for_es": "Empresas de techos, reparación y reemplazo; diseño WordPress fresco y ligero."
+  },
+  {
+   "template_id": "roofing_remodel-8",
+   "name": "Roofora - Roofing Services HTML",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "HTML",
+   "author": "designingmedia",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/261a3a17-d1e9-4228-8e70-c17fc0f8778f?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=419d693888e77be2adab671debb88a4168666fb1f81c3f0dadab0685ee32a71d",
+   "live_demo_url": "https://html.designingmedia.com/roofora/?storefront=envato-elements",
+   "good_for_en": "Roofing and construction contractors; modern, performance-driven HTML template.",
+   "good_for_es": "Contratistas de techos y construcción; plantilla HTML moderna y rápida."
+  },
+  {
+   "template_id": "real_estate-7",
+   "name": "Landor - Real Estate & Property Listing HTML",
+   "category": "local",
+   "niche": "real_estate",
+   "edition": "HTML",
+   "author": "Theme_Pure",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/ae5caa37-163b-479c-b859-98ec0403c2c1?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=83d9a99a2b95df251f255def99eba7d500f0ed29de0d9114487dca23aa02fa37",
+   "live_demo_url": "https://html.aqlova.com/landor-prev/?storefront=envato-elements",
+   "good_for_en": "Real estate agencies and brokers; property listing template focused on conversions.",
+   "good_for_es": "Inmobiliarias y corredores; plantilla de propiedades enfocada en conversiones."
+  },
+  {
+   "template_id": "legal-4",
+   "name": "Jurist - Law Firm & Attorney",
+   "category": "local",
+   "niche": "legal",
+   "edition": "WordPress",
+   "author": "ThemeREX",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/db1ee6a0-5b1e-4efe-8907-70aae35bf40e?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=09b05e5dabcaa5a975320a2066035518a667e4fc026653e60cb002d3e9d3efcd",
+   "live_demo_url": "https://jurist.themerex.net/?storefront=envato-elements",
+   "good_for_en": "Law firms and attorneys; WordPress theme also fit for financial advisers.",
+   "good_for_es": "Despachos de abogados; tema WordPress útil también para asesores financieros."
+  },
+  {
+   "template_id": "legal-9",
+   "name": "Atorn - Law Firm & Attorney Bootstrap 5",
+   "category": "local",
+   "niche": "legal",
+   "edition": "HTML",
+   "author": "HiBootstrap",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/55548165-ad11-421c-ad79-d31fb54bab2c?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=f5286d9b9b3378880d6684aeaeafebf3c1a4c5299b997374948bf787d7dea9c7",
+   "live_demo_url": "https://preview.hibootstrap.com/atorn-html/?storefront=envato-elements",
+   "good_for_en": "Law firms and solicitors; three demos with Bootstrap 5, Sass and RTL.",
+   "good_for_es": "Despachos y abogados; tres demos con Bootstrap 5, Sass y RTL."
+  },
+  {
+   "template_id": "landscaping_lawn-2",
+   "name": "Yard - Gardening, Landscaping & Lawn",
+   "category": "local",
+   "niche": "lawn_care",
+   "edition": "WordPress",
+   "author": "axiomthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/99cad200-613f-43a0-846b-3256b9b54ed7?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=4af5d3c27f1c1f4f19860848771854cc0502f8449de3fc294ae94c4a60d5a462",
+   "live_demo_url": "https://yard.axiomthemes.com/?storefront=envato-elements",
+   "good_for_en": "Gardening, landscaping and lawn services; fresh, functional WordPress theme.",
+   "good_for_es": "Jardinería, paisajismo y pasto; tema WordPress fresco y funcional."
+  },
+  {
+   "template_id": "landscaping_lawn-3",
+   "name": "Garden HUB - Lawn & Landscaping",
+   "category": "local",
+   "niche": "lawn_care",
+   "edition": "WordPress",
+   "author": "SteelThemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/11eb731c-1fe9-42e8-b5a6-1bc5346ad435?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=00bf756238f4712d3304913420fce0ba02b7f755790bd77765461cece6f657c3",
+   "live_demo_url": "http://demo2.steelthemes.com/intro/gardenhub/?storefront=envato-elements",
+   "good_for_en": "Landscaping companies and lawn services; WordPress theme made for green trades.",
+   "good_for_es": "Paisajistas y servicios de pasto; tema WordPress hecho para jardinería."
+  },
+  {
+   "template_id": "landscaping_lawn-5",
+   "name": "Gardeno - Gardening and Landscaping",
+   "category": "local",
+   "niche": "lawn_care",
+   "edition": "WordPress",
+   "author": "wowtheme7",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/0598d44f-cbe6-4dc2-94a7-43cd80f8fbf9?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=a7b35d3abb8d6300878af249494b8e95a7f237db665797f3deafcf092b4df9f8",
+   "live_demo_url": "https://gardenowp.wowtheme7.com/?storefront=envato-elements",
+   "good_for_en": "Gardening, landscaping and lawn care; modern, fully responsive WordPress theme.",
+   "good_for_es": "Jardinería, paisajismo y cuidado de pasto; tema WordPress moderno y responsivo."
+  },
+  {
+   "template_id": "landscaping_lawn-6",
+   "name": "Leafix - Landscaping & Gardening HTML",
+   "category": "local",
+   "niche": "lawn_care",
+   "edition": "HTML",
+   "author": "ThemeServices",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/51d7db43-9190-4959-bbf3-75e1b10dca7b?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=17bccd743ca0987b11a3cf202751961f0619499c69ec7746d7772d1b12f91f24",
+   "live_demo_url": "https://nayonacademy.com/html/leafix/?storefront=envato-elements",
+   "good_for_en": "Landscapers, lawn care and flower shops; versatile outdoor-services HTML template.",
+   "good_for_es": "Paisajistas, pasto y florerías; plantilla HTML versátil para exteriores."
+  },
+  {
+   "template_id": "auto_repair-5",
+   "name": "Cras - Car Repair & Auto Services HTML",
+   "category": "local",
+   "niche": "auto_repair",
+   "edition": "HTML",
+   "author": "thememarch",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/3ff89833-75a6-41ec-8a3e-81e859cc7dc8?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=bc3872b4ef0fe27c6b0756c2c45462e0d2059c6f1fc17014aeace0dcca9e4bca",
+   "live_demo_url": "https://cras-three.vercel.app/?storefront=envato-elements",
+   "good_for_en": "Car repair and auto service shops; stylish HTML template for mechanics.",
+   "good_for_es": "Talleres y servicios automotrices; plantilla HTML con estilo para mecánicos."
+  },
+  {
+   "template_id": "auto_repair-6",
+   "name": "Servixa - Car Repair & Auto Services HTML5",
+   "category": "local",
+   "niche": "auto_repair",
+   "edition": "HTML",
+   "author": "dreamlayout",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/43cb6729-402b-424d-8444-80e7706be4bf?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=db528deb466f4f50f48a8db031fa00d85cf5a1db47ff5fe37b265473ba5cc741",
+   "live_demo_url": "https://dreamlayout.mnsithub.com/html/servixa/?storefront=envato-elements",
+   "good_for_en": "Mechanics, auto service centers and workshops; clean responsive HTML5 template.",
+   "good_for_es": "Mecánicos, centros de servicio y talleres; plantilla HTML5 limpia y responsiva."
+  },
+  {
+   "template_id": "auto_repair-7",
+   "name": "Autoexpert - Car Repair & Services HTML",
+   "category": "local",
+   "niche": "auto_repair",
+   "edition": "HTML",
+   "author": "KodeSolution",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/446ff914-4d34-4d1e-849c-c9e42069de51?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=34f5c88a9b859f34f6a9420bdc001dde72bddf98e9e03c14f246f514079fb5e3",
+   "live_demo_url": "https://html.kodesolution.com/2024/autoexpert-html/intro.html?storefront=envato-elements",
+   "good_for_en": "Car repair shops; library of ready-made web elements, fully responsive.",
+   "good_for_es": "Talleres mecánicos; biblioteca de elementos web listos y responsivos."
+  },
+  {
+   "template_id": "salon_barber-7",
+   "name": "Barberon - Barbershop & Hair Salon HTML",
+   "category": "local",
+   "niche": "salons_barbers",
+   "edition": "HTML",
+   "author": "designesia",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/eeac7ca4-bd15-4bf3-a39c-046aa3baa179?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=9d80252752556057d836ac26ad182a874356927c8885f9ec77eb35ebec3de5df",
+   "live_demo_url": "https://designesia.com/barberon?storefront=envato-elements",
+   "good_for_en": "Barbers, grooming lounges and men's salons; timeless style with modern design.",
+   "good_for_es": "Barberos y salones para caballero; estilo clásico con diseño moderno."
+  },
+  {
+   "template_id": "salon_barber-8",
+   "name": "Trimly - Barbershop & Hair Salon HTML",
+   "category": "local",
+   "niche": "salons_barbers",
+   "edition": "HTML",
+   "author": "designingmedia",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/f2bbff0f-c6dd-4d6c-a8e5-fab01c539c05?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=9d6b3931df07f7fb7053a6b765ff5b57cdbfdca53bfca76a5953b94e1ad71d87",
+   "live_demo_url": "https://html.designingmedia.com/trimly/index.html?storefront=envato-elements",
+   "good_for_en": "Barbershops, hair stylists and beauty salons; modern, stylish HTML template.",
+   "good_for_es": "Barberías, estilistas y salones de belleza; plantilla HTML moderna."
+  },
+  {
+   "template_id": "insurance_tax-2",
+   "name": "Fountax - Tax Advisor (Gutenverse FSE)",
+   "category": "local",
+   "niche": "insurance_tax",
+   "edition": "WordPress",
+   "author": "jegtheme",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/dc89b13f-8947-4526-958d-52f99c458536?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=818a0a87427b6a42c9f35a18d29e3944bbf3bd4a70e298e25d51e6e2d3e0cc26",
+   "live_demo_url": "https://fse.jegtheme.com/fountax/?storefront=envato-elements",
+   "good_for_en": "Tax advisors, accountants and insurance agencies; WordPress theme for finance pros.",
+   "good_for_es": "Asesores fiscales, contadores y aseguradoras; tema WordPress para finanzas."
+  },
+  {
+   "template_id": "insurance_tax-4",
+   "name": "Liability / Insurance & Risk Management",
+   "category": "local",
+   "niche": "insurance_tax",
+   "edition": "WordPress",
+   "author": "AncoraThemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/e005dc5b-bc96-4280-aa93-25b102adb00b?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=02af69b2dbde9ceb063263ed46e480f94d542774cef47eaf3d88d9a2e0ab0fa0",
+   "live_demo_url": "https://liability.ancorathemes.com/?storefront=envato-elements",
+   "good_for_en": "Insurance agencies and tax assistance firms; responsive, versatile WordPress theme.",
+   "good_for_es": "Agencias de seguros y despachos fiscales; tema WordPress versátil y responsivo."
+  },
+  {
+   "template_id": "insurance_tax-7",
+   "name": "Urane - Insurance HTML",
+   "category": "local",
+   "niche": "insurance_tax",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/8d60a642-27a7-428d-a8c4-bb7fff931786?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=dbb108ac2d3aa6d94396aee04b60f302c15a1c612762793d069ea24b04c19b13",
+   "live_demo_url": "https://validthemes.net/site-template/landing-page/urane/?storefront=envato-elements",
+   "good_for_en": "Insurance agents and brokers; high-performance, fully responsive HTML template.",
+   "good_for_es": "Agentes y corredores de seguros; plantilla HTML rápida y responsiva."
+  },
+  {
+   "template_id": "church-6",
+   "name": "Blesso / Nonprofit Church HTML",
+   "category": "local",
+   "niche": "churches_nonprofits",
+   "edition": "HTML",
+   "author": "winsfolio",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/fc5a6965-18bb-47da-8258-b8ac0a6262a3?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=4580af610d26382c19f3532eb9d4881de6acf784eb22a03fdce01a209526e64d",
+   "live_demo_url": "https://winsfolio.net/blesso/?storefront=envato-elements",
+   "good_for_en": "Churches and nonprofits; easy-to-customize Bootstrap 5 HTML5 template.",
+   "good_for_es": "Iglesias y organizaciones sin fines de lucro; plantilla Bootstrap 5 fácil de editar."
+  },
+  {
+   "template_id": "child_care-2",
+   "name": "KidsCenter - Kindergarten and Kid Care",
+   "category": "local",
+   "niche": "child_care",
+   "edition": "WordPress",
+   "author": "BZOTheme",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/a6cd1204-1c99-4d9e-9bdb-0deb9c4a867e?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=259a2b12ed452c8e913f956c83063f985bd04e35ad3f0263a51cd43ba7951e24",
+   "live_demo_url": "https://kidscenter.bzotech.com/intro/?storefront=envato-elements",
+   "good_for_en": "Kindergartens and child care centers; WordPress theme for early education.",
+   "good_for_es": "Kínderes y guarderías; tema WordPress para educación infantil."
+  },
+  {
+   "template_id": "event_venue-7",
+   "name": "Weddingo - Wedding & Planner HTML",
+   "category": "local",
+   "niche": "events_weddings",
+   "edition": "HTML",
+   "author": "KodeSolution",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/0a75443b-ea70-4c5e-a485-c2cd8f78cb54?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=a60bd82f603721101c7954b09231ff9012ac4b3c693f52ee6c16d962651a56ae",
+   "live_demo_url": "https://html.kodesolution.com/2025/weddingo-html/?storefront=envato-elements",
+   "good_for_en": "Wedding planners and event venues; responsive HTML template with ready elements.",
+   "good_for_es": "Organizadores de bodas y salones de eventos; plantilla HTML responsiva."
+  },
+  {
+   "template_id": "other_local-6",
+   "name": "Repio - Handyman Multipurpose HTML",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "HTML",
+   "author": "wowtheme7",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/c7aaffd0-2aac-4bc4-9d5a-77f0eede2230?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=cfa858ddc281d3c8e305c4cc201764595d6ccac95e1b341c47270cde69dcf61c",
+   "live_demo_url": "https://wowtheme7.com/tf/repio/?storefront=envato-elements",
+   "good_for_en": "Handymen, plumbers and renovation crews; functional multipurpose repair-service template.",
+   "good_for_es": "Técnicos, plomeros y remodelación; plantilla multiuso para reparaciones."
+  },
+  {
+   "template_id": "hvac-7",
+   "name": "CoolAir - HVAC Service Website Template",
+   "category": "local",
+   "niche": "contractors",
+   "edition": "HTML",
+   "author": "designesia",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/a3f9ced2-66c1-4536-a003-fb78b99888e7?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=3c9eefbd8b869467c741e5ccbbebb81b425597650c2b46c45b5620296699410e",
+   "live_demo_url": "https://designesia.com/themes/coolair/index-select.html?storefront=envato-elements",
+   "good_for_en": "HVAC heating and cooling contractors; professional HTML website template.",
+   "good_for_es": "Contratistas de aire acondicionado y calefacción; plantilla HTML profesional."
+  },
+  {
+   "template_id": "auto_repair-4",
+   "name": "Auto Macchina - Mechanic & Car Repair",
+   "category": "local",
+   "niche": "auto_repair",
+   "edition": "WordPress",
+   "author": "vamtam",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/43f7b2f2-26a0-4cad-ad75-ece22ecd1d86?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=c0ebf686a31acd9b75814759e20727b2cd67cea5f47f56a40cd155f13bd32244",
+   "live_demo_url": "https://themes.vamtam.com/?theme=macchina&storefront=envato-elements",
+   "good_for_en": "Auto repair garages and mechanics; WordPress theme with Elements support offer.",
+   "good_for_es": "Talleres y mecánicos; tema WordPress con oferta de soporte para Elements."
+  },
+  {
+   "template_id": "mini_saas-appku",
+   "name": "Appku – SaaS & App Landing HTML Template",
+   "category": "saas",
+   "niche": "mini_saas",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/cdc5b962-1a94-4e3a-869d-8739e66eac14?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=7fd1ebd6e7385118b33bd4fdfb7734ca3e9d11bc9ded060f705dbcc16979e2d2",
+   "live_demo_url": "https://validthemes.net/site-template/landing-page/appku/?storefront=envato-elements",
+   "good_for_en": "SaaS startups and software products; 14+ demos and 100+ pre-built sections.",
+   "good_for_es": "Startups SaaS y software; más de 14 demos y 100 secciones listas."
+  },
+  {
+   "template_id": "mini_saas-softing",
+   "name": "Softing – Software & SaaS Landing Page Template",
+   "category": "saas",
+   "niche": "mini_saas",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/67b05ee2-6573-44da-b9b4-91514997b784?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=148079c02c068efa52780623c790fc743e150e0d03dd78d1a0cfcfdd92aa2352",
+   "live_demo_url": "https://validthemes.net/site-template/landing-page/softing/?storefront=envato-elements",
+   "good_for_en": "Software startups and SaaS products; Bootstrap 5 landing page with smooth animations.",
+   "good_for_es": "Startups de software y SaaS; landing en Bootstrap 5 con animaciones suaves."
+  },
+  {
+   "template_id": "mini_saas-astriol",
+   "name": "Astriol - Software App, SaaS Landing HTML Template",
+   "category": "saas",
+   "niche": "mini_saas",
+   "edition": "HTML",
+   "author": "GPTheme",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/0498cbad-3999-4e37-a755-97e7f2e9e5ed?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=9563b085141b855e1e6c69c1332dd25e03b93b74f02ec78987371b064adca7e9",
+   "live_demo_url": "https://html.gptheme.com/astriol/demo/?storefront=envato-elements",
+   "good_for_en": "Startups and SaaS companies; nine unique landing pages plus inner pages.",
+   "good_for_es": "Startups y empresas SaaS; nueve landings únicas más páginas internas."
+  },
+  {
+   "template_id": "dashboards-silva",
+   "name": "Silva - Bootstrap Admin & Dashboard UI Kit",
+   "category": "saas",
+   "niche": "dashboards",
+   "edition": "HTML",
+   "author": "Zoyo-Themes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/0d105b57-3b06-4e2f-a3e2-4024e5c76c81?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=fe625f18ce79d4b617527b5623bfb971f7f48192806582d9a048faad6cf20988",
+   "live_demo_url": "https://zoyothemes.com/silva/?storefront=envato-elements",
+   "good_for_en": "SaaS admin panels and CRMs; 90+ pages and 300+ UI components.",
+   "good_for_es": "Paneles SaaS y CRM; más de 90 páginas y 300 componentes."
+  },
+  {
+   "template_id": "dashboards-tocly",
+   "name": "Tocly - Admin & Dashboard Template",
+   "category": "saas",
+   "niche": "dashboards",
+   "edition": "HTML",
+   "author": "themesdesign",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/d89e254a-d749-484c-a257-55b0312f99d1?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=b4e526373b2d79e70fb894890c868d5928e6e15589cda515b9714b2b3a8a9a5f",
+   "live_demo_url": "https://themesdesign.in/tocly/?storefront=envato-elements",
+   "good_for_en": "Developers building SaaS or analytics dashboards; 12+ layouts with dark mode.",
+   "good_for_es": "Desarrolladores de paneles SaaS o analítica; más de 12 diseños y modo oscuro."
+  },
+  {
+   "template_id": "dashboards-rukada",
+   "name": "Rukada - Responsive Bootstrap 5 Admin Template",
+   "category": "saas",
+   "niche": "dashboards",
+   "edition": "HTML",
+   "author": "codervent",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/9809bfc7-cc3a-4802-ac35-5599e094cb69?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=86cc6aeac1460156078e7086093013146e694df40142da6bb67004a527ac93ef",
+   "live_demo_url": "https://store.codervent.com/rukada/index.html?storefront=envato-elements",
+   "good_for_en": "Custom admin dashboards and CRMs; 70+ responsive pages with light and dark.",
+   "good_for_es": "Paneles admin y CRM a medida; más de 70 páginas, modo claro y oscuro."
+  },
+  {
+   "template_id": "app_landing-fintesa",
+   "name": "Fintesa - App Landing Page HTML Template",
+   "category": "saas",
+   "niche": "app_landing",
+   "edition": "HTML",
+   "author": "themesdesign",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/723a1457-80ba-49df-9cda-e67a214c74da?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=a2693a748dd44a8ee63c28a8a27a93cff8626955374b4d37ebe27a78d44d3380",
+   "live_demo_url": "https://themesdesign.in/fintesa/index.html?storefront=envato-elements",
+   "good_for_en": "Mobile apps and SaaS launches; five landing demos with pricing and screenshots.",
+   "good_for_es": "Apps y lanzamientos SaaS; cinco demos con precios y capturas."
+  },
+  {
+   "template_id": "app_landing-applock",
+   "name": "Applock - Responsive App Landing Page Template",
+   "category": "saas",
+   "niche": "app_landing",
+   "edition": "HTML",
+   "author": "themesdesign",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/1204afde-0089-4829-aced-f2b12e158edf?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=5b14489387c90b6c9da67cb1c30be0e8c573d1690101cb07f90c53f5540bcd12",
+   "live_demo_url": "https://themesdesign.in/applock/?storefront=envato-elements",
+   "good_for_en": "App and SaaS launches; light and dark modes with download CTAs.",
+   "good_for_es": "Lanzamientos de apps y SaaS; modo claro y oscuro con botones de descarga."
+  },
+  {
+   "template_id": "app_landing-hiric",
+   "name": "Hiric - Bootstrap 5 Landing Page Template",
+   "category": "saas",
+   "niche": "app_landing",
+   "edition": "HTML",
+   "author": "Themesbrand",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/91c4fcc0-c9c9-48c4-9e30-b6751b6f3cbf?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=7bd025ced69c3187ad1c2fe1338d3908c78af162ac51aae4b300995d7975236c",
+   "live_demo_url": "https://themesbrand.com/hiric/?storefront=envato-elements",
+   "good_for_en": "Mobile app showcases; nine pages including login and sign-up, no jQuery.",
+   "good_for_es": "Escaparates de apps; nueve páginas con login y registro, sin jQuery."
+  },
+  {
+   "template_id": "marketing-seonex",
+   "name": "Seonex - Digital Marketing Agency HTML Template",
+   "category": "agency",
+   "niche": "marketing",
+   "edition": "HTML",
+   "author": "htwebvn",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/baec47c2-0554-4fa1-9b98-317c5a4a3921?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=2159943722b54c61b5b9958c24bfb965b9c650bc2e176763717e573d7050335a",
+   "live_demo_url": "https://tfseonex.vercel.app/?storefront=envato-elements",
+   "good_for_en": "Digital marketing and SEO agencies; four homepage layouts for case studies.",
+   "good_for_es": "Agencias de marketing digital y SEO; cuatro inicios para casos de éxito."
+  },
+  {
+   "template_id": "marketing-moiz",
+   "name": "Moiz - Digital Marketing Agency HTML Template",
+   "category": "agency",
+   "niche": "marketing",
+   "edition": "HTML",
+   "author": "energeticthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/c38a3ab7-7716-4706-b2b0-42e409a15183?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=873d8af2a9167a0f56de6851c988cbc37b077137f50981ff6a2e9bb8d8340f67",
+   "live_demo_url": "https://www.energeticthemes.com/templates/moiz/?storefront=envato-elements",
+   "good_for_en": "Digital marketing agencies; 60+ HTML files and a working PHP contact form.",
+   "good_for_es": "Agencias de marketing digital; más de 60 archivos HTML y formulario PHP."
+  },
+  {
+   "template_id": "marketing-nocturex",
+   "name": "Nocturex - Digital Marketing Agency Elementor Template Kit",
+   "category": "agency",
+   "niche": "marketing",
+   "edition": "Elementor Kit",
+   "author": "zaderon",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/822135455/COVER%20%20NOCTUREX.jpg?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=8e8029dd808080b53bafc6ea37acddb04397d63037446c8d2fa1d573fe4c2921",
+   "live_demo_url": "https://demo.zaderonstudio.com/nocturex/template-kit/home/?storefront=envato-elements",
+   "good_for_en": "Marketing and SEO agencies on WordPress; 27+ Elementor templates, no Pro needed.",
+   "good_for_es": "Agencias de marketing y SEO en WordPress; 27+ plantillas Elementor sin Pro."
+  },
+  {
+   "template_id": "design-okai",
+   "name": "Okai - Creative Portfolio Agency Template",
+   "category": "agency",
+   "niche": "design",
+   "edition": "HTML",
+   "author": "bslthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/f2250396-81fc-4f44-ace2-262d03b8cb6f?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=97c7ca1527a8f68bfb1a1383101f4c18dae71f3a226945a0342a97f31b52af5c",
+   "live_demo_url": "https://html.bslthemes.com/okai/?storefront=envato-elements",
+   "good_for_en": "Design and creative agencies; 12+ home variants with portfolio sliders.",
+   "good_for_es": "Agencias creativas y de diseño; más de 12 inicios con sliders de portafolio."
+  },
+  {
+   "template_id": "design-realiz",
+   "name": "Realiz - Creative Portfolio & Agency HTML Template",
+   "category": "agency",
+   "niche": "design",
+   "edition": "HTML",
+   "author": "ThemeGuri",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/2fa34322-e304-48ad-8f68-5fcb674861db?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=f534cdc23f1743ea30512007725007c4b2e58e3f5211a225466179e66a2fe8fd",
+   "live_demo_url": "https://faton.works/html/realiz?storefront=envato-elements",
+   "good_for_en": "Design studios and creative agencies; premium dark look in lightweight vanilla JS.",
+   "good_for_es": "Estudios de diseño y agencias creativas; estilo oscuro premium en JS ligero."
+  },
+  {
+   "template_id": "design-craftgrid",
+   "name": "CraftGrid Creative Agency Portfolio Elementor Template Kit for Studios, Designers, Branding Agencies",
+   "category": "agency",
+   "niche": "design",
+   "edition": "Elementor Kit",
+   "author": "CreateBigSupply",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/602296282/Cover%20Elementor.png?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=9879fe86a4019825810dcd69c0586bf90a25b6077799fdf727ab76006477b065",
+   "live_demo_url": "https://kit.createbigsupply.com/craftgrid/?storefront=envato-elements",
+   "good_for_en": "Branding studios and design agencies; 14 Elementor templates with case studies.",
+   "good_for_es": "Estudios de branding y diseño; 14 plantillas Elementor con casos de éxito."
+  },
+  {
+   "template_id": "consulting-doob",
+   "name": "Doob - Business & Consulting Bootstrap 5 Template",
+   "category": "agency",
+   "niche": "consulting",
+   "edition": "HTML",
+   "author": "Rainbow-Themes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/0d0ee9b1-f162-43e1-91c1-199c8fd5ff12?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=bb12022aaf89fa3e76aa3f0a514c576e14e20f6db2fcfc0fa8235d9f338de764",
+   "live_demo_url": "https://rainbowit.net/html/doob/?storefront=envato-elements",
+   "good_for_en": "Consulting and corporate businesses; 40+ homepage variations with light and dark.",
+   "good_for_es": "Consultorías y empresas; más de 40 inicios con modo claro y oscuro."
+  },
+  {
+   "template_id": "consulting-gixus",
+   "name": "Gixus - Multipurpose HTML Template",
+   "category": "agency",
+   "niche": "consulting",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/fa5e8351-2864-445e-b136-3524e48ca876?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=8ac6cd4179ba495937a7e481649a4601757159560aabcd7b1d2385096ca994c3",
+   "live_demo_url": "https://validthemes.net/site-template/gixus/?storefront=envato-elements",
+   "good_for_en": "Business consulting firms and IT agencies; responsive multipurpose Bootstrap template.",
+   "good_for_es": "Consultorías de negocio y agencias de TI; plantilla multiuso responsiva."
+  },
+  {
+   "template_id": "consulting-aivons",
+   "name": "Aivons - Business Consulting HTML Template",
+   "category": "agency",
+   "niche": "consulting",
+   "edition": "HTML",
+   "author": "Layerdrops",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/29c3be36-5d25-4da6-b279-af0da5485935?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=2aa06eca46e57ade4c3596d010609ab7b0c06eaf4e9a7432984b778d662e2c17",
+   "live_demo_url": "http://pixydrops.com/aivons/?storefront=envato-elements",
+   "good_for_en": "Consulting agencies and financial advisors; four home versions with RTL support.",
+   "good_for_es": "Consultorías y asesores financieros; cuatro inicios con soporte RTL."
+  },
+  {
+   "template_id": "portfolios-antux",
+   "name": "Antux - Personal Portfolio HTML Template",
+   "category": "creator",
+   "niche": "portfolios",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/e1a26dd6-3725-4dd7-b38b-4c088421e5b2?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=73362374a8e2459a49efd04fd7041fb8293b1a0696945e52eed3512426434e0b",
+   "live_demo_url": "https://validthemes.net/site-template/landing-page/antux/?storefront=envato-elements",
+   "good_for_en": "Developers, designers and freelancers; fast, customizable personal portfolio template.",
+   "good_for_es": "Desarrolladores, diseñadores y freelancers; portafolio personal rápido y editable."
+  },
+  {
+   "template_id": "portfolios-xorim",
+   "name": "Xorim - Personal Portfolio Template",
+   "category": "creator",
+   "niche": "portfolios",
+   "edition": "HTML",
+   "author": "validthemes",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/4f9c4c75-46ba-494b-9c91-c1e45cbbc984?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=065d3c8c20deaec75fcf6462bdb8e16e87c8f92d2b740ab7ac310842efb5808e",
+   "live_demo_url": "https://validthemes.net/site-template/xorim/?storefront=envato-elements",
+   "good_for_en": "Developers and designers showing their work; personal portfolio with 2026 update.",
+   "good_for_es": "Desarrolladores y diseñadores; portafolio personal actualizado a 2026."
+  },
+  {
+   "template_id": "portfolios-aydem",
+   "name": "Aydem - Personal Portfolio Tailwind CSS 4 Template",
+   "category": "creator",
+   "niche": "portfolios",
+   "edition": "HTML",
+   "author": "Unifato",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/81da2e36-35a7-46df-a44e-1f20ea137a1f?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=e402b3cb76815558a186096946c0af920a87d67a272c0c503597daaa85b90566",
+   "live_demo_url": "https://unifato.com/aydem/?storefront=envato-elements",
+   "good_for_en": "Developers and designers wanting a minimal personal site built with Tailwind CSS 4.",
+   "good_for_es": "Desarrolladores y diseñadores; sitio personal minimalista con Tailwind CSS 4."
+  },
+  {
+   "template_id": "coaches-mindco",
+   "name": "Mindco - Life Coach & Counseling Elementor Template Kit",
+   "category": "creator",
+   "niche": "coaches",
+   "edition": "Elementor Kit",
+   "author": "Samtiv",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/658507755/Preview%20Landing%20Page.jpg?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=31688b0bbd2cb18811d2f7d1487ec49a97f217872efd1f3cfaba42cb12e143e7",
+   "live_demo_url": "https://templates.studioniskala.com/mindco/template-kit/home/?storefront=envato-elements",
+   "good_for_en": "Life coaches and counselors on WordPress; warm, empowering Elementor kit.",
+   "good_for_es": "Coaches de vida y consejeros en WordPress; kit Elementor cálido."
+  },
+  {
+   "template_id": "coaches-kaira",
+   "name": "Kaira - Life Coach & Self-Growth Elementor Template Kit",
+   "category": "creator",
+   "niche": "coaches",
+   "edition": "Elementor Kit",
+   "author": "askproject",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/656427799/Cover.jpg?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=1f478d20b06ff4d52ff7ac1b4a6eb408f9b247671140ce20adafe85332d0deda",
+   "live_demo_url": "https://askproject.net/kaira/?storefront=envato-elements",
+   "good_for_en": "Life coaches and mindset mentors; Elementor kit for self-growth guides.",
+   "good_for_es": "Coaches de vida y mentores; kit Elementor para crecimiento personal."
+  },
+  {
+   "template_id": "coaches-my",
+   "name": "My LifeGuide - Personal and Life Coach template",
+   "category": "creator",
+   "niche": "coaches",
+   "edition": "HTML",
+   "author": "ThemeKalia",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/864f3ab8-3b4d-4def-a323-9456a58023ed?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=6fe018a865ed344b7e64835baa7bc2a922a2cda1768120d816a82861beeacdcc",
+   "live_demo_url": "http://st.ourhtmldemo.com/new/Life_Guide/?storefront=envato-elements",
+   "good_for_en": "Personal and life coaches; HTML template with purpose-built content blocks.",
+   "good_for_es": "Coaches personales y de vida; plantilla HTML con bloques a la medida."
+  },
+  {
+   "template_id": "podcasts-podover",
+   "name": "Podover - Podcast HTML Template",
+   "category": "creator",
+   "niche": "podcasts",
+   "edition": "HTML",
+   "author": "Pixydrops",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/a4b70464-2c48-4613-81d8-ad953b45e30f?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=2d6ea7cb2b05ce3002fb8c9ab1235509b31a61ba6b4dee5815c123a74fb39011",
+   "live_demo_url": "https://pixydrops.com/podover/?storefront=envato-elements",
+   "good_for_en": "Audio and video podcasters; HTML template to launch a personal podcast site.",
+   "good_for_es": "Podcasters de audio y video; plantilla HTML para lanzar su sitio."
+  },
+  {
+   "template_id": "podcasts-podwave",
+   "name": "Podwave - Podcast Studio & Network Elementor Template Kit",
+   "category": "creator",
+   "niche": "podcasts",
+   "edition": "Elementor Kit",
+   "author": "askproject",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/800782780/Cover.jpg?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=1b49bc47ce7b6df408296f487f742df733ce00967a699de1cd659373b9d26b8a",
+   "live_demo_url": "https://askproject.net/podwave/?storefront=envato-elements",
+   "good_for_en": "Podcast studios and networks; professionally designed Elementor template kit.",
+   "good_for_es": "Estudios y redes de podcast; kit Elementor de diseño profesional."
+  },
+  {
+   "template_id": "podcasts-vamcaster",
+   "name": "Vamcaster - Podcast & Video Streaming Elementor Template Kit",
+   "category": "creator",
+   "niche": "podcasts",
+   "edition": "Elementor Kit",
+   "author": "Evonicmedia",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/472767457/Podcast%20cover.jpg?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=8c023714480f8eb1e14f4335c1f73bf9726383b1ad02a20ddd3972ddf1bc8a79",
+   "live_demo_url": "https://template-kit.evonicmedia.com/layout30/?storefront=envato-elements",
+   "good_for_en": "Podcasters and broadcasters, new or seasoned; Elementor kit for show websites.",
+   "good_for_es": "Podcasters y locutores; kit Elementor para sitios de programas."
+  },
+  {
+   "template_id": "booking-coachify",
+   "name": "Coachify - Life Coach & Speaker Elementor Template Kit",
+   "category": "booking",
+   "niche": "booking",
+   "edition": "Elementor Kit",
+   "author": "codeinsolutions",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/433159400/Coachify%20-%20Cover.jpg?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=ea498a2602e35e41eca3ad26087592b47c9ac69ef6d7f2236606460dd8636e84",
+   "live_demo_url": "https://www.wordpress-dev.codeinsolution.com/coachify/?storefront=envato-elements",
+   "good_for_en": "Coaches and speakers taking bookings; includes appointment and appointment-form pages.",
+   "good_for_es": "Coaches y conferencistas que agendan; incluye páginas de citas y formulario."
+  },
+  {
+   "template_id": "booking-vivawell",
+   "name": "VivaWell - Wellness Coaching Elementor Template Kit",
+   "category": "booking",
+   "niche": "booking",
+   "edition": "Elementor Kit",
+   "author": "Tokotema",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-template-kits-cover-images/files/641994496/Vivawell%20ELEMENTOR%20COVER.jpg?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=d6a7f0d88b11f7e0ff6f42c3e0f3e7828905ac86897709b30bf44b78d9fcbebe",
+   "live_demo_url": "http://well.tokotema.xyz/template-kit/home?storefront=envato-elements",
+   "good_for_en": "Wellness coaches and therapists; serene Elementor kit with an appointment page.",
+   "good_for_es": "Coaches de bienestar y terapeutas; kit Elementor con página de citas."
+  },
+  {
+   "template_id": "booking-limmo",
+   "name": "Limmo - Multipurpose Form Wizard",
+   "category": "booking",
+   "niche": "booking",
+   "edition": "HTML",
+   "author": "Ansonika",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/3187e246-3196-47a6-bd04-e8966be5f25e?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=60517e836e7be8f6324089b585349aa007df4c7f6c6e1b3f62de086177076a01",
+   "live_demo_url": "http://www.ansonika.com/limmo/demo.html?storefront=envato-elements",
+   "good_for_en": "Any freelancer collecting reservations or quotes; HTML form wizard with booking flow.",
+   "good_for_es": "Freelancers que reciben reservas o cotizaciones; asistente de formularios HTML."
+  },
+  {
+   "template_id": "booking-freelancer",
+   "name": "Freelancer - Personal Portfolio HTML5 Template",
+   "category": "booking",
+   "niche": "booking",
+   "edition": "HTML",
+   "author": "envalab",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/0a2f353e-2d2b-4dd7-b165-f241996c465b?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=e0880d1d9875ab69960259ca8fc24216cdeedb96e83ae4b7cf0e017906dc82f1",
+   "live_demo_url": "http://live.envalab.com/html/freelancer/?storefront=envato-elements",
+   "good_for_en": "Individual freelancers and photographers; personal page template to win clients.",
+   "good_for_es": "Freelancers y fotógrafos; página personal para conseguir clientes."
+  },
+  {
+   "template_id": "store-promix",
+   "name": "Promix - Single Product HTML Landing Page Template",
+   "category": "store",
+   "niche": "store",
+   "edition": "HTML",
+   "author": "winsfolio",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/9071a115-c33b-470e-8a6f-0061f28b27ac?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=ba867914e2f46313e846bc9e379a5057526422b18c7ac9c8891c4055fe285cba",
+   "live_demo_url": "https://winsfolio.net/html/promix/?storefront=envato-elements",
+   "good_for_en": "Brands selling one product; single-product landing that spotlights features.",
+   "good_for_es": "Marcas con un solo producto; landing que destaca sus características."
+  },
+  {
+   "template_id": "store-sinp",
+   "name": "Sinp - Single Product Ecommerce HTML Template",
+   "category": "store",
+   "niche": "store",
+   "edition": "HTML",
+   "author": "codecarnival",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/1e83f59a-7e63-4fe5-9ec0-a777b57ee5eb?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=dc65d2122d743be3c725ca3a951aa5d8ec67b98935583a53f6297ef3846aba3a",
+   "live_demo_url": "https://template.hasthemes.com/sinp/index.html?storefront=envato-elements",
+   "good_for_en": "One-product ecommerce shops; Tailwind CSS single-product store template.",
+   "good_for_es": "Tiendas en línea de un producto; plantilla de tienda con Tailwind CSS."
+  },
+  {
+   "template_id": "store-product",
+   "name": "Product Landing Page Template - Proland",
+   "category": "store",
+   "niche": "store",
+   "edition": "HTML",
+   "author": "surjithctly",
+   "preview_image": "https://elements-resized.envatousercontent.com/elements-cover-images/f98286e4-b471-424d-a92b-1a1a74822d86?w=1200&h=630&cf_fit=crop&q=85&format=jpeg&s=2527e130398a9a2d4a9cc25263d8a364514467b67f5a7a048bcd9667d5d0fe5b",
+   "live_demo_url": "http://demo.web3canvas.com/themeforest/proland/landing.html?storefront=envato-elements",
+   "good_for_en": "New product launches; landing page integrated with PayPal and Mailchimp.",
+   "good_for_es": "Lanzamientos de producto; landing integrada con PayPal y Mailchimp."
+  }
+ ]
+}

@@ -1107,6 +1107,16 @@
             "line": "Apps web sencillas con pocas funciones principales. Los proyectos más grandes se cotizan primero."
           }
         }
+      },
+      "templates": {
+        "heading": "Empieza con una plantilla",
+        "intro": "Elige una categoría y luego un nicho para ver plantillas de Envato Elements con las que podemos trabajar. Las demos se abren en una pestaña nueva en el sitio del autor.",
+        "categoriesLabel": "Categorías de plantillas",
+        "nichesLabel": "Nichos",
+        "demo": "Ver demo en vivo",
+        "count": "{count, plural, one {# plantilla} other {# plantillas}}",
+        "mobileToggle": "Ver categorías de plantillas",
+        "newTab": "(se abre en una pestaña nueva)"
       }
     }
   },

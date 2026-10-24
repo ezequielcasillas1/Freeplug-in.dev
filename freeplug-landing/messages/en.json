@@ -1107,6 +1107,16 @@
             "line": "Simple web apps with a few core features. Bigger builds get a quote first."
           }
         }
+      },
+      "templates": {
+        "heading": "Start from a template",
+        "intro": "Pick a category, then a niche, to see Envato Elements templates we can build from. Demos open in a new tab on the author's site.",
+        "categoriesLabel": "Template categories",
+        "nichesLabel": "Niches",
+        "demo": "Open live demo",
+        "count": "{count, plural, one {# template} other {# templates}}",
+        "mobileToggle": "Browse template categories",
+        "newTab": "(opens in a new tab)"
       }
     }
   },
