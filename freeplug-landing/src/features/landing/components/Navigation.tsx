@@ -10,7 +10,6 @@ import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { CALCOM_BOOKING_URL } from '@/lib/booking'
 import { cn } from '@/lib/utils/cn'
 import { fadeIn } from '../animations/landing.variants'
-import { LaunchMarquee } from './LaunchMarquee'
 import { useLocale, useTranslations } from 'next-intl'
 import { LanguagePicker } from '@/components/i18n/LanguagePicker'
 import { toAppLocale } from '@/i18n/config'
@@ -64,7 +63,6 @@ export function Navigation() {
         className="absolute bottom-0 left-0 right-0 h-px bg-gray-200"
         style={{ opacity: borderOpacity }}
       />
-      <LaunchMarquee locale={locale === 'es' ? 'es' : 'en'} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           <Link href={publicHref('/', locale)} className="flex items-center gap-2 group">
