@@ -9,16 +9,11 @@ export const SIGNUPS_PAUSED = true
  */
 export const AUTH_MAINTENANCE = true
 
-export function authMaintenanceCopy(locale: 'en' | 'es'): { title: string; body: string } {
+/** In-development notice (Cheke, Oct 28, 2026) shown above the disabled login / sign-up form. */
+export function authMaintenanceCopy(locale: 'en' | 'es'): { body: string; button: string; back: string } {
   return locale === 'es'
-    ? {
-        title: 'Mantenimiento en curso',
-        body: 'El inicio de sesión y el registro están en pausa mientras trabajamos en el sitio. Vuelve pronto.',
-      }
-    : {
-        title: 'Maintenance in progress',
-        body: 'Log in and sign-up are paused while we work on the site. Please check back soon.',
-      }
+    ? { body: 'En desarrollo. Las cuentas aún no están abiertas. Vuelve pronto.', button: 'Muy pronto', back: 'Volver al inicio' }
+    : { body: "Currently in development. Accounts aren't open yet, so check back soon.", button: 'Coming soon', back: 'Back to home' }
 }
 
 /** ?notice= value on /login when someone was sent away from sign-up (Oct 24). */

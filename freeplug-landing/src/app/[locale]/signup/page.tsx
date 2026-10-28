@@ -64,7 +64,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
   const t = await getTranslations({ locale, namespace: 'auth.signup' })
   const es = locale === 'es'
   // Signups paused (Cheke, Oct 22; hidden Oct 24): server redirect to /login with a notice.
-  if (AUTH_MAINTENANCE) return <AuthMaintenanceCard locale={locale === 'es' ? 'es' : 'en'} />
+  if (AUTH_MAINTENANCE) return <AuthMaintenanceCard locale={locale === 'es' ? 'es' : 'en'} variant="signup" />
   if (SIGNUPS_PAUSED) redirect(signupPausedLoginPath(locale, q.next))
   const google = await isGoogleSignInEnabled()
   // Claim mode (outreach step 1): only with next=/claim and a valid preview cookie.

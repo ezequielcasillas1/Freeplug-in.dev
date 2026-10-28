@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server'
 import { adminLoginProxyResponse, esLoginRedirect } from '@/lib/auth/admin-login-proxy'
+import { DOC_LANG_HEADER } from '@/i18n/doc-lang'
 import createIntlMiddleware from 'next-intl/middleware'
 import { updateSession } from '@/lib/supabase/middleware'
 import { oversizedActionResponse } from '@/lib/outreach/body-limit'
@@ -30,6 +31,9 @@ export async function proxy(request: NextRequest) {
   // Private admin login (Oct 24): see admin-login-proxy.ts.
   const adminLogin = adminLoginProxyResponse(request)
   if (adminLogin) return adminLogin
+  // Document language for /login?lang=es (Oct 28): never trust a client-sent value.
+  request.headers.delete(DOC_LANG_HEADER)
+  if (pathname === '/login' && request.nextUrl.searchParams.get('lang') === 'es') request.headers.set(DOC_LANG_HEADER, 'es')
   const esLogin = esLoginRedirect(request)
   if (esLogin) return esLogin
 

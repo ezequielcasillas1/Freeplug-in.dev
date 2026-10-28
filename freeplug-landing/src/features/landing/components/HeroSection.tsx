@@ -95,9 +95,10 @@ export function HeroSection() {
                 backdrop-blur-xl bg-white/60 
                 border border-white/80
                 shadow-[0_4px_24px_rgba(186,61,61,0.1),inset_0_1px_0_rgba(255,255,255,0.9)]
-                rounded-full text-[#ba3d3d] text-sm font-semibold
+                rounded-full text-[#ba3d3d] text-xs sm:text-sm font-semibold
+                whitespace-nowrap max-w-full
               ">
-                <Sparkles size={16} className="animate-pulse" />
+                <Sparkles size={16} className="animate-pulse shrink-0" />
                 {t('hero.freeplugOutreach72AfterBuilds')}
               </span>
             </motion.div>
