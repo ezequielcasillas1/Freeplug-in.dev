@@ -1135,13 +1135,17 @@
         "intro": "¿Prefieres que el sitio sea tuyo? Compra los archivos de tu sitio web con un pago único, según cuántas páginas tenga. Cada dólar que ya pagaste cuenta para la compra.",
         "tier": {
           "quick": "Hasta 5 páginas",
-          "up_to_7": "Hasta 7 páginas",
-          "up_to_11": "Hasta 11 páginas",
+          "up_to_7": "De 6 a 7 páginas",
+          "up_to_11": "De 8 a 11 páginas",
           "up_to_15": "De 12 a 15 páginas",
-          "unlimited": "Unlimited: 16 páginas o más"
+          "up_to_25": "De 16 a 25 páginas",
+          "custom": "Empresarial a medida: 26 páginas o más"
         },
         "oneTime": "pago único",
-        "note": "Es lo máximo que pagarías. La compra incluye solo los archivos de tu sitio web."
+        "customPrice": "Cotización a medida",
+        "customScope": "según tu proyecto",
+        "customLine": "¿26 páginas o más? Te damos una cotización. Cada dólar que ya pagaste cuenta para tu cotización, y el 20% de descuento por dominio propio también aplica.",
+        "note": "La compra incluye solo los archivos de tu sitio web."
       }
     },
     "privacy": {
@@ -1215,7 +1219,7 @@
     "cancelHeading": "Quédate con tu sitio web",
     "cancelBody": "¿Prefieres quedarte con tu sitio web en lugar de alojarlo con nosotros? Puedes comprar los archivos del sitio con un pago único según cuántas páginas tenga. Cada dólar que ya pagaste cuenta para la compra.",
     "faqQuestion": "¿Puedo quedarme con mi sitio web si dejo el hosting de Freeplug?",
-    "faqAnswer": "Sí. Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tenga tu sitio: hasta 5 páginas $500, hasta 7 páginas $700, hasta 11 páginas $950, de 12 a 15 páginas $1,200 y 16 páginas o más $2,000. Es lo máximo que pagarías. Cada dólar que ya nos pagaste cuenta para la compra. La compra incluye solo los archivos de tu sitio web. Tu dominio queda registrado a nombre de Freeplug hasta que completes la compra; después, puedes pasarlo a tu nombre o dejarlo con Freeplug. Si compraste tu propio dominio a tu nombre, recibes un 20% de descuento en la compra.",
+    "faqAnswer": "Sí. Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tenga tu sitio: hasta 5 páginas $500, de 6 a 7 páginas $700, de 8 a 11 páginas $950, de 12 a 15 páginas $1,200 y de 16 a 25 páginas $2,000. ¿26 páginas o más? Te damos una cotización. Cada dólar que ya nos pagaste cuenta para la compra. La compra incluye solo los archivos de tu sitio web. Tu dominio queda registrado a nombre de Freeplug hasta que completes la compra; después, puedes pasarlo a tu nombre o dejarlo con Freeplug. Si compraste tu propio dominio a tu nombre, recibes un 20% de descuento en la compra. Ambos aplican también a las cotizaciones a medida.",
     "requestRecordName": "Compra del sitio web"
   },
   "common": {

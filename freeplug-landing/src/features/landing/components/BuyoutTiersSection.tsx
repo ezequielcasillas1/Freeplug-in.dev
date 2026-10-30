@@ -21,18 +21,19 @@ export function BuyoutTiersSection() {
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">{t('intro')}</p>
         </div>
-        <ul className="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-6" data-testid="buyout-tiers">
+        <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 md:gap-6" data-testid="buyout-tiers">
           {BUYOUT_TIERS.map((tier) => (
             <li key={tier.id} className="flex">
               <Card className="flex w-full flex-col items-center p-4 sm:p-6 border-zinc-200 text-center">
                 <span className="text-sm font-medium text-gray-600">{t(`tier.${tier.id}`)}</span>
-                <span className="mt-2 text-2xl font-bold text-gray-900">{formatTierPrice(tier.cents)}</span>
-                <span className="text-xs text-gray-500">{t('oneTime')}</span>
+                <span className="mt-2 text-2xl font-bold text-gray-900">{tier.cents == null ? t('customPrice') : formatTierPrice(tier.cents)}</span>
+                <span className="text-xs text-gray-500">{tier.cents == null ? t('customScope') : t('oneTime')}</span>
               </Card>
             </li>
           ))}
         </ul>
-        <p className="mt-6 text-center text-sm text-gray-500">{t('note')}</p>
+        <p className="mt-6 text-center text-sm text-gray-700">{t('customLine')}</p>
+        <p className="mt-1 text-center text-sm text-gray-500">{t('note')}</p>
       </div>
     </section>
   )

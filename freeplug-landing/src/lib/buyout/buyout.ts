@@ -35,7 +35,7 @@ export const BUYOUT_CANCEL_HEADING = 'Keep your website'
 export const BUYOUT_CANCEL_BODY =
   "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it."
 export const BUYOUT_FAQ_QUESTION = 'Can I keep my website if I stop hosting with Freeplug?'
-export const BUYOUT_FAQ_ANSWER = `Yes. You can buy your website files for a one-time price based on how many pages your site has: ${buyoutTierSentence()}. That's the most you'd ever pay. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout.`
+export const BUYOUT_FAQ_ANSWER = `Yes. You can buy your website files for a one-time price based on how many pages your site has: ${buyoutTierSentence()}. 26 or more pages? We'll quote it for you. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout. Both apply to custom quotes too.`
 /** Admin labels (Sable). */
 export const ADMIN_BUYOUT_TYPE_BADGE = 'Buyout'
 export const ADMIN_BUYOUT_REQUESTED = 'Buyout requested'
@@ -89,7 +89,7 @@ export function formatBuyoutPrice(cents: number, locale: AppLocale = 'en'): stri
 }
 
 export function buyoutNoteBlock(now: Date, tier: BuyoutTier | null = null): string {
-  const picked = tier ? `\nTier picked: ${tier.label} (${formatTierPrice(tier.cents)})` : ''
+  const picked = tier ? `\nTier picked: ${tier.label} (${tier.cents == null ? 'custom quote' : formatTierPrice(tier.cents)})` : ''
   return `${BUYOUT_NOTE_MARKER}\nRequested: ${now.toISOString()}${picked}`
 }
 

@@ -46,7 +46,7 @@ export async function requestBuyoutQuote(tierId?: unknown): Promise<BuyoutReques
       dedupeKey: `buyout:${user.id}:${new Date().toISOString().slice(0, 10)}`,
       userId: user.id,
       email: user.email ?? null,
-      details: [['Pages wanted', tier ? `${tier.label} (${formatTierPrice(tier.cents)})` : 'Not picked'], ['Language', locale === 'es' ? 'Spanish' : 'English']],
+      details: [['Pages wanted', tier ? `${tier.label} (${tier.cents == null ? 'custom quote' : formatTierPrice(tier.cents)})` : 'Not picked'], ['Language', locale === 'es' ? 'Spanish' : 'English']],
       adminPath: '/admin/requests',
     })
   }

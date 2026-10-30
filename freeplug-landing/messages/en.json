@@ -1135,13 +1135,17 @@
         "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
         "tier": {
           "quick": "Up to 5 pages",
-          "up_to_7": "Up to 7 pages",
-          "up_to_11": "Up to 11 pages",
+          "up_to_7": "6 to 7 pages",
+          "up_to_11": "8 to 11 pages",
           "up_to_15": "12 to 15 pages",
-          "unlimited": "Unlimited: 16 or more pages"
+          "up_to_25": "16 to 25 pages",
+          "custom": "Custom enterprise: 26 or more pages"
         },
         "oneTime": "one time",
-        "note": "That’s the most you’d ever pay. The buyout covers your website files only."
+        "customPrice": "Custom quote",
+        "customScope": "scoped by hand",
+        "customLine": "26 or more pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
+        "note": "The buyout covers your website files only."
       }
     },
     "privacy": {
@@ -1215,7 +1219,7 @@
     "cancelHeading": "Keep your website",
     "cancelBody": "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it.",
     "faqQuestion": "Can I keep my website if I stop hosting with Freeplug?",
-    "faqAnswer": "Yes. You can buy your website files for a one-time price based on how many pages your site has: up to 5 pages $500, up to 7 pages $700, up to 11 pages $950, 12 to 15 pages $1,200, and 16 or more pages $2,000. That's the most you'd ever pay. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout.",
+    "faqAnswer": "Yes. You can buy your website files for a one-time price based on how many pages your site has: up to 5 pages $500, 6 to 7 pages $700, 8 to 11 pages $950, 12 to 15 pages $1,200, and 16 to 25 pages $2,000. 26 or more pages? We'll quote it for you. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout. Both apply to custom quotes too.",
     "requestRecordName": "Website buyout"
   },
   "common": {

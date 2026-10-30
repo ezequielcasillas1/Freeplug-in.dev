@@ -203,9 +203,10 @@ export function isChecklistComplete(c: Checklist): boolean {
 
 export type BuyoutPreview = {
   tier: BuyoutTier
-  baseCents: number
+  /** null for Custom enterprise (26+ pages): no fixed price, quoted by hand. */
+  baseCents: number | null
   discountCents: number
-  totalCents: number
+  totalCents: number | null
   line: string
 }
 
@@ -214,6 +215,9 @@ export function buyoutPreview(pageCount: number | undefined, domainPath: Checkli
   if (pageCount == null) return null
   const tier = buyoutTierForPages(pageCount)
   if (!tier) return null
+  if (tier.cents == null) {
+    return { tier, baseCents: null, discountCents: 0, totalCents: null, line: `${tier.label}: we'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.` }
+  }
   const discountCents = domainPath === 'own' ? Math.round(tier.cents * OWN_DOMAIN_BUYOUT_DISCOUNT) : 0
   const totalCents = tier.cents - discountCents
   const line =

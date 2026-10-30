@@ -8,7 +8,7 @@ describe('ChecklistFields', () => {
     const live = screen.getByTestId('buyout-tier-live')
     expect(live.textContent).toMatch(/Enter a page count/)
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '9' } })
-    expect(live.textContent).toMatch(/Up to 11 pages: buyout \$950\./)
+    expect(live.textContent).toMatch(/8 to 11 pages: buyout \$950\./)
     fireEvent.click(screen.getByLabelText(/I already have a domain/))
     expect(live.textContent).toMatch(/\$760 with your own domain/)
     expect(screen.getByPlaceholderText('mybusiness.com')).toBeTruthy()
