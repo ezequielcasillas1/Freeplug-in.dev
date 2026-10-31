@@ -11,6 +11,14 @@ export function CompareTable({ groups }: { groups?: readonly CompareGroup[] }) {
   const rows = COMPARE_ROWS.filter((r) => !groups || groups.includes(r.group))
   const cell = (r: CompareRow, k: string) => {
     const key = `rows.${r.id}.${k}`
+    if (k === 'counts' && r.countsSource && t.has(key)) {
+      return (
+        <a href={r.countsSource} target="_blank" rel="nofollow noopener" data-testid={`counts-source-${r.id}`} className="underline decoration-gray-300 underline-offset-2 hover:text-[#ba3d3d]">
+          {t(key)}
+          <span className="sr-only"> {t('countsSourceHint')}</span>
+        </a>
+      )
+    }
     return t.has(key) ? <span>{t(key)}</span> : <span className="italic text-gray-400">{t('notStated')}</span>
   }
   const name = (r: CompareRow) =>

@@ -1236,7 +1236,7 @@
       "colCounts": "¿Los pagos cuentan para que sea tuyo?",
       "colOwn": "Precio más bajo para que sea tuyo",
       "colWork": "Quién hace el trabajo",
-      "groupRentToOwn": "Renta con opción a compra",
+      "groupRentToOwn": "Servicios web mensuales",
       "groupDiy": "Constructores DIY",
       "groupAgencies": "Agencias locales",
       "notStated": "No se indica",
@@ -1263,7 +1263,7 @@
         },
         "grippyCode": {
           "monthly": "$99–$499/mes",
-          "counts": "No",
+          "counts": "No, según su sitio",
           "own": "Compra directa por $999–$4,999"
         },
         "leaseReady": {
@@ -1296,7 +1296,7 @@
         },
         "sanMarcos": {
           "upfront": "$300–$800 pago único",
-          "counts": "No aplica, compra de pago único (es tuyo, 1 mes de soporte)",
+          "counts": "Compra única",
           "own": "$300"
         },
         "oakHarbor": {
@@ -1308,7 +1308,8 @@
           "monthly": "Planes de mantenimiento desde $79/mes",
           "own": "Desde $1,500"
         }
-      }
+      },
+      "countsSourceHint": "(fuente, se abre en una pestaña nueva)"
     }
   },
   "buyout": {

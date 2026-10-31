@@ -1236,7 +1236,7 @@
       "colCounts": "Payments count toward owning it?",
       "colOwn": "Lowest price to own it",
       "colWork": "Who does the work",
-      "groupRentToOwn": "Rent-to-own",
+      "groupRentToOwn": "Monthly website services",
       "groupDiy": "DIY builders",
       "groupAgencies": "Local agencies",
       "notStated": "Not stated",
@@ -1263,7 +1263,7 @@
         },
         "grippyCode": {
           "monthly": "$99–$499/mo",
-          "counts": "No",
+          "counts": "No, per their site",
           "own": "Buy outright for $999–$4,999"
         },
         "leaseReady": {
@@ -1296,7 +1296,7 @@
         },
         "sanMarcos": {
           "upfront": "$300–$800 one-time",
-          "counts": "Not applicable, one-time purchase (owned, 1 month of support)",
+          "counts": "One-time purchase",
           "own": "$300"
         },
         "oakHarbor": {
@@ -1308,7 +1308,8 @@
           "monthly": "Care plans from $79/mo",
           "own": "From $1,500"
         }
-      }
+      },
+      "countsSourceHint": "(source, opens in a new tab)"
     }
   },
   "buyout": {

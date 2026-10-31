@@ -24,6 +24,17 @@ describe('CompareTable', () => {
     expect(ns.length).toBeGreaterThan(0)
     expect(ns[0].textContent).toBe('Not stated')
   })
+  it('Grippy ownership cell links to its FAQ; San Marcos is One-time purchase; group label', () => {
+    const { container } = render(<CompareTable />)
+    const a = container.querySelector('a[data-testid="counts-source-grippyCode"]')!
+    expect(a.getAttribute('href')).toBe('https://grippycode.com/faq')
+    expect(a.getAttribute('rel')).toBe('nofollow noopener')
+    expect(a.getAttribute('target')).toBe('_blank')
+    expect(a.textContent).toContain('No, per their site')
+    expect(container.querySelector('tr[data-company="sanMarcos"]')!.textContent).toContain('One-time purchase')
+    expect(container.textContent).toContain('Monthly website services')
+    expect(container.textContent).not.toContain('Rent-to-own')
+  })
   it('home short version: Freeplug + rent-to-own only', () => {
     const { container } = render(<CompareTable groups={['freeplug', 'rentToOwn']} />)
     expect([...container.querySelectorAll('tr[data-company]')].map((r) => r.getAttribute('data-company'))).toEqual(['freeplug', 'rwMedia', 'grippyCode', 'leaseReady', 'payPerMonth'])

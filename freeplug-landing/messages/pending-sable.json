@@ -51,6 +51,10 @@
     "public.compare.* (all ES strings; title/description and h1/subline from Sable/SEO, rest drafts)": "DRAFT (Oct 31)",
     "public.landing.footer.label.compare": "DRAFT (Oct 31)",
     "public.landing.buyoutTiers.compareLink": "DRAFT (Oct 31)",
-    "public.meta.compareTitle / compareDescription": "SEO-provided (Oct 31), confirm"
+    "public.meta.compareTitle / compareDescription": "SEO-provided (Oct 31), confirm",
+    "public.compare.groupRentToOwn (Servicios web mensuales)": "DRAFT (Oct 31)",
+    "public.compare.rows.grippyCode.counts (No, según su sitio)": "DRAFT (Oct 31)",
+    "public.compare.rows.sanMarcos.counts (Compra única)": "DRAFT (Oct 31)",
+    "public.compare.countsSourceHint": "DRAFT (Oct 31)"
   }
 }

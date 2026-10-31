@@ -14,6 +14,8 @@ export type CompareRow = {
   source: string | null
   group: CompareGroup
   work: CompareWork
+  /** Page that backs the 'Payments count toward owning it?' cell (linked from that cell). */
+  countsSource?: string
 }
 
 export const COMPARE_CELLS: readonly CompareCell[] = ['upfront', 'monthly', 'counts', 'own']
@@ -21,7 +23,9 @@ export const COMPARE_CELLS: readonly CompareCell[] = ['upfront', 'monthly', 'cou
 export const COMPARE_ROWS: readonly CompareRow[] = [
   { id: 'freeplug', name: 'Freeplug', source: null, group: 'freeplug', work: 'doneForYou' },
   { id: 'rwMedia', name: 'RW Media', source: 'https://rwmediapros.com/pricing/', group: 'rentToOwn', work: 'doneForYou' },
-  { id: 'grippyCode', name: 'Grippy Code', source: 'https://grippycode.com/pricing', group: 'rentToOwn', work: 'doneForYou' },
+  { id: 'grippyCode', name: 'Grippy Code', source: 'https://grippycode.com/pricing', group: 'rentToOwn', work: 'doneForYou',
+    // FAQ, Oct 31: "Rented sites are licensed to you while your plan is active, ..."
+    countsSource: 'https://grippycode.com/faq' },
   { id: 'leaseReady', name: 'LeaseReady Websites', source: 'https://leasereadywebsites.com/', group: 'rentToOwn', work: 'doneForYou' },
   { id: 'payPerMonth', name: 'Pay Per Month Websites', source: 'https://paypermonthwebsites.com/plans/', group: 'rentToOwn', work: 'doneForYou' },
   { id: 'wix', name: 'Wix', source: 'https://www.wix.com/plans', group: 'diy', work: 'youBuildIt' },
