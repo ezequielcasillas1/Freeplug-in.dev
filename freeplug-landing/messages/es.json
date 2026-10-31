@@ -1181,7 +1181,7 @@
       "badge": "Legal",
       "title": "Aviso de privacidad",
       "updated": "Última actualización: 24 de octubre de 2026",
-      "intro": "Este aviso explica qué información recopila Freeplug, para qué la usamos y qué opciones tienes. Lo escribimos en lenguaje sencillo. Si algo no queda claro, escríbenos a support@freeplug-in.dev.",
+      "intro": "Este aviso explica qué información recopila Freeplug, para qué la usamos y qué opciones tienes. Lo escribimos en lenguaje sencillo. Si algo no queda claro, escríbenos a legal@freeplug-in.dev.",
       "sections": {
         "whoWeAre": {
           "h": "Quiénes somos",
@@ -1223,7 +1223,7 @@
         },
         "yourRights": {
           "h": "Tus derechos",
-          "p1": "Puedes pedirnos ver la información personal que tenemos sobre ti, corregirla o borrarla. Escribe a support@freeplug-in.dev desde el correo de tu cuenta y dinos qué necesitas. Te responderemos en un tiempo razonable. Borrar tu cuenta puede desconectar tu sitio web."
+          "p1": "Puedes pedirnos ver la información personal que tenemos sobre ti, corregirla o borrarla. Escribe a legal@freeplug-in.dev desde el correo de tu cuenta y dinos qué necesitas. Te responderemos en un tiempo razonable. Borrar tu cuenta puede desconectar tu sitio web."
         },
         "highRiskPii": {
           "h": "Sitios web que no construimos",
@@ -1240,7 +1240,7 @@
         },
         "contact": {
           "h": "Contacto",
-          "p1": "Freeplug (un servicio de 72 After), centro de Texas. Correo: support@freeplug-in.dev."
+          "p1": "Freeplug (un servicio de 72 After), centro de Texas. Correo: legal@freeplug-in.dev."
         }
       }
     },
