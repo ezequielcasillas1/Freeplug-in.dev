@@ -975,7 +975,10 @@
         "headingGetStarted": "Get Started",
         "followUs": "Follow us",
         "copyright": "© {year} Freeplug. All rights reserved.",
-        "outreachFreeplugBuilds72After": "Outreach = Freeplug · Builds = 72 After"
+        "outreachFreeplugBuilds72After": "Outreach = Freeplug · Builds = 72 After",
+        "ownerLine": "Get to know the owner:",
+        "ownerBluesky": "Bluesky @casiezeq",
+        "ownerX": "X @casiezeq"
       },
       "hero": {
         "freeplugOutreach72AfterBuilds": "Freeplug is currently in development. Launching soon.",

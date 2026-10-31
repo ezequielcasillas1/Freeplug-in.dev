@@ -975,7 +975,10 @@
         "headingGetStarted": "Empieza",
         "followUs": "Síguenos",
         "copyright": "© {year} Freeplug. Todos los derechos reservados.",
-        "outreachFreeplugBuilds72After": "Contacto = Freeplug · Construcción = 72 After"
+        "outreachFreeplugBuilds72After": "Contacto = Freeplug · Construcción = 72 After",
+        "ownerLine": "Conoce al dueño:",
+        "ownerBluesky": "Bluesky @casiezeq",
+        "ownerX": "X @casiezeq"
       },
       "hero": {
         "freeplugOutreach72AfterBuilds": "Freeplug está en desarrollo. Muy pronto.",

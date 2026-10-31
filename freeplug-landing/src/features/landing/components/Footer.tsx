@@ -36,6 +36,11 @@ const socialLinks: { label: string; href: string }[] = [
   // Real profiles TBD — omit href="#" so we don't fake destinations
 ]
 
+const OWNER_LINKS = [
+  { key: 'ownerBluesky', href: 'https://bsky.app/profile/casiezeq.bsky.social' },
+  { key: 'ownerX', href: 'https://x.com/casiezeq' },
+] as const
+
 export function Footer() {
   const currentYear = new Date().getFullYear()
   const t = useTranslations('public.landing.footer')
@@ -187,6 +192,18 @@ export function Footer() {
             </p>
             <LanguagePicker variant="dark" />
           </div>
+          {/* Cheke, Oct 31: owner's profiles (verified: bsky did:plc:ckqhgnz5xq7fzbcgymrvktic, X id 1284510677508534272). */}
+          <p className="mt-6 text-center text-gray-500 text-sm" data-testid="footer-owner">
+            {t('ownerLine')}{' '}
+            {OWNER_LINKS.map((l, i) => (
+              <span key={l.key}>
+                {i > 0 ? <span className="text-gray-600"> · </span> : null}
+                <a href={l.href} target="_blank" rel="noopener noreferrer me" className="text-gray-400 hover:text-white transition-colors">
+                  {t(l.key)}
+                </a>
+              </span>
+            ))}
+          </p>
           {/* Aria 9:53: legal line in the footer of every Spanish page (renders nothing in English). */}
           <TranslationNotice className="mt-6 text-center text-gray-500" />
         </div>
