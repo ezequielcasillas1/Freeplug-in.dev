@@ -10,10 +10,11 @@ export function CompareSection() {
   const t = useTranslations('public.compare')
   const locale = toAppLocale(useLocale())
   return (
-    <section id="compare" aria-labelledby="compare-heading" className="scroll-mt-20 sm:scroll-mt-24 py-16 sm:py-24 bg-zinc-50 border-y border-zinc-200/80">
+    <section aria-labelledby="compare" data-section="compare" className="py-16 sm:py-24 bg-zinc-50 border-y border-zinc-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-12">
-          <h2 id="compare-heading" className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{t('heading')}</h2>
+          {/* Anchor on the heading (Lina, Oct 31): /#compare lands the heading ~20px under the sticky header (64px / 80px from sm). */}
+          <h2 id="compare" className="scroll-mt-[84px] sm:scroll-mt-[100px] text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{t('heading')}</h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">{t('subline')}</p>
         </div>
         <HashRescroll id="compare" />
