@@ -35,6 +35,10 @@ describe('privacy policy page', () => {
       expect(html.match(/<h2/g)?.length).toBe(12) // + "Websites we don't build" (Oct 30)
       expect(html).toMatch(locale === 'en' ? /Websites we don(&#x27;|')t build/ : /Sitios web que no construimos/)
       expect(html).toMatch(/HIPAA/)
+      // Oct 30 (Cheke, 9:16 PM CT): adults 18+ only; no '13' age rule left.
+      expect(html).toMatch(locale === 'en' ? /Age requirement/ : /Requisito de edad/)
+      expect(html).toMatch(locale === 'en' ? /only for adults 18 and older/ : /solo para adultos de 18 años o más/)
+      expect(html).not.toMatch(/under 13|menores de 13/)
       expect(html).not.toMatch(BRANDS)
       expect(JSON.stringify(get(CATALOGS[locale], 'public.privacy'))).not.toMatch(BRANDS)
     })

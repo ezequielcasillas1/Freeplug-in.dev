@@ -1204,9 +1204,9 @@
           "p1": "We don't build websites that collect high-risk personal information, such as medical or health records and patient intake (HIPAA), tax preparation and tax services, Social Security numbers or ID and passport scans, banking, lending, credit repair or insurance applications, storing card numbers directly, legal case intake, background checks, bail bonds, immigration, children's data (COPPA), dating, adult or therapy platforms, HR or employee-record portals, and government or voter data.",
           "p2": "Taking card payments through a payment processor is fine: the processor handles the card details, and neither we nor your website store full card numbers."
         },
-        "children": {
-          "h": "Children",
-          "p1": "Freeplug is not for children under 13, and we do not knowingly collect information from them. If you believe a child has given us information, email us and we will delete it."
+        "ageRequirement": {
+          "h": "Age requirement",
+          "p1": "Freeplug is only for adults 18 and older. We do not knowingly collect information from anyone under 18. If you believe someone under 18 has given us information, email us and we will delete it."
         },
         "changes": {
           "h": "Changes to this policy",

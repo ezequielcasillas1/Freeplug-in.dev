@@ -1204,9 +1204,9 @@
           "p1": "No construimos sitios web que recopilen información personal de alto riesgo, como expedientes médicos o de salud e ingreso de pacientes (HIPAA), preparación y servicios de impuestos, números de Seguro Social o escaneos de identificaciones y pasaportes, solicitudes bancarias, de préstamos, de reparación de crédito o de seguros, guardar números de tarjeta directamente, ingreso de casos legales, verificación de antecedentes, fianzas, inmigración, datos de menores (COPPA), plataformas de citas, para adultos o de terapia, portales de recursos humanos o de expedientes de empleados, y datos del gobierno o de votantes.",
           "p2": "Cobrar con tarjeta a través de un procesador de pagos sí está bien: el procesador maneja los datos de la tarjeta, y ni nosotros ni tu sitio web guardamos números de tarjeta completos."
         },
-        "children": {
-          "h": "Menores de edad",
-          "p1": "Freeplug no es para menores de 13 años, y no recopilamos a sabiendas información de ellos. Si crees que un menor nos dio información, escríbenos y la borraremos."
+        "ageRequirement": {
+          "h": "Requisito de edad",
+          "p1": "Freeplug es solo para adultos de 18 años o más. No recopilamos a sabiendas información de menores de 18 años. Si crees que un menor de 18 años nos dio información, escríbenos y la eliminaremos."
         },
         "changes": {
           "h": "Cambios a este aviso",
