@@ -241,7 +241,8 @@
       "shareLocalBusinessDetailsEvaluate": "Compártenos los datos de tu negocio local. Revisamos cada solicitud en persona, por correo o por teléfono. Después de revisar tu presencia en Google Business y el alcance del proyecto, te contactaremos con los siguientes pasos.",
       "haveOpenRequest": "Tienes una solicitud abierta",
       "backDashboard": "← Volver al panel",
-      "closeConfirm": "¿Cerrar esta solicitud de sitio web? Puedes empezar una nueva más adelante."
+      "closeConfirm": "¿Cerrar esta solicitud de sitio web? Puedes empezar una nueva más adelante.",
+      "highRiskPiiNotice": "Importante: no construimos sitios web que recopilen información personal de alto riesgo, como expedientes de salud, servicios de impuestos, números de Seguro Social o de identificación, banca, ingreso de casos legales o datos de menores. Cobrar con tarjeta a través de un procesador de pagos sí está bien. Consulta nuestras preguntas frecuentes para ver la lista completa."
     },
     "access": {
       "accessEndingMessage": "Tu hosting está cancelado. Tu sitio web sigue en línea hasta el {date} y después se desconecta. Reanuda tu plan antes de esa fecha para mantenerlo en línea.",
@@ -885,7 +886,8 @@
         "howBuyoutWorks": "¿Cómo funciona la compra?",
         "ownDomain": "¿El dominio es mío?",
         "spanishSite": "¿Pueden hacer mi sitio web para clientes que hablan español?",
-        "bookingSites": "¿Hacen sitios de reservas para freelancers?"
+        "bookingSites": "¿Hacen sitios de reservas para freelancers?",
+        "highRiskPii": "¿Hay sitios web que no construyen?"
       },
       "answer": {
         "freeplugReachesLocalBusiness": "Freeplug ayuda a negocios locales, pequeñas agencias, apps, creadores, freelancers y tiendas de un solo producto a tener sitio web, y 72 After lo construye gratis. Ahora estamos contactando negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs, Texas. Pensamos expandirnos pronto por todo Texas y, si es posible, por todo EE. UU.",
@@ -895,7 +897,8 @@
         "createAccountFillOut": "Crea una cuenta y llena el formulario de solicitud de sitio web. Cuéntanos sobre tu negocio y lo que necesitas. Nuestro equipo revisará tu solicitud. Cuando se apruebe, te contactaremos para hablar de tu proyecto y empezar el diseño.",
         "ownDomain": "Mientras estés en un plan mensual, tu dominio está registrado a nombre de Freeplug. Cuando completes la compra, puedes pasarlo a tu nombre o dejarlo como está. Si compras tu propio dominio a tu nombre, recibes un 20% de descuento en la compra.",
         "spanishSite": "Dinos en tu solicitud en qué idioma quieres los textos de tu sitio y te confirmamos qué es posible para tu proyecto antes de empezar.",
-        "bookingSites": "Sí. Los sitios de reservas para freelancers son una de las cosas que hacemos: tus clientes ven tus servicios y reservan un horario contigo. Hacerlo es gratis, y el hosting mensual lo mantiene en línea."
+        "bookingSites": "Sí. Los sitios de reservas para freelancers son una de las cosas que hacemos: tus clientes ven tus servicios y reservan un horario contigo. Hacerlo es gratis, y el hosting mensual lo mantiene en línea.",
+        "highRiskPii": "Sí. No construimos sitios web que recopilen información personal de alto riesgo, como expedientes médicos o de salud e ingreso de pacientes (HIPAA), preparación y servicios de impuestos, números de Seguro Social o escaneos de identificaciones y pasaportes, solicitudes bancarias, de préstamos, de reparación de crédito o de seguros, guardar números de tarjeta directamente, ingreso de casos legales, verificación de antecedentes, fianzas, inmigración, datos de menores (COPPA), plataformas de citas, para adultos o de terapia, portales de recursos humanos o de expedientes de empleados, y datos del gobierno o de votantes. Cobrar con tarjeta a través de un procesador de pagos sí está bien."
       },
       "helpCenter": "Centro de ayuda",
       "frequentlyAskedQuestions": "Preguntas <span>frecuentes</span>",
@@ -1195,6 +1198,11 @@
         "yourRights": {
           "h": "Tus derechos",
           "p1": "Puedes pedirnos ver la información personal que tenemos sobre ti, corregirla o borrarla. Escribe a support@freeplug-in.dev desde el correo de tu cuenta y dinos qué necesitas. Te responderemos en un tiempo razonable. Borrar tu cuenta puede desconectar tu sitio web."
+        },
+        "highRiskPii": {
+          "h": "Sitios web que no construimos",
+          "p1": "No construimos sitios web que recopilen información personal de alto riesgo, como expedientes médicos o de salud e ingreso de pacientes (HIPAA), preparación y servicios de impuestos, números de Seguro Social o escaneos de identificaciones y pasaportes, solicitudes bancarias, de préstamos, de reparación de crédito o de seguros, guardar números de tarjeta directamente, ingreso de casos legales, verificación de antecedentes, fianzas, inmigración, datos de menores (COPPA), plataformas de citas, para adultos o de terapia, portales de recursos humanos o de expedientes de empleados, y datos del gobierno o de votantes.",
+          "p2": "Cobrar con tarjeta a través de un procesador de pagos sí está bien: el procesador maneja los datos de la tarjeta, y ni nosotros ni tu sitio web guardamos números de tarjeta completos."
         },
         "children": {
           "h": "Menores de edad",

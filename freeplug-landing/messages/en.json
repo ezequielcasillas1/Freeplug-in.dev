@@ -241,7 +241,8 @@
       "shareLocalBusinessDetailsEvaluate": "Share your local business details. We evaluate every request in person, by email, or phone. After we review your Google Business presence and scope, we will follow up with next steps.",
       "haveOpenRequest": "You have an open request",
       "backDashboard": "← Back to dashboard",
-      "closeConfirm": "Close this website request? You can start a new one later."
+      "closeConfirm": "Close this website request? You can start a new one later.",
+      "highRiskPiiNotice": "Please note: we don't build websites that collect high-risk personal information, like health records, tax services, Social Security or ID numbers, banking, legal intake or children's data. Card payments through a payment processor are fine. See our FAQ for the full list."
     },
     "access": {
       "accessEndingMessage": "Your hosting is canceled. Your website stays online until {date}, then goes offline. Resume your plan before then to keep it online.",
@@ -885,7 +886,8 @@
         "howBuyoutWorks": "How does the buyout work?",
         "ownDomain": "Do I own my domain?",
         "spanishSite": "Can you build my site in Spanish?",
-        "bookingSites": "Do you build booking sites for freelancers?"
+        "bookingSites": "Do you build booking sites for freelancers?",
+        "highRiskPii": "Are there websites you don't build?"
       },
       "answer": {
         "freeplugReachesLocalBusiness": "Freeplug helps local businesses, small agencies, apps, creators, freelancers and one-product stores get a website, and 72 After builds it for free. We're currently reaching out to businesses in San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley and Dripping Springs, Texas. We plan to expand across Texas soon and, if possible, throughout the U.S.",
@@ -895,7 +897,8 @@
         "createAccountFillOut": "Create an account and fill out the website request form. Tell us about your business and what you need. Our team will review your request. Once it's approved, we'll contact you to discuss your project and start the design.",
         "ownDomain": "While you’re on a monthly plan, your domain is registered in Freeplug’s name. Once you complete your buyout, you can move it to your name or leave it as it is. If you buy your own domain in your name, you get 20% off your buyout.",
         "spanishSite": "Tell us in your website request what language you want your site's text in, and we'll confirm what's possible for your project before we start.",
-        "bookingSites": "Yes. Booking sites for freelancers are one of the things we build: clients can see your services and book a time with you. Building it is free, and monthly hosting keeps it online."
+        "bookingSites": "Yes. Booking sites for freelancers are one of the things we build: clients can see your services and book a time with you. Building it is free, and monthly hosting keeps it online.",
+        "highRiskPii": "Yes. We don't build websites that collect high-risk personal information, such as medical or health records and patient intake (HIPAA), tax preparation and tax services, Social Security numbers or ID and passport scans, banking, lending, credit repair or insurance applications, storing card numbers directly, legal case intake, background checks, bail bonds, immigration, children's data (COPPA), dating, adult or therapy platforms, HR or employee-record portals, and government or voter data. Taking card payments through a payment processor is fine."
       },
       "helpCenter": "Help center",
       "frequentlyAskedQuestions": "Frequently asked <span>questions</span>",
@@ -1195,6 +1198,11 @@
         "yourRights": {
           "h": "Your rights",
           "p1": "You can ask to see the personal information we have about you, correct it, or delete it. Email support@freeplug-in.dev from the address on your account and tell us what you need. We will answer within a reasonable time. Deleting your account may take your website offline."
+        },
+        "highRiskPii": {
+          "h": "Websites we don't build",
+          "p1": "We don't build websites that collect high-risk personal information, such as medical or health records and patient intake (HIPAA), tax preparation and tax services, Social Security numbers or ID and passport scans, banking, lending, credit repair or insurance applications, storing card numbers directly, legal case intake, background checks, bail bonds, immigration, children's data (COPPA), dating, adult or therapy platforms, HR or employee-record portals, and government or voter data.",
+          "p2": "Taking card payments through a payment processor is fine: the processor handles the card details, and neither we nor your website store full card numbers."
         },
         "children": {
           "h": "Children",

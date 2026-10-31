@@ -26,6 +26,8 @@ const FAQ_KEYS = [
   { id: 'own-domain', q: 'public.faq.question.ownDomain', a: 'public.faq.answer.ownDomain' },
   { id: 'spanish-site', q: 'public.faq.question.spanishSite', a: 'public.faq.answer.spanishSite' },
   { id: 'booking-sites', q: 'public.faq.question.bookingSites', a: 'public.faq.answer.bookingSites' },
+  // Oct 30 (Cheke, 8:13 PM CT): no high-risk PII sites. Same list as the privacy page and the request form.
+  { id: 'websites-we-dont-build', q: 'public.faq.question.highRiskPii', a: 'public.faq.answer.highRiskPii' },
   { id: 'how-long', q: 'public.faq.question.longDoesTakeBuild', a: 'public.faq.answer.everySiteDifferentSo' },
   { id: 'get-started', q: 'public.faq.question.getStarted', a: 'public.faq.answer.createAccountFillOut' },
 ] as const

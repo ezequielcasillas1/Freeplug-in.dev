@@ -138,6 +138,11 @@ export function RequestWebsiteForm({
         />
       </div>
 
+      {/* Oct 30 (Cheke, 8:13 PM CT): notice only, not a blocking checkbox. */}
+      <p className="text-xs text-gray-600 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-2" data-testid="high-risk-pii-notice">
+        {t('highRiskPiiNotice')}
+      </p>
+
       {locked ? null : (
         <Button type="submit" className="w-full sm:w-auto" disabled={pending}>
           {pending ? t('sending') : submitLabel}

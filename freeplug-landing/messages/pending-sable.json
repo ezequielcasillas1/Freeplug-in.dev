@@ -35,5 +35,14 @@
     "errors.plans.alreadyHasPlanMessage": "STALE English: \"Use Manage billing to change it\". Plan changes now happen on the Plans page (see plans.change.alreadyHasPlanSwitch, which isn't wired yet)."
   },
   "spanishEnglishFallback_about": "Consultation step (Oct 22 r2): Sable translated all 67 keys (freeplug-offerings-and-consultation-copy-2026-10-22.md). Nothing pending. Team-only subjects (emailAgreedTeamSubject, emailLiveBookedTeamSubject, emailCancelRequestTeamSubject) stay English by design (fplgn.dev inboxes only); STOP stays English as the SMS keyword.",
-  "spanishEnglishFallback": {}
+  "spanishEnglishFallback": {},
+  "spanishDraftsAwaitingSable_about": "Oct 30 2026 (Cheke, 8:13 PM CT): 'we don't build high-risk PII websites' copy. Spanish is Owen's DRAFT, live in es.json so /es shows it; Sable to review/replace.",
+  "spanishDraftsAwaitingSable": {
+    "public.faq.question.highRiskPii": "DRAFT (Oct 30)",
+    "public.faq.answer.highRiskPii": "DRAFT (Oct 30)",
+    "dashboard.request.highRiskPiiNotice": "DRAFT (Oct 30)",
+    "public.privacy.sections.highRiskPii.h": "DRAFT (Oct 30)",
+    "public.privacy.sections.highRiskPii.p1": "DRAFT (Oct 30)",
+    "public.privacy.sections.highRiskPii.p2": "DRAFT (Oct 30)"
+  }
 }
