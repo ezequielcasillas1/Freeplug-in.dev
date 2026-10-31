@@ -255,7 +255,18 @@
       "language": {
         "label": "Language",
         "saved": "Saved"
+      },
+      "account": {
+        "heading": "Account",
+        "emailLabel": "Email",
+        "help": "To change your email or password, contact us from the",
+        "helpLink": "Help center"
       }
+    },
+    "notFound": {
+      "heading": "Page not found",
+      "body": "This dashboard page isn't available for your account yet.",
+      "link": "Back to dashboard"
     }
   },
   "errors": {

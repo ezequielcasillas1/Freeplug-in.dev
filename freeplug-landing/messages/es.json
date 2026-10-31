@@ -255,7 +255,18 @@
         "label": "Idioma",
         "saved": "Guardado"
       },
-      "title": "Configuración"
+      "title": "Configuración",
+      "account": {
+        "heading": "Cuenta",
+        "emailLabel": "Correo electrónico",
+        "help": "Para cambiar tu correo o contraseña, escríbenos desde el",
+        "helpLink": "Centro de ayuda"
+      }
+    },
+    "notFound": {
+      "heading": "Página no encontrada",
+      "body": "Esta página del panel aún no está disponible para tu cuenta.",
+      "link": "Volver al panel"
     }
   },
   "errors": {
