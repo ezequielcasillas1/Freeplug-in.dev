@@ -7,7 +7,7 @@ import { IN_PERSON_EMAIL } from './InPersonSection'
 describe('InPersonSection', () => {
   it('uses the approved headline and email', () => {
     expect(en.public.landing.inPerson.heading).toBe('Prefer to Meet in Person?')
-    expect(IN_PERSON_EMAIL).toBe('fplgn.dev.clients@gmail.com')
+    expect(IN_PERSON_EMAIL).toBe('discover@freeplug-in.dev')
     expect(es.public.landing.inPerson.heading).toBeTruthy()
   })
   it('never shows an address', () => {

@@ -7,7 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { fadeInUp, staggerContainer } from '../animations/landing.variants'
 
-export const IN_PERSON_EMAIL = 'fplgn.dev.clients@gmail.com'
+export const IN_PERSON_EMAIL = 'discover@freeplug-in.dev'
 
 /** In-person consultations (Cheke, Oct 31). Never render an address here: the location is shared only after screening. */
 export function InPersonSection() {
