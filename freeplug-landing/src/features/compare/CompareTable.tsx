@@ -41,22 +41,27 @@ export function CompareTable({ groups }: { groups?: readonly CompareGroup[] }) {
         <table className="w-full text-left text-sm">
           <thead>
             <tr>
-              <th scope="col" className="sticky top-16 z-10 bg-white px-4 py-3 font-semibold text-gray-900 border-b border-zinc-200 rounded-tl-xl">{t('colCompany')}</th>
+              <th scope="col" className="sticky top-20 z-10 bg-white px-4 py-3 font-semibold text-gray-900 border-b border-zinc-200 rounded-tl-xl">{t('colCompany')}</th>
               {cols.map((c) => (
-                <th key={c} scope="col" className="sticky top-16 z-10 bg-white px-4 py-3 font-semibold text-gray-900 border-b border-zinc-200 last:rounded-tr-xl">{t(c)}</th>
+                <th key={c} scope="col" className="sticky top-20 z-10 bg-white px-4 py-3 font-semibold text-gray-900 border-b border-zinc-200 last:rounded-tr-xl">{t(c)}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {withLabels.map(({ r, label }) => (
               <RowFragment key={r.id} label={label ? t(label) : null}>
-                <tr data-company={r.id} className={cn('border-b border-zinc-100 align-top text-gray-700', r.group === 'freeplug' && ACCENT)}>
+                <tr data-company={r.id} className={cn('align-top text-gray-700', !t.has(`rows.${r.id}.note`) && 'border-b border-zinc-100', r.group === 'freeplug' && ACCENT)}>
                   <th scope="row" className="px-4 py-3 font-normal">{name(r)}</th>
                   {COMPARE_CELLS.map((k) => (
                     <td key={k} className="px-4 py-3">{cell(r, k)}</td>
                   ))}
                   <td className="px-4 py-3">{t(r.work)}</td>
                 </tr>
+                {t.has(`rows.${r.id}.note`) ? (
+                  <tr className={cn('border-b border-zinc-100', r.group === 'freeplug' && ACCENT)} data-company-note={r.id}>
+                    <td colSpan={6} className="px-4 pb-3 -mt-2 text-xs text-gray-500">{t(`rows.${r.id}.note`)}</td>
+                  </tr>
+                ) : null}
               </RowFragment>
             ))}
           </tbody>
@@ -82,6 +87,7 @@ export function CompareTable({ groups }: { groups?: readonly CompareGroup[] }) {
                   <dd className="text-right text-gray-700">{t(r.work)}</dd>
                 </div>
               </dl>
+              {t.has(`rows.${r.id}.note`) ? <p className="mt-2 text-xs text-gray-500">{t(`rows.${r.id}.note`)}</p> : null}
             </Card>
           </li>
         ))}

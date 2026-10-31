@@ -1237,13 +1237,13 @@
       "colOwn": "Precio más bajo para que sea tuyo",
       "colWork": "Quién hace el trabajo",
       "groupRentToOwn": "Servicios web mensuales",
-      "groupDiy": "Constructores DIY",
+      "groupDiy": "Plataformas para hacerlo tú",
       "groupAgencies": "Agencias locales",
       "notStated": "No se indica",
       "doneForYou": "Lo hacemos por ti",
       "youBuildIt": "Lo haces tú",
       "footnote": "Precios al 31 de octubre de 2026, tomados del sitio web público de cada empresa. Los precios y condiciones pueden cambiar; confírmalos con cada empresa.",
-      "homeLink": "compara Freeplug con Wix y otros",
+      "homeLink": "Compara Freeplug con Wix y otros",
       "seePricing": "Ver precios de Freeplug",
       "requestForm": "Formulario de solicitud",
       "sourceHint": "(página de precios, se abre en una pestaña nueva)",
@@ -1267,7 +1267,7 @@
           "own": "Compra directa por $999–$4,999"
         },
         "leaseReady": {
-          "upfront": "$250 de instalación",
+          "upfront": "$250 de configuración inicial",
           "monthly": "$250/mes",
           "counts": "Sí",
           "own": "Es tuyo después de 36 pagos puntuales"
@@ -1297,7 +1297,8 @@
         "sanMarcos": {
           "upfront": "$300–$800 pago único",
           "counts": "Compra única",
-          "own": "$300"
+          "own": "Desde $300 (pago único)",
+          "note": "Es tuyo, con 1 mes de soporte."
         },
         "oakHarbor": {
           "upfront": "$0 de entrada",

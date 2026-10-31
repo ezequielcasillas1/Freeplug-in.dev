@@ -56,5 +56,13 @@
     "public.compare.rows.grippyCode.counts (No, según su sitio)": "DRAFT (Oct 31)",
     "public.compare.rows.sanMarcos.counts (Compra única)": "DRAFT (Oct 31)",
     "public.compare.countsSourceHint": "DRAFT (Oct 31)"
+  },
+  "sableApproved_about": "Spanish strings Sable has approved (no longer drafts).",
+  "sableApproved": {
+    "public.compare.rows.sanMarcos.own (Desde $300 (pago único))": "APPROVED by Sable (Oct 31)",
+    "public.compare.groupDiy (Plataformas para hacerlo tú)": "APPROVED by Sable (Oct 31)",
+    "public.compare.rows.leaseReady.upfront ($250 de configuración inicial)": "APPROVED by Sable (Oct 31)",
+    "public.compare.homeLink (Compara Freeplug con Wix y otros)": "APPROVED by Sable (Oct 31)",
+    "public.compare.rows.sanMarcos.note (Es tuyo, con 1 mes de soporte.)": "APPROVED by Sable (Oct 31)"
   }
 }

@@ -1243,7 +1243,7 @@
       "doneForYou": "Done for you",
       "youBuildIt": "You build it",
       "footnote": "Prices as of Oct 31, 2026, from each company's public website. Prices and terms can change, so check with each company.",
-      "homeLink": "compare Freeplug with Wix and others",
+      "homeLink": "Compare Freeplug with Wix and others",
       "seePricing": "See Freeplug pricing",
       "requestForm": "Request form",
       "sourceHint": "(pricing page, opens in a new tab)",
@@ -1297,7 +1297,8 @@
         "sanMarcos": {
           "upfront": "$300–$800 one-time",
           "counts": "One-time purchase",
-          "own": "$300"
+          "own": "From $300 (one-time)",
+          "note": "Owned, with 1 month of support."
         },
         "oakHarbor": {
           "upfront": "$0 down",
