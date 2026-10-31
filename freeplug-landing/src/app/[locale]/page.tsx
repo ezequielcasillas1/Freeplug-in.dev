@@ -15,6 +15,7 @@ import { toAppLocale } from '@/i18n/config'
 import { OfferingsSection } from '@/features/landing/components/OfferingsSection'
 import { TemplatesSection } from '@/features/landing/components/TemplatesSection'
 import { BuyoutTiersSection } from '@/features/landing/components/BuyoutTiersSection'
+import { InPersonSection } from '@/features/landing/components/InPersonSection'
 import { CompareSection } from '@/features/compare/CompareSection'
 import { HostingPlansSectionUi } from '@/features/landing/components/HostingPlansSectionUi'
 
@@ -45,6 +46,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <AboutSection />
         <OutreachSection />
         <CTASection />
+        <InPersonSection />
         <TechStackSection />
         {/* Public plans block (no Supabase) so #hosting-plans nav/footer links resolve */}
         <HostingPlansSectionUi signedIn={false} hostingCheckoutAllowed={false} />

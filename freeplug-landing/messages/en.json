@@ -1167,6 +1167,14 @@
         "customLine": "21 to 35 pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
         "note": "The buyout covers your website files only.",
         "compareLink": "Compare Freeplug with other options"
+      },
+      "inPerson": {
+        "eyebrow": "Central Texas office",
+        "heading": "Prefer to Meet in Person?",
+        "body": "We offer in-person consultations at our Central Texas office. Sit down with us, talk through your business, and see what your site could look like.",
+        "privacy": "For everyone's safety, we share the exact location only after you email us and we do a short phone, FaceTime, or text screening.",
+        "cta": "Email us to set up a visit",
+        "mailSubject": "In-person consultation request"
       }
     },
     "privacy": {

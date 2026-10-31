@@ -1167,6 +1167,14 @@
         "customLine": "¿De 21 a 35 páginas? Te damos una cotización. Cada dólar que ya pagaste cuenta para tu cotización, y el 20% de descuento por dominio propio también aplica.",
         "note": "La compra incluye solo los archivos de tu sitio web.",
         "compareLink": "Compara Freeplug con otras opciones"
+      },
+      "inPerson": {
+        "eyebrow": "Oficina en el centro de Texas",
+        "heading": "¿Prefieres reunirte en persona?",
+        "body": "Ofrecemos consultas en persona en nuestra oficina en el centro de Texas. Siéntate con nosotros, cuéntanos de tu negocio y ve cómo podría verse tu sitio.",
+        "privacy": "Por la seguridad de todos, compartimos la ubicación exacta solo después de que nos escribas por correo y hagamos una breve verificación por teléfono, FaceTime o mensaje de texto.",
+        "cta": "Solicita una visita",
+        "mailSubject": "Solicitud de consulta en persona"
       }
     },
     "privacy": {
