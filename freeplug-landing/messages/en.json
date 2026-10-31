@@ -1185,7 +1185,7 @@
       "sections": {
         "whoWeAre": {
           "h": "Who we are",
-          "p1": "Freeplug is a service of 72 After, based at 2380 Staples Road, Unit 3108, San Marcos, TX 78666, United States. We build and host websites for small businesses, creators and freelancers, mainly in Texas and the rest of the United States. In this policy, \"we\" and \"us\" mean Freeplug and 72 After."
+          "p1": "Freeplug is a service of 72 After, based in Central Texas, United States. We build and host websites for small businesses, creators and freelancers, mainly in Texas and the rest of the United States. In this policy, \"we\" and \"us\" mean Freeplug and 72 After."
         },
         "whatWeCollect": {
           "h": "What we collect",
@@ -1240,7 +1240,7 @@
         },
         "contact": {
           "h": "Contact us",
-          "p1": "Freeplug (a 72 After service), 2380 Staples Road, Unit 3108, San Marcos, TX 78666. Email: support@freeplug-in.dev."
+          "p1": "Freeplug (a 72 After service), Central Texas. Email: support@freeplug-in.dev."
         }
       }
     },

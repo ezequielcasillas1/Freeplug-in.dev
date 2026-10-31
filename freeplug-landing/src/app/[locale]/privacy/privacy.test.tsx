@@ -25,10 +25,13 @@ const BRANDS = /cloudflare|supabase|stripe|resend|turnstile|cal\.com|calcom|verc
 
 describe('privacy policy page', () => {
   for (const locale of ['en', 'es'] as const) {
-    it(`renders in ${locale} with the address, contact and every section, naming no vendor brands`, async () => {
+    it(`renders in ${locale} with no postal address, contact and every section, naming no vendor brands`, async () => {
       const { default: PrivacyPage } = await import('./page')
       const html = renderToStaticMarkup(await PrivacyPage({ params: Promise.resolve({ locale }) }))
-      expect(html).toContain('2380 Staples Road, Unit 3108, San Marcos, TX 78666')
+      // Oct 31 (Cheke): street address must not be disclosed.
+      expect(html).not.toMatch(/Staples|3108|78666/)
+      expect(html).toMatch(locale === 'en' ? /based in Central Texas, United States\./ : /con sede en el centro de Texas, Estados Unidos\./)
+      expect(html).toMatch(locale === 'en' ? /\(a 72 After service\), Central Texas\. Email:/ : /\(un servicio de 72 After\), centro de Texas\. Correo:/)
       expect(html).toContain('support@freeplug-in.dev')
       expect(html).toMatch(/72 After/)
       expect(html).toMatch(locale === 'en' ? /October 24, 2026/ : /24 de octubre de 2026/)
