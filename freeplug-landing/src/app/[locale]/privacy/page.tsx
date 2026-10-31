@@ -14,7 +14,7 @@ type Section = { h: string } & Record<string, string>
 const LINK_CLASS = 'font-medium text-[#ba3d3d] underline underline-offset-2 hover:text-[#9a3232]'
 const richTags = {
   email: (chunks: React.ReactNode) => (
-    <a href="mailto:legal@freeplug-in.dev" className={LINK_CLASS}>
+    <a href="mailto:support@freeplug-in.dev" className={LINK_CLASS}>
       {chunks}
     </a>
   ),
