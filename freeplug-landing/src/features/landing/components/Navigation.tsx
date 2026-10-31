@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { PausedCta } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import { cn } from '@/lib/utils/cn'
 import { fadeIn } from '../animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
@@ -111,7 +113,9 @@ export function Navigation() {
                 </Button>
               </>
             )}
-            {AUTH_MAINTENANCE ? (
+            {CTA_PAUSED_NOW ? (
+              <PausedCta className={cn(buttonVariants({ size: 'sm' }), 'shadow-lg shadow-[#ba3d3d]/30')} />
+            ) : AUTH_MAINTENANCE ? (
               <a
                 href={CALCOM_BOOKING_URL}
                 target="_blank"
@@ -177,7 +181,9 @@ export function Navigation() {
               )}
               <LanguagePicker className="px-4" />
               <div className="px-4 flex gap-3">
-                {AUTH_MAINTENANCE ? (
+                {CTA_PAUSED_NOW ? (
+                  <PausedCta className={cn(buttonVariants({ size: 'sm' }), 'flex-1')} />
+                ) : AUTH_MAINTENANCE ? (
                   <a
                     href={CALCOM_BOOKING_URL}
                     target="_blank"

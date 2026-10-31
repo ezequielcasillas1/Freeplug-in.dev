@@ -5,6 +5,8 @@ import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { PausedCta, InDevelopmentLine } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import { HOME_OFFERINGS, HOME_OFFERING_ICONS } from '@/lib/offerings/home-offerings'
 
 // TODO(ask Cheke): the agency line is Sable's placeholder (white-label vs. referral, agency pricing).
@@ -23,6 +25,7 @@ export function OfferingsSection() {
             {t('heading')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">{t('intro')}</p>
+          {CTA_PAUSED_NOW ? <InDevelopmentLine className="mt-4" /> : null}
         </div>
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-6 lg:grid-cols-3" data-testid="offerings-grid">
           {HOME_OFFERINGS.map((type) => {
@@ -44,7 +47,9 @@ export function OfferingsSection() {
                     </div>
                   </div>
                   <p className="mt-1 text-sm text-gray-600 md:mt-3 flex-1">{t(`types.${type}.line`)}</p>
-                  {AUTH_MAINTENANCE ? (
+                  {CTA_PAUSED_NOW ? (
+                    <PausedCta className="mt-1 md:mt-4 inline-flex min-h-[32px] md:min-h-[44px] items-center text-sm font-semibold text-[#ba3d3d]" />
+                  ) : AUTH_MAINTENANCE ? (
                     // Auth maintenance (Oct 24): /request-website needs a login, so book a call instead.
                     <a
                       href={CALCOM_BOOKING_URL}

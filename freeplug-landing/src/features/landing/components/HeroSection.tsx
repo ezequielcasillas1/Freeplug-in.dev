@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion'
 import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { PausedCta } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import { ArrowRight, Sparkles, Code, Zap, Palette, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
@@ -142,6 +144,14 @@ export function HeroSection() {
             </motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 pt-2">
+              {CTA_PAUSED_NOW ? (
+                <PausedCta
+                  className={cn(
+                    buttonVariants({ size: 'lg' }),
+                    'bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] shadow-[0_8px_32px_rgba(186,61,61,0.35)] text-base px-8 border-0'
+                  )}
+                />
+              ) : (
               <Link
                 href={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : publicHref('/request-website', locale)}
                 {...(AUTH_MAINTENANCE ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
@@ -155,6 +165,7 @@ export function HeroSection() {
                   <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
+              )}
               <a
                 href="#outreach"
                 className={cn(

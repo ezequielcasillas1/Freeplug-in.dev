@@ -2,14 +2,17 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { PausedCta } from '@/components/cta/PausedCta'
 
 type Props = {
   /** Dashboard: link to request page with focus. Landing: link to login with next. */
   ctaHref: string
+  /** CTA pause (lib/cta-pause.ts): disabled "Coming soon" instead of the link. */
+  paused?: boolean
   embedded?: boolean
 }
 
-export function MaintenancePlanCard({ ctaHref, embedded = false }: Props) {
+export function MaintenancePlanCard({ ctaHref, embedded = false, paused = false }: Props) {
   const t = useTranslations('plans.maintenance')
   const maintenancePlanBody = [t('maintenancePlanBody.jobsTakeMoreThan'), t('maintenancePlanBody.maintenanceStarts50Up')]
   const shell =
@@ -26,12 +29,16 @@ export function MaintenancePlanCard({ ctaHref, embedded = false }: Props) {
           <li key={line}>{line}</li>
         ))}
       </ul>
+      {paused ? (
+        <PausedCta className="inline-flex w-full items-center justify-center rounded-lg px-6 py-3 text-base font-semibold bg-white text-[#ba3d3d] border-2 border-[#ba3d3d]" />
+      ) : (
       <Link
         href={ctaHref}
         className="inline-flex w-full items-center justify-center rounded-lg px-6 py-3 text-base font-semibold bg-white text-[#ba3d3d] border-2 border-[#ba3d3d] hover:bg-[#ba3d3d] hover:text-white transition-colors"
       >
         {t('maintenanceCtaLabel')}
       </Link>
+      )}
     </div>
   )
 }

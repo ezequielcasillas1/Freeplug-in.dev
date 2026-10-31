@@ -3,6 +3,8 @@
 import Image from 'next/image'
 import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { PausedCta, InDevelopmentLine } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Globe2, Handshake, MapPin, MessageCircle, Wrench } from 'lucide-react'
@@ -303,7 +305,15 @@ export function OutreachSection() {
               <motion.p variants={fadeInUp} className="text-lg text-gray-600 leading-relaxed">
                 {t('freeplugReachBusinessesOutsideUs')}
               </motion.p>
+              {CTA_PAUSED_NOW ? (
+                <motion.div variants={fadeInUp}>
+                  <InDevelopmentLine />
+                </motion.div>
+              ) : null}
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
+                {CTA_PAUSED_NOW ? (
+                  <PausedCta className={cn(buttonVariants({ size: 'lg' }), 'shadow-lg shadow-[#ba3d3d]/30')} />
+                ) : (
                 <Link
                   href={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : publicHref('/request-website', locale)}
                 {...(AUTH_MAINTENANCE ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
@@ -315,6 +325,7 @@ export function OutreachSection() {
                   {t('requestInternationalOutreach')}
                   <ArrowRight size={18} className="ml-2" />
                 </Link>
+                )}
               </motion.div>
               <motion.p variants={fadeInUp} className="text-sm text-gray-500">
                 {t('availabilityVariesRegionPartnerNo')}
