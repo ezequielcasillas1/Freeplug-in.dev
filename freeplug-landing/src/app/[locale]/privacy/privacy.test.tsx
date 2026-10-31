@@ -14,6 +14,18 @@ vi.mock('next-intl/server', () => ({
     const base = get(CATALOGS[locale], namespace)
     const t = (k: string) => get(base, k) as string
     t.raw = (k: string) => get(base, k)
+    // Minimal t.rich: supports <tag>chunks</tag> via the passed render functions.
+    t.rich = (k: string, tags: Record<string, (c: string) => unknown>) => {
+      const parts: unknown[] = []
+      const re = /<(\w+)>(.*?)<\/\1>/g
+      const s = get(base, k) as string
+      let last = 0
+      for (let m; (m = re.exec(s)); last = re.lastIndex) {
+        parts.push(s.slice(last, m.index), tags[m[1]](m[2]))
+      }
+      parts.push(s.slice(last))
+      return parts
+    }
     return t
   },
 }))
@@ -33,6 +45,9 @@ describe('privacy policy page', () => {
       expect(html).toMatch(locale === 'en' ? /based in Central Texas, United States\./ : /con sede en el centro de Texas, Estados Unidos\./)
       expect(html).toMatch(locale === 'en' ? /\(a 72 After service\), Central Texas\. Email:/ : /\(un servicio de 72 After\), centro de Texas\. Correo:/)
       expect(html.match(/legal@freeplug-in\.dev/g)?.length).toBeGreaterThanOrEqual(3) // intro, yourRights, contact (owner, Oct 31)
+      // Each occurrence is a clickable mailto link; no raw tags leak.
+      expect(html.match(/href="mailto:legal@freeplug-in\.dev"/g)?.length).toBe(3)
+      expect(html).not.toMatch(/&lt;email|<email/)
       expect(html).not.toContain('support@freeplug-in.dev')
       expect(html).toMatch(/72 After/)
       expect(html).toMatch(locale === 'en' ? /October 24, 2026/ : /24 de octubre de 2026/)

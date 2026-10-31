@@ -1181,7 +1181,7 @@
       "badge": "Legal",
       "title": "Privacy Policy",
       "updated": "Last updated: October 24, 2026",
-      "intro": "This policy explains what information Freeplug collects, why we collect it, and the choices you have. We wrote it in plain English. If anything is unclear, email us at legal@freeplug-in.dev.",
+      "intro": "This policy explains what information Freeplug collects, why we collect it, and the choices you have. We wrote it in plain English. If anything is unclear, email us at <email>legal@freeplug-in.dev</email>.",
       "sections": {
         "whoWeAre": {
           "h": "Who we are",
@@ -1223,7 +1223,7 @@
         },
         "yourRights": {
           "h": "Your rights",
-          "p1": "You can ask to see the personal information we have about you, correct it, or delete it. Email legal@freeplug-in.dev from the address on your account and tell us what you need. We will answer within a reasonable time. Deleting your account may take your website offline."
+          "p1": "You can ask to see the personal information we have about you, correct it, or delete it. Email <email>legal@freeplug-in.dev</email> from the address on your account and tell us what you need. We will answer within a reasonable time. Deleting your account may take your website offline."
         },
         "highRiskPii": {
           "h": "Websites we don't build",
@@ -1240,7 +1240,7 @@
         },
         "contact": {
           "h": "Contact us",
-          "p1": "Freeplug (a 72 After service), Central Texas. Email: legal@freeplug-in.dev."
+          "p1": "Freeplug (a 72 After service), Central Texas. Email: <email>legal@freeplug-in.dev</email>."
         }
       }
     },

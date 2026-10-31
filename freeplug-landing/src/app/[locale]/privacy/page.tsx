@@ -10,6 +10,16 @@ import { TranslationNotice } from '@/components/i18n/TranslationNotice'
 type Props = { params: Promise<{ locale: string }> }
 type Section = { h: string } & Record<string, string>
 
+/** Same inline body-link style as the FAQ page's in-text link. */
+const LINK_CLASS = 'font-medium text-[#ba3d3d] underline underline-offset-2 hover:text-[#9a3232]'
+const richTags = {
+  email: (chunks: React.ReactNode) => (
+    <a href="mailto:legal@freeplug-in.dev" className={LINK_CLASS}>
+      {chunks}
+    </a>
+  ),
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = toAppLocale((await params).locale)
   const t = await getTranslations({ locale, namespace: 'public.meta' })
@@ -29,7 +39,7 @@ export default async function PrivacyPage({ params }: Props) {
   setRequestLocale(locale)
   const t = await getTranslations({ locale, namespace: 'public.privacy' })
   // Each section is { h, p1, p2, ... } (plain strings, so the catalog stays a string tree).
-  const sections = Object.values(t.raw('sections') as Record<string, Section>)
+  const sections = Object.entries(t.raw('sections') as Record<string, Section>)
   return (
     <>
       <Navigation />
@@ -46,15 +56,15 @@ export default async function PrivacyPage({ params }: Props) {
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">{t('title')}</h1>
               <p className="text-sm text-gray-500 mb-4">{t('updated')}</p>
-              <p className="text-lg text-gray-600 max-w-xl mx-auto">{t('intro')}</p>
+              <p className="text-lg text-gray-600 max-w-xl mx-auto">{t.rich('intro', richTags)}</p>
             </div>
             <div className="space-y-6">
-              {sections.map((s) => (
+              {sections.map(([id, s]) => (
                 <section key={s.h} className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
                   <h2 className="text-xl font-bold text-gray-900 mb-3">{s.h}</h2>
                   <div className="space-y-3 text-gray-600 leading-relaxed">
-                    {Object.entries(s).filter(([k]) => k !== 'h').map(([k, para]) => (
-                      <p key={k}>{para}</p>
+                    {Object.keys(s).filter((k) => k !== 'h').map((k) => (
+                      <p key={k}>{t.rich(`sections.${id}.${k}`, richTags)}</p>
                     ))}
                   </div>
                 </section>
