@@ -6,6 +6,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { oversizedActionResponse } from '@/lib/outreach/body-limit'
 import { withTerminalResponseHeaders } from '@/lib/outreach/headers'
 import { routing, shouldRunIntlRouting } from '@/i18n/routing'
+import { homeLangRedirect } from '@/i18n/home-lang-redirect'
 
 const handleI18nRouting = createIntlMiddleware(routing)
 
@@ -36,6 +37,9 @@ export async function proxy(request: NextRequest) {
   if (pathname === '/login' && request.nextUrl.searchParams.get('lang') === 'es') request.headers.set(DOC_LANG_HEADER, 'es')
   const esLogin = esLoginRedirect(request)
   if (esLogin) return esLogin
+  // '/?lang=es' -> '/es' (Oct 30, Sable): see home-lang-redirect.ts.
+  const esHome = homeLangRedirect(request, routing.locales)
+  if (esHome) return withTerminalResponseHeaders(esHome, pathname)
 
   // Not on the internal pass of next-intl's own rewrite, or '/' loops 307 -> '/' (see shouldRunIntlRouting).
   const intlResponse = shouldRunIntlRouting(pathname, request.headers) ? handleI18nRouting(request) : undefined

@@ -203,7 +203,7 @@ export function isChecklistComplete(c: Checklist): boolean {
 
 export type BuyoutPreview = {
   tier: BuyoutTier
-  /** null for Custom enterprise (26+ pages): no fixed price, quoted by hand. */
+  /** null for Custom enterprise (21-35 pages): no fixed price, quoted by hand. */
   baseCents: number | null
   discountCents: number
   totalCents: number | null

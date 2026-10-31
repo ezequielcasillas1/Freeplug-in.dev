@@ -2,20 +2,21 @@ import { describe, expect, it } from 'vitest'
 import { BUYOUT_TIERS, BUYOUT_TIER_PAGE_LIMITS, buyoutDueCents, buyoutPriceCents, buyoutTierById, buyoutTierForPages, buyoutTierSentence } from './tiers'
 
 describe('buyout tiers (Cheke, Oct 19)', () => {
-  it('prices (Oct 30): 5 $500, 6-7 $700, 8-11 $950, 12-15 $1,200, 16-25 $2,000, 26+ Custom enterprise (no price)', () => {
+  it('prices (Oct 30 7:18 PM): 5 $500, 6-7 $700, 8-11 $950, 12-15 $1,200, 16-20 $2,000, 21-35 Custom enterprise (no price)', () => {
     expect(BUYOUT_TIERS.map((t) => [t.id, t.cents])).toEqual([
-      ['quick', 50000], ['up_to_7', 70000], ['up_to_11', 95000], ['up_to_15', 120000], ['up_to_25', 200000], ['custom', null],
+      ['quick', 50000], ['up_to_7', 70000], ['up_to_11', 95000], ['up_to_15', 120000], ['up_to_20', 200000], ['custom', null],
     ])
-    expect(BUYOUT_TIER_PAGE_LIMITS).toEqual([5, 7, 11, 15, 25])
+    expect(BUYOUT_TIER_PAGE_LIMITS).toEqual([5, 7, 11, 15, 20])
   })
-  it('every page count 1..40 lands in exactly one counted tier, no gaps (8 to 11 = $950)', () => {
-    for (let n = 1; n <= 40; n++) expect(buyoutTierForPages(n)).not.toBeNull()
+  it('every page count 1..35 lands in exactly one tier, no gaps; 36+ has no tier (undecided)', () => {
+    for (let n = 1; n <= 35; n++) expect(buyoutTierForPages(n)).not.toBeNull()
+    for (const n of [36, 40, 10_000]) expect(buyoutTierForPages(n)).toBeNull()
     expect([1, 5].map((n) => buyoutTierForPages(n)!.cents)).toEqual([50000, 50000])
     expect([6, 7].map((n) => buyoutTierForPages(n)!.cents)).toEqual([70000, 70000])
     expect([8, 9, 10, 11].map((n) => buyoutTierForPages(n)!.cents)).toEqual([95000, 95000, 95000, 95000])
     expect([12, 15].map((n) => buyoutTierForPages(n)!.cents)).toEqual([120000, 120000])
-    expect([16, 25].map((n) => buyoutTierForPages(n)!.id)).toEqual(['up_to_25', 'up_to_25'])
-    expect([26, 40].map((n) => buyoutTierForPages(n)!.id)).toEqual(['custom', 'custom'])
+    expect([16, 20].map((n) => buyoutTierForPages(n)!.id)).toEqual(['up_to_20', 'up_to_20'])
+    expect([21, 35].map((n) => buyoutTierForPages(n)!.id)).toEqual(['custom', 'custom'])
     expect(buyoutTierForPages(0)).toBeNull()
     expect(buyoutTierForPages(2.5)).toBeNull()
   })
@@ -37,7 +38,7 @@ describe('buyout tiers (Cheke, Oct 19)', () => {
     expect(buyoutDueCents(50000, -100)).toBe(50000)
   })
   it('the sentence is built from the config', () => {
-    expect(buyoutTierSentence()).toBe('up to 5 pages $500, 6 to 7 pages $700, 8 to 11 pages $950, 12 to 15 pages $1,200, and 16 to 25 pages $2,000')
+    expect(buyoutTierSentence()).toBe('up to 5 pages $500, 6 to 7 pages $700, 8 to 11 pages $950, 12 to 15 pages $1,200, and 16 to 20 pages $2,000')
   })
 })
 
@@ -46,22 +47,24 @@ describe('final tier edges (Cheke via Jace, Oct 19 6:08 AM CT)', () => {
     expect(buyoutTierForPages(11)!.id).toBe('up_to_11')
     expect(buyoutTierForPages(12)!.id).toBe('up_to_15')
   })
-  it('15 -> $1,200, 16 -> $2,000, 25 -> $2,000, 26 -> Custom enterprise', () => {
+  it('15 -> $1,200, 16 -> $2,000, 20 -> $2,000, 21 -> Custom enterprise, 35 -> Custom, 36 -> none', () => {
     expect(buyoutTierForPages(15)!.cents).toBe(120000)
     expect(buyoutTierForPages(16)!.cents).toBe(200000)
-    expect(buyoutTierForPages(25)!.cents).toBe(200000)
-    expect(buyoutTierForPages(26)!.id).toBe('custom')
+    expect(buyoutTierForPages(20)!.cents).toBe(200000)
+    expect(buyoutTierForPages(21)!.id).toBe('custom')
+    expect(buyoutTierForPages(35)!.id).toBe('custom')
+    expect(buyoutTierForPages(36)).toBeNull()
   })
-  it('a large page count is Custom enterprise with no fixed price (admin override sets it)', () => {
-    expect(buyoutTierForPages(10_000)!.id).toBe('custom')
-    expect(buyoutTierForPages(10_000)!.cents).toBeNull()
+  it('Custom enterprise (21-35) has no fixed price; the admin override sets it, above $2,000 too', () => {
+    expect(buyoutTierForPages(30)!.cents).toBeNull()
     expect(buyoutPriceCents(buyoutTierForPages(30), null)).toBeNull()
-    expect(buyoutPriceCents(buyoutTierForPages(30), 180000)).toBe(180000)
+    expect(buyoutPriceCents(buyoutTierForPages(30), 350000)).toBe(350000)
   })
   it('labels (Sable, final)', () => {
     expect(buyoutTierById('up_to_15')!.label).toBe('12 to 15 pages')
-    expect(buyoutTierById('up_to_25')!.label).toBe('16 to 25 pages')
-    expect(buyoutTierById('custom')!.label).toBe('Custom enterprise: 26 or more pages')
+    expect(buyoutTierById('up_to_20')!.label).toBe('16 to 20 pages')
+    expect(buyoutTierById('custom')!.label).toBe('Custom enterprise: 21 to 35 pages')
+    expect(buyoutTierById('up_to_25')).toBeNull()
     expect(buyoutTierById('unlimited')).toBeNull()
     expect(buyoutTierById('more_pages')).toBeNull()
   })

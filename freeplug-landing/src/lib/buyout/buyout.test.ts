@@ -257,7 +257,7 @@ describe.skipIf(!existsSync(LOCKED_FILE))('buyout copy matches the locked file w
     ['cancel page card body', BUYOUT_CANCEL_BODY],
   ])('PENDING Sable (Oct 19 tiers): %s', (label, value) => {
     expect(quoted(label)[0]).not.toBe(value)
-    // Oct 30 (Cheke): the FAQ now says 26+ pages get a quote; the other lines still carry no estimate wording.
+    // Oct 30 (Cheke): the FAQ now says 21-35 pages get a quote; the other lines still carry no estimate wording.
     expect(value).not.toMatch(label === 'FAQ (new answer)' ? /estimate|exact price/i : /estimate|exact price|quote/i)
   })
   it('admin labels', () => {

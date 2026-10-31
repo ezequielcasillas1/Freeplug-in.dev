@@ -69,3 +69,17 @@ describe('consultation checklist', () => {
     expect(rows.find((r) => r.label === 'Hosting plan')?.value).toBe('Starter')
   })
 })
+
+describe('buyoutPreview page edges (Oct 30, 7:18 PM CT)', () => {
+  it('20 pages is $2,000; 21 and 35 are Custom enterprise (quoted); 36+ has no tier yet and returns null without throwing', () => {
+    expect(buyoutPreview(20, 'freeplug')?.baseCents).toBe(200000)
+    for (const n of [21, 35]) {
+      const p = buyoutPreview(n, 'own')!
+      expect(p.tier.id).toBe('custom')
+      expect(p.baseCents).toBeNull()
+      expect(p.line).toMatch(/quote it for you.*20% own-domain discount applies too/)
+    }
+    expect(buyoutPreview(36, 'own')).toBeNull()
+    expect(buyoutPreview(200, 'freeplug')).toBeNull()
+  })
+})
