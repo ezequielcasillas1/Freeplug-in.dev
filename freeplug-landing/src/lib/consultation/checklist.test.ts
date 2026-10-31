@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buyoutPreview,
+  pageCountLine,
   checklistFromFormData,
   checklistSummaryRows,
   isChecklistComplete,
@@ -81,5 +82,14 @@ describe('buyoutPreview page edges (Oct 30, 7:18 PM CT)', () => {
     }
     expect(buyoutPreview(36, 'own')).toBeNull()
     expect(buyoutPreview(200, 'freeplug')).toBeNull()
+  })
+})
+
+describe('pageCountLine (36+ has no tier, Oct 30 7:33 PM CT)', () => {
+  it('says we build up to 35 pages for 36+, in EN and ES', () => {
+    expect(pageCountLine(36, buyoutPreview(36, 'own'), 'en')).toBe('We build up to 35 pages right now.')
+    expect(pageCountLine(200, null, 'es')).toBe('Por ahora construimos hasta 35 páginas.')
+    expect(pageCountLine(35, buyoutPreview(35, 'own'))).toMatch(/quote it for you/)
+    expect(pageCountLine(undefined, null)).toBe('Enter a page count to see your buyout tier.')
   })
 })

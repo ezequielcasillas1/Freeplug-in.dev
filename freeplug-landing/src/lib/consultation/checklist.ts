@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { PLAN_STEPS, type PlanStepId } from '@/lib/plans/ladder'
-import { buyoutTierForPages, formatTierPrice, type BuyoutTier } from './tiers'
+import { BUYOUT_CUSTOM_MAX_PAGES, buyoutTierForPages, formatTierPrice, type BuyoutTier } from './tiers'
 
 /**
  * The consultation checklist (Aria's card, Oct 22 2026). ONE shape for both paths: the client fills
@@ -211,6 +211,19 @@ export type BuyoutPreview = {
 }
 
 /** The live buyout tier for a page count, with the own-domain 20% discount when it applies. */
+/**
+ * Oct 30 (Cheke, 7:33 PM CT): there is NO tier above 35 pages. The live line under the page-count
+ * input says so plainly instead of "Enter a page count…". Copy pending Sable review.
+ */
+export const PAGE_COUNT_OVER_MAX_LINE = { en: 'We build up to 35 pages right now.', es: 'Por ahora construimos hasta 35 páginas.' } as const
+export const PAGE_COUNT_EMPTY_LINE = { en: 'Enter a page count to see your buyout tier.', es: 'Escribe cuántas páginas para ver tu nivel de compra.' } as const
+
+export function pageCountLine(pageCount: number | undefined, preview: BuyoutPreview | null, lang: 'en' | 'es' = 'en'): string {
+  if (preview) return preview.line
+  if (pageCount != null && pageCount > BUYOUT_CUSTOM_MAX_PAGES) return PAGE_COUNT_OVER_MAX_LINE[lang]
+  return PAGE_COUNT_EMPTY_LINE[lang]
+}
+
 export function buyoutPreview(pageCount: number | undefined, domainPath: Checklist['domain_path']): BuyoutPreview | null {
   if (pageCount == null) return null
   const tier = buyoutTierForPages(pageCount)

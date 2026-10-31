@@ -53,13 +53,13 @@ export const NOTES_MAX = 5000
 /** Admin price limits (whole dollars). */
 export const BUYOUT_PRICE_MIN_DOLLARS = 1
 /**
- * Oct 30 (Cheke, 7:11 PM CT): the override cap is $100,000 so Custom enterprise (21-35 pages) quotes fit
- * (was $2,000, the old Unlimited tier). DB CHECK: migration 20261030190000_buyout_price_cap_100000.sql.
+ * Oct 30 (Cheke, 7:11 PM CT): the override cap is $20,000 (7:33 PM CT) so Custom enterprise (21-35 pages) quotes fit
+ * (was $2,000, the old Unlimited tier). DB CHECK: migration 20261030190000_buyout_price_cap_20000.sql.
  */
-export const BUYOUT_PRICE_MAX_DOLLARS = 100_000
-export const BUYOUT_PRICE_ERROR = 'Enter a whole-dollar amount from $1 to $100,000.'
+export const BUYOUT_PRICE_MAX_DOLLARS = 20_000
+export const BUYOUT_PRICE_ERROR = 'Enter a whole-dollar amount from $1 to $20,000.'
 /** Spanish (box draft for Sable). The admin UI is English-only today, so this is not shown anywhere yet. */
-export const BUYOUT_PRICE_ERROR_ES = 'Escribe una cantidad en dólares enteros de $1 a $100,000.'
+export const BUYOUT_PRICE_ERROR_ES = 'Escribe una cantidad en dólares enteros de $1 a $20,000.'
 
 /**
  * Validates the admin's price input (whole dollars, "$" and thousands commas allowed) and returns

@@ -85,12 +85,12 @@ describe('override cap migration (Luma QA Oct 19)', () => {
     const sql = readFileSync(`${__dirname}/../../../supabase/migrations/20261019100000_buyout_price_cap_2000.sql`, 'utf8')
     expect(sql).toContain('check (buyout_price_cents is null or (buyout_price_cents between 100 and 200000 and buyout_price_cents % 100 = 0))')
   })
-  it('Oct 30: a new migration raises the cap to $100,000 (whole dollars, min $1) without editing the old one', async () => {
+  it('Oct 30: a new migration raises the cap to $20,000 (whole dollars, min $1) without editing the old one', async () => {
     const { readFileSync } = await import('node:fs')
-    const sql = readFileSync(`${__dirname}/../../../supabase/migrations/20261030190000_buyout_price_cap_100000.sql`, 'utf8')
+    const sql = readFileSync(`${__dirname}/../../../supabase/migrations/20261030190000_buyout_price_cap_20000.sql`, 'utf8')
     expect(sql).toContain('drop constraint if exists website_requests_buyout_price_cents_max')
-    expect(sql).toContain('check (buyout_price_cents is null or (buyout_price_cents between 100 and 10000000 and buyout_price_cents % 100 = 0))')
+    expect(sql).toContain('check (buyout_price_cents is null or (buyout_price_cents between 100 and 2000000 and buyout_price_cents % 100 = 0))')
     const { BUYOUT_PRICE_MAX_DOLLARS, BUYOUT_PRICE_MIN_DOLLARS } = await import('./buyout')
-    expect([BUYOUT_PRICE_MIN_DOLLARS, BUYOUT_PRICE_MAX_DOLLARS]).toEqual([1, 100_000])
+    expect([BUYOUT_PRICE_MIN_DOLLARS, BUYOUT_PRICE_MAX_DOLLARS]).toEqual([1, 20_000])
   })
 })

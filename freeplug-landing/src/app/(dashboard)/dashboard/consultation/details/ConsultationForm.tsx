@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useLocale } from 'next-intl'
 import { ChecklistFields } from '@/components/consultation/ChecklistFields'
 import type { Checklist } from '@/lib/consultation/checklist'
 import { useConsultationCopy } from '@/lib/consultation/use-consultation-copy'
@@ -8,10 +9,11 @@ import { saveConsultationForm, type ConsultActionState } from '../actions'
 
 export function ConsultationForm({ initial }: { initial: Checklist }) {
   const copy = useConsultationCopy()
+  const lang = useLocale() === 'es' ? 'es' : 'en'
   const [state, action, pending] = useActionState(saveConsultationForm, {} as ConsultActionState)
   return (
     <form action={action} className="space-y-8" data-testid="consultation-form">
-      <ChecklistFields initial={initial} />
+      <ChecklistFields initial={initial} lang={lang} />
       {state.error ? <p className="text-sm text-red-600" role="alert">{state.error}</p> : null}
       {state.saved ? <p className="text-sm text-green-700" role="status">{copy.SAVED_DRAFT_MESSAGE}</p> : null}
       <div className="flex flex-col gap-3 sm:flex-row">

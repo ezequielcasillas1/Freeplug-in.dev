@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   BOOKING_OPTIONS,
-  buyoutPreview,
+  buyoutPreview, pageCountLine,
   CONTENT_SOURCES,
   DOMAIN_PATHS,
   FIELD_LABELS,
@@ -94,7 +94,7 @@ function TextField({
  * and the admin checklist editor (same names, so both post the same shape). Page count shows the
  * buyout tier live; the own-domain path shows the 20% buyout discount.
  */
-export function ChecklistFields({ initial, disabled = false }: { initial: Checklist; disabled?: boolean }) {
+export function ChecklistFields({ initial, disabled = false, lang = 'en' }: { initial: Checklist; disabled?: boolean; lang?: 'en' | 'es' }) {
   const [siteType, setSiteType] = useState(initial.site_type)
   const [pages, setPages] = useState<string>(initial.page_count != null ? String(initial.page_count) : '')
   const [domainPath, setDomainPath] = useState(initial.domain_path)
@@ -122,7 +122,7 @@ export function ChecklistFields({ initial, disabled = false }: { initial: Checkl
             className={input + ' max-w-[140px]'}
           />
           <span className="mt-2 block text-sm text-gray-600" aria-live="polite" data-testid="buyout-tier-live">
-            {preview ? preview.line : 'Enter a page count to see your buyout tier.'}
+            {pageCountLine(pageNum, preview, lang)}
           </span>
         </label>
         <TextField name="pages_wanted" value={initial.pages_wanted} disabled={disabled} multiline placeholder="Home, About, Services, Gallery, Contact…" />
