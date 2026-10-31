@@ -195,8 +195,11 @@ describe('buyout helpers', () => {
     expect(parseBuyoutPriceInput('1')).toEqual({ ok: true, cents: 100 })
     expect(parseBuyoutPriceInput('2000')).toEqual({ ok: true, cents: 200_000 })
     expect(parseBuyoutPriceInput('$2,000')).toEqual({ ok: true, cents: 200_000 })
-    for (const bad of ['', '0', '-5', '12.50', '1e3', 'abc', '2001', '2500', '500000', '1,20', '99999999999999999999']) {
-      expect(parseBuyoutPriceInput(bad)).toEqual({ ok: false, error: 'Enter a whole-dollar amount from $1 to $2,000.' })
+    // Oct 30: Custom enterprise quotes above $2,000, up to $100,000.
+    expect(parseBuyoutPriceInput('2500')).toEqual({ ok: true, cents: 250_000 })
+    expect(parseBuyoutPriceInput('$100,000')).toEqual({ ok: true, cents: 10_000_000 })
+    for (const bad of ['', '0', '-5', '12.50', '1e3', 'abc', '100001', '500000', '1,20', '99999999999999999999']) {
+      expect(parseBuyoutPriceInput(bad)).toEqual({ ok: false, error: 'Enter a whole-dollar amount from $1 to $100,000.' })
     }
   })
 

@@ -14,7 +14,7 @@ export const BUYOUT_TIER_PAGE_LIMITS = [5, 7, 11, 15, 25] as const
 
 /** Prices in cents, in the same order as BUYOUT_TIER_PAGE_LIMITS; above the last limit is Custom enterprise. */
 const COUNTED_CENTS = [50_000, 70_000, 95_000, 120_000, 200_000] as const
-/** The highest fixed tier price (16-25 pages). Still the admin override cap (buyout.ts). */
+/** The highest fixed tier price (16-25 pages). The admin override cap is separate ($100,000, buyout.ts). */
 export const BUYOUT_UNLIMITED_CENTS = 200_000
 
 export type BuyoutTierId = 'quick' | 'up_to_7' | 'up_to_11' | 'up_to_15' | 'up_to_25' | 'custom'
