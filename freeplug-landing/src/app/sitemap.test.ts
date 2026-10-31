@@ -8,6 +8,7 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/',
       'https://freeplug-in.dev/faq',
       'https://freeplug-in.dev/privacy',
+      'https://freeplug-in.dev/compare',
     ])
   })
 
@@ -20,12 +21,15 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/es/faq',
       'https://freeplug-in.dev/privacy',
       'https://freeplug-in.dev/es/privacy',
+      'https://freeplug-in.dev/compare',
+      'https://freeplug-in.dev/es/compare',
     ])
     expect(s[3].alternates?.languages).toEqual({
       en: 'https://freeplug-in.dev/faq',
       es: 'https://freeplug-in.dev/es/faq',
       'x-default': 'https://freeplug-in.dev/faq',
     })
+    expect(s[7]).toMatchObject({ lastModified: '2026-10-31', alternates: { languages: { en: 'https://freeplug-in.dev/compare', es: 'https://freeplug-in.dev/es/compare', 'x-default': 'https://freeplug-in.dev/compare' } } })
     expect(buildSitemap('off')).toEqual(sitemap())
   })
 

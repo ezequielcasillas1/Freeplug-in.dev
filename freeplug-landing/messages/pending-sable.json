@@ -47,6 +47,10 @@
     "public.privacy.sections.ageRequirement.h": "DRAFT (Oct 30, 18+)",
     "public.privacy.sections.ageRequirement.p1": "DRAFT (Oct 30, 18+)",
     "src/lib/cta-pause.ts ctaPauseCopy (Muy pronto / Freeplug está en desarrollo. Muy pronto.)": "DRAFT (Oct 31)",
-    "public.landing.footer.ownerLine": "DRAFT (Oct 31)"
+    "public.landing.footer.ownerLine": "DRAFT (Oct 31)",
+    "public.compare.* (all ES strings; title/description and h1/subline from Sable/SEO, rest drafts)": "DRAFT (Oct 31)",
+    "public.landing.footer.label.compare": "DRAFT (Oct 31)",
+    "public.landing.buyoutTiers.compareLink": "DRAFT (Oct 31)",
+    "public.meta.compareTitle / compareDescription": "SEO-provided (Oct 31), confirm"
   }
 }

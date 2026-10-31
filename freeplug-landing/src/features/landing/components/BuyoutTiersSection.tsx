@@ -1,10 +1,13 @@
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import { publicHref } from '@/i18n/routing'
+import { toAppLocale } from '@/i18n/config'
 import { Card } from '@/components/ui/card'
 import { BUYOUT_TIERS, formatTierPrice } from '@/lib/buyout/tiers'
 
 /** Short buyout block on the home page (SEO copy, Oct 24). Prices come from the tier config. */
 export function BuyoutTiersSection() {
   const t = useTranslations('public.landing.buyoutTiers')
+  const locale = toAppLocale(useLocale())
   return (
     <section id="buyout" aria-labelledby="buyout-heading" className="py-16 sm:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,6 +37,9 @@ export function BuyoutTiersSection() {
         </ul>
         <p className="mt-6 text-center text-sm text-gray-700">{t('customLine')}</p>
         <p className="mt-1 text-center text-sm text-gray-500">{t('note')}</p>
+        <p className="mt-4 text-center">
+          <a href={publicHref('/compare', locale)} className="text-sm font-semibold text-[#ba3d3d] hover:underline">{t('compareLink')} →</a>
+        </p>
       </div>
     </section>
   )

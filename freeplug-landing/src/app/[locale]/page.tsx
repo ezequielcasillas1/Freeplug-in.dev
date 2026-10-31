@@ -15,6 +15,7 @@ import { toAppLocale } from '@/i18n/config'
 import { OfferingsSection } from '@/features/landing/components/OfferingsSection'
 import { TemplatesSection } from '@/features/landing/components/TemplatesSection'
 import { BuyoutTiersSection } from '@/features/landing/components/BuyoutTiersSection'
+import { CompareSection } from '@/features/compare/CompareSection'
 import { HostingPlansSectionUi } from '@/features/landing/components/HostingPlansSectionUi'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -48,6 +49,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         {/* Public plans block (no Supabase) so #hosting-plans nav/footer links resolve */}
         <HostingPlansSectionUi signedIn={false} hostingCheckoutAllowed={false} />
         <BuyoutTiersSection />
+        {/* Compare (Oct 31): after pricing; the home page has no FAQ block, so it sits before Reviews */}
+        <CompareSection />
         <ReviewsSection />
       </main>
       <Footer />

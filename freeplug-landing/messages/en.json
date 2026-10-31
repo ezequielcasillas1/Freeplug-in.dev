@@ -919,7 +919,9 @@
       "faqTitle": "FAQ: How Freeplug Works | Freeplug",
       "faqDescription": "Answers about Freeplug's free website build, what you pay for after launch, timelines, and how to request your site.",
       "privacyTitle": "Privacy Policy | Freeplug",
-      "privacyDescription": "How Freeplug collects, uses and protects your information, what we share and with whom, cookies, and how to access, correct or delete your data."
+      "privacyDescription": "How Freeplug collects, uses and protects your information, what we share and with whom, cookies, and how to access, correct or delete your data.",
+      "compareTitle": "Freeplug vs Wix, Squarespace & Rent-to-Own Websites",
+      "compareDescription": "Compare upfront cost, monthly price and what it takes to own your website. Prices from each company's public site, as of Oct 31, 2026."
     },
     "notFound": {
       "heading": "Page not found",
@@ -962,7 +964,8 @@
           "cookiePolicy": "Cookie Policy",
           "getStarted": "Get Started",
           "support": "Support",
-          "faq": "FAQ"
+          "faq": "FAQ",
+          "compare": "Compare"
         },
         "freeplug": "Freeplug",
         "freeplugHandlesOwnerOutreach72": "Freeplug handles owner outreach; 72 After builds the free websites. Reaching out in Central Texas now, with plans to expand across Texas and, if possible, the U.S.",
@@ -1151,7 +1154,8 @@
         "customPrice": "Custom quote",
         "customScope": "scoped by hand",
         "customLine": "21 to 35 pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
-        "note": "The buyout covers your website files only."
+        "note": "The buyout covers your website files only.",
+        "compareLink": "Compare Freeplug with other options"
       }
     },
     "privacy": {
@@ -1218,6 +1222,91 @@
         "contact": {
           "h": "Contact us",
           "p1": "Freeplug (a 72 After service), 2380 Staples Road, Unit 3108, San Marcos, TX 78666. Email: support@freeplug-in.dev."
+        }
+      }
+    },
+    "compare": {
+      "heading": "How Freeplug compares",
+      "subline": "What it costs to start, what you pay each month, and whether you end up owning your site.",
+      "h1": "Freeplug vs. Wix, Squarespace and rent-to-own websites",
+      "ownHeading": "Which option lets you own your website?",
+      "colCompany": "Company",
+      "colUpfront": "Upfront cost",
+      "colMonthly": "Monthly price",
+      "colCounts": "Payments count toward owning it?",
+      "colOwn": "Lowest price to own it",
+      "colWork": "Who does the work",
+      "groupRentToOwn": "Rent-to-own",
+      "groupDiy": "DIY builders",
+      "groupAgencies": "Local agencies",
+      "notStated": "Not stated",
+      "doneForYou": "Done for you",
+      "youBuildIt": "You build it",
+      "footnote": "Prices as of Oct 31, 2026, from each company's public website. Prices and terms can change, so check with each company.",
+      "homeLink": "compare Freeplug with Wix and others",
+      "seePricing": "See Freeplug pricing",
+      "requestForm": "Request form",
+      "sourceHint": "(pricing page, opens in a new tab)",
+      "breadcrumbHome": "Home",
+      "breadcrumbCompare": "Compare",
+      "rows": {
+        "freeplug": {
+          "upfront": "$0",
+          "monthly": "$35–$65/mo",
+          "counts": "Yes, every dollar counts toward the buyout",
+          "own": "From $500 (20% off if you own your domain)"
+        },
+        "rwMedia": {
+          "monthly": "$299–$999/mo",
+          "counts": "Yes, rent-to-own",
+          "own": "Buyout equals 12 months of payments"
+        },
+        "grippyCode": {
+          "monthly": "$99–$499/mo",
+          "counts": "No",
+          "own": "Buy outright for $999–$4,999"
+        },
+        "leaseReady": {
+          "upfront": "$250 setup",
+          "monthly": "$250/mo",
+          "counts": "Yes",
+          "own": "Yours after 36 on-time payments"
+        },
+        "payPerMonth": {
+          "monthly": "$39–$79/mo",
+          "counts": "Site is yours from day one (per their terms)"
+        },
+        "wix": {
+          "upfront": "Free plan",
+          "monthly": "Free, or from $17.77/mo billed yearly",
+          "counts": "No"
+        },
+        "squarespace": {
+          "monthly": "From $19/mo billed yearly",
+          "counts": "No"
+        },
+        "godaddy": {
+          "upfront": "Free",
+          "monthly": "Free; paid plans not stated",
+          "counts": "No"
+        },
+        "durable": {
+          "monthly": "$25–$49/mo",
+          "counts": "No"
+        },
+        "sanMarcos": {
+          "upfront": "$300–$800 one-time",
+          "counts": "Not applicable, one-time purchase (owned, 1 month of support)",
+          "own": "$300"
+        },
+        "oakHarbor": {
+          "upfront": "$0 down",
+          "monthly": "$175/mo, 12-month minimum"
+        },
+        "arise": {
+          "upfront": "From $1,500",
+          "monthly": "Care plans from $79/mo",
+          "own": "From $1,500"
         }
       }
     }

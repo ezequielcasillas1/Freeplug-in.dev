@@ -919,7 +919,9 @@
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
       "faqDescription": "Respuestas sobre el sitio web gratis de Freeplug, lo que pagas después del lanzamiento, los tiempos y cómo pedir tu sitio.",
       "privacyTitle": "Aviso de privacidad | Freeplug",
-      "privacyDescription": "Cómo Freeplug recopila, usa y protege tu información, con quién la compartimos, las cookies y cómo ver, corregir o borrar tus datos."
+      "privacyDescription": "Cómo Freeplug recopila, usa y protege tu información, con quién la compartimos, las cookies y cómo ver, corregir o borrar tus datos.",
+      "compareTitle": "Freeplug vs Wix, Squarespace y Webs con Opción a Compra",
+      "compareDescription": "Compara costo inicial, precio mensual y lo que cuesta ser dueño de tu sitio web. Precios del sitio público de cada empresa, al 31 de oct. de 2026."
     },
     "notFound": {
       "heading": "Página no encontrada",
@@ -962,7 +964,8 @@
           "cookiePolicy": "Política de cookies",
           "getStarted": "Empieza",
           "support": "Soporte",
-          "faq": "Preguntas frecuentes"
+          "faq": "Preguntas frecuentes",
+          "compare": "Comparar"
         },
         "freeplug": "Freeplug",
         "freeplugHandlesOwnerOutreach72": "Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Ahora en el centro de Texas, con planes de crecer por todo Texas y, si es posible, por EE. UU.",
@@ -1151,7 +1154,8 @@
         "customPrice": "Cotización a medida",
         "customScope": "según tu proyecto",
         "customLine": "¿De 21 a 35 páginas? Te damos una cotización. Cada dólar que ya pagaste cuenta para tu cotización, y el 20% de descuento por dominio propio también aplica.",
-        "note": "La compra incluye solo los archivos de tu sitio web."
+        "note": "La compra incluye solo los archivos de tu sitio web.",
+        "compareLink": "Compara Freeplug con otras opciones"
       }
     },
     "privacy": {
@@ -1218,6 +1222,91 @@
         "contact": {
           "h": "Contacto",
           "p1": "Freeplug (un servicio de 72 After), 2380 Staples Road, Unit 3108, San Marcos, TX 78666. Correo: support@freeplug-in.dev."
+        }
+      }
+    },
+    "compare": {
+      "heading": "Cómo se compara Freeplug",
+      "subline": "Cuánto cuesta empezar, cuánto pagas al mes y si al final el sitio es tuyo.",
+      "h1": "Freeplug vs. Wix, Squarespace y sitios web con opción a compra",
+      "ownHeading": "¿Qué opción te deja ser dueño de tu sitio web?",
+      "colCompany": "Empresa",
+      "colUpfront": "Costo inicial",
+      "colMonthly": "Precio mensual",
+      "colCounts": "¿Los pagos cuentan para que sea tuyo?",
+      "colOwn": "Precio más bajo para que sea tuyo",
+      "colWork": "Quién hace el trabajo",
+      "groupRentToOwn": "Renta con opción a compra",
+      "groupDiy": "Constructores DIY",
+      "groupAgencies": "Agencias locales",
+      "notStated": "No se indica",
+      "doneForYou": "Lo hacemos por ti",
+      "youBuildIt": "Lo haces tú",
+      "footnote": "Precios al 31 de octubre de 2026, tomados del sitio web público de cada empresa. Los precios y condiciones pueden cambiar; confírmalos con cada empresa.",
+      "homeLink": "compara Freeplug con Wix y otros",
+      "seePricing": "Ver precios de Freeplug",
+      "requestForm": "Formulario de solicitud",
+      "sourceHint": "(página de precios, se abre en una pestaña nueva)",
+      "breadcrumbHome": "Inicio",
+      "breadcrumbCompare": "Comparar",
+      "rows": {
+        "freeplug": {
+          "upfront": "$0",
+          "monthly": "$35–$65/mes",
+          "counts": "Sí, cada dólar cuenta para la compra",
+          "own": "Desde $500 (20% de descuento si el dominio ya es tuyo)"
+        },
+        "rwMedia": {
+          "monthly": "$299–$999/mes",
+          "counts": "Sí, renta con opción a compra",
+          "own": "La compra equivale a 12 meses de pagos"
+        },
+        "grippyCode": {
+          "monthly": "$99–$499/mes",
+          "counts": "No",
+          "own": "Compra directa por $999–$4,999"
+        },
+        "leaseReady": {
+          "upfront": "$250 de instalación",
+          "monthly": "$250/mes",
+          "counts": "Sí",
+          "own": "Es tuyo después de 36 pagos puntuales"
+        },
+        "payPerMonth": {
+          "monthly": "$39–$79/mes",
+          "counts": "El sitio es tuyo desde el primer día (según sus condiciones)"
+        },
+        "wix": {
+          "upfront": "Plan gratis",
+          "monthly": "Gratis, o desde $17.77/mes con pago anual",
+          "counts": "No"
+        },
+        "squarespace": {
+          "monthly": "Desde $19/mes con pago anual",
+          "counts": "No"
+        },
+        "godaddy": {
+          "upfront": "Gratis",
+          "monthly": "Gratis; no se indican planes de pago",
+          "counts": "No"
+        },
+        "durable": {
+          "monthly": "$25–$49/mes",
+          "counts": "No"
+        },
+        "sanMarcos": {
+          "upfront": "$300–$800 pago único",
+          "counts": "No aplica, compra de pago único (es tuyo, 1 mes de soporte)",
+          "own": "$300"
+        },
+        "oakHarbor": {
+          "upfront": "$0 de entrada",
+          "monthly": "$175/mes, mínimo de 12 meses"
+        },
+        "arise": {
+          "upfront": "Desde $1,500",
+          "monthly": "Planes de mantenimiento desde $79/mes",
+          "own": "Desde $1,500"
         }
       }
     }
