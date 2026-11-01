@@ -61,7 +61,7 @@ export function HostingPlansSectionUi({
             />
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <MaintenancePlanCard paused={CTA_PAUSED_NOW} ctaHref={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : `/login?next=${MAINTENANCE_LOGIN_NEXT}`} />
+            <MaintenancePlanCard paused={false} ctaHref={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : `/login?next=${MAINTENANCE_LOGIN_NEXT}`} />
           </motion.div>
         </div>
       </motion.div>
