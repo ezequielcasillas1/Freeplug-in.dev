@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { HostingPlansSectionUi } from './HostingPlansSectionUi'
 import { CALCOM_BOOKING_URL } from '@/lib/booking'
@@ -11,12 +11,19 @@ vi.mock('framer-motion', async () => {
   return { motion }
 })
 
-describe('HostingPlansSectionUi: only the One-time maintenance CTA is unpaused', () => {
-  it('maintenance card CTA is an active link while the other Get-started CTAs stay paused', () => {
+describe('HostingPlansSectionUi: One-time maintenance card is info-only', () => {
+  it('maintenance card has no button, link, or action wording; other CTAs stay paused', () => {
     expect(CTA_PAUSED_NOW).toBe(true)
     const { container } = render(<HostingPlansSectionUi signedIn={false} hostingCheckoutAllowed={true} />)
-    const links = Array.from(container.querySelectorAll('a')).filter((a) => a.getAttribute('href') === CALCOM_BOOKING_URL)
-    expect(links.length).toBeGreaterThanOrEqual(1)
+    const card = screen.getByTestId('maintenance-plan-card')
+    expect(card.querySelectorAll('a, button, [role="button"], [role="link"]').length).toBe(0)
+    expect(within(card).queryByTestId('cta-paused')).toBeNull()
+    expect(card.textContent).toContain('One-time maintenance')
+    expect(card.textContent).toContain('$50')
+    for (const w of ['Request maintenance', 'Pedir mantenimiento', 'Coming soon', 'Book', 'Get started']) {
+      expect(card.textContent).not.toContain(w)
+    }
+    expect(Array.from(container.querySelectorAll('a')).some((a) => a.getAttribute('href') === CALCOM_BOOKING_URL)).toBe(false)
     const paused = screen.getAllByTestId('cta-paused')
     expect(paused.length).toBeGreaterThanOrEqual(1)
     for (const b of paused) {
