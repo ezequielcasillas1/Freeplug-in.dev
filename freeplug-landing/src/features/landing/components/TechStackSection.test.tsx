@@ -34,10 +34,10 @@ beforeAll(() => {
   }
 })
 
-const NAMES = ['Envato template', 'HTML & CSS', 'Bootstrap 5', 'Cloudflare', 'Cloudflare Turnstile', 'Resend']
+const NAMES = ['Professional design', 'Clean, fast code', 'Looks great on phones', 'Fast, secure hosting', 'Spam and bot protection', 'Reliable email delivery']
 
 describe('TechStackSection (local business stack, Oct 3)', () => {
-  it("lists the six tiles in Lina's order with Sable's names", () => {
+  it("lists the six tiles in live order with marketing names", () => {
     expect(techStack.map((t) => t.name)).toEqual(NAMES)
     render(<TechStackSection />)
     const tiles = screen.getAllByTestId('tech-tile')
@@ -56,9 +56,9 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
     }
   })
 
-  it("Envato tile: Sable's shortened line (copy file freeplug-landing-tech-stack-copy-2026-10-03.md, Oct 3, 3:10 PM), no price or cost", () => {
-    const envato = techStack.find((t) => t.name === 'Envato template')!
-    expect(envato.description).toBe('Premium templates our developers can access, enhanced with your details.')
+  it('Professional design tile: no price or cost in the blurb', () => {
+    const envato = techStack.find((t) => t.name === 'Professional design')!
+    expect(envato.description).toBe('A polished, professional design, tailored with your details.')
     expect(envato.description).not.toMatch(/\$|\d|price|cost|free|licen[cs]/i)
   })
 
@@ -148,7 +148,7 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
       ),
     ).toBeInTheDocument()
     for (const [title, line] of [
-      ['Fast Loading', "Lightweight pages served from Cloudflare's network."],
+      ['Fast Loading', 'Lightweight pages served from a fast global network.'],
       ['Mobile First', 'A responsive layout that adjusts to phones, tablets and computers.'],
       ['SEO Basics Included', 'Clear page titles, descriptions and business details that search engines can read.'],
       ['Secure Connection', "HTTPS on every page through Cloudflare's SSL."],

@@ -10,6 +10,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { PublicSignupCta } from './PublicSignupCta'
+import { BookLiveSessionLink } from './BookLiveSessionLink'
 
 function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
@@ -138,15 +139,13 @@ export function HeroSection() {
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 pt-2">
               <PublicSignupCta variant="hero" />
-              <a
-                href="#outreach"
+              <BookLiveSessionLink
+                variant="hero"
                 className={cn(
                   buttonVariants({ variant: 'secondary', size: 'lg' }),
-                  'backdrop-blur-xl bg-white/70 border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white/90 text-gray-700 font-medium text-base px-8'
+                  'backdrop-blur-xl bg-white/70 border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white/90 text-gray-700 font-medium text-base px-8 inline-flex items-center justify-center'
                 )}
-              >
-                {t('hero.seeWhereWork')}
-              </a>
+              />
             </motion.div>
 
             <motion.p variants={fadeInUp} className="text-sm text-gray-500">

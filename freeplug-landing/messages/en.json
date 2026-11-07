@@ -1152,10 +1152,10 @@
           "builds72AfterFreeMultiPage": "72 After builds a free multi-page site from a solid template, your real services, and clear Get-a-quote pages."
         },
         "serviceAreas": "Service areas",
-        "whereWorkTexas": "Where we work in <span>Texas</span>",
-        "wereFocusedCentralTexasFirst": "We’re focused on Central Texas first — San Marcos and nearby cities.",
+        "whereWorkTexas": "Free websites for local businesses in <span>Central Texas</span>",
+        "wereFocusedCentralTexasFirst": "We're currently reaching out to businesses in San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley and Dripping Springs.",
         "stockPhoto": "{name} — stock photo",
-        "moreTexasCitiesCapacityGrows": "More Texas cities as capacity grows. Ask if your town isn’t listed.",
+        "moreTexasCitiesCapacityGrows": "We plan to expand across Texas soon and, if possible, throughout the U.S. Ask if your town isn't listed.",
         "international": "International",
         "beyondTexasUs": "Beyond Texas and the US",
         "freeplugReachBusinessesOutsideUs": "Freeplug can reach businesses outside the US through our in-network partners and channels. International outreach depends on language, local rules, and partner capacity — we don’t promise every country or a set timeline. If you’re outside the US and want a free site through the network, start a request and we’ll tell you what’s possible.",
@@ -1166,7 +1166,7 @@
           "citySkylineStockPhoto": "City skyline — stock photo"
         },
         "howItConnects": "How it connects",
-        "howItWorks": "How it <span>works</span>",
+        "howItWorks": "How a <span>free website</span> works",
         "freeplugConnectsConversation72After": "Freeplug connects the conversation. 72 After does the build.",
         "step": "Step {step}"
       },
@@ -1178,21 +1178,21 @@
       },
       "techStack": {
         "name": {
-          "envatoTemplate": "Envato template",
-          "htmlCss": "HTML & CSS",
-          "bootstrap5": "Bootstrap 5",
-          "cloudflare": "Cloudflare",
-          "cloudflareTurnstile": "Cloudflare Turnstile",
-          "resend": "Resend"
+          "envatoTemplate": "Professional design",
+          "htmlCss": "Clean, fast code",
+          "bootstrap5": "Looks great on phones",
+          "cloudflare": "Fast, secure hosting",
+          "cloudflareTurnstile": "Spam and bot protection",
+          "resend": "Reliable email delivery"
         },
         "description": {
-          "premiumTemplatesDevelopersAccess": "Premium templates our developers can access, enhanced with your details.",
+          "premiumTemplatesDevelopersAccess": "A polished, professional design, tailored with your details.",
           "plainLightweightPagesLoad": "Plain, lightweight pages that load quickly.",
           "layoutFitsPhonesTablets": "A layout that fits phones, tablets and computers.",
-          "hostsSiteProvidesSsl": "Hosts your site and provides the SSL certificate for https.",
+          "hostsSiteProvidesSsl": "Fast hosting with a secure https address included.",
           "filtersOutSpamBots": "Filters out spam bots on your quote form, without picture puzzles.",
           "emailsEachQuoteRequest": "Emails each quote request to you.",
-          "lightweightPagesServedFrom": "Lightweight pages served from Cloudflare's network.",
+          "lightweightPagesServedFrom": "Lightweight pages served from a fast global network.",
           "responsiveLayoutAdjustsPhones": "A responsive layout that adjusts to phones, tablets and computers.",
           "clearPageTitlesDescriptions": "Clear page titles, descriptions and business details that search engines can read.",
           "httpsEveryPageThrough": "HTTPS on every page through Cloudflare's SSL."
@@ -1209,6 +1209,72 @@
         "performanceMatters": "Performance That <span>Matters</span>",
         "sitesBuiltMobileFriendlyReasonably": "Sites are built to be mobile-friendly and reasonably fast. We don't invent uptime or score guarantees.",
         "responsiveLayoutsClearQuoteRequest": "Responsive layouts · Clear quote request pages · Monthly hosting keeps it online"
+      },
+      "offerings": {
+        "heading": "Landing pages, booking sites and one-product stores",
+        "intro": "Pick what fits you. Every project comes with hosting, updates and the option to own it.",
+        "cta": "Start this kind of project →",
+        "saasTag": "Simple apps only",
+        "types": {
+          "local": {
+            "title": "Local business websites",
+            "line": "A site that helps nearby customers find you, call you, or ask for a quote."
+          },
+          "agency": {
+            "title": "Small agencies",
+            "line": "Sites for your clients, built by us under your agency."
+          },
+          "creator": {
+            "title": "Landing pages for creators",
+            "line": "One clean page for your work, your links and how to reach you."
+          },
+          "booking": {
+            "title": "Booking sites for freelancers",
+            "line": "Let clients see your services and book a time with you."
+          },
+          "store": {
+            "title": "One-product stores",
+            "line": "A simple store to sell one product online."
+          },
+          "saas": {
+            "title": "Small SaaS apps",
+            "line": "Simple web apps with a few core features. Bigger builds get a quote first."
+          }
+        },
+        "developmentLine": "Freeplug is currently in development. Launching soon."
+      },
+      "templates": {
+        "heading": "Start from a template",
+        "intro": "Pick a category, then a niche, to see Envato Elements templates we can build from. Demos open in a new tab on the author's site.",
+        "categoriesLabel": "Template categories",
+        "nichesLabel": "Niches",
+        "demo": "Open live demo",
+        "count": "{count, plural, one {# template} other {# templates}}",
+        "mobileToggle": "Browse template categories",
+        "newTab": "(opens in a new tab)"
+      },
+      "buyoutTiers": {
+        "eyebrow": "Buyout",
+        "heading": "Buy out your pages, <span>own your files</span>",
+        "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
+        "tier": {
+          "quick": "Up to 5 pages",
+          "up_to_7": "6 to 7 pages",
+          "up_to_11": "8 to 11 pages",
+          "up_to_15": "12 to 15 pages",
+          "up_to_20": "16 to 20 pages",
+          "custom": "Custom enterprise: 21 to 35 pages"
+        },
+        "oneTime": "one time",
+        "customPrice": "Custom quote",
+        "customScope": "scoped by hand",
+        "customLine": "21 to 35 pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
+        "note": "The buyout covers your website files only.",
+        "compareLink": "Compare Freeplug with other options"
+      },
+      "booking": {
+        "title": "Booking sites for freelancers",
+        "line": "Let clients see your services and book a time with you."
       }
     }
   },

@@ -1152,10 +1152,10 @@
           "builds72AfterFreeMultiPage": "72 After crea un sitio gratis de varias páginas con una plantilla sólida, tus servicios reales y páginas claras para pedir una cotización."
         },
         "serviceAreas": "Zonas de servicio",
-        "whereWorkTexas": "Dónde trabajamos en <span>Texas</span>",
-        "wereFocusedCentralTexasFirst": "Empezamos por el centro de Texas: San Marcos y ciudades cercanas.",
+        "whereWorkTexas": "Sitios web gratis para negocios locales en <span>el centro de Texas</span>",
+        "wereFocusedCentralTexasFirst": "Por ahora contactamos negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs.",
         "stockPhoto": "{name}: foto de archivo",
-        "moreTexasCitiesCapacityGrows": "Más ciudades de Texas a medida que crezcamos. Pregúntanos si tu ciudad no aparece.",
+        "moreTexasCitiesCapacityGrows": "Planeamos expandirnos por Texas y, si es posible, en todo EE. UU. Pregunta si tu ciudad no aparece.",
         "international": "Internacional",
         "beyondTexasUs": "Más allá de Texas y EE. UU.",
         "freeplugReachBusinessesOutsideUs": "Freeplug puede llegar a negocios fuera de EE. UU. a través de socios y canales de nuestra red. El alcance internacional depende del idioma, las reglas locales y la capacidad de los socios; no prometemos todos los países ni un plazo fijo. Si estás fuera de EE. UU. y quieres un sitio gratis a través de la red, empieza una solicitud y te diremos qué se puede hacer.",
@@ -1166,7 +1166,7 @@
           "citySkylineStockPhoto": "Horizonte de una ciudad: foto de archivo"
         },
         "howItConnects": "Cómo se conecta",
-        "howItWorks": "Cómo <span>funciona</span>",
+        "howItWorks": "Cómo funciona un <span>sitio web gratis</span>",
         "freeplugConnectsConversation72After": "Freeplug inicia la conversación. 72 After construye el sitio.",
         "step": "Paso {step}"
       },
@@ -1178,24 +1178,24 @@
       },
       "techStack": {
         "name": {
-          "envatoTemplate": "Plantilla de Envato",
-          "htmlCss": "HTML y CSS",
-          "bootstrap5": "Bootstrap 5",
-          "cloudflare": "Cloudflare",
-          "cloudflareTurnstile": "Cloudflare Turnstile",
-          "resend": "Resend"
+          "envatoTemplate": "Professional design",
+          "htmlCss": "Clean, fast code",
+          "bootstrap5": "Looks great on phones",
+          "cloudflare": "Fast, secure hosting",
+          "cloudflareTurnstile": "Spam and bot protection",
+          "resend": "Reliable email delivery"
         },
         "description": {
-          "premiumTemplatesDevelopersAccess": "Plantillas premium a las que tienen acceso nuestros desarrolladores, adaptadas con tus datos.",
-          "plainLightweightPagesLoad": "Páginas simples y ligeras que cargan rápido.",
-          "layoutFitsPhonesTablets": "Un diseño que se adapta a celulares, tabletas y computadoras.",
-          "hostsSiteProvidesSsl": "Aloja tu sitio y da el certificado SSL para https.",
-          "filtersOutSpamBots": "Filtra los bots de spam en tu formulario de cotización, sin rompecabezas de imágenes.",
-          "emailsEachQuoteRequest": "Te envía por correo cada solicitud de cotización.",
-          "lightweightPagesServedFrom": "Páginas ligeras servidas desde la red de Cloudflare.",
-          "responsiveLayoutAdjustsPhones": "Un diseño adaptable a celulares, tabletas y computadoras.",
-          "clearPageTitlesDescriptions": "Títulos de página, descripciones y datos del negocio claros que los buscadores pueden leer.",
-          "httpsEveryPageThrough": "HTTPS en todas las páginas con el SSL de Cloudflare."
+          "premiumTemplatesDevelopersAccess": "A polished, professional design, tailored with your details.",
+          "plainLightweightPagesLoad": "Plain, lightweight pages that load quickly.",
+          "layoutFitsPhonesTablets": "A layout that fits phones, tablets and computers.",
+          "hostsSiteProvidesSsl": "Fast hosting with a secure https address included.",
+          "filtersOutSpamBots": "Filters out spam bots on your quote form, without picture puzzles.",
+          "emailsEachQuoteRequest": "Emails each quote request to you.",
+          "lightweightPagesServedFrom": "Lightweight pages served from a fast global network.",
+          "responsiveLayoutAdjustsPhones": "A responsive layout that adjusts to phones, tablets and computers.",
+          "clearPageTitlesDescriptions": "Clear page titles, descriptions and business details that search engines can read.",
+          "httpsEveryPageThrough": "HTTPS on every page through Cloudflare's SSL."
         },
         "title": {
           "fastLoading": "Carga rápida",
@@ -1209,6 +1209,72 @@
         "performanceMatters": "Rendimiento que <span>importa</span>",
         "sitesBuiltMobileFriendlyReasonably": "Los sitios están hechos para verse bien en celular y ser razonablemente rápidos. No inventamos garantías de disponibilidad ni de puntajes.",
         "responsiveLayoutsClearQuoteRequest": "Diseños adaptables · Páginas claras para pedir cotización · El hosting mensual lo mantiene en línea"
+      },
+      "offerings": {
+        "heading": "Páginas de destino, sitios de reservas y tiendas de un producto",
+        "intro": "Elige lo que encaje. Cada proyecto incluye hosting, actualizaciones y la opción de ser dueño.",
+        "cta": "Empezar este tipo de proyecto →",
+        "saasTag": "Simple apps only",
+        "types": {
+          "local": {
+            "title": "Local business websites",
+            "line": "A site that helps nearby customers find you, call you, or ask for a quote."
+          },
+          "agency": {
+            "title": "Small agencies",
+            "line": "Sites for your clients, built by us under your agency."
+          },
+          "creator": {
+            "title": "Landing pages for creators",
+            "line": "One clean page for your work, your links and how to reach you."
+          },
+          "booking": {
+            "title": "Booking sites for freelancers",
+            "line": "Let clients see your services and book a time with you."
+          },
+          "store": {
+            "title": "One-product stores",
+            "line": "A simple store to sell one product online."
+          },
+          "saas": {
+            "title": "Small SaaS apps",
+            "line": "Simple web apps with a few core features. Bigger builds get a quote first."
+          }
+        },
+        "developmentLine": "Freeplug está en desarrollo. Lanzamiento próximamente."
+      },
+      "templates": {
+        "heading": "Start from a template",
+        "intro": "Pick a category, then a niche, to see Envato Elements templates we can build from. Demos open in a new tab on the author's site.",
+        "categoriesLabel": "Template categories",
+        "nichesLabel": "Niches",
+        "demo": "Open live demo",
+        "count": "{count, plural, one {# template} other {# templates}}",
+        "mobileToggle": "Browse template categories",
+        "newTab": "(opens in a new tab)"
+      },
+      "buyoutTiers": {
+        "eyebrow": "Buyout",
+        "heading": "Buy out your pages, <span>own your files</span>",
+        "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
+        "tier": {
+          "quick": "Up to 5 pages",
+          "up_to_7": "6 to 7 pages",
+          "up_to_11": "8 to 11 pages",
+          "up_to_15": "12 to 15 pages",
+          "up_to_20": "16 to 20 pages",
+          "custom": "Custom enterprise: 21 to 35 pages"
+        },
+        "oneTime": "one time",
+        "customPrice": "Custom quote",
+        "customScope": "scoped by hand",
+        "customLine": "21 to 35 pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
+        "note": "The buyout covers your website files only.",
+        "compareLink": "Compare Freeplug with other options"
+      },
+      "booking": {
+        "title": "Booking sites for freelancers",
+        "line": "Let clients see your services and book a time with you."
       }
     }
   },

@@ -1,16 +1,13 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowRight, Globe2, Handshake, MapPin, MessageCircle, Wrench } from 'lucide-react'
-import { buttonVariants } from '@/components/ui/button'
+import { Globe2, Handshake, MapPin, MessageCircle, Wrench } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { cn } from '@/lib/utils/cn'
 import { fadeInUp, staggerContainer, cardVariants } from '../animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
-import { publicHref } from '@/i18n/routing'
+import { PublicSignupCta } from './PublicSignupCta'
 
 // Photos: Wikimedia Commons (Lina, Oct 12 2026). CC BY / BY-SA need visible credit, so each card shows
 // "Photo: {author}, {license}" linked to the license and the Commons page. Full record: public/images/outreach/CREDITS.md
@@ -237,16 +234,7 @@ export function OutreachSection() {
                 {t('freeplugReachBusinessesOutsideUs')}
               </motion.p>
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href={publicHref('/signup', locale)}
-                  className={cn(
-                    buttonVariants({ size: 'lg' }),
-                    'shadow-lg shadow-[#ba3d3d]/30'
-                  )}
-                >
-                  {t('requestInternationalOutreach')}
-                  <ArrowRight size={18} className="ml-2" />
-                </Link>
+                <PublicSignupCta variant="nav" />
               </motion.div>
               <motion.p variants={fadeInUp} className="text-sm text-gray-500">
                 {t('availabilityVariesRegionPartnerNo')}
