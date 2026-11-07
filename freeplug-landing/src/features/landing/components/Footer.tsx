@@ -28,6 +28,7 @@ const footerLinks = {
   ],
   contact: [
     { label: 'getStarted', href: '/signup' },
+    { label: 'merch', href: '/merch' },
     { label: 'support', href: 'mailto:support@freeplug-in.dev' },
     { label: 'faq', href: '/faq' },
   ],

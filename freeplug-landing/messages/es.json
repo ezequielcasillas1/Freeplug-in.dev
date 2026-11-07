@@ -1030,6 +1030,56 @@
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
       "faqDescription": "Respuestas sobre el sitio web gratis de Freeplug, lo que pagas después del lanzamiento, los tiempos y cómo pedir tu sitio."
     },
+    "merch": {
+      "meta": {
+        "indexTitle": "Merch y fuentes | Freeplug",
+        "indexDescription": "Productos digitales Freeplug. Fuentes script, cursiva para logos y display en negrita para marcas, sitios y camisetas.",
+        "productTitle": "Paquete de fuentes Freeplug — script, cursiva y display | Freeplug",
+        "productDescription": "12 estilos: FP Extended, Freeplug Dispatch y FP Cursive (v2). Fuente cursiva para logos, display en negrita para camisetas. $49.99 USD. Uso personal y con clientes."
+      },
+      "eyebrow": "Merch",
+      "heading": "Fuentes Freeplug",
+      "lead": "Las tipografías de la marca — script, cursiva de logo y display en negrita para web e impresión.",
+      "ctaProduct": "Ver el paquete de fuentes",
+      "previewAlt": "FP Cursive comparada con el logo Freeplug",
+      "breadcrumbMerch": "Merch",
+      "productName": "Paquete de fuentes Freeplug",
+      "price": "49,99 USD",
+      "productLead": "Doce archivos en tres familias. FP Cursive v2 coincide con la ligadura del logo Fp.",
+      "specimenAlt": "Espécimen de FP Cursive",
+      "compareAlt": "Comparación del logo con FP Cursive Regular",
+      "stylesHeading": "Contenido",
+      "stylesSeo": "Incluye fuente script, cursiva para logo, display en negrita y extended — para logos, titulares y merch.",
+      "useCasesHeading": "Usos",
+      "buyCta": "Comprar con Stripe (prueba)",
+      "emailOptional": "Correo (opcional — recibo y enlace de descarga)",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "checkoutError": "No se pudo iniciar el pago. Inténtalo de nuevo.",
+      "mockNotice": "Modo de prueba — sin cargo real.",
+      "licenseHeading": "Licencia",
+      "licenseBody": "Uso personal, sitios web (incluido @font-face) y trabajo con clientes. No redistribuyas ni revendas los archivos de fuente.",
+      "aiDisclosure": "Estas tipografías se diseñaron con ayuda de herramientas de IA y Freeplug las refinó.",
+      "refund": "Reembolso de 30 días si no estás satisfecho.",
+      "faqHeading": "Preguntas",
+      "faq": {
+        "q1": "¿Puedo usarlas en proyectos de clientes?",
+        "a1": "Sí. Trabajo con clientes y embedding web incluidos. No revendas ni redistribuyas los archivos.",
+        "q2": "¿Recibiré un enlace de descarga?",
+        "a2": "Tras el pago recibes un enlace firmado por correo y aquí. Expira en unas 24 horas y tiene usos limitados.",
+        "q3": "¿Son iguales al logo?",
+        "a3": "FP Cursive Regular coincide con el logo Fp al usar la ligadura estándar."
+      },
+      "success": {
+        "heading": "Gracias",
+        "loading": "Preparando tu descarga…",
+        "missingSession": "Falta la sesión de pago. Si ya pagaste, usa el enlace del correo.",
+        "loadError": "No se pudo cargar la descarga.",
+        "saveLink": "Guarda este enlace antes de que expire:",
+        "expires": "Expira: {date}",
+        "mock": "Modo demo: el archivo puede ser un marcador en este entorno.",
+        "back": "Volver al producto"
+      }
+    },
     "notFound": {
       "heading": "Página no encontrada",
       "link": "Ir a la página principal",
@@ -1070,6 +1120,7 @@
           "privacyPolicy": "Aviso de privacidad",
           "cookiePolicy": "Política de cookies",
           "getStarted": "Empieza",
+          "merch": "Merch",
           "support": "Soporte",
           "faq": "Preguntas frecuentes",
           "compare": "Comparar"

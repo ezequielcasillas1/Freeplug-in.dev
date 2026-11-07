@@ -1,3 +1,8 @@
+### 2026-11-07 - Merch font bundle (preview)
+**Status:** SUCCESS
+**Files:** `freeplug-landing/src/lib/merch/*`, `app/[locale]/merch/*`, checkout/webhook/download APIs, migration `20261107090000_merch_font_bundle.sql`
+**Result:** `/merch` + product page, Stripe test checkout, signed 24h download tokens, webhook revoke on refund/dispute; mock mode without keys.
+
 ### 2026-04-03 - Admin QA: override cumulative website value paid
 **Status:** SUCCESS
 **Files:** `freeplug-landing/src/app/admin/actions.ts`, `AdminCumulativePaidCell.tsx`, `AdminCustomersTable.tsx`, `admin/customers/page.tsx`, `.env.example`

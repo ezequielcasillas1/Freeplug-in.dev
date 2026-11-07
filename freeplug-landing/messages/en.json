@@ -1030,6 +1030,56 @@
       "faqTitle": "FAQ: How Freeplug Works | Freeplug",
       "faqDescription": "Answers about Freeplug's free website build, what you pay for after launch, timelines, and how to request your site."
     },
+    "merch": {
+      "meta": {
+        "indexTitle": "Merch & Fonts | Freeplug",
+        "indexDescription": "Shop Freeplug digital goods. Script, cursive logo, and bold display fonts for brands, websites, and shirts.",
+        "productTitle": "Freeplug Font Bundle — Script, Cursive & Display Fonts | Freeplug",
+        "productDescription": "12 styles: FP Extended, Freeplug Dispatch, and FP Cursive (v2). Cursive logo font, bold display font for shirts, extended type. $49.99 USD. Personal and client use."
+      },
+      "eyebrow": "Merch",
+      "heading": "Freeplug fonts",
+      "lead": "Own the typefaces behind the brand — script, cursive logo, and bold display styles for web and print.",
+      "ctaProduct": "View the font bundle",
+      "previewAlt": "FP Cursive compared to the Freeplug logo",
+      "breadcrumbMerch": "Merch",
+      "productName": "Freeplug Font Bundle",
+      "price": "$49.99 USD",
+      "productLead": "Twelve font files across three families. FP Cursive v2 is redrawn to match the Fp logo ligature.",
+      "specimenAlt": "FP Cursive type specimen",
+      "compareAlt": "Logo versus FP Cursive Regular comparison",
+      "stylesHeading": "What's included",
+      "stylesSeo": "Includes script font, cursive logo font, bold display font, extended font styles — built for logos, headlines, and merch.",
+      "useCasesHeading": "Use cases",
+      "buyCta": "Buy with Stripe (test checkout)",
+      "emailOptional": "Email (optional — receipt & download link)",
+      "emailPlaceholder": "you@example.com",
+      "checkoutError": "Checkout could not start. Try again.",
+      "mockNotice": "Mock checkout mode — no real charge.",
+      "licenseHeading": "License",
+      "licenseBody": "Personal use, websites (including web embedding), and client work are allowed. You may not redistribute or resell the font files.",
+      "aiDisclosure": "These typefaces were designed with the help of AI tools and refined by Freeplug.",
+      "refund": "30-day refund if you are not satisfied.",
+      "faqHeading": "Questions",
+      "faq": {
+        "q1": "Can I use these on client projects?",
+        "a1": "Yes. Client work and web embedding are included. Do not resell or redistribute the font files themselves.",
+        "q2": "Will I get a download link?",
+        "a2": "After payment you get a signed link by email and on this site. It expires in about 24 hours and allows a limited number of downloads.",
+        "q3": "Are the fonts the same as the logo?",
+        "a3": "FP Cursive Regular is drawn to match the Fp logo when you type the standard ligature."
+      },
+      "success": {
+        "heading": "Thank you",
+        "loading": "Preparing your download…",
+        "missingSession": "Missing checkout session. If you just paid, use the link from your email.",
+        "loadError": "Could not load your download.",
+        "saveLink": "Save this link before it expires:",
+        "expires": "Expires: {date}",
+        "mock": "Demo mode: bundle file may be a placeholder on this environment.",
+        "back": "Back to the product page"
+      }
+    },
     "notFound": {
       "heading": "Page not found",
       "link": "Go to the homepage",
@@ -1070,6 +1120,7 @@
           "privacyPolicy": "Privacy Policy",
           "cookiePolicy": "Cookie Policy",
           "getStarted": "Get Started",
+          "merch": "Merch",
           "support": "Support",
           "faq": "FAQ",
           "compare": "Compare"

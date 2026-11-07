@@ -30,6 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Merch font bundle (never commit the zip; local dev only)
+.merch-dev-only/*
+!.merch-dev-only/.gitkeep
+
 # env files — keep .env.example committable
 .env
 .env.local

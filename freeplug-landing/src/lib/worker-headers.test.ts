@@ -46,10 +46,15 @@ describe('next/image never spends the Images quota or touches private photos', (
       d.isDirectory() ? files(path.join(dir, d.name)) : /\.(tsx?|jsx?)$/.test(d.name) && !/\.test\./.test(d.name) ? [path.join(dir, d.name)] : []
     )
 
-  it('every next/image <Image> is unoptimized (public landing showcase + outreach photos)', () => {
+  it('every next/image <Image> is unoptimized (landing showcase, outreach, merch)', () => {
     const users = files(src).filter((f) => /from ['"]next\/image['"]/.test(readFileSync(f, 'utf8')))
     expect(users.map((f) => path.relative(src, f)).sort()).toEqual(
-      ['features/landing/components/OutreachSection.tsx', 'features/landing/components/TemplatesShowcaseSection.tsx'].sort(),
+      [
+        'app/[locale]/merch/freeplug-font-bundle/page.tsx',
+        'app/[locale]/merch/page.tsx',
+        'features/landing/components/OutreachSection.tsx',
+        'features/landing/components/TemplatesShowcaseSection.tsx',
+      ].sort(),
     )
     for (const f of users) {
       const tags = readFileSync(f, 'utf8').match(/<Image\b[\s\S]*?\/>/g) ?? []
