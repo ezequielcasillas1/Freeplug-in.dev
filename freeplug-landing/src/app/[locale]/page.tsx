@@ -3,7 +3,6 @@ import {
   HeroSection,
   AboutSection,
   OutreachSection,
-  CTASection,
   TechStackSection,
   ReviewsSection,
   Footer,
@@ -13,6 +12,11 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ogLocale, publicAlternates } from '@/i18n/seo'
 import { toAppLocale } from '@/i18n/config'
 import { HostingPlansSectionUi } from '@/features/landing/components/HostingPlansSectionUi'
+import { InPersonSection } from '@/features/landing/components/InPersonSection'
+import { CompareHomeSection } from '@/features/landing/components/CompareHomeSection'
+import { WhatWeBuildSection } from '@/features/landing/components/WhatWeBuildSection'
+import { TemplatesShowcaseSection } from '@/features/landing/components/TemplatesShowcaseSection'
+import { BuyoutHomeSection } from '@/features/landing/components/BuyoutHomeSection'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const locale = toAppLocale((await params).locale)
@@ -33,12 +37,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <main>
         {/* Lina order: Hero → What Freeplug does → TX → Outside US → How it works → Closing CTA */}
         <HeroSection />
+        <WhatWeBuildSection />
+        <TemplatesShowcaseSection />
         <AboutSection />
         <OutreachSection />
-        <CTASection />
+        <InPersonSection />
         <TechStackSection />
-        {/* Public plans block (no Supabase) so #hosting-plans nav/footer links resolve */}
         <HostingPlansSectionUi signedIn={false} hostingCheckoutAllowed={false} />
+        <BuyoutHomeSection />
+        <CompareHomeSection />
         <ReviewsSection />
       </main>
       <Footer />

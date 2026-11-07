@@ -13,15 +13,18 @@ import { useLocale, useTranslations } from 'next-intl'
 import { LanguagePicker } from '@/components/i18n/LanguagePicker'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
+import { PublicSignupCta } from './PublicSignupCta'
 
 // Labels are message keys (public.landing.*); hrefs get /es on Spanish pages (publicHref).
 const navLinks = [
   { labelKey: 'navigation.label.home', href: '/#hero' },
+  { labelKey: 'navigation.label.merchandise', href: '/merch' },
   { labelKey: 'footer.label.about', href: '/#about' },
   { labelKey: 'footer.label.outreach', href: '/#outreach' },
   { labelKey: 'footer.label.services', href: '/#services' },
   { labelKey: 'footer.label.reviews', href: '/#reviews' },
   { labelKey: 'footer.label.plans', href: '/#hosting-plans' },
+  { labelKey: 'navigation.compareLink', href: '/compare' },
 ] as const
 
 export function Navigation() {
@@ -106,14 +109,7 @@ export function Navigation() {
             >
               {t('navigation.dashboard')}
             </Button>
-            <Button
-              size="sm"
-              type="button"
-              onClick={() => router.push(publicHref('/signup', locale))}
-              className="shadow-lg shadow-[#ba3d3d]/30 hover:shadow-xl hover:shadow-[#ba3d3d]/40 transition-all"
-            >
-              {t('footer.label.getStarted')}
-            </Button>
+            <PublicSignupCta variant="nav" />
           </div>
 
           <motion.button
@@ -171,17 +167,9 @@ export function Navigation() {
                 >
                   {t('navigation.dashboard')}
                 </Button>
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  type="button"
-                  onClick={() => {
-                    setIsOpen(false)
-                    router.push(publicHref('/signup', locale))
-                  }}
-                >
-                  {t('footer.label.getStarted')}
-                </Button>
+                <div className="flex-1 flex justify-end">
+                  <PublicSignupCta variant="nav" />
+                </div>
               </div>
             </div>
           </div>

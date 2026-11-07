@@ -142,6 +142,7 @@ describe('routing helpers', () => {
     expect(isLocalizedPublicPath('/')).toBe(true)
     expect(isLocalizedPublicPath('/faq')).toBe(true)
     expect(isLocalizedPublicPath('/signup')).toBe(true)
+    expect(isLocalizedPublicPath('/compare')).toBe(true)
     expect(isLocalizedPublicPath('/es/faq')).toBe(false)
     expect(isLocalizedPublicPath('/dashboard')).toBe(false)
     expect(isLocalizedPublicPath('/login')).toBe(false)

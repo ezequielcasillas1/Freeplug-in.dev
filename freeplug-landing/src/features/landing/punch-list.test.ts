@@ -68,6 +68,7 @@ describe('titles (G2)', () => {
   it.each([
     ['src/app/[locale]/page.tsx', 'public.meta.homeTitle'],
     ['src/app/[locale]/faq/layout.tsx', 'public.meta.faqTitle'],
+    ['src/app/[locale]/compare/layout.tsx', 'public.compare.compareTitle'],
     ['src/app/[locale]/signup/page.tsx', 'auth.signup.metaTitle'],
     ['src/app/[locale]/request-website/page.tsx', 'public.meta.requestWebsiteTitle'],
     ['src/app/not-found.tsx', 'public.notFound.metaTitle'],

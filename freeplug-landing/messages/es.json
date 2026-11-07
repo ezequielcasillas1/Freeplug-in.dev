@@ -894,17 +894,229 @@
       "wereHereHelpEmailSupport": "Estamos para ayudarte. Escríbele a nuestro equipo de soporte.",
       "contactSupport": "Contactar a soporte"
     },
+    "compare": {
+      "compareTitle": "Freeplug vs. Wix, Squarespace y sitios con renta y compra | Freeplug",
+      "compareDescription": "Compara el costo inicial, el precio mensual y qué se necesita para ser dueño de tu sitio. Precios del sitio público de cada empresa, al 31 de octubre de 2026.",
+      "h1": "Freeplug vs. Wix, Squarespace y sitios web con opción a compra",
+      "ownHeading": "¿Qué opción te deja ser dueño de tu sitio web?",
+      "teaserHeading": "Cómo se compara Freeplug",
+      "teaserIntro": "Qué cuesta empezar, qué pagas cada mes y si terminas siendo dueño de tu sitio.",
+      "colCompany": "Empresa",
+      "colUpfront": "Costo inicial",
+      "colMonthly": "Precio mensual",
+      "colCounts": "¿Los pagos cuentan para ser dueño?",
+      "colOwn": "Precio más bajo para ser dueño",
+      "colWork": "Quién hace el trabajo",
+      "groupRentToOwn": "Servicios de sitio mensual",
+      "groupDiy": "Constructores DIY",
+      "groupAgencies": "Agencias locales",
+      "footnote": "Precios al 31 de octubre de 2026, según el sitio público de cada empresa. Los precios y términos pueden cambiar; confirma con cada empresa.",
+      "homeLink": "Compara Freeplug con Wix y otros",
+      "seePricing": "Ver precios de Freeplug",
+      "requestForm": "Formulario de solicitud",
+      "sourceHint": "(página de precios, se abre en una pestaña nueva)",
+      "breadcrumbHome": "Inicio",
+      "breadcrumbCompare": "Comparar",
+      "rows": {
+        "freeplug": {
+          "name": "Freeplug",
+          "upfront": "$0",
+          "monthly": "$35–$65/mo",
+          "counts": "Sí, cada dólar cuenta para la compra",
+          "own": "Desde $500 (20% menos si ya tienes tu dominio)",
+          "work": "Hecho por nosotros"
+        },
+        "rwMedia": {
+          "name": "RW Media",
+          "upfront": "No indicado",
+          "monthly": "$299–$999/mo",
+          "counts": "Sí, renta con compra",
+          "own": "La compra equivale a 12 meses de pagos",
+          "work": "Hecho por ellos"
+        },
+        "grippyCode": {
+          "name": "Grippy Code",
+          "upfront": "No indicado",
+          "monthly": "$99–$499/mo",
+          "counts": "No, según su sitio",
+          "own": "Compra directa de $999–$4,999",
+          "work": "Hecho por ellos",
+          "sourceLabel": "fuente, se abre en una pestaña nueva"
+        },
+        "leaseReady": {
+          "name": "LeaseReady Websites",
+          "upfront": "$250 de configuración",
+          "monthly": "$250/mo",
+          "counts": "Sí",
+          "own": "Tuyo después de 36 pagos puntuales",
+          "work": "Hecho por ellos"
+        },
+        "payPerMonth": {
+          "name": "Pay Per Month Websites",
+          "upfront": "No indicado",
+          "monthly": "$39–$79/mo",
+          "counts": "El sitio es tuyo desde el día uno (según sus términos)",
+          "own": "No indicado",
+          "work": "Hecho por ellos"
+        },
+        "wix": {
+          "name": "Wix",
+          "upfront": "Plan gratis",
+          "monthly": "Gratis, o desde $17.77/mo facturado anual",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "squarespace": {
+          "name": "Squarespace",
+          "upfront": "No indicado",
+          "monthly": "Desde $19/mo facturado anual",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "goDaddy": {
+          "name": "GoDaddy Website Builder",
+          "upfront": "Gratis",
+          "monthly": "Gratis; planes de pago no indicados",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "durable": {
+          "name": "Durable",
+          "upfront": "No indicado",
+          "monthly": "$25–$49/mo",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "sanMarcos": {
+          "name": "San Marcos WebDesign",
+          "upfront": "$300–$800 pago único",
+          "monthly": "No indicado",
+          "counts": "Compra única",
+          "own": "Desde $300 (pago único)",
+          "work": "Hecho por ellos",
+          "note": "Es tuyo, con 1 mes de soporte."
+        },
+        "oakHarbor": {
+          "name": "Oak Harbor Web Designs",
+          "upfront": "$0 de enganche",
+          "monthly": "$175/mo, mínimo 12 meses",
+          "counts": "No indicado",
+          "own": "No indicado",
+          "work": "Hecho por ellos"
+        },
+        "arise": {
+          "name": "Arise Tech Co",
+          "upfront": "Desde $1,500",
+          "monthly": "Planes de cuidado desde $79/mo",
+          "counts": "No indicado",
+          "own": "Desde $1,500",
+          "work": "Hecho por ellos"
+        }
+      }
+    },
     "meta": {
       "siteTitle": "Sitios web gratis para negocios | Freeplug",
       "siteDescription": "Freeplug encuentra a dueños de negocios locales que necesitan un sitio web. 72 After construye el sitio gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
       "ogTitle": "Sitios web gratis para negocios locales | Freeplug",
       "ogDescription": "¿Tienes un negocio local sin sitio web? Pide uno. 72 After lo construye gratis.",
-      "homeTitle": "Sitios web gratis para negocios locales en el centro de Texas | Freeplug",
-      "homeDescription": "Freeplug ayuda a dueños de negocios locales a tener un sitio web. 72 After lo construye gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+      "homeTitle": "Consigue un sitio web gratis — Sitios para pequeños negocios | Freeplug",
+      "homeDescription": "Sitio web gratis: paga mensual o cómpralo. Hecho en el centro de Texas para negocios locales, creadores, freelancers y pequeños SaaS.",
       "previewTitle": "Vista previa de tu sitio web | Freeplug",
       "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
       "faqDescription": "Respuestas sobre el sitio web gratis de Freeplug, lo que pagas después del lanzamiento, los tiempos y cómo pedir tu sitio."
+    },
+    "merch": {
+      "meta": {
+        "indexTitle": "Merch y fuentes | Freeplug",
+        "indexDescription": "Productos digitales Freeplug. Fuentes script, cursiva para logos y display en negrita para marcas, sitios y camisetas.",
+        "productTitle": "Paquete de fuentes Freeplug — script, cursiva y display | Freeplug",
+        "productDescription": "12 estilos: FP Extended, Freeplug Dispatch y FP Cursive (v2). Fuente cursiva para logos, display en negrita para camisetas. $49.99 USD. Uso personal y con clientes.",
+        "tshirtsTitle": "Camisetas | Merch Freeplug",
+        "tshirtsDescription": "Camisetas Freeplug — próximamente. Avísanos si quieres enterarte.",
+        "personalUseTitle": "Fuentes gratis para uso personal | Freeplug",
+        "personalUseDescription": "Descarga un demo limitado para uso personal. Uso comercial, web y clientes requiere el paquete oficial."
+      },
+      "subnav": {
+        "aria": "Secciones de mercancía",
+        "tshirts": "Camisetas",
+        "officialFonts": "Fuentes oficiales",
+        "personalUse": "Gratis para uso personal"
+      },
+      "indexCardTshirts": "Camisetas pronto — escríbenos si quieres aviso.",
+      "indexCardOfficial": "Paquete completo: 12 estilos para trabajo comercial y clientes.",
+      "indexCardPersonal": "Demo limitada solo para uso personal no comercial.",
+      "tshirts": {
+        "heading": "Camisetas",
+        "lead": "Las playeras Freeplug vienen en camino. Aún no vendemos.",
+        "notify": "Escribe a soporte para avisarte",
+        "mailtoSubject": "Avísame sobre camisetas Freeplug"
+      },
+      "personalUse": {
+        "heading": "Gratis para uso personal",
+        "lead": "Descarga el demo Freeplug: tres estilos Regular con 95 glifos Latin básicos y LICENSE.txt. No es el paquete comercial completo.",
+        "commercialNote": "Solo uso personal no comercial. Para sitios web, clientes o cualquier uso comercial, compra Fuentes oficiales ($49.99).",
+        "specimenAlt": "Espécimen del demo de uso personal Freeplug",
+        "packHeading": "En el zip demo",
+        "packItemExtended": "FP Extended Demo — Regular",
+        "packItemDispatch": "Freeplug Dispatch Demo — Regular",
+        "packItemCursive": "FP Cursive Demo — Regular",
+        "packGlyphs": "95 caracteres Latin básicos por estilo. Lee LICENSE.txt dentro del zip.",
+        "downloadComingSoon": "La descarga personal llegará pronto.",
+        "downloadCta": "Descargar demo personal",
+        "emailOptional": "Correo (opcional)",
+        "emailPlaceholder": "tu@ejemplo.com",
+        "licenseNote": "Licencia: solo uso personal no comercial. No uses en clientes, sitios de negocio ni reventa. El demo es un conjunto limitado—no el paquete de pago.",
+        "errorGeneric": "No se pudo descargar. Inténtalo de nuevo.",
+        "aiDisclosure": "Estas tipografías se diseñaron con ayuda de herramientas de IA y Freeplug las refinó."
+      },
+      "eyebrow": "Merch",
+      "heading": "Fuentes Freeplug",
+      "lead": "Las tipografías de la marca — script, cursiva de logo y display en negrita para web e impresión.",
+      "ctaProduct": "Ver el paquete de fuentes",
+      "previewAlt": "FP Cursive comparada con el logo Freeplug",
+      "breadcrumbMerch": "Merch",
+      "productName": "Paquete de fuentes Freeplug",
+      "price": "49,99 USD",
+      "productLead": "Doce archivos en tres familias. FP Cursive v2 coincide con la ligadura del logo Fp.",
+      "specimenAlt": "Espécimen de FP Cursive",
+      "compareAlt": "Comparación del logo con FP Cursive Regular",
+      "stylesHeading": "Contenido",
+      "stylesSeo": "Incluye fuente script, cursiva para logo, display en negrita y extended — para logos, titulares y merch.",
+      "useCasesHeading": "Usos",
+      "buyCta": "Comprar paquete de fuentes",
+      "comingSoon": "Próximamente",
+      "emailOptional": "Correo (opcional — recibo y enlace de descarga)",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "checkoutError": "No se pudo iniciar el pago. Inténtalo de nuevo.",
+      "mockNotice": "Modo de prueba — sin cargo real.",
+      "licenseHeading": "Licencia",
+      "licenseBody": "Uso personal, sitios web (incluido @font-face) y trabajo con clientes. No redistribuyas ni revendas los archivos de fuente.",
+      "aiDisclosure": "Estas tipografías se diseñaron con ayuda de herramientas de IA y Freeplug las refinó.",
+      "refund": "Reembolso de 30 días si no estás satisfecho.",
+      "faqHeading": "Preguntas",
+      "faq": {
+        "q1": "¿Puedo usarlas en proyectos de clientes?",
+        "a1": "Sí. Trabajo con clientes y embedding web incluidos. No revendas ni redistribuyas los archivos.",
+        "q2": "¿Recibiré un enlace de descarga?",
+        "a2": "Tras el pago recibes un enlace firmado por correo y aquí. Expira en unas 24 horas y tiene usos limitados.",
+        "q3": "¿Son iguales al logo?",
+        "a3": "FP Cursive Regular coincide con el logo Fp al usar la ligadura estándar."
+      },
+      "success": {
+        "heading": "Gracias",
+        "loading": "Preparando tu descarga…",
+        "missingSession": "Falta la sesión de pago. Si ya pagaste, usa el enlace del correo.",
+        "loadError": "No se pudo cargar la descarga.",
+        "saveLink": "Guarda este enlace antes de que expire:",
+        "expires": "Expira: {date}",
+        "mock": "Modo demo: el archivo puede ser un marcador en este entorno.",
+        "back": "Volver al producto"
+      }
     },
     "notFound": {
       "heading": "Página no encontrada",
@@ -946,8 +1158,10 @@
           "privacyPolicy": "Aviso de privacidad",
           "cookiePolicy": "Política de cookies",
           "getStarted": "Empieza",
+          "merch": "Merch",
           "support": "Soporte",
-          "faq": "Preguntas frecuentes"
+          "faq": "Preguntas frecuentes",
+          "compare": "Comparar"
         },
         "freeplug": "Freeplug",
         "freeplugHandlesOwnerOutreach72": "Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
@@ -962,10 +1176,18 @@
         "copyright": "© {year} Freeplug. Todos los derechos reservados.",
         "outreachFreeplugBuilds72After": "Contacto = Freeplug · Construcción = 72 After"
       },
+      "inPerson": {
+        "eyebrow": "Oficina en el centro de Texas",
+        "heading": "¿Prefieres vernos en persona?",
+        "body": "Ofrecemos consultas en persona en nuestra oficina en el centro de Texas. Platicamos sobre tu negocio y vemos cómo podría verse tu sitio.",
+        "privacy": "Por la seguridad de todos, compartimos la ubicación exacta solo después de que nos escribas y hagamos una breve llamada, FaceTime o mensaje.",
+        "cta": "Escríbenos para agendar una visita",
+        "mailSubject": "Solicitud de consulta en persona"
+      },
       "hero": {
-        "freeplugOutreach72AfterBuilds": "Freeplug contacta · 72 After construye",
-        "headline": "Sitios web gratis para<br/><span>negocios locales</span>",
-        "freeplugReachesOwnersWhoNeed": "Freeplug contacta a dueños que necesitan un sitio. <span>72 After lo construye gratis.</span> Cuando esté en línea, el hosting mensual lo mantiene funcionando.",
+        "freeplugOutreach72AfterBuilds": "Freeplug está en desarrollo. Lanzamiento próximamente.",
+        "headline": "Consigue un sitio web gratis.<br/><span>Paga mensual o cómpralo.</span>",
+        "freeplugReachesOwnersWhoNeed": "Hecho en el centro de Texas para negocios locales, creadores, freelancers, <span>pequeños SaaS y tiendas de un solo producto.</span>",
         "label": {
           "modernTech": "Tecnología moderna",
           "lightningFast": "Súper rápido",
@@ -981,8 +1203,11 @@
       },
       "navigation": {
         "label": {
-          "home": "Inicio"
+          "home": "Inicio",
+          "merchandise": "Mercancía"
         },
+        "compareLink": "Comparar",
+        "signupPaused": "Próximamente",
         "logIn": "Iniciar sesión",
         "dashboard": "Panel",
         "ariaLabel": {
@@ -1017,10 +1242,10 @@
           "builds72AfterFreeMultiPage": "72 After crea un sitio gratis de varias páginas con una plantilla sólida, tus servicios reales y páginas claras para pedir una cotización."
         },
         "serviceAreas": "Zonas de servicio",
-        "whereWorkTexas": "Dónde trabajamos en <span>Texas</span>",
-        "wereFocusedCentralTexasFirst": "Empezamos por el centro de Texas: San Marcos y ciudades cercanas.",
+        "whereWorkTexas": "Sitios web gratis para negocios locales en <span>el centro de Texas</span>",
+        "wereFocusedCentralTexasFirst": "Por ahora contactamos negocios en San Marcos, New Braunfels, Kyle, Buda, Seguin, Lockhart, San Antonio, Austin, Wimberley y Dripping Springs.",
         "stockPhoto": "{name}: foto de archivo",
-        "moreTexasCitiesCapacityGrows": "Más ciudades de Texas a medida que crezcamos. Pregúntanos si tu ciudad no aparece.",
+        "moreTexasCitiesCapacityGrows": "Planeamos expandirnos por Texas y, si es posible, en todo EE. UU. Pregunta si tu ciudad no aparece.",
         "international": "Internacional",
         "beyondTexasUs": "Más allá de Texas y EE. UU.",
         "freeplugReachBusinessesOutsideUs": "Freeplug puede llegar a negocios fuera de EE. UU. a través de socios y canales de nuestra red. El alcance internacional depende del idioma, las reglas locales y la capacidad de los socios; no prometemos todos los países ni un plazo fijo. Si estás fuera de EE. UU. y quieres un sitio gratis a través de la red, empieza una solicitud y te diremos qué se puede hacer.",
@@ -1031,7 +1256,7 @@
           "citySkylineStockPhoto": "Horizonte de una ciudad: foto de archivo"
         },
         "howItConnects": "Cómo se conecta",
-        "howItWorks": "Cómo <span>funciona</span>",
+        "howItWorks": "Cómo funciona un <span>sitio web gratis</span>",
         "freeplugConnectsConversation72After": "Freeplug inicia la conversación. 72 After construye el sitio.",
         "step": "Paso {step}"
       },
@@ -1043,24 +1268,24 @@
       },
       "techStack": {
         "name": {
-          "envatoTemplate": "Plantilla de Envato",
-          "htmlCss": "HTML y CSS",
-          "bootstrap5": "Bootstrap 5",
-          "cloudflare": "Cloudflare",
-          "cloudflareTurnstile": "Cloudflare Turnstile",
-          "resend": "Resend"
+          "envatoTemplate": "Professional design",
+          "htmlCss": "Clean, fast code",
+          "bootstrap5": "Looks great on phones",
+          "cloudflare": "Fast, secure hosting",
+          "cloudflareTurnstile": "Spam and bot protection",
+          "resend": "Reliable email delivery"
         },
         "description": {
-          "premiumTemplatesDevelopersAccess": "Plantillas premium a las que tienen acceso nuestros desarrolladores, adaptadas con tus datos.",
-          "plainLightweightPagesLoad": "Páginas simples y ligeras que cargan rápido.",
-          "layoutFitsPhonesTablets": "Un diseño que se adapta a celulares, tabletas y computadoras.",
-          "hostsSiteProvidesSsl": "Aloja tu sitio y da el certificado SSL para https.",
-          "filtersOutSpamBots": "Filtra los bots de spam en tu formulario de cotización, sin rompecabezas de imágenes.",
-          "emailsEachQuoteRequest": "Te envía por correo cada solicitud de cotización.",
-          "lightweightPagesServedFrom": "Páginas ligeras servidas desde la red de Cloudflare.",
-          "responsiveLayoutAdjustsPhones": "Un diseño adaptable a celulares, tabletas y computadoras.",
-          "clearPageTitlesDescriptions": "Títulos de página, descripciones y datos del negocio claros que los buscadores pueden leer.",
-          "httpsEveryPageThrough": "HTTPS en todas las páginas con el SSL de Cloudflare."
+          "premiumTemplatesDevelopersAccess": "A polished, professional design, tailored with your details.",
+          "plainLightweightPagesLoad": "Plain, lightweight pages that load quickly.",
+          "layoutFitsPhonesTablets": "A layout that fits phones, tablets and computers.",
+          "hostsSiteProvidesSsl": "Fast hosting with a secure https address included.",
+          "filtersOutSpamBots": "Filters out spam bots on your quote form, without picture puzzles.",
+          "emailsEachQuoteRequest": "Emails each quote request to you.",
+          "lightweightPagesServedFrom": "Lightweight pages served from a fast global network.",
+          "responsiveLayoutAdjustsPhones": "A responsive layout that adjusts to phones, tablets and computers.",
+          "clearPageTitlesDescriptions": "Clear page titles, descriptions and business details that search engines can read.",
+          "httpsEveryPageThrough": "HTTPS on every page through Cloudflare's SSL."
         },
         "title": {
           "fastLoading": "Carga rápida",
@@ -1074,6 +1299,72 @@
         "performanceMatters": "Rendimiento que <span>importa</span>",
         "sitesBuiltMobileFriendlyReasonably": "Los sitios están hechos para verse bien en celular y ser razonablemente rápidos. No inventamos garantías de disponibilidad ni de puntajes.",
         "responsiveLayoutsClearQuoteRequest": "Diseños adaptables · Páginas claras para pedir cotización · El hosting mensual lo mantiene en línea"
+      },
+      "offerings": {
+        "heading": "Páginas de destino, sitios de reservas y tiendas de un producto",
+        "intro": "Elige lo que encaje. Cada proyecto incluye hosting, actualizaciones y la opción de ser dueño.",
+        "cta": "Empezar este tipo de proyecto →",
+        "saasTag": "Simple apps only",
+        "types": {
+          "local": {
+            "title": "Local business websites",
+            "line": "A site that helps nearby customers find you, call you, or ask for a quote."
+          },
+          "agency": {
+            "title": "Small agencies",
+            "line": "Sites for your clients, built by us under your agency."
+          },
+          "creator": {
+            "title": "Landing pages for creators",
+            "line": "One clean page for your work, your links and how to reach you."
+          },
+          "booking": {
+            "title": "Booking sites for freelancers",
+            "line": "Let clients see your services and book a time with you."
+          },
+          "store": {
+            "title": "One-product stores",
+            "line": "A simple store to sell one product online."
+          },
+          "saas": {
+            "title": "Small SaaS apps",
+            "line": "Simple web apps with a few core features. Bigger builds get a quote first."
+          }
+        },
+        "developmentLine": "Freeplug está en desarrollo. Lanzamiento próximamente."
+      },
+      "templates": {
+        "heading": "Start from a template",
+        "intro": "Pick a category, then a niche, to see Envato Elements templates we can build from. Demos open in a new tab on the author's site.",
+        "categoriesLabel": "Template categories",
+        "nichesLabel": "Niches",
+        "demo": "Open live demo",
+        "count": "{count, plural, one {# template} other {# templates}}",
+        "mobileToggle": "Browse template categories",
+        "newTab": "(opens in a new tab)"
+      },
+      "buyoutTiers": {
+        "eyebrow": "Buyout",
+        "heading": "Buy out your pages, <span>own your files</span>",
+        "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
+        "tier": {
+          "quick": "Up to 5 pages",
+          "up_to_7": "6 to 7 pages",
+          "up_to_11": "8 to 11 pages",
+          "up_to_15": "12 to 15 pages",
+          "up_to_20": "16 to 20 pages",
+          "custom": "Custom enterprise: 21 to 35 pages"
+        },
+        "oneTime": "one time",
+        "customPrice": "Custom quote",
+        "customScope": "scoped by hand",
+        "customLine": "21 to 35 pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
+        "note": "The buyout covers your website files only.",
+        "compareLink": "Compare Freeplug with other options"
+      },
+      "booking": {
+        "title": "Booking sites for freelancers",
+        "line": "Let clients see your services and book a time with you."
       }
     }
   },
