@@ -5,6 +5,7 @@ import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
 import { getStripe } from '@/lib/stripe/server'
 import { currentLocale } from '@/i18n/current-locale'
 import { buildMerchFontBundleSessionParams } from '@/lib/merch/checkout'
+import { isMerchCheckoutEnabled } from '@/lib/merch/flags'
 import { isMerchMockCheckoutEnabled, stripeConfigured } from '@/lib/merch/product'
 import { createMockCheckoutSessionId } from '@/lib/merch/mock-checkout'
 import { merchCheckoutUrls } from '@/lib/merch/checkout'
@@ -22,6 +23,10 @@ export async function POST(request: Request) {
   const locale = await currentLocale()
   const body = (await request.json().catch(() => null)) as Body | null
   const email = typeof body?.email === 'string' && body.email.includes('@') ? body.email.trim() : undefined
+
+  if (!isMerchCheckoutEnabled()) {
+    return NextResponse.json({ error: 'Checkout is not open yet.' }, { status: 403 })
+  }
 
   if (!stripeConfigured() && isMerchMockCheckoutEnabled()) {
     const sessionId = createMockCheckoutSessionId()
@@ -42,8 +47,7 @@ export async function POST(request: Request) {
 
   try {
     const stripe = getStripe()
-    const priceId = process.env.STRIPE_MERCH_FONT_BUNDLE_PRICE_ID?.trim() || null
-    const params = buildMerchFontBundleSessionParams(locale, priceId)
+    const params = buildMerchFontBundleSessionParams(locale, null)
     if (email) params.customer_email = email
     const session = await stripe.checkout.sessions.create({
       ...params,

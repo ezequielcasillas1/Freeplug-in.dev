@@ -122,6 +122,7 @@ describe('shared rate limiter', () => {
         'app/(dashboard)/dashboard/request-website/actions.ts',
         // CSP report endpoint (security-headers, Oct 12): fails closed (report dropped)
         'app/api/csp-report/route.ts',
+        'app/api/merch/personal-download/route.ts',
         // forgot-password per-IP cap (20/hour) fails closed; the per-address caps use rateDecision
         'lib/auth/reset-rate-limit.ts',
         'lib/outreach/resend-confirmation.ts',

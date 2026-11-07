@@ -4,6 +4,9 @@ import path from 'node:path'
 import { Readable } from 'node:stream'
 
 export const MERCH_BUNDLE_OBJECT_KEY = 'freeplug-font-bundle-v1.zip'
+/** Limited personal-use demo (subset); never the paid bundle. */
+export const MERCH_PERSONAL_DEMO_OBJECT_KEY = 'merch/freeplug-fonts-personal-demo.zip'
+export const MERCH_PERSONAL_DEMO_FILENAME = 'freeplug-fonts-personal-demo.zip'
 
 const DEV_BUNDLE_DIR = '.merch-dev-only'
 
@@ -55,4 +58,29 @@ export async function streamMerchBundleFromR2(
 
 export function merchDownloadFilename(): string {
   return MERCH_BUNDLE_OBJECT_KEY
+}
+
+export function resolveLocalPersonalDemoPath(env: Record<string, string | undefined> = process.env): string | null {
+  const fromEnv = env.MERCH_PERSONAL_DEMO_LOCAL_PATH?.trim()
+  if (fromEnv && existsSync(fromEnv)) return fromEnv
+  const devPath = path.join(process.cwd(), DEV_BUNDLE_DIR, MERCH_PERSONAL_DEMO_FILENAME)
+  if (existsSync(devPath)) return devPath
+  return null
+}
+
+export async function readMerchPersonalDemoBytes(env: Record<string, string | undefined> = process.env): Promise<Buffer> {
+  const local = resolveLocalPersonalDemoPath(env)
+  if (local) return readFile(/* turbopackIgnore: true */ local)
+  if (isMerchPersonalDemoMock(env)) {
+    return Buffer.from('Freeplug personal-use font demo (mock — limited subset placeholder)\n', 'utf8')
+  }
+  throw new Error('Personal demo zip is not available on this host')
+}
+
+export function isMerchPersonalDemoMock(env: Record<string, string | undefined> = process.env): boolean {
+  return (
+    !resolveLocalPersonalDemoPath(env) &&
+    (env.MERCH_MOCK_CHECKOUT?.trim().toLowerCase() === 'true' ||
+      env.MERCH_PERSONAL_DOWNLOAD_ENABLED?.trim().toLowerCase() === 'true')
+  )
 }

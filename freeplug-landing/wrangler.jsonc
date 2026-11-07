@@ -45,7 +45,10 @@
     "OWNER_ALERT_EMAIL": "fplgn.dev.72@gmail.com",
     // Who may use /admin once past Cloudflare Access (src/lib/admin/guard.ts): the signed-in Supabase
     // account's email must be in this comma-separated list. Not a secret.
-    "ADMIN_EMAILS": "ezequielcasillas1@gmail.com,fplgn.dev.72@gmail.com"
+    "ADMIN_EMAILS": "ezequielcasillas1@gmail.com,fplgn.dev.72@gmail.com",
+    // Merch go-live (Cheke, Nov 7 2026): live checkout + free personal demo. Needs R2 + migration first (docs/MERCH-DEPLOY-CHECKLIST.md).
+    "MERCH_CHECKOUT_ENABLED": "true",
+    "MERCH_PERSONAL_DOWNLOAD_ENABLED": "true"
   },
   "env": {
     // Rehearsal Worker on freeplug-preview.<account>.workers.dev with test keys and test data.
@@ -61,7 +64,9 @@
       // The admin route stays off on the preview Worker (src/lib/admin/guard.ts returns 404).
       "vars": {
         "TRUST_CF_CONNECTING_IP": "true",
-        "ADMIN_ROUTE_ENABLED": "false"
+        "ADMIN_ROUTE_ENABLED": "false",
+        "MERCH_CHECKOUT_ENABLED": "false",
+        "MERCH_PERSONAL_DOWNLOAD_ENABLED": "false"
       }
     }
   }

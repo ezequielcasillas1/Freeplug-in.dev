@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { Navigation } from '@/features/landing/components/Navigation'
-import { Footer } from '@/features/landing/components/Footer'
+import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
@@ -48,9 +47,8 @@ export default function MerchSuccessPage() {
   }, [sessionId, t])
 
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-24">
+    <MerchPageChrome>
+      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-8">
         <div className="max-w-2xl mx-auto px-4 py-16">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('heading')}</h1>
           {loading ? <p className="text-gray-600">{t('loading')}</p> : null}
@@ -76,7 +74,6 @@ export default function MerchSuccessPage() {
           </p>
         </div>
       </main>
-      <Footer />
-    </>
+    </MerchPageChrome>
   )
 }

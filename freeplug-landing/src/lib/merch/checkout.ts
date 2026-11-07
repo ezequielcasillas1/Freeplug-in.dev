@@ -19,10 +19,7 @@ export function merchCheckoutUrls(locale: AppLocale) {
   }
 }
 
-export function buildMerchFontBundleSessionParams(
-  locale: AppLocale,
-  priceId?: string | null
-): Stripe.Checkout.SessionCreateParams {
+export function buildMerchFontBundleSessionParams(locale: AppLocale, priceId?: string | null): Stripe.Checkout.SessionCreateParams {
   const urls = merchCheckoutUrls(locale)
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priceId
     ? [{ price: priceId, quantity: 1 }]

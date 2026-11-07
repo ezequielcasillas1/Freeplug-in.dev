@@ -939,7 +939,38 @@
         "indexTitle": "Merch y fuentes | Freeplug",
         "indexDescription": "Productos digitales Freeplug. Fuentes script, cursiva para logos y display en negrita para marcas, sitios y camisetas.",
         "productTitle": "Paquete de fuentes Freeplug — script, cursiva y display | Freeplug",
-        "productDescription": "12 estilos: FP Extended, Freeplug Dispatch y FP Cursive (v2). Fuente cursiva para logos, display en negrita para camisetas. $49.99 USD. Uso personal y con clientes."
+        "productDescription": "12 estilos: FP Extended, Freeplug Dispatch y FP Cursive (v2). Fuente cursiva para logos, display en negrita para camisetas. $49.99 USD. Uso personal y con clientes.",
+        "tshirtsTitle": "Camisetas | Merch Freeplug",
+        "tshirtsDescription": "Camisetas Freeplug — próximamente. Avísanos si quieres enterarte.",
+        "personalUseTitle": "Fuentes gratis para uso personal | Freeplug",
+        "personalUseDescription": "Descarga un demo limitado para uso personal. Uso comercial, web y clientes requiere el paquete oficial."
+      },
+      "subnav": {
+        "aria": "Secciones de mercancía",
+        "tshirts": "Camisetas",
+        "officialFonts": "Fuentes oficiales",
+        "personalUse": "Gratis para uso personal"
+      },
+      "indexCardTshirts": "Camisetas pronto — escríbenos si quieres aviso.",
+      "indexCardOfficial": "Paquete completo: 12 estilos para trabajo comercial y clientes.",
+      "indexCardPersonal": "Demo limitada solo para uso personal no comercial.",
+      "tshirts": {
+        "heading": "Camisetas",
+        "lead": "Las playeras Freeplug vienen en camino. Aún no vendemos.",
+        "notify": "Escribe a soporte para avisarte",
+        "mailtoSubject": "Avísame sobre camisetas Freeplug"
+      },
+      "personalUse": {
+        "heading": "Gratis para uso personal",
+        "lead": "Prueba un demo limitado. No es el paquete comercial completo.",
+        "commercialNote": "Solo uso personal no comercial. Para sitios web, clientes o cualquier uso comercial, compra Fuentes oficiales ($49.99).",
+        "downloadComingSoon": "La descarga personal llegará pronto.",
+        "downloadCta": "Descargar demo personal",
+        "emailOptional": "Correo (opcional)",
+        "emailPlaceholder": "tu@ejemplo.com",
+        "licenseNote": "Licencia: solo uso personal no comercial. No uses en clientes, sitios de negocio ni reventa. El demo es un conjunto limitado—no el paquete de pago.",
+        "errorGeneric": "No se pudo descargar. Inténtalo de nuevo.",
+        "aiDisclosure": "Estas tipografías se diseñaron con ayuda de herramientas de IA y Freeplug las refinó."
       },
       "eyebrow": "Merch",
       "heading": "Fuentes Freeplug",
@@ -955,7 +986,8 @@
       "stylesHeading": "Contenido",
       "stylesSeo": "Incluye fuente script, cursiva para logo, display en negrita y extended — para logos, titulares y merch.",
       "useCasesHeading": "Usos",
-      "buyCta": "Comprar con Stripe (prueba)",
+      "buyCta": "Comprar paquete de fuentes",
+      "comingSoon": "Próximamente",
       "emailOptional": "Correo (opcional — recibo y enlace de descarga)",
       "emailPlaceholder": "tu@ejemplo.com",
       "checkoutError": "No se pudo iniciar el pago. Inténtalo de nuevo.",
@@ -1064,7 +1096,8 @@
       },
       "navigation": {
         "label": {
-          "home": "Inicio"
+          "home": "Inicio",
+          "merchandise": "Mercancía"
         },
         "logIn": "Iniciar sesión",
         "dashboard": "Panel",
