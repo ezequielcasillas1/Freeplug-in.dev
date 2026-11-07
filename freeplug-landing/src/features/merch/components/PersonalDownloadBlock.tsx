@@ -1,5 +1,4 @@
 import { PersonalDownloadForm } from './PersonalDownloadForm'
-import { isMerchPersonalDownloadEnabled } from '@/lib/merch/flags'
 
 type Copy = {
   comingSoon: string
@@ -10,8 +9,7 @@ type Copy = {
   errorGeneric: string
 }
 
-export function PersonalDownloadBlock({ copy }: { copy: Copy }) {
-  const enabled = isMerchPersonalDownloadEnabled()
+export function PersonalDownloadBlock({ copy, enabled }: { copy: Copy; enabled: boolean }) {
   if (!enabled) {
     return (
       <p className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700" role="status">

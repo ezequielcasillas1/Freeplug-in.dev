@@ -37,9 +37,9 @@ describe('POST /api/checkout/merch/font-bundle', () => {
       expect.objectContaining({
         mode: 'payment',
         metadata: expect.objectContaining({ checkout_type: 'merch_font_bundle' }),
-        automatic_payment_methods: { enabled: true },
       })
     )
+    expect(sessionsCreate.mock.calls[0][0]).not.toHaveProperty('automatic_payment_methods')
   })
 
   it('returns 403 when MERCH_CHECKOUT_ENABLED is off', async () => {

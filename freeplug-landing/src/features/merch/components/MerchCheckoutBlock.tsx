@@ -1,5 +1,4 @@
 import { MerchCheckoutButton } from './MerchCheckoutButton'
-import { isMerchCheckoutEnabled } from '@/lib/merch/flags'
 
 type Copy = {
   buyCta: string
@@ -10,8 +9,8 @@ type Copy = {
   mockNotice?: string
 }
 
-export function MerchCheckoutBlock({ copy }: { copy: Copy }) {
-  const checkoutEnabled = isMerchCheckoutEnabled()
+export function MerchCheckoutBlock({ copy, enabled }: { copy: Copy; enabled: boolean }) {
+  const checkoutEnabled = enabled
   const effective = checkoutEnabled
 
   return (

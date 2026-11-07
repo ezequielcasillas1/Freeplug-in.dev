@@ -44,8 +44,8 @@ export function buildMerchFontBundleSessionParams(locale: AppLocale, priceId?: s
     cancel_url: urls.cancel,
     // TODO: Stripe Tax — pending owner decision (leave automatic tax off for now).
     automatic_tax: { enabled: false },
-    // Stripe Dashboard test mode: cards, Apple Pay, Google Pay, Cash App Pay where eligible.
-    automatic_payment_methods: { enabled: true },
+    // Checkout Sessions use dynamic payment methods from the Stripe Dashboard (cards, Apple Pay,
+    // Google Pay, Cash App Pay where enabled). Do NOT send automatic_payment_methods: Stripe rejects it here.
     customer_creation: 'always',
     metadata: {
       checkout_type: MERCH_CHECKOUT_TYPE,
