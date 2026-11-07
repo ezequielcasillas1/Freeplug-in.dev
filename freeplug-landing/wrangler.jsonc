@@ -27,6 +27,8 @@
   // Cloudflare Images: re-encodes uploaded photos (src/lib/outreach/image-codec-cloudflare.ts)
   // and powers next/image. Free plan: 5,000 unique transformations a month, then error 9422.
   "images": { "binding": "IMAGES" },
+  // Private merch assets (font bundle zip). Upload the object out-of-band; never serve from /public.
+  // "r2_buckets": [{ "binding": "MERCH_PRIVATE", "bucket_name": "freeplug-merch-private" }],
   "observability": { "enabled": true },
   // Workers Paid plan (Ezequiel's decision to buy). Caps runaway CPU per request (Aria A2).
   "limits": { "cpu_ms": 10000 },

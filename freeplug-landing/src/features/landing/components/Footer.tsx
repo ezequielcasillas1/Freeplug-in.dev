@@ -27,6 +27,7 @@ const footerLinks = {
   ],
   contact: [
     ...(AUTH_MAINTENANCE ? [] : [{ label: 'getStarted', href: '/request-website' } as const]),
+    { label: 'merch', href: '/merch' },
     { label: 'support', href: 'mailto:support@freeplug-in.dev' },
     { label: 'faq', href: '/faq' },
     { label: 'compare', href: '/compare' },

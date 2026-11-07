@@ -9,6 +9,8 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/faq',
       'https://freeplug-in.dev/privacy',
       'https://freeplug-in.dev/compare',
+      'https://freeplug-in.dev/merch',
+      'https://freeplug-in.dev/merch/freeplug-font-bundle',
     ])
   })
 
@@ -23,6 +25,10 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/es/privacy',
       'https://freeplug-in.dev/compare',
       'https://freeplug-in.dev/es/compare',
+      'https://freeplug-in.dev/merch',
+      'https://freeplug-in.dev/es/merch',
+      'https://freeplug-in.dev/merch/freeplug-font-bundle',
+      'https://freeplug-in.dev/es/merch/freeplug-font-bundle',
     ])
     expect(s[3].alternates?.languages).toEqual({
       en: 'https://freeplug-in.dev/faq',

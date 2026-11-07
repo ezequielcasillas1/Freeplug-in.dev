@@ -22,6 +22,11 @@ import { markQuoteInvoice, type QuoteWebhookDb } from '@/lib/maintenance-quotes/
 import { ownerAlertForStripeEvent } from '@/lib/owner-alerts/stripe-events'
 import { scheduleOwnerAlert } from '@/lib/owner-alerts/send'
 import { ownerAlertCustomer } from '@/lib/owner-alerts/customer'
+import {
+  handleMerchChargeRefunded,
+  handleMerchCheckoutSessionCompleted,
+  handleMerchDisputeCreated,
+} from '@/lib/merch/webhook'
 
 export const runtime = 'nodejs'
 
@@ -116,6 +121,13 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Setup session not saved' }, { status: 500 })
         }
         break
+      }
+      try {
+        const merch = await handleMerchCheckoutSessionCompleted(admin, session)
+        if (merch === 'handled') break
+      } catch (e) {
+        console.error('[webhook] merch checkout', e instanceof Error ? e.message : e)
+        return NextResponse.json({ error: 'Merch token not saved' }, { status: 500 })
       }
       const supabaseUserId = session.metadata?.supabase_user_id
       const customerId = getCustomerId(session.customer)
@@ -346,6 +358,11 @@ export async function POST(request: Request) {
         if (event.type === 'charge.succeeded') {
           if (profileId) await recordChargePayment(store, profileId, ch)
         } else {
+          try {
+            await handleMerchChargeRefunded(admin, ch)
+          } catch (e) {
+            console.error('[webhook] merch refund revoke', e instanceof Error ? e.message : e)
+          }
           // One ledger row per refund id. Newer API versions omit charge.refunds, so list them.
           const listed = (ch as unknown as { refunds?: { data?: RefundLike[] } }).refunds?.data
           const refunds: RefundLike[] = listed && listed.length > 0
@@ -382,6 +399,13 @@ export async function POST(request: Request) {
       } catch (e) {
         console.error('[webhook] ownership ledger (dispute)', e instanceof Error ? e.message : e)
         return NextResponse.json({ error: 'Ownership ledger not saved' }, { status: 500 })
+      }
+      if (event.type === 'charge.dispute.created') {
+        try {
+          await handleMerchDisputeCreated(admin, d)
+        } catch (e) {
+          console.error('[webhook] merch dispute revoke', e instanceof Error ? e.message : e)
+        }
       }
       break
     }
