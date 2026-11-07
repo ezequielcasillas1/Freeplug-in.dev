@@ -3,9 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Navigation } from '@/features/landing/components/Navigation'
-import { Footer } from '@/features/landing/components/Footer'
-import { MerchCheckoutButton } from '@/features/merch/components/MerchCheckoutButton'
+import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
+import { MerchCheckoutBlock } from '@/features/merch/components/MerchCheckoutBlock'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { FONT_BUNDLE_STYLES, FONT_BUNDLE_USE_CASES } from '@/lib/merch/product'
 import { useLocale, useTranslations } from 'next-intl'
@@ -17,9 +16,8 @@ export default function FontBundleProductPage() {
   const locale = toAppLocale(useLocale())
 
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-24">
+    <MerchPageChrome>
+      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-8">
         <article className="py-16 sm:py-20">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div variants={staggerContainer} initial="hidden" animate="visible">
@@ -84,12 +82,15 @@ export default function FontBundleProductPage() {
                     </ul>
                   </section>
 
-                  <MerchCheckoutButton
-                    label={t('buyCta')}
-                    emailOptional={t('emailOptional')}
-                    emailPlaceholder={t('emailPlaceholder')}
-                    errorGeneric={t('checkoutError')}
-                    mockNotice={t('mockNotice')}
+                  <MerchCheckoutBlock
+                    copy={{
+                      buyCta: t('buyCta'),
+                      comingSoon: t('comingSoon'),
+                      emailOptional: t('emailOptional'),
+                      emailPlaceholder: t('emailPlaceholder'),
+                      checkoutError: t('checkoutError'),
+                      mockNotice: t('mockNotice'),
+                    }}
                   />
 
                   <section className="rounded-xl border border-gray-200 bg-white p-5 text-sm text-gray-700 space-y-3">
@@ -116,7 +117,6 @@ export default function FontBundleProductPage() {
           </div>
         </article>
       </main>
-      <Footer />
-    </>
+    </MerchPageChrome>
   )
 }

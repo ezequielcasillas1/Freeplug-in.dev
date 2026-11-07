@@ -1035,7 +1035,38 @@
         "indexTitle": "Merch & Fonts | Freeplug",
         "indexDescription": "Shop Freeplug digital goods. Script, cursive logo, and bold display fonts for brands, websites, and shirts.",
         "productTitle": "Freeplug Font Bundle — Script, Cursive & Display Fonts | Freeplug",
-        "productDescription": "12 styles: FP Extended, Freeplug Dispatch, and FP Cursive (v2). Cursive logo font, bold display font for shirts, extended type. $49.99 USD. Personal and client use."
+        "productDescription": "12 styles: FP Extended, Freeplug Dispatch, and FP Cursive (v2). Cursive logo font, bold display font for shirts, extended type. $49.99 USD. Personal and client use.",
+        "tshirtsTitle": "T-shirts | Freeplug Merch",
+        "tshirtsDescription": "Freeplug t-shirts — coming soon. Get notified when they drop.",
+        "personalUseTitle": "Free fonts for personal use | Freeplug",
+        "personalUseDescription": "Download a limited personal-use demo of Freeplug fonts. Commercial, website, and client work require the official font bundle."
+      },
+      "subnav": {
+        "aria": "Merchandise sections",
+        "tshirts": "T-shirts",
+        "officialFonts": "Official fonts",
+        "personalUse": "Free for personal use"
+      },
+      "indexCardTshirts": "Shop tees soon — notify us if you want first access.",
+      "indexCardOfficial": "Full bundle: 12 styles for commercial and client work.",
+      "indexCardPersonal": "Limited demo subset for personal, non-commercial use.",
+      "tshirts": {
+        "heading": "T-shirts",
+        "lead": "Freeplug tees are on the way. We are not taking orders yet.",
+        "notify": "Email support to get notified",
+        "mailtoSubject": "Notify me about Freeplug t-shirts"
+      },
+      "personalUse": {
+        "heading": "Free for personal use",
+        "lead": "Try a limited demo of our typefaces. This is not the full commercial bundle.",
+        "commercialNote": "Personal, non-commercial use only. For websites, client work, or any commercial use, purchase the Official fonts bundle ($49.99).",
+        "downloadComingSoon": "Personal-use download coming soon.",
+        "downloadCta": "Download personal demo",
+        "emailOptional": "Email (optional — helps us understand interest)",
+        "emailPlaceholder": "you@example.com",
+        "licenseNote": "License: personal, non-commercial use only. Do not use on client work, business sites, or resale. The demo is a limited character set—not the paid bundle.",
+        "errorGeneric": "Download failed. Try again later.",
+        "aiDisclosure": "These typefaces were designed with the help of AI tools and refined by Freeplug."
       },
       "eyebrow": "Merch",
       "heading": "Freeplug fonts",
@@ -1051,7 +1082,8 @@
       "stylesHeading": "What's included",
       "stylesSeo": "Includes script font, cursive logo font, bold display font, extended font styles — built for logos, headlines, and merch.",
       "useCasesHeading": "Use cases",
-      "buyCta": "Buy with Stripe (test checkout)",
+      "buyCta": "Buy font bundle",
+      "comingSoon": "Coming soon",
       "emailOptional": "Email (optional — receipt & download link)",
       "emailPlaceholder": "you@example.com",
       "checkoutError": "Checkout could not start. Try again.",
@@ -1165,7 +1197,8 @@
       },
       "navigation": {
         "label": {
-          "home": "Home"
+          "home": "Home",
+          "merchandise": "Merchandise"
         },
         "compareLink": "Compare",
         "signupPaused": "Coming soon",

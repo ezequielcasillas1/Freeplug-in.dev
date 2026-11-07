@@ -19,6 +19,7 @@ describe('POST /api/checkout/merch/font-bundle', () => {
     sessionsCreate.mockReset()
     delete process.env.MERCH_MOCK_CHECKOUT
     process.env.STRIPE_SECRET_KEY = 'sk_test_unit'
+    process.env.MERCH_CHECKOUT_ENABLED = 'true'
   })
 
   it('creates a Stripe Checkout session in payment mode', async () => {
@@ -39,6 +40,16 @@ describe('POST /api/checkout/merch/font-bundle', () => {
         automatic_payment_methods: { enabled: true },
       })
     )
+  })
+
+  it('returns 403 when MERCH_CHECKOUT_ENABLED is off', async () => {
+    process.env.MERCH_CHECKOUT_ENABLED = 'false'
+    const req = new Request('http://localhost:3000/api/checkout/merch/font-bundle', {
+      method: 'POST',
+      headers: { origin: 'http://localhost:3000', 'content-type': 'application/json' },
+      body: '{}',
+    })
+    expect((await POST(req)).status).toBe(403)
   })
 
   it('returns mock url when MERCH_MOCK_CHECKOUT=true and no Stripe key', async () => {

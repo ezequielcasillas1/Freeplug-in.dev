@@ -29,3 +29,6 @@ export function isMerchMockCheckoutEnabled(env: Record<string, string | undefine
 export function stripeConfigured(env: Record<string, string | undefined> = process.env): boolean {
   return Boolean(env.STRIPE_SECRET_KEY?.trim())
 }
+
+export const MERCH_PERSONAL_USE_SLUG = 'fonts-personal-use' as const
+export const MERCH_TSHIRTS_SLUG = 't-shirts' as const

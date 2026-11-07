@@ -18,7 +18,7 @@ import { PublicSignupCta } from './PublicSignupCta'
 // Labels are message keys (public.landing.*); hrefs get /es on Spanish pages (publicHref).
 const navLinks = [
   { labelKey: 'navigation.label.home', href: '/#hero' },
-  { labelKey: 'footer.label.merch', href: '/merch' },
+  { labelKey: 'navigation.label.merchandise', href: '/merch' },
   { labelKey: 'footer.label.about', href: '/#about' },
   { labelKey: 'footer.label.outreach', href: '/#outreach' },
   { labelKey: 'footer.label.services', href: '/#services' },

@@ -40,7 +40,10 @@
     // Trust Cloudflare's CF-Connecting-IP for per-IP rate limits (src/lib/rate-limit/client-ip.ts).
     "TRUST_CF_CONNECTING_IP": "true",
     "ADMIN_ROUTE_ENABLED": "true",
-    "NEXT_PUBLIC_SIGNUP_OPEN": "false"
+    "NEXT_PUBLIC_SIGNUP_OPEN": "false",
+    // Merch: leave false until owner promotes; production launch sets both to true (see docs/MERCH-DEPLOY-CHECKLIST.md).
+    "MERCH_CHECKOUT_ENABLED": "false",
+    "MERCH_PERSONAL_DOWNLOAD_ENABLED": "false"
   },
   "env": {
     // Rehearsal Worker on freeplug-preview.<account>.workers.dev with test keys and test data.
@@ -57,7 +60,9 @@
       "vars": {
         "TRUST_CF_CONNECTING_IP": "true",
         "ADMIN_ROUTE_ENABLED": "false",
-        "NEXT_PUBLIC_SIGNUP_OPEN": "false"
+        "NEXT_PUBLIC_SIGNUP_OPEN": "false",
+        "MERCH_CHECKOUT_ENABLED": "false",
+        "MERCH_PERSONAL_DOWNLOAD_ENABLED": "false"
       }
     }
   }

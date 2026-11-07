@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Loader2, ShoppingBag } from 'lucide-react'
 
 type Props = {
+  checkoutEnabled: boolean
   label: string
   emailPlaceholder: string
   emailOptional: string
@@ -12,13 +13,21 @@ type Props = {
   mockNotice?: string
 }
 
-export function MerchCheckoutButton({ label, emailPlaceholder, emailOptional, errorGeneric, mockNotice }: Props) {
+export function MerchCheckoutButton({
+  checkoutEnabled,
+  label,
+  emailPlaceholder,
+  emailOptional,
+  errorGeneric,
+  mockNotice,
+}: Props) {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mock, setMock] = useState(false)
 
   async function startCheckout() {
+    if (!checkoutEnabled) return
     setLoading(true)
     setError(null)
     setMock(false)
@@ -61,9 +70,9 @@ export function MerchCheckoutButton({ label, emailPlaceholder, emailOptional, er
       <Button
         type="button"
         size="lg"
-        disabled={loading}
+        disabled={loading || !checkoutEnabled}
         onClick={() => void startCheckout()}
-        className="w-full sm:w-auto bg-[#ba3d3d] hover:bg-[#8a2e2e] text-white"
+        className="w-full sm:w-auto bg-[#ba3d3d] hover:bg-[#8a2e2e] text-white disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {loading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden /> : <ShoppingBag className="w-5 h-5" aria-hidden />}
         <span className="ml-2">{label}</span>

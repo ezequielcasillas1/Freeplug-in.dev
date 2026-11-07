@@ -30,7 +30,9 @@ export const LOCALIZED_PUBLIC_PATHS = [
   '/request-website',
   '/compare',
   '/merch',
+  '/merch/t-shirts',
   '/merch/freeplug-font-bundle',
+  '/merch/fonts-personal-use',
 ] as const
 export type LocalizedPublicPath = (typeof LOCALIZED_PUBLIC_PATHS)[number]
 
