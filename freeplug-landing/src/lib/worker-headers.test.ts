@@ -50,8 +50,8 @@ describe('next/image never spends the Images quota or touches private photos', (
     const users = files(src).filter((f) => /from ['"]next\/image['"]/.test(readFileSync(f, 'utf8')))
     expect(users.map((f) => path.relative(src, f)).sort()).toEqual(
       [
-        'app/[locale]/merch/fonts-personal-use/page.tsx',
-        'app/[locale]/merch/freeplug-font-bundle/page.tsx',
+        'app/[locale]/merch/fonts-personal-use/MerchPersonalUseClient.tsx',
+        'app/[locale]/merch/freeplug-font-bundle/FontBundleProductClient.tsx',
         'app/[locale]/merch/page.tsx',
         'features/landing/components/OutreachSection.tsx',
       ].sort()
