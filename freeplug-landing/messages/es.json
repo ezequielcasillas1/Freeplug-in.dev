@@ -894,13 +894,137 @@
       "wereHereHelpEmailSupport": "Estamos para ayudarte. Escríbele a nuestro equipo de soporte.",
       "contactSupport": "Contactar a soporte"
     },
+    "compare": {
+      "compareTitle": "Freeplug vs. Wix, Squarespace y sitios con renta y compra | Freeplug",
+      "compareDescription": "Compara el costo inicial, el precio mensual y qué se necesita para ser dueño de tu sitio. Precios del sitio público de cada empresa, al 31 de octubre de 2026.",
+      "h1": "Freeplug vs. Wix, Squarespace y sitios web con opción a compra",
+      "ownHeading": "¿Qué opción te deja ser dueño de tu sitio web?",
+      "teaserHeading": "Cómo se compara Freeplug",
+      "teaserIntro": "Qué cuesta empezar, qué pagas cada mes y si terminas siendo dueño de tu sitio.",
+      "colCompany": "Empresa",
+      "colUpfront": "Costo inicial",
+      "colMonthly": "Precio mensual",
+      "colCounts": "¿Los pagos cuentan para ser dueño?",
+      "colOwn": "Precio más bajo para ser dueño",
+      "colWork": "Quién hace el trabajo",
+      "groupRentToOwn": "Servicios de sitio mensual",
+      "groupDiy": "Constructores DIY",
+      "groupAgencies": "Agencias locales",
+      "footnote": "Precios al 31 de octubre de 2026, según el sitio público de cada empresa. Los precios y términos pueden cambiar; confirma con cada empresa.",
+      "homeLink": "Compara Freeplug con Wix y otros",
+      "seePricing": "Ver precios de Freeplug",
+      "requestForm": "Formulario de solicitud",
+      "sourceHint": "(página de precios, se abre en una pestaña nueva)",
+      "breadcrumbHome": "Inicio",
+      "breadcrumbCompare": "Comparar",
+      "rows": {
+        "freeplug": {
+          "name": "Freeplug",
+          "upfront": "$0",
+          "monthly": "$35–$65/mo",
+          "counts": "Sí, cada dólar cuenta para la compra",
+          "own": "Desde $500 (20% menos si ya tienes tu dominio)",
+          "work": "Hecho por nosotros"
+        },
+        "rwMedia": {
+          "name": "RW Media",
+          "upfront": "No indicado",
+          "monthly": "$299–$999/mo",
+          "counts": "Sí, renta con compra",
+          "own": "La compra equivale a 12 meses de pagos",
+          "work": "Hecho por ellos"
+        },
+        "grippyCode": {
+          "name": "Grippy Code",
+          "upfront": "No indicado",
+          "monthly": "$99–$499/mo",
+          "counts": "No, según su sitio",
+          "own": "Compra directa de $999–$4,999",
+          "work": "Hecho por ellos",
+          "sourceLabel": "fuente, se abre en una pestaña nueva"
+        },
+        "leaseReady": {
+          "name": "LeaseReady Websites",
+          "upfront": "$250 de configuración",
+          "monthly": "$250/mo",
+          "counts": "Sí",
+          "own": "Tuyo después de 36 pagos puntuales",
+          "work": "Hecho por ellos"
+        },
+        "payPerMonth": {
+          "name": "Pay Per Month Websites",
+          "upfront": "No indicado",
+          "monthly": "$39–$79/mo",
+          "counts": "El sitio es tuyo desde el día uno (según sus términos)",
+          "own": "No indicado",
+          "work": "Hecho por ellos"
+        },
+        "wix": {
+          "name": "Wix",
+          "upfront": "Plan gratis",
+          "monthly": "Gratis, o desde $17.77/mo facturado anual",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "squarespace": {
+          "name": "Squarespace",
+          "upfront": "No indicado",
+          "monthly": "Desde $19/mo facturado anual",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "goDaddy": {
+          "name": "GoDaddy Website Builder",
+          "upfront": "Gratis",
+          "monthly": "Gratis; planes de pago no indicados",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "durable": {
+          "name": "Durable",
+          "upfront": "No indicado",
+          "monthly": "$25–$49/mo",
+          "counts": "No",
+          "own": "No indicado",
+          "work": "Lo construyes tú"
+        },
+        "sanMarcos": {
+          "name": "San Marcos WebDesign",
+          "upfront": "$300–$800 pago único",
+          "monthly": "No indicado",
+          "counts": "Compra única",
+          "own": "Desde $300 (pago único)",
+          "work": "Hecho por ellos",
+          "note": "Es tuyo, con 1 mes de soporte."
+        },
+        "oakHarbor": {
+          "name": "Oak Harbor Web Designs",
+          "upfront": "$0 de enganche",
+          "monthly": "$175/mo, mínimo 12 meses",
+          "counts": "No indicado",
+          "own": "No indicado",
+          "work": "Hecho por ellos"
+        },
+        "arise": {
+          "name": "Arise Tech Co",
+          "upfront": "Desde $1,500",
+          "monthly": "Planes de cuidado desde $79/mo",
+          "counts": "No indicado",
+          "own": "Desde $1,500",
+          "work": "Hecho por ellos"
+        }
+      }
+    },
     "meta": {
       "siteTitle": "Sitios web gratis para negocios | Freeplug",
       "siteDescription": "Freeplug encuentra a dueños de negocios locales que necesitan un sitio web. 72 After construye el sitio gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
       "ogTitle": "Sitios web gratis para negocios locales | Freeplug",
       "ogDescription": "¿Tienes un negocio local sin sitio web? Pide uno. 72 After lo construye gratis.",
-      "homeTitle": "Sitios web gratis para negocios locales en el centro de Texas | Freeplug",
-      "homeDescription": "Freeplug ayuda a dueños de negocios locales a tener un sitio web. 72 After lo construye gratis. Atendemos San Marcos, Kyle, New Braunfels, San Antonio y Austin.",
+      "homeTitle": "Consigue un sitio web gratis — Sitios para pequeños negocios | Freeplug",
+      "homeDescription": "Sitio web gratis: paga mensual o cómpralo. Hecho en el centro de Texas para negocios locales, creadores, freelancers y pequeños SaaS.",
       "previewTitle": "Vista previa de tu sitio web | Freeplug",
       "requestWebsiteTitle": "Pedir un sitio web | Freeplug",
       "faqTitle": "Preguntas frecuentes: cómo funciona Freeplug | Freeplug",
@@ -947,7 +1071,8 @@
           "cookiePolicy": "Política de cookies",
           "getStarted": "Empieza",
           "support": "Soporte",
-          "faq": "Preguntas frecuentes"
+          "faq": "Preguntas frecuentes",
+          "compare": "Comparar"
         },
         "freeplug": "Freeplug",
         "freeplugHandlesOwnerOutreach72": "Freeplug contacta a los dueños de negocios y 72 After construye los sitios web gratis. Empezamos en el centro de Texas y de ahí vamos creciendo.",
@@ -962,10 +1087,18 @@
         "copyright": "© {year} Freeplug. Todos los derechos reservados.",
         "outreachFreeplugBuilds72After": "Contacto = Freeplug · Construcción = 72 After"
       },
+      "inPerson": {
+        "eyebrow": "Oficina en el centro de Texas",
+        "heading": "¿Prefieres vernos en persona?",
+        "body": "Ofrecemos consultas en persona en nuestra oficina en el centro de Texas. Platicamos sobre tu negocio y vemos cómo podría verse tu sitio.",
+        "privacy": "Por la seguridad de todos, compartimos la ubicación exacta solo después de que nos escribas y hagamos una breve llamada, FaceTime o mensaje.",
+        "cta": "Escríbenos para agendar una visita",
+        "mailSubject": "Solicitud de consulta en persona"
+      },
       "hero": {
-        "freeplugOutreach72AfterBuilds": "Freeplug contacta · 72 After construye",
-        "headline": "Sitios web gratis para<br/><span>negocios locales</span>",
-        "freeplugReachesOwnersWhoNeed": "Freeplug contacta a dueños que necesitan un sitio. <span>72 After lo construye gratis.</span> Cuando esté en línea, el hosting mensual lo mantiene funcionando.",
+        "freeplugOutreach72AfterBuilds": "Freeplug está en desarrollo. Lanzamiento próximamente.",
+        "headline": "Consigue un sitio web gratis.<br/><span>Paga mensual o cómpralo.</span>",
+        "freeplugReachesOwnersWhoNeed": "Hecho en el centro de Texas para negocios locales, creadores, freelancers, <span>pequeños SaaS y tiendas de un solo producto.</span>",
         "label": {
           "modernTech": "Tecnología moderna",
           "lightningFast": "Súper rápido",
@@ -983,6 +1116,8 @@
         "label": {
           "home": "Inicio"
         },
+        "compareLink": "Comparar",
+        "signupPaused": "Próximamente",
         "logIn": "Iniciar sesión",
         "dashboard": "Panel",
         "ariaLabel": {

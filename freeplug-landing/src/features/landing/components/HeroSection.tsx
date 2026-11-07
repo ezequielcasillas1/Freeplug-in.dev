@@ -1,8 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Sparkles, Code, Zap, Palette, Shield } from 'lucide-react'
-import Link from 'next/link'
+import { Sparkles, Code, Zap, Palette, Shield } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
 import { heroTextVariants, staggerContainer, fadeInUp, floatAnimation } from '../animations/landing.variants'
@@ -10,6 +9,7 @@ import { VideoScene } from './VideoScene'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
+import { PublicSignupCta } from './PublicSignupCta'
 
 function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
@@ -137,18 +137,7 @@ export function HeroSection() {
             </motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Link
-                href={publicHref('/signup', locale)}
-                className={cn(
-                  buttonVariants({ size: 'lg' }),
-                  'group relative overflow-hidden bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] shadow-[0_8px_32px_rgba(186,61,61,0.35)] hover:shadow-[0_12px_40px_rgba(186,61,61,0.45)] transition-all duration-300 text-base px-8 border-0'
-                )}
-              >
-                <span className="relative z-10 flex items-center">
-                  {t('cTA.requestFreeWebsite')}
-                  <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Link>
+              <PublicSignupCta variant="hero" />
               <a
                 href="#outreach"
                 className={cn(

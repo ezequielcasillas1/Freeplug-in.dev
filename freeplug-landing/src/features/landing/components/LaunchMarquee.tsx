@@ -4,8 +4,8 @@
  * LAUNCH_MARQUEE_COPY.es for when the i18n catalog lands.
  */
 export const LAUNCH_MARQUEE_COPY = {
-  en: 'Officially launching this weekend — Saturday & Sunday!',
-  es: '¡Lanzamiento oficial este fin de semana — sábado y domingo!',
+  en: 'Freeplug is currently in development. Launching soon.',
+  es: 'Freeplug está en desarrollo. Lanzamiento próximamente.',
 } as const
 
 export type LaunchMarqueeLocale = keyof typeof LAUNCH_MARQUEE_COPY

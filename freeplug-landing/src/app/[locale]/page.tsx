@@ -13,6 +13,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ogLocale, publicAlternates } from '@/i18n/seo'
 import { toAppLocale } from '@/i18n/config'
 import { HostingPlansSectionUi } from '@/features/landing/components/HostingPlansSectionUi'
+import { InPersonSection } from '@/features/landing/components/InPersonSection'
+import { CompareHomeSection } from '@/features/landing/components/CompareHomeSection'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const locale = toAppLocale((await params).locale)
@@ -35,10 +37,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <HeroSection />
         <AboutSection />
         <OutreachSection />
+        <InPersonSection />
         <CTASection />
         <TechStackSection />
         {/* Public plans block (no Supabase) so #hosting-plans nav/footer links resolve */}
         <HostingPlansSectionUi signedIn={false} hostingCheckoutAllowed={false} />
+        <CompareHomeSection />
         <ReviewsSection />
       </main>
       <Footer />

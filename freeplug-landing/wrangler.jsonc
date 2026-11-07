@@ -37,7 +37,8 @@
   "vars": {
     // Trust Cloudflare's CF-Connecting-IP for per-IP rate limits (src/lib/rate-limit/client-ip.ts).
     "TRUST_CF_CONNECTING_IP": "true",
-    "ADMIN_ROUTE_ENABLED": "true"
+    "ADMIN_ROUTE_ENABLED": "true",
+    "NEXT_PUBLIC_SIGNUP_OPEN": "false"
   },
   "env": {
     // Rehearsal Worker on freeplug-preview.<account>.workers.dev with test keys and test data.
@@ -53,7 +54,8 @@
       // The admin route stays off on the preview Worker (src/lib/admin/guard.ts returns 404).
       "vars": {
         "TRUST_CF_CONNECTING_IP": "true",
-        "ADMIN_ROUTE_ENABLED": "false"
+        "ADMIN_ROUTE_ENABLED": "false",
+        "NEXT_PUBLIC_SIGNUP_OPEN": "false"
       }
     }
   }

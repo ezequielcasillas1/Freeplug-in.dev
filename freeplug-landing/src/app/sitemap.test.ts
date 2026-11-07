@@ -8,6 +8,7 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/',
       'https://freeplug-in.dev/faq',
       'https://freeplug-in.dev/signup',
+      'https://freeplug-in.dev/compare',
     ])
   })
 
@@ -20,6 +21,8 @@ describe('sitemap and robots', () => {
       'https://freeplug-in.dev/es/faq',
       'https://freeplug-in.dev/signup',
       'https://freeplug-in.dev/es/signup',
+      'https://freeplug-in.dev/compare',
+      'https://freeplug-in.dev/es/compare',
     ])
     expect(s[3].alternates?.languages).toEqual({
       en: 'https://freeplug-in.dev/faq',

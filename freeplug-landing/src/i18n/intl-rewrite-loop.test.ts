@@ -9,7 +9,7 @@ describe('shouldRunIntlRouting', () => {
   const internal = new Headers({ [INTL_LOCALE_HEADER]: 'en' })
 
   it('runs next-intl on the public unprefixed pages (first pass)', () => {
-    for (const p of ['/', '/faq', '/signup', '/request-website']) expect(shouldRunIntlRouting(p, none)).toBe(true)
+    for (const p of ['/', '/faq', '/signup', '/request-website', '/compare']) expect(shouldRunIntlRouting(p, none)).toBe(true)
   })
 
   it('skips the internal second pass of its own rewrite (/en, /en/faq with the locale header)', () => {

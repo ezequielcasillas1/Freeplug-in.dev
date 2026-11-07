@@ -23,7 +23,7 @@ export const routing = defineRouting({
 export { LOCALE_COOKIE }
 
 /** Unprefixed public paths that have a Spanish twin under /es. */
-export const LOCALIZED_PUBLIC_PATHS = ['/', '/faq', '/signup', '/request-website'] as const
+export const LOCALIZED_PUBLIC_PATHS = ['/', '/faq', '/signup', '/request-website', '/compare'] as const
 export type LocalizedPublicPath = (typeof LOCALIZED_PUBLIC_PATHS)[number]
 
 /** Strips a leading /es or /en locale prefix: '/es/faq' -> '/faq', '/es' -> '/'. */

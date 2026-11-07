@@ -9,6 +9,7 @@ import { LanguagePicker } from '@/components/i18n/LanguagePicker'
 import { TranslationNotice } from '@/components/i18n/TranslationNotice'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
+import { PublicSignupCta } from './PublicSignupCta'
 
 // Labels are message keys under public.landing.footer.label; hrefs get /es on Spanish pages.
 const footerLinks = {
@@ -18,6 +19,7 @@ const footerLinks = {
     { label: 'services', href: '/#services' },
     { label: 'reviews', href: '/#reviews' },
     { label: 'plans', href: '/#hosting-plans' },
+    { label: 'compare', href: '/compare' },
   ],
   legal: [
     { label: 'termsConditions', href: null },
@@ -32,7 +34,8 @@ const footerLinks = {
 } as const
 
 const socialLinks: { label: string; href: string }[] = [
-  // Real profiles TBD — omit href="#" so we don't fake destinations
+  { label: 'Bluesky', href: 'https://bsky.app/profile/casiezeq.bsky.social' },
+  { label: 'X', href: 'https://x.com/casiezeq' },
 ]
 
 export function Footer() {
@@ -143,13 +146,17 @@ export function Footer() {
             <ul className="space-y-4">
               {footerLinks.contact.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={publicHref(link.href, locale)}
-                    className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1 group"
-                  >
-                    {t(`label.${link.label}`)}
-                    <ArrowUpRight className="w-3 h-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
-                  </a>
+                  {link.label === 'getStarted' ? (
+                    <PublicSignupCta variant="footer" />
+                  ) : (
+                    <a
+                      href={link.href.startsWith('mailto:') ? link.href : publicHref(link.href, locale)}
+                      className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1 group"
+                    >
+                      {t(`label.${link.label}`)}
+                      <ArrowUpRight className="w-3 h-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

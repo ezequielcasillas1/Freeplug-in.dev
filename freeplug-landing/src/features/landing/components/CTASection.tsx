@@ -1,18 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Shield, Sparkles } from 'lucide-react'
-import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils/cn'
+import { Shield, Sparkles } from 'lucide-react'
 import { fadeInUp, staggerContainer } from '../animations/landing.variants'
-import { useLocale, useTranslations } from 'next-intl'
-import { toAppLocale } from '@/i18n/config'
-import { publicHref } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
+import { PublicSignupCta } from './PublicSignupCta'
 
 export function CTASection() {
   const t = useTranslations('public.landing.cTA')
-  const locale = toAppLocale(useLocale())
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#ba3d3d] via-[#a53434] to-[#8a2e2e]" />
@@ -78,16 +73,7 @@ export function CTASection() {
           variants={fadeInUp}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link
-            href={publicHref('/signup', locale)}
-            className={cn(
-              buttonVariants({ size: 'lg' }),
-              'bg-white text-[#ba3d3d] hover:bg-gray-100 group shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 transition-all px-8 border-0'
-            )}
-          >
-            {t('requestFreeWebsite')}
-            <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <PublicSignupCta variant="cta" />
         </motion.div>
         
         <motion.div
