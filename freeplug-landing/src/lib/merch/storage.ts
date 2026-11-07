@@ -1,3 +1,4 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { createReadStream, existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
@@ -68,9 +69,24 @@ export function resolveLocalPersonalDemoPath(env: Record<string, string | undefi
   return null
 }
 
+async function readMerchPersonalDemoFromR2(): Promise<Buffer | null> {
+  try {
+    const { env } = await getCloudflareContext({ async: true })
+    const bucket = (env as { MERCH_PRIVATE?: R2Bucket }).MERCH_PRIVATE
+    if (!bucket) return null
+    const obj = await bucket.get(MERCH_PERSONAL_DEMO_OBJECT_KEY)
+    if (!obj?.body) return null
+    return Buffer.from(await new Response(obj.body as ReadableStream).arrayBuffer())
+  } catch {
+    return null
+  }
+}
+
 export async function readMerchPersonalDemoBytes(env: Record<string, string | undefined> = process.env): Promise<Buffer> {
   const local = resolveLocalPersonalDemoPath(env)
   if (local) return readFile(/* turbopackIgnore: true */ local)
+  const fromR2 = await readMerchPersonalDemoFromR2()
+  if (fromR2) return fromR2
   if (isMerchPersonalDemoMock(env)) {
     return Buffer.from('Freeplug personal-use font demo (mock — limited subset placeholder)\n', 'utf8')
   }
@@ -78,9 +94,9 @@ export async function readMerchPersonalDemoBytes(env: Record<string, string | un
 }
 
 export function isMerchPersonalDemoMock(env: Record<string, string | undefined> = process.env): boolean {
+  if (resolveLocalPersonalDemoPath(env)) return false
   return (
-    !resolveLocalPersonalDemoPath(env) &&
-    (env.MERCH_MOCK_CHECKOUT?.trim().toLowerCase() === 'true' ||
-      env.MERCH_PERSONAL_DOWNLOAD_ENABLED?.trim().toLowerCase() === 'true')
+    env.MERCH_MOCK_CHECKOUT?.trim().toLowerCase() === 'true' &&
+    !env.MERCH_PERSONAL_DEMO_LOCAL_PATH?.trim()
   )
 }

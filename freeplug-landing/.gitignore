@@ -33,6 +33,7 @@ yarn-error.log*
 # Merch font bundle (never commit the zip; local dev only)
 .merch-dev-only/*
 !.merch-dev-only/.gitkeep
+!.merch-dev-only/README.md
 
 # env files — keep .env.example committable
 .env

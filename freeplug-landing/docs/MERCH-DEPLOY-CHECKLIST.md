@@ -35,12 +35,19 @@ Ensure these are enabled on the **live** Stripe webhook (same signing secret as 
 
 ## R2 private storage (`MERCH_PRIVATE` binding)
 
-Upload objects out-of-band (never in `public/`):
+Create bucket `freeplug-merch-private` (or chosen name). Upload **both** zips out-of-band (never in `public/`, never in git):
 
-| Object key | Purpose |
-|------------|---------|
-| `freeplug-font-bundle-v1.zip` | Paid bundle (post-checkout token only) |
-| `merch/freeplug-fonts-personal-demo.zip` | Limited personal-use demo (rate-limited public route) |
+| Object key | Local filename (dev) | Purpose |
+|------------|----------------------|---------|
+| `freeplug-font-bundle-v1.zip` | `.merch-dev-only/freeplug-font-bundle-v1.zip` | **Paid** bundle — 12 styles; only via signed token after checkout |
+| `merch/freeplug-fonts-personal-demo.zip` | `.merch-dev-only/freeplug-fonts-personal-demo.zip` | **Personal demo** — FP Extended / Dispatch / Cursive Demo Regular, 95 basic-Latin glyphs + `LICENSE.txt`; `POST /api/merch/personal-download` only |
+
+Example (Wrangler CLI, after binding exists):
+
+```bash
+wrangler r2 object put freeplug-merch-private/freeplug-font-bundle-v1.zip --file=./freeplug-font-bundle-v1.zip
+wrangler r2 object put freeplug-merch-private/merch/freeplug-fonts-personal-demo.zip --file=./freeplug-fonts-personal-demo.zip
+```
 
 Uncomment and set in `wrangler.jsonc` for production:
 
