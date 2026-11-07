@@ -28,7 +28,6 @@
   // and powers next/image. Free plan: 5,000 unique transformations a month, then error 9422.
   "images": { "binding": "IMAGES" },
   // Private merch assets (font bundle zip). Upload the object out-of-band; never serve from /public.
-  "r2_buckets": [{ "binding": "MERCH_PRIVATE", "bucket_name": "freeplug-merch-private" }],
   "observability": { "enabled": true },
   // Workers Paid plan (Ezequiel's decision to buy). Caps runaway CPU per request (Aria A2).
   "limits": { "cpu_ms": 10000 },
@@ -46,7 +45,7 @@
     // Who may use /admin once past Cloudflare Access (src/lib/admin/guard.ts): the signed-in Supabase
     // account's email must be in this comma-separated list. Not a secret.
     "ADMIN_EMAILS": "ezequielcasillas1@gmail.com,fplgn.dev.72@gmail.com",
-    // Merch go-live (Cheke, Nov 7 2026): live checkout + free personal demo. Needs R2 + migration first (docs/MERCH-DEPLOY-CHECKLIST.md).
+    // Merch go-live (Cheke, Nov 7 2026): live checkout + free personal demo. Needs Supabase Storage bucket merch-private + migration first (docs/MERCH-DEPLOY-CHECKLIST.md).
     "MERCH_CHECKOUT_ENABLED": "true",
     "MERCH_PERSONAL_DOWNLOAD_ENABLED": "true"
   },

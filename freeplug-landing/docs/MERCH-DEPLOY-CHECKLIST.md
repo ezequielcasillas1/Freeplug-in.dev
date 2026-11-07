@@ -33,27 +33,37 @@ Ensure these are enabled on the **live** Stripe webhook (same signing secret as 
 
 (Other events remain required for hosting/buyout — do not remove.)
 
-## R2 private storage (`MERCH_PRIVATE` binding)
+## Private file storage (Supabase Storage bucket `merch-private`)
 
-Create bucket `freeplug-merch-private` (or chosen name). Upload **both** zips out-of-band (never in `public/`, never in git):
+R2 is not used (not enabled on the Cloudflare account). Both zips live in a **private** Supabase Storage
+bucket on the production project. Only the Worker's service-role client reads them
+(`src/lib/merch/storage.ts` → `downloadPrivateObject`), and only after our own token check (paid bundle)
+or rate limit (personal demo). No public URLs, nothing in `public/` or git.
 
-| Object key | Local filename (dev) | Purpose |
+| Object key (bucket `merch-private`) | Source file | Purpose |
 |------------|----------------------|---------|
-| `freeplug-font-bundle-v1.zip` | `.merch-dev-only/freeplug-font-bundle-v1.zip` | **Paid** bundle — 12 styles; only via signed token after checkout |
-| `merch/freeplug-fonts-personal-demo.zip` | `.merch-dev-only/freeplug-fonts-personal-demo.zip` | **Personal demo** — FP Extended / Dispatch / Cursive Demo Regular, 95 basic-Latin glyphs + `LICENSE.txt`; `POST /api/merch/personal-download` only |
+| `freeplug-font-bundle-v1.zip` | `/workspace/logos/freeplug/freeplug-font-bundle-v1.zip` | **Paid** bundle, signed token only |
+| `freeplug-fonts-personal-demo.zip` | `/workspace/logos/freeplug/freeplug-fonts-personal-demo.zip` | **Personal demo**, `POST /api/merch/personal-download` only |
 
-Example (Wrangler CLI, after binding exists):
+Create the bucket (SQL editor on the prod project, or Dashboard → Storage → New bucket, Public OFF):
 
-```bash
-wrangler r2 object put freeplug-merch-private/freeplug-font-bundle-v1.zip --file=./freeplug-font-bundle-v1.zip
-wrangler r2 object put freeplug-merch-private/merch/freeplug-fonts-personal-demo.zip --file=./freeplug-fonts-personal-demo.zip
+```sql
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('merch-private', 'merch-private', false, 52428800, array['application/zip'])
+on conflict (id) do update set public = false;
 ```
 
-Uncomment and set in `wrangler.jsonc` for production:
+No `storage.objects` policies are added: anon/authenticated get nothing; service_role bypasses RLS.
 
-```jsonc
-"r2_buckets": [{ "binding": "MERCH_PRIVATE", "bucket_name": "freeplug-merch-private" }]
+Upload (Dashboard → Storage → merch-private → Upload, or the Storage API with the service-role key from a
+shell where it is already in the environment — never on the command line):
+
 ```
+POST {SUPABASE_URL}/storage/v1/object/merch-private/freeplug-font-bundle-v1.zip   (Content-Type: application/zip, x-upsert: true)
+POST {SUPABASE_URL}/storage/v1/object/merch-private/freeplug-fonts-personal-demo.zip
+```
+
+Local dev keeps the file fallback: `.merch-dev-only/<key>` or `MERCH_BUNDLE_LOCAL_PATH` / `MERCH_PERSONAL_DEMO_LOCAL_PATH`.
 
 ## Supabase (production project)
 
