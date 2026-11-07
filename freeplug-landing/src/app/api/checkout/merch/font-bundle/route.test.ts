@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const sessionsCreate = vi.fn()
 
 vi.mock('@/lib/stripe/server', () => ({
-  getStripe: () => ({
+  getStripeFetch: () => ({
     checkout: { sessions: { create: sessionsCreate } },
   }),
 }))

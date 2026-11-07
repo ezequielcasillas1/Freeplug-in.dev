@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getStripe } from '@/lib/stripe/server'
+import { getStripeFetch } from '@/lib/stripe/server'
 import { stripeConfigured } from '@/lib/merch/product'
 import { isMerchMockCheckoutEnabled } from '@/lib/merch/product'
 import { isMerchFontBundleSession } from '@/lib/merch/checkout'
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const stripe = getStripe()
+    const stripe = getStripeFetch()
     const session = await stripe.checkout.sessions.retrieve(sessionId)
     if (!isMerchFontBundleSession(session)) {
       return NextResponse.json({ error: 'Not a font bundle checkout.' }, { status: 400 })

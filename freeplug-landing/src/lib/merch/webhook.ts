@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { getStripe } from '@/lib/stripe/server'
+import { getStripeFetch } from '@/lib/stripe/server'
 import { isMerchFontBundleSession } from './checkout'
 import { issueMerchFontBundleToken, revokeMerchTokensByChargeId, revokeMerchTokensByPaymentIntent } from './tokens'
 import { merchDownloadUrl, sendMerchDownloadEmail } from './email'
@@ -46,7 +46,7 @@ export async function handleMerchChargeRefunded(
   charge: Stripe.Charge
 ): Promise<void> {
   if (!charge.payment_intent) return
-  await revokeMerchTokensByChargeId(admin, getStripe(), charge)
+  await revokeMerchTokensByChargeId(admin, getStripeFetch(), charge)
 }
 
 export async function handleMerchDisputeCreated(

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { isSameOriginPost } from '@/app/claim/start/claim-redirect'
 import { emailBaseUrl } from '@/lib/site'
 import { checkoutSessionExpiresAt } from '@/lib/stripe/checkout-expiry'
-import { getStripe } from '@/lib/stripe/server'
+import { getStripeFetch } from '@/lib/stripe/server'
 import { currentLocale } from '@/i18n/current-locale'
 import { buildMerchFontBundleSessionParams } from '@/lib/merch/checkout'
 import { isMerchCheckoutEnabled } from '@/lib/merch/flags'
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const stripe = getStripe()
+    const stripe = getStripeFetch()
     const params = buildMerchFontBundleSessionParams(locale, null)
     if (email) params.customer_email = email
     const session = await stripe.checkout.sessions.create({
