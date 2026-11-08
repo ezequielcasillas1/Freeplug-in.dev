@@ -16,6 +16,7 @@ describe('tip ranges (ladder.ts, per step, overridable)', () => {
       leads: { minDollars: 75, maxDollars: 84 },
       get_found: { minDollars: 85, maxDollars: 99 },
       growth: { minDollars: 100, maxDollars: 120 },
+      plug_authority: { minDollars: 199, maxDollars: 220 },
     })
     for (const s of PLAN_STEPS) expect(TIP_TOTAL_RANGES[s.id].minDollars).toBe(s.monthlyCents / 100) // min = the step price (no tip)
   })

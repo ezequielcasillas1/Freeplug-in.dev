@@ -1,8 +1,18 @@
 import { formatAmount, formatAmountCents } from '@/lib/format/keep-together'
-import { EDITS_COPY_ES, needMoreEditsLine } from './edits-copy'
-import { editPackFor } from './edit-allowance'
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
-import { ADDON_STEP_LIMITS, PLAN_STEPS, addonById, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
+import {
+  ADDON_STEP_LIMITS,
+  PLAN_STEP_IDS,
+  PLAN_STEPS,
+  addonById,
+  customerAiEditsPerMonth,
+  showAiEditQuota,
+  stepById,
+  type AddonId,
+  type PlanPerk,
+  type PlanStep,
+  type PlanStepId,
+} from './ladder'
 import { DEFAULT_LOCALE, isAppLocale, type AppLocale } from '@/i18n/config'
 import { formatList } from '@/i18n/format'
 import { translatorFor, translatorFromMessages, type Translate } from '@/i18n/translate'
@@ -36,7 +46,24 @@ const INCLUDED_EDIT_FROM = PLAN_STEPS.find((s) => s.adds.includes('includedSmall
  */
 export const MOST_POPULAR_STEP: PlanStepId | null = null
 
-const PERKS: readonly PlanPerk[] = ['priorityQueue', 'includedSmallEdit', 'nextBusinessDayEdits', 'leadsReport', 'quoteAlerts', 'gbpManaged', 'reviewKit', 'seasonalRefresh', 'quarterlyCall', 'doneForYouEdits']
+const PERKS: readonly PlanPerk[] = [
+  'priorityQueue',
+  'includedSmallEdit',
+  'nextBusinessDayEdits',
+  'leadsReport',
+  'quoteAlerts',
+  'gbpManaged',
+  'reviewKit',
+  'seasonalRefresh',
+  'quarterlyCall',
+  'doneForYouEdits',
+  'monthlySnapshotAction',
+  'brokenLinkCopyFix',
+  'oneLineChangeLog',
+  'monthlySpeedCheck',
+  'searchTuneUp',
+  'reviewWatch',
+]
 /**
  * Aria, Oct 4 9:27: why an add-on charge was refunded automatically (self-heal). Shown on the Plans page
  * and in the refund email.
@@ -44,7 +71,7 @@ const PERKS: readonly PlanPerk[] = ['priorityQueue', 'includedSmallEdit', 'nextB
 export type AddonRefundReason = 'switch_pending' | 'removal_pending' | 'period_ended' | 'tip_unconfirmed' | 'plan_ended' | 'not_added' | 'turned_off'
 const ADDON_REFUND_REASON_IDS: readonly AddonRefundReason[] = ['switch_pending', 'removal_pending', 'period_ended', 'tip_unconfirmed', 'plan_ended', 'not_added', 'turned_off']
 export const isAddonRefundReason = (v: unknown): v is AddonRefundReason => typeof v === 'string' && (ADDON_REFUND_REASON_IDS as readonly string[]).includes(v)
-const STEP_IDS: readonly PlanStepId[] = ['starter', 'priority', 'fast_lane', 'leads', 'get_found', 'growth']
+const STEP_IDS: readonly PlanStepId[] = [...PLAN_STEP_IDS]
 
 function build(t: Translate, locale: AppLocale) {
   /** "$35, $55 or $65": the SELLABLE steps in PLAN_STEPS (coming-soon steps not priced), Intl list. */
@@ -87,6 +114,9 @@ function build(t: Translate, locale: AppLocale) {
     PLAN_GLOSS: Object.fromEntries(STEP_IDS.map((id) => [id, locale === 'es' ? t(`plans.gloss.${PLAN_GLOSS_KEY[id]}`) : null])) as Record<PlanStepId, string | null>,
     ADDON_GLOSS: Object.fromEntries((['small_edit', 'big_change', 'visitor_snapshot'] as const).map((id) => [id, locale === 'es' ? t(`addons.gloss.${id}`) : null])) as Record<AddonId | 'visitor_snapshot', string | null>,
     STEP_BLURBS: Object.fromEntries(STEP_IDS.map((id) => [id, t(`plans.stepBlurbs.${id}`)])) as Record<PlanStepId, string>,
+  /** Plug Authority only: tagline and intro above the perk list (owner copy). */
+    STEP_TAGLINE_PLUG_AUTHORITY: t('plans.stepTaglines.plug_authority'),
+    STEP_DESCRIPTION_PLUG_AUTHORITY: t('plans.stepDescriptions.plug_authority'),
     PERK_LINES: Object.fromEntries(PERKS.map((p) => [p, perkLine(p)])) as Record<PlanPerk, string>,
     STARTER_BASE_LINES: [t('plans.starterBaseLines.hostingSslSecureHttps'), t('plans.starterBaseLines.emailSupportDuringSupport')] as readonly string[],
     LADDER_HEADING: t('plans.ladderHeading'),
@@ -235,8 +265,7 @@ function build(t: Translate, locale: AppLocale) {
      * total defaults to the full price (the most it can charge); pass the prorated total when known.
      */
     /** Oct 18 (Cheke): replaces the old Starter "+1 small edit" add-on line (edit pack, edits-copy.ts). */
-    starterSmallEditAddonLine: (): string =>
-      locale === 'es' ? (editPackFor('starter') > 0 ? EDITS_COPY_ES.needMoreEdits(editPackFor('starter')) : '') : (needMoreEditsLine('starter') ?? ''),
+    starterSmallEditAddonLine: (): string => '',
     addonPriceLine: (cents: number) => t('common.amountPerMonth', { amount: dollars(cents) }),
     addonTipDropQuestion: (tipDollars: number, name: string) => t('addons.tipDropQuestionCheckout', { tip: wholeDollars(tipDollars), name }),
     ADDON_TURN_ON: t('addons.turnOn'),
@@ -331,6 +360,7 @@ const PLAN_GLOSS_KEY: Record<PlanStepId, string> = {
   leads: 'leads',
   get_found: 'getFound',
   growth: 'growthPartner',
+  plug_authority: 'plugAuthority',
 }
 
 export type LadderCopy = ReturnType<typeof build>

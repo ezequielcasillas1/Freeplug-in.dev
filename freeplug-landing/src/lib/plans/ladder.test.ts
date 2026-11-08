@@ -16,19 +16,20 @@ import { periodStartDate, recordIncludedEdit, type IncludedEditStore } from './i
 import { PRIORITY_MIN_MONTHLY_CENTS } from './priority'
 
 describe('hosting ladder config (Aria card, Oct 3)', () => {
-  it('has the six fixed steps, prices, AI-edit quotas and lookup keys from the card', () => {
-    expect(PLAN_STEPS.map((s) => [s.id, s.name, s.monthlyCents, s.aiEditsPerMonth, s.rank])).toEqual([
-      ['starter', 'Starter', 3500, 5, 0],
-      ['priority', 'Priority', 5500, 15, 1],
-      ['fast_lane', 'Fast lane', 6500, 15, 2],
-      ['leads', 'Leads', 7500, 40, 3],
-      ['get_found', 'Get found', 8500, 40, 4],
-      ['growth', 'Growth partner', 10000, 40, 5],
+  it('has the seven fixed steps, prices, AI-edit quotas and lookup keys from the card', () => {
+    expect(PLAN_STEPS.map((s) => [s.id, s.name, s.monthlyCents, s.aiEditsPerMonth, s.rank, s.sellable])).toEqual([
+      ['starter', 'Starter', 3500, 5, 0, true],
+      ['priority', 'Priority', 5500, 15, 1, true],
+      ['fast_lane', 'Fast lane', 6500, 15, 2, true],
+      ['leads', 'Leads', 7500, 40, 3, false],
+      ['get_found', 'Get found', 8500, 40, 4, false],
+      ['growth', 'Growth partner', 10000, 40, 5, false],
+      ['plug_authority', 'Plug Authority', 19900, 40, 6, false],
     ])
     for (const s of PLAN_STEPS) expect(s.lookupKey).toBe(`freeplug_step_${s.id}_monthly`)
     // One Stripe product per step (Aria 6.1; the portal can't hold two monthly prices of one product).
     for (const s of PLAN_STEPS) expect(s.productId).toBe(`freeplug_step_${s.id}`)
-    expect(new Set(PLAN_STEPS.map((s) => s.lookupKey)).size).toBe(6)
+    expect(new Set(PLAN_STEPS.map((s) => s.lookupKey)).size).toBe(7)
     expect(PLAN_STEP_IDS).toEqual(PLAN_STEPS.map((s) => s.id))
   })
 
@@ -53,17 +54,27 @@ describe('hosting ladder config (Aria card, Oct 3)', () => {
       'quarterlyCall',
       'doneForYouEdits',
     ])
+    expect(cumulativePerks('plug_authority')).toEqual([
+      ...cumulativePerks('growth'),
+      'monthlySnapshotAction',
+      'brokenLinkCopyFix',
+      'oneLineChangeLog',
+      'monthlySpeedCheck',
+      'searchTuneUp',
+      'reviewWatch',
+    ])
   })
 
   it('entitlements per step', () => {
     // Oct 18 plan structure: 2 / 5 / 10 / 35 / 50 / unlimited edits.
     expect(entitlementsFor({ stepId: 'starter' })).toMatchObject({ priorityRank: 0, includedEditsPerMonth: 2, aiEditsPerMonth: 5, legacy: false })
     expect(entitlementsFor({ stepId: 'priority' })).toMatchObject({ priorityRank: 1, includedEditsPerMonth: 5, nextBusinessDayEdits: false })
-    expect(entitlementsFor({ stepId: 'fast_lane' })).toMatchObject({ includedEditsPerMonth: 10, nextBusinessDayEdits: true, leadsReport: false })
-    expect(entitlementsFor({ stepId: 'growth' }).includedEditsPerMonth).toBe(Number.POSITIVE_INFINITY)
+    expect(entitlementsFor({ stepId: 'fast_lane' })).toMatchObject({ includedEditsPerMonth: 7, nextBusinessDayEdits: true, leadsReport: false })
+    expect(entitlementsFor({ stepId: 'growth' }).includedEditsPerMonth).toBe(20)
     expect(entitlementsFor({ stepId: 'leads' })).toMatchObject({ leadsReport: true, quoteAlerts: true, gbpManaged: false })
     expect(entitlementsFor({ stepId: 'get_found' })).toMatchObject({ gbpManaged: true, reviewKit: true, seasonalRefresh: false })
     expect(entitlementsFor({ stepId: 'growth' })).toMatchObject({ seasonalRefresh: true, quarterlyCall: true, doneForYouEdits: true, monthlyCents: 10000 })
+    expect(entitlementsFor({ stepId: 'plug_authority' })).toMatchObject({ priorityRank: 6, includedEditsPerMonth: 25, monthlyCents: 19900 })
   })
 
   it('resolves untrusted input to a step or null', () => {
@@ -82,6 +93,8 @@ describe('hosting ladder config (Aria card, Oct 3)', () => {
     [6500, 'fast_lane'],
     [10000, 'growth'],
     [11500, 'growth'],
+    [19900, 'plug_authority'],
+    [25000, 'plug_authority'],
   ])('stepForMonthlyCents(%i) = %s', (cents, id) => {
     expect(stepForMonthlyCents(cents)?.id ?? null).toBe(id)
   })

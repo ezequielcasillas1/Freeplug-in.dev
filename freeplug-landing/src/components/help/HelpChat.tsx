@@ -59,7 +59,6 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
   /** Oct 18: the edit field note, split around its "one-time maintenance" link (page language). */
   const NOTE = fieldNoteParts(ladder.LOCALE)
   const EDITS = editsCopy(ladder.LOCALE)
-  const { GO_TO_PLANS } = ladder
   const tr = useTranslations()
   // Server-resolved messages (useTranslations reads the provider), so the chat follows the page's language.
   const H = helpChatContent((key, values) => tr(key as never, values as never), ladder)
@@ -267,11 +266,7 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
                 <p className="mt-2">{C.includedEditNote}</p>
               ) : smallEditAddonNote ? (
                 <p className="mt-2" data-testid="small-edit-addon-note">
-                  {smallEditAddonNote}{' '}
-                  {/* Sable, Oct 4 9:05: a "Go to Plans" link after the small-edit line. */}
-                  <Link href="/dashboard/plans" className="font-medium text-[#ba3d3d] underline underline-offset-2" data-testid="small-edit-addon-plans-link">
-                    {GO_TO_PLANS}
-                  </Link>
+                  {smallEditAddonNote}
                 </p>
               ) : null}
             </BotBubble>

@@ -535,19 +535,19 @@
         "gotWellEmailAfter": "Got it. We'll email you at {email} after we review your request."
       },
       "chatNotFound": "Didn't find your answer? Email support@freeplug-in.dev. Our team is available {supportHours}.",
-      "starterSmallEditAddon": "Small edits are {price} with the {addonName} add-on. Turn it on and we'll take care of it this month. You can turn it off anytime.",
+      "starterSmallEditAddon": "If you use all your included edits this month, wait for your next billing period or request one-time maintenance for extra small changes.",
       "starterSmallEditAiBuilder": "Or make the change yourself with the AI builder, at no extra cost.",
       "goToPlans": "Go to Plans"
     },
     "answers": {
       "whatDoIPay": "Hosting is required. It keeps your website online. Plans are {priceList} a month, and each plan includes everything in the ones before it. Maintenance starts at $50, up to $100. You'll see the exact price before you pay. Building the website is free.",
       "hostingPlans": "Hosting plans are {priceList} a month. Each plan includes everything in the ones before it. See Plans in your dashboard for what each plan adds. Already have an add-on? You keep it at the same price.",
-      "requestChanges": "Yes. {name} ({price}) and higher plans include one small edit each billing period. For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You'll see the exact price before you pay.",
+      "requestChanges": "Yes. Each hosting plan includes a set number of small edits each billing period (see Plans for your tier). For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You'll see the exact price before you pay.",
       "hiddenFees": "No. You pay for monthly hosting, which is required. One-time maintenance or a buyout costs extra only if you request it. Building your website is free, and you'll see the price before you pay.",
       "security": "Every site includes an SSL certificate, so it loads over a secure https connection.",
       "plansGuideTitleLine": "Plans: Choose a hosting plan, or request maintenance",
       "plansGuideDescription": "Compare hosting plans for your business",
-      "chatIncludedEditNote": "Your plan includes one small edit each billing period.",
+      "chatIncludedEditNote": "Your plan includes small edits each billing period.",
       "paymentMethod": "Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there. If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices."
     },
     "priority": {
@@ -579,27 +579,40 @@
       "submitWebsiteRequestFirst": "Submit a website request first",
       "hostingCheckoutOpensAfterSubmit": "Hosting checkout opens after you submit a website request from your dashboard."
     },
-    "nextBusinessDayTarget": "by end of next business day (Mon–Fri, excluding holidays)",
+    "nextBusinessDayTarget": "within 5 business days (higher plans are usually faster)",
     "stepBlurbs": {
       "starter": "Your website, hosted and kept secure.",
       "priority": "Everything in Starter. Your change requests go ahead of lower plans in line.",
-      "fast_lane": "Everything in Priority, plus one small edit by us each billing period.",
+      "fast_lane": "Everything in Priority, plus included small edits by us each billing period.",
       "leads": "Everything in Fast lane, plus a monthly report and quote alerts.",
       "get_found": "Everything in Leads, plus Google Business Profile upkeep.",
-      "growth": "Everything in Get found, plus a seasonal refresh and a quarterly call."
+      "growth": "Everything in Get found, plus a seasonal refresh and a quarterly call.",
+      "plug_authority": "Everything in Growth partner, plus monthly care built for attraction and marketing."
+    },
+    "stepTaglines": {
+      "plug_authority": "Highest priority support. The most taken care of website."
+    },
+    "stepDescriptions": {
+      "plug_authority": "For the serious business looking for attraction: for its viability, its authenticness, its researchedness and conduction of research, its ability to influence others, and its marketing."
     },
     "perkLines": {
       "priorityQueue": "When you ask us for a change, you're ahead of lower plans in line.",
-      "includedSmallEdit": "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over.",
+      "includedSmallEdit": "Small edits by us each billing period, like new hours, a photo swap or a price change. Unused edits don't carry over.",
       "leadsReport": "A monthly email showing how many people visited your site, filled out your form, and tapped your call button.",
       "quoteAlerts": "An email the moment someone asks for a quote.",
       "gbpManaged": "We keep your Google Business Profile up to date (hours, photos) and post to it for you.",
       "reviewKit": "A ready-made message and link you can send your customers to ask for reviews.",
       "seasonalRefresh": "Each season we refresh your site with your new photos and offers.",
       "quarterlyCall": "A 15-minute planning call with us every quarter.",
-      "doneForYouEdits": "Tell us what you want changed, and we make it for you."
+      "doneForYouEdits": "Tell us what you want changed, and we make it for you.",
+      "monthlySnapshotAction": "Monthly snapshot with one action: visits, top page, top searches, plus the one change we'll make next.",
+      "brokenLinkCopyFix": "Broken link and outdated copy fix: a monthly scan for dead links, old dates, hours or prices, and we fix them.",
+      "oneLineChangeLog": "One-line change log: one sentence each month on what changed and why.",
+      "monthlySpeedCheck": "Speed check: a monthly speed score, and we fix the biggest slowdown.",
+      "searchTuneUp": "Search tune-up: the page with the most search views but few clicks gets a new title and description.",
+      "reviewWatch": "Review watch: new Google reviews get a drafted reply; replies to 3 stars or lower wait for your OK."
     },
-    "smallEditsNextBusinessDay": "Small edits: by end of next business day (Mon–Fri, excluding holidays).",
+    "smallEditsNextBusinessDay": "Small edits: within 5 business days. Higher plans are usually faster.",
     "starterBaseLines": {
       "hostingSslSecureHttps": "Hosting and SSL (a secure https connection)",
       "emailSupportDuringSupport": "Email support during support hours"
@@ -692,6 +705,7 @@
       "leads": "Leads",
       "getFound": "Get found",
       "growthPartner": "Growth partner",
+      "plugAuthority": "Plug Authority",
       "basic": "Basic",
       "plus": "Plus",
       "pro": "Pro"
@@ -703,7 +717,8 @@
       "fastLane": "One small edit by us included each month",
       "leads": "A monthly visitor report and quote alerts",
       "getFound": "We keep your Google Business Profile up to date",
-      "growthPartner": "A seasonal refresh and a quarterly planning call"
+      "growthPartner": "A seasonal refresh and a quarterly planning call",
+      "plugAuthority": "Highest-priority support and monthly care for attraction"
     }
   },
   "claim": {
@@ -1244,17 +1259,21 @@
         "heading": "Buy out your pages, <span>own your files</span>",
         "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
         "tier": {
-          "quick": "Up to 5 pages",
+          "p1": "1 page",
+          "p2": "2 pages",
+          "p3": "3 pages",
+          "p4": "4 pages",
+          "p5": "5 pages",
           "up_to_7": "6 to 7 pages",
           "up_to_11": "8 to 11 pages",
           "up_to_15": "12 to 15 pages",
-          "up_to_20": "16 to 20 pages",
-          "custom": "Custom enterprise: 21 to 35 pages"
+          "up_to_25": "16 to 25 pages",
+          "custom": "26+ pages"
         },
         "oneTime": "one time",
         "customPrice": "Custom quote",
         "customScope": "scoped by hand",
-        "customLine": "21 to 35 pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
+        "customLine": "26+ pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
         "note": "The buyout covers your website files only.",
         "compareLink": "Compare Freeplug with other options"
       },
@@ -1361,9 +1380,9 @@
       "rows": {
         "freeplug": {
           "upfront": "$0",
-          "monthly": "$35–$65/mo",
+          "monthly": "$35–$199/mo",
           "counts": "Yes, every dollar counts toward the buyout",
-          "own": "From $500 (20% off if you own your domain)"
+          "own": "From $250 (20% off if you own your domain)"
         },
         "rwMedia": {
           "monthly": "$299–$999/mo",
@@ -1430,7 +1449,7 @@
     "cancelHeading": "Keep your website",
     "cancelBody": "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it.",
     "faqQuestion": "Can I keep my website if I stop hosting with Freeplug?",
-    "faqAnswer": "Yes. You can buy your website files for a one-time price based on how many pages your site has: up to 5 pages $500, 6 to 7 pages $700, 8 to 11 pages $950, 12 to 15 pages $1,200, and 16 to 20 pages $2,000. 21 to 35 pages? We'll quote it for you. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout. Both apply to custom quotes too.",
+    "faqAnswer": "Yes. You can buy your website files for a one-time price based on how many pages your site has: 1 page $250, 2 pages $300, 3 pages $350, 4 pages $400, 5 pages $450, 6 to 7 pages $700, 8 to 11 pages $950, 12 to 15 pages $1,200, and 16 to 25 pages $2,000. 26+ pages? We'll quote it for you. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout. Both apply to custom quotes too.",
     "requestRecordName": "Website buyout"
   },
   "common": {
@@ -1593,14 +1612,20 @@
     "nudgePerk": {
       "priorityQueue": "a place ahead of lower plans when you ask for changes",
       "includedSmallEdit": "one small edit by us each billing period",
-      "nextBusinessDayEdits": "small edits by end of next business day (Mon–Fri, excluding holidays)",
+      "nextBusinessDayEdits": "small edits within 5 business days (higher plans are usually faster)",
       "leadsReport": "a monthly report on visits, form requests and call button taps",
       "quoteAlerts": "an email the moment someone asks for a quote",
       "gbpManaged": "Google Business Profile upkeep",
       "reviewKit": "a review request kit",
       "seasonalRefresh": "a seasonal refresh",
       "quarterlyCall": "a 15-minute planning call every quarter",
-      "doneForYouEdits": "done-for-you edits"
+      "doneForYouEdits": "done-for-you edits",
+      "monthlySnapshotAction": "a monthly snapshot with one action",
+      "brokenLinkCopyFix": "broken link and outdated copy fixes",
+      "oneLineChangeLog": "a one-line monthly change log",
+      "monthlySpeedCheck": "a monthly speed check and fix",
+      "searchTuneUp": "a search tune-up for your top-view page",
+      "reviewWatch": "review watch with drafted replies"
     },
     "planStripTip": " + {tip} tip",
     "changeHeading": "Your monthly tip",

@@ -36,7 +36,7 @@ export const ADMIN_STATUS_LABEL: Record<string, string> = {
 
 export const ADMIN_BILLING_LABEL: Record<string, string> = {
   included: 'Included (a use is left)',
-  paid_addon: 'No edits left (edit pack $5)',
+  paid_addon: 'No edits left this billing period',
   quote: 'Maintenance quote first',
   unknown: 'Unknown',
 }

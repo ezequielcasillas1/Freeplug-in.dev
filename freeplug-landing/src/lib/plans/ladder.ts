@@ -11,7 +11,7 @@ import { monthlyEditAllowance } from './edit-allowance'
  * Customer-facing wording (perk lines, step blurbs) lives in ./ladder-copy.ts (Sable / Wren).
  */
 
-export const PLAN_STEP_IDS = ['starter', 'priority', 'fast_lane', 'leads', 'get_found', 'growth'] as const
+export const PLAN_STEP_IDS = ['starter', 'priority', 'fast_lane', 'leads', 'get_found', 'growth', 'plug_authority'] as const
 export type PlanStepId = (typeof PLAN_STEP_IDS)[number]
 
 /** Perks a step can add. Launch versions only (Aria section 3); "later" perks are not listed. */
@@ -26,6 +26,12 @@ export type PlanPerk =
   | 'seasonalRefresh'
   | 'quarterlyCall'
   | 'doneForYouEdits'
+  | 'monthlySnapshotAction'
+  | 'brokenLinkCopyFix'
+  | 'oneLineChangeLog'
+  | 'monthlySpeedCheck'
+  | 'searchTuneUp'
+  | 'reviewWatch'
 
 export type PlanStep = {
   id: PlanStepId
@@ -41,7 +47,7 @@ export type PlanStep = {
    * to customers while `showAiEditQuota` is false (read it through customerAiEditsPerMonth()).
    */
   aiEditsPerMonth: number
-  /** 0 (Starter) .. 5 (Growth partner). Requests queue sorts by this, highest first. */
+  /** 0 (Starter) .. 6 (Plug Authority). Requests queue sorts by this, highest first. */
   rank: number
   /** Perks this step ADDS on top of the steps below it. */
   adds: readonly PlanPerk[]
@@ -83,7 +89,21 @@ export const PLAN_STEPS: readonly PlanStep[] = [
   { id: 'leads', name: 'Leads', monthlyCents: 7500, lookupKey: lookupKeyFor('leads'), productId: productIdFor('leads'), aiEditsPerMonth: 40, rank: 3, adds: ['leadsReport', 'quoteAlerts'], sellable: false },
   { id: 'get_found', name: 'Get found', monthlyCents: 8500, lookupKey: lookupKeyFor('get_found'), productId: productIdFor('get_found'), aiEditsPerMonth: 40, rank: 4, adds: ['gbpManaged', 'reviewKit'], sellable: false },
   { id: 'growth', name: 'Growth partner', monthlyCents: 10000, lookupKey: lookupKeyFor('growth'), productId: productIdFor('growth'), aiEditsPerMonth: 40, rank: 5, adds: ['seasonalRefresh', 'quarterlyCall', 'doneForYouEdits'], sellable: false },
+  {
+    id: 'plug_authority',
+    name: 'Plug Authority',
+    monthlyCents: 19900,
+    lookupKey: lookupKeyFor('plug_authority'),
+    productId: productIdFor('plug_authority'),
+    aiEditsPerMonth: 40,
+    rank: 6,
+    adds: ['monthlySnapshotAction', 'brokenLinkCopyFix', 'oneLineChangeLog', 'monthlySpeedCheck', 'searchTuneUp', 'reviewWatch'],
+    sellable: false,
+  },
 ] as const
+
+/** Steps with Stripe products in test setup; preview-only steps (no Stripe price yet) stay out. */
+export const PLAN_STEPS_WITH_STRIPE = PLAN_STEPS.filter((s) => s.id !== 'plug_authority')
 
 // ------------------------------------------------------------------ the tipping system (Oct 3)
 
@@ -116,6 +136,7 @@ export const TIP_TOTAL_RANGES: Record<PlanStepId, { minDollars: number; maxDolla
   leads: { minDollars: 75, maxDollars: 84 },
   get_found: { minDollars: 85, maxDollars: 99 },
   growth: { minDollars: 100, maxDollars: 120 },
+  plug_authority: { minDollars: 199, maxDollars: 220 },
 }
 
 /**
