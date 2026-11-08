@@ -10,9 +10,11 @@ describe('20261003180000_plan_steps.sql matches ladder.ts', () => {
   const sql = readFileSync(MIGRATION, 'utf8')
   const lists = [...sql.matchAll(/plan_step in \(([^)]*)\)/g)].map((m) => m[1].split(',').map((s) => s.trim().replace(/'/g, '')))
 
-  it('both CHECK constraints list exactly the six step ids, in order', () => {
+  it('both CHECK constraints list the six step ids frozen at migration time (superseded by 20261108180000)', () => {
+    const frozen = ['starter', 'priority', 'fast_lane', 'leads', 'get_found', 'growth']
     expect(lists).toHaveLength(2)
-    for (const l of lists) expect(l).toEqual([...PLAN_STEP_IDS])
+    for (const l of lists) expect(l).toEqual(frozen)
+    expect(PLAN_STEP_IDS).toContain('plug_authority')
   })
 
   it('every function is revoked from PUBLIC, anon, authenticated and service_role (no default EXECUTE)', () => {

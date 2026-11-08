@@ -12,6 +12,7 @@ export const PLAN_EDITS: Record<PlanStepId, number | 'unlimited'> = {
   leads: 12,
   get_found: 15,
   growth: 20,
+  plug_authority: 25,
 }
 
 /** Retired: edit packs are not sold; kept for allowance math only (always 0). */
@@ -22,6 +23,7 @@ export const EDIT_PACK_EDITS: Record<PlanStepId, number> = {
   leads: 0,
   get_found: 0,
   growth: 0,
+  plug_authority: 0,
 }
 
 export const EDIT_PACK_CENTS = 500

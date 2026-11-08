@@ -41,7 +41,7 @@ const sellable = PLAN_STEPS.filter((s) => s.sellable)
 const soon = PLAN_STEPS.filter((s) => !s.sellable)
 
 describe('HostingCheckoutCard rows (Lina §0)', () => {
-  it('six steps from ladder.ts: name and price apart, perks once, no blurbs, no Most popular, no old amount slider or add-ons', () => {
+  it('seven steps from ladder.ts: name and price apart, perks once, no blurbs, no Most popular, no old amount slider or add-ons', () => {
     const { container } = render(<HostingCheckoutCard />)
     for (const [i, s] of PLAN_STEPS.entries()) {
       const r = row(container, s.id)
@@ -127,7 +127,7 @@ describe('round 5 (Lina): radio accent and Coming soon contrast', () => {
   it('Coming soon rows: all text gray-600 or darker (no gray-300/400/500, no opacity)', () => {
     const { container } = render(<HostingCheckoutCard />)
     const soon = container.querySelectorAll('[data-sellable=false]')
-    expect(soon.length).toBe(3)
+    expect(soon.length).toBe(4)
     for (const row of soon) {
       for (const el of [row, ...row.querySelectorAll('*')]) {
         const cls = el.getAttribute('class') ?? ''

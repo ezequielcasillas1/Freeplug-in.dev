@@ -586,7 +586,14 @@
       "fast_lane": "Todo lo de Priority, más cambios pequeños incluidos hechos por nosotros en cada periodo de facturación.",
       "leads": "Todo lo de Fast lane, más un reporte mensual y alertas de cotización.",
       "get_found": "Todo lo de Leads, más el cuidado de tu perfil de Google Business.",
-      "growth": "Todo lo de Get found, más una actualización de temporada y una llamada cada trimestre."
+      "growth": "Todo lo de Get found, más una actualización de temporada y una llamada cada trimestre.",
+      "plug_authority": "Todo lo de Growth partner, más cuidado mensual pensado para atraer y para tu marketing."
+    },
+    "stepTaglines": {
+      "plug_authority": "La mayor prioridad en soporte. El sitio web más cuidado."
+    },
+    "stepDescriptions": {
+      "plug_authority": "Para el negocio serio que busca atraer: por su viabilidad, su autenticidad, su fundamento en investigación y cómo conduce la investigación, su capacidad de influir en otros y su marketing."
     },
     "perkLines": {
       "priorityQueue": "Cuando nos pides un cambio, vas antes que los planes más bajos.",
@@ -597,7 +604,13 @@
       "reviewKit": "Un mensaje listo y un enlace que puedes enviar a tus clientes para pedirles reseñas.",
       "seasonalRefresh": "Cada temporada actualizamos tu sitio con tus fotos y ofertas nuevas.",
       "quarterlyCall": "Una llamada de planeación de 15 minutos con nosotros cada trimestre.",
-      "doneForYouEdits": "Dinos qué quieres cambiar y nosotros lo hacemos."
+      "doneForYouEdits": "Dinos qué quieres cambiar y nosotros lo hacemos.",
+      "monthlySnapshotAction": "Resumen mensual con una acción: visitas, página principal, búsquedas principales y el siguiente cambio que haremos.",
+      "brokenLinkCopyFix": "Enlaces rotos y textos desactualizados: cada mes buscamos enlaces muertos, fechas, horarios o precios viejos y los corregimos.",
+      "oneLineChangeLog": "Registro de cambios en una línea: una frase cada mes sobre qué cambió y por qué.",
+      "monthlySpeedCheck": "Revisión de velocidad: puntuación mensual y arreglamos el mayor cuello de botella.",
+      "searchTuneUp": "Ajuste de búsqueda: la página con más vistas desde buscadores pero pocos clics recibe título y descripción nuevos.",
+      "reviewWatch": "Vigilancia de reseñas: redactamos respuesta para reseñas nuevas en Google; en 3 estrellas o menos esperamos tu visto bueno."
     },
     "smallEditsNextBusinessDay": "Cambios pequeños: en un plazo de 5 días hábiles. Los planes superiores suelen ir más rápido.",
     "starterBaseLines": {
@@ -692,6 +705,7 @@
       "leads": "Leads",
       "getFound": "Get found",
       "growthPartner": "Growth partner",
+      "plugAuthority": "Plug Authority",
       "basic": "Basic",
       "plus": "Plus",
       "pro": "Pro"
@@ -702,7 +716,8 @@
       "fastLane": "Incluye un cambio pequeño al mes, hecho por nosotros",
       "leads": "Reporte mensual de visitas y avisos de cotización",
       "getFound": "Mantenemos al día tu perfil de Google Business",
-      "growthPartner": "Actualización de temporada y llamada trimestral"
+      "growthPartner": "Actualización de temporada y llamada trimestral",
+      "plugAuthority": "Máxima prioridad en soporte y cuidado mensual para atraer"
     },
     "perMonth": "/mes"
   },
@@ -1365,7 +1380,7 @@
       "rows": {
         "freeplug": {
           "upfront": "$0",
-          "monthly": "$35–$65/mes",
+          "monthly": "$35–$199/mes",
           "counts": "Sí, cada dólar cuenta para la compra",
           "own": "Desde $250 (20% de descuento si el dominio ya es tuyo)"
         },
@@ -1604,7 +1619,13 @@
       "reviewKit": "un kit para pedir reseñas",
       "seasonalRefresh": "una actualización de temporada",
       "quarterlyCall": "una llamada de planeación de 15 minutos cada trimestre",
-      "doneForYouEdits": "cambios hechos por nosotros"
+      "doneForYouEdits": "cambios hechos por nosotros",
+      "monthlySnapshotAction": "un resumen mensual con una acción",
+      "brokenLinkCopyFix": "corrección de enlaces rotos y textos desactualizados",
+      "oneLineChangeLog": "un registro mensual de cambios en una línea",
+      "monthlySpeedCheck": "una revisión mensual de velocidad y su arreglo",
+      "searchTuneUp": "un ajuste de búsqueda para tu página más vista",
+      "reviewWatch": "vigilancia de reseñas con borradores de respuesta"
     },
     "planStripTip": " + {tip} de propina",
     "changeHeading": "Tu propina mensual",
