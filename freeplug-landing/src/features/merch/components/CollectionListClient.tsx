@@ -46,7 +46,7 @@ export function CollectionListClient({
               {products.map((p) => {
                 const title = t(`products.${p.titleKey}`)
                 return (
-                  <motion.li key={p.slug} variants={fadeInUp} className="min-w-0">
+                  <li key={p.slug} className="min-w-0">
                     <Link
                       href={publicHref(`/merch/${collection}/${p.slug}`, locale)}
                       className="block rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-[#ba3d3d]/40 transition-colors min-h-[44px]"
@@ -68,7 +68,7 @@ export function CollectionListClient({
                         </p>
                       </div>
                     </Link>
-                  </motion.li>
+                  </li>
                 )
               })}
             </ul>

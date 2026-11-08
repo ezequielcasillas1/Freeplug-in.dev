@@ -69,6 +69,14 @@ export function listMerchCollections(): MerchCollectionSlug[] {
   return [...MERCH_COLLECTIONS]
 }
 
+/** Unprefixed public paths for smoke tests (EN default locale). */
+export function listMerchCollectionPublicPaths(): string[] {
+  return MERCH_COLLECTIONS.flatMap((collection) => [
+    `/merch/${collection}`,
+    ...listProductsByCollection(collection).map((p) => `/merch/${collection}/${p.slug}`),
+  ])
+}
+
 export function listCatalogProducts(): MerchCatalogEntry[] {
   return catalog
 }

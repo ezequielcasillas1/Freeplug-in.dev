@@ -71,7 +71,9 @@ export function publicHref(href: string, locale: 'en' | 'es'): string {
   const path = m?.[1] || '/'
   const rest = m?.[2] ?? ''
   const localized =
-    (LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path) || isMerchTshirtsPublicPath(path)
+    (LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path) ||
+    isMerchTshirtsPublicPath(path) ||
+    isMerchCollectionPublicPath(path)
   if (!localized) return href
   return localizedPath(path, locale) + rest
 }

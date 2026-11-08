@@ -48,14 +48,18 @@ export function MerchSecondaryNav() {
     const el = listRef.current
     if (!el) return
     updateScrollHint()
+    const t1 = window.setTimeout(updateScrollHint, 400)
+    const t2 = window.setTimeout(updateScrollHint, 1200)
     el.addEventListener('scroll', updateScrollHint, { passive: true })
     const ro = new ResizeObserver(updateScrollHint)
     ro.observe(el)
     return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
       el.removeEventListener('scroll', updateScrollHint)
       ro.disconnect()
     }
-  }, [updateScrollHint])
+  }, [updateScrollHint, pathname])
 
   return (
     <nav
@@ -66,7 +70,7 @@ export function MerchSecondaryNav() {
         <div className="relative min-w-0">
           <ul
             ref={listRef}
-            className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain py-2 pl-0.5 pr-12 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5"
+            className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain py-2 pl-0.5 pr-14 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 max-lg:scroll-smooth"
           >
             {[...FONT_TABS, ...COLLECTION_TABS].map((tab) => {
               const href = publicHref(`/merch/${tab.slug}`, locale)
@@ -92,10 +96,11 @@ export function MerchSecondaryNav() {
           </ul>
           {scrollHint ? (
             <div
-              className="pointer-events-none absolute inset-y-0 right-0 flex w-14 items-center justify-end bg-gradient-to-l from-white from-30% via-white/90 to-transparent pr-0.5 lg:hidden"
+              className="pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-end gap-0.5 bg-gradient-to-l from-white from-20% via-white/95 to-transparent pr-1 max-lg:flex lg:hidden"
               aria-hidden
             >
-              <ChevronRight className="h-5 w-5 text-gray-400" strokeWidth={2} />
+              <span className="text-[10px] font-medium text-gray-400 hidden min-[360px]:inline">More</span>
+              <ChevronRight className="h-5 w-5 text-[#ba3d3d]/70" strokeWidth={2.5} />
             </div>
           ) : null}
         </div>
