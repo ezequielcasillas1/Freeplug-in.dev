@@ -1,6 +1,4 @@
 import { formatAmount, formatAmountCents } from '@/lib/format/keep-together'
-import { EDITS_COPY_ES, needMoreEditsLine } from './edits-copy'
-import { editPackFor } from './edit-allowance'
 import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY } from '../site'
 import { ADDON_STEP_LIMITS, PLAN_STEPS, addonById, customerAiEditsPerMonth, showAiEditQuota, stepById, type AddonId, type PlanPerk, type PlanStep, type PlanStepId } from './ladder'
 import { DEFAULT_LOCALE, isAppLocale, type AppLocale } from '@/i18n/config'
@@ -235,8 +233,7 @@ function build(t: Translate, locale: AppLocale) {
      * total defaults to the full price (the most it can charge); pass the prorated total when known.
      */
     /** Oct 18 (Cheke): replaces the old Starter "+1 small edit" add-on line (edit pack, edits-copy.ts). */
-    starterSmallEditAddonLine: (): string =>
-      locale === 'es' ? (editPackFor('starter') > 0 ? EDITS_COPY_ES.needMoreEdits(editPackFor('starter')) : '') : (needMoreEditsLine('starter') ?? ''),
+    starterSmallEditAddonLine: (): string => '',
     addonPriceLine: (cents: number) => t('common.amountPerMonth', { amount: dollars(cents) }),
     addonTipDropQuestion: (tipDollars: number, name: string) => t('addons.tipDropQuestionCheckout', { tip: wholeDollars(tipDollars), name }),
     ADDON_TURN_ON: t('addons.turnOn'),

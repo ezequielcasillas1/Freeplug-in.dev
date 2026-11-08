@@ -17,7 +17,8 @@ describe('old "+1 small edit" / "Big change" UI is gone (Oct 18)', () => {
     expect(container.querySelector('[data-testid="addon-bigger-note"]')).toBeNull()
     expect(screen.queryByText(/Big change/)).toBeNull()
     expect(screen.queryByText(/\+1 small edit/)).toBeNull()
-    expect(screen.getByText('2 edits a month: small changes like hours, a photo swap or a price change.')).toBeTruthy()
+    expect(screen.getAllByText(/2 edits a month: small changes like hours/).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/edit pack/i)).toBeNull()
     expect(screen.getByText('New pages or features are quoted as one-time maintenance.')).toBeTruthy()
   })
   it('admin row has no "Mark as big change" button and the copy exports are removed', () => {

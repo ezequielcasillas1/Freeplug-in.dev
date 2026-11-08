@@ -265,7 +265,7 @@ describe.skipIf(!existsSync(LOCKED_FILE))('buyout copy matches the locked file w
   })
   it('Oct 19 (Cheke): the price covers the website files only (reverses the old "no website files" rule)', () => {
     expect(BUYOUT_FAQ_ANSWER).toContain(BUYOUT_TIERS_FILES_ONLY) // Sable: FAQ matches the card exactly
-    expect(BUYOUT_FAQ_ANSWER).toContain('$500')
+    expect(BUYOUT_FAQ_ANSWER).toContain('$250')
     expect(BUYOUT_FAQ_ANSWER).toContain('$2,000')
   })
 })

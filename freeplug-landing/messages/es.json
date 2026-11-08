@@ -535,19 +535,19 @@
         "gotWellEmailAfter": "Listo. Te escribiremos a {email} después de revisar tu solicitud."
       },
       "chatNotFound": "¿No encontraste tu respuesta? Escribe a support@freeplug-in.dev. Nuestro equipo está disponible {supportHours}.",
-      "starterSmallEditAddon": "Los cambios pequeños cuestan {price} con el complemento {addonName}. Actívalo y nos encargamos este mes. Puedes desactivarlo cuando quieras.",
+      "starterSmallEditAddon": "Si usas todas las ediciones incluidas este mes, espera al próximo periodo de facturación o solicita un mantenimiento único para cambios pequeños extra.",
       "starterSmallEditAiBuilder": "O haz el cambio tú mismo con el creador de sitios con IA, sin costo extra.",
       "goToPlans": "Ir a Planes"
     },
     "answers": {
       "whatDoIPay": "El hosting es obligatorio. Mantiene tu sitio web en línea. Los planes cuestan {priceList} al mes, y cada plan incluye todo lo de los anteriores. El mantenimiento empieza en $50 y llega hasta $100. Verás el precio exacto antes de pagar. Hacer el sitio web es gratis.",
       "hostingPlans": "Los planes de hosting cuestan {priceList} al mes. Cada plan incluye todo lo de los anteriores. Ve a Planes en tu panel para ver qué agrega cada plan. ¿Ya tienes un complemento? Lo conservas al mismo precio.",
-      "requestChanges": "Sí. {name} ({price}) y los planes más altos incluyen un cambio pequeño en cada periodo de facturación. Para otros cambios, pide mantenimiento desde tu panel. El mantenimiento empieza en $50 y llega hasta $100. Verás el precio exacto antes de pagar.",
+      "requestChanges": "Sí. Cada plan de hosting incluye un número de cambios pequeños en cada periodo de facturación (consulta Planes para tu nivel). Para otros cambios, pide mantenimiento desde tu panel. El mantenimiento empieza en $50 y llega hasta $100. Verás el precio exacto antes de pagar.",
       "hiddenFees": "No. Pagas el hosting mensual, que es obligatorio. El mantenimiento único o la compra del sitio cuestan aparte solo si los pides. Hacer tu sitio web es gratis y verás el precio antes de pagar.",
       "security": "Cada sitio incluye un certificado SSL, así que carga con una conexión https segura.",
       "plansGuideTitleLine": "Planes: elige un plan de hosting o pide mantenimiento",
       "plansGuideDescription": "Compara los planes de hosting para tu negocio",
-      "chatIncludedEditNote": "Tu plan incluye un cambio pequeño en cada periodo de facturación.",
+      "chatIncludedEditNote": "Tu plan incluye cambios pequeños en cada periodo de facturación.",
       "paymentMethod": "Ve a tu panel y abre Administrar facturación. Después de tu primer pago, ahí puedes administrar tu facturación y tu método de pago. Si tienes un cambio de plan planeado, Administrar facturación abre la sección Facturación en tu página de Planes, donde puedes actualizar tu tarjeta y ver tus facturas."
     },
     "priority": {
@@ -579,18 +579,18 @@
       "submitWebsiteRequestFirst": "Primero envía una solicitud de sitio web",
       "hostingCheckoutOpensAfterSubmit": "El pago del hosting se habilita después de que envíes una solicitud de sitio web desde tu panel."
     },
-    "nextBusinessDayTarget": "a más tardar al final del siguiente día hábil (lun–vie, sin contar días festivos)",
+    "nextBusinessDayTarget": "en un plazo de 5 días hábiles (los planes superiores suelen ir más rápido)",
     "stepBlurbs": {
       "starter": "Tu sitio web, alojado y protegido.",
       "priority": "Todo lo de Starter. Tus solicitudes de cambio van antes que las de planes más bajos.",
-      "fast_lane": "Todo lo de Priority, más un cambio pequeño hecho por nosotros en cada periodo de facturación.",
+      "fast_lane": "Todo lo de Priority, más cambios pequeños incluidos hechos por nosotros en cada periodo de facturación.",
       "leads": "Todo lo de Fast lane, más un reporte mensual y alertas de cotización.",
       "get_found": "Todo lo de Leads, más el cuidado de tu perfil de Google Business.",
       "growth": "Todo lo de Get found, más una actualización de temporada y una llamada cada trimestre."
     },
     "perkLines": {
       "priorityQueue": "Cuando nos pides un cambio, vas antes que los planes más bajos.",
-      "includedSmallEdit": "Un cambio pequeño hecho por nosotros en cada periodo de facturación, como nuevo horario, cambiar una foto o un precio. Los cambios que no uses no se acumulan.",
+      "includedSmallEdit": "Cambios pequeños hechos por nosotros en cada periodo de facturación, como nuevo horario, cambiar una foto o un precio. Las ediciones que no uses no pasan al mes siguiente.",
       "leadsReport": "Un correo mensual con cuántas personas visitaron tu sitio, llenaron tu formulario y tocaron tu botón de llamada.",
       "quoteAlerts": "Un correo en cuanto alguien pide una cotización.",
       "gbpManaged": "Mantenemos al día tu perfil de Google Business (horario, fotos) y publicamos en él por ti.",
@@ -599,7 +599,7 @@
       "quarterlyCall": "Una llamada de planeación de 15 minutos con nosotros cada trimestre.",
       "doneForYouEdits": "Dinos qué quieres cambiar y nosotros lo hacemos."
     },
-    "smallEditsNextBusinessDay": "Cambios pequeños: a más tardar al final del siguiente día hábil (lun–vie, sin contar días festivos).",
+    "smallEditsNextBusinessDay": "Cambios pequeños: en un plazo de 5 días hábiles. Los planes superiores suelen ir más rápido.",
     "starterBaseLines": {
       "hostingSslSecureHttps": "Hosting y SSL (una conexión https segura)",
       "emailSupportDuringSupport": "Soporte por correo en el horario de atención"
@@ -1244,17 +1244,21 @@
         "heading": "Compra tus páginas, <span>quédate con tus archivos</span>",
         "intro": "¿Prefieres que el sitio sea tuyo? Compra los archivos de tu sitio web con un pago único, según cuántas páginas tenga. Cada dólar que ya pagaste cuenta para la compra.",
         "tier": {
-          "quick": "Hasta 5 páginas",
+          "p1": "1 página",
+          "p2": "2 páginas",
+          "p3": "3 páginas",
+          "p4": "4 páginas",
+          "p5": "5 páginas",
           "up_to_7": "De 6 a 7 páginas",
           "up_to_11": "De 8 a 11 páginas",
           "up_to_15": "De 12 a 15 páginas",
-          "up_to_20": "De 16 a 20 páginas",
-          "custom": "Empresarial a medida: de 21 a 35 páginas"
+          "up_to_25": "De 16 a 25 páginas",
+          "custom": "26+ páginas"
         },
         "oneTime": "pago único",
         "customPrice": "Cotización a medida",
         "customScope": "según tu proyecto",
-        "customLine": "¿De 21 a 35 páginas? Te damos una cotización. Cada dólar que ya pagaste cuenta para tu cotización, y el 20% de descuento por dominio propio también aplica.",
+        "customLine": "¿26+ páginas? Te damos una cotización. Cada dólar que ya pagaste cuenta para tu cotización, y el 20% de descuento por dominio propio también aplica.",
         "note": "La compra incluye solo los archivos de tu sitio web.",
         "compareLink": "Compara Freeplug con otras opciones"
       },
@@ -1363,7 +1367,7 @@
           "upfront": "$0",
           "monthly": "$35–$65/mes",
           "counts": "Sí, cada dólar cuenta para la compra",
-          "own": "Desde $500 (20% de descuento si el dominio ya es tuyo)"
+          "own": "Desde $250 (20% de descuento si el dominio ya es tuyo)"
         },
         "rwMedia": {
           "monthly": "$299–$999/mes",
@@ -1430,7 +1434,7 @@
     "cancelHeading": "Quédate con tu sitio web",
     "cancelBody": "¿Prefieres quedarte con tu sitio web en lugar de alojarlo con nosotros? Puedes comprar los archivos del sitio con un pago único según cuántas páginas tenga. Cada dólar que ya pagaste cuenta para la compra.",
     "faqQuestion": "¿Puedo quedarme con mi sitio web si dejo el hosting de Freeplug?",
-    "faqAnswer": "Sí. Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tenga tu sitio: hasta 5 páginas $500, de 6 a 7 páginas $700, de 8 a 11 páginas $950, de 12 a 15 páginas $1,200 y de 16 a 20 páginas $2,000. ¿De 21 a 35 páginas? Te damos una cotización. Cada dólar que ya nos pagaste cuenta para la compra. La compra incluye solo los archivos de tu sitio web. Tu dominio queda registrado a nombre de Freeplug hasta que completes la compra; después, puedes pasarlo a tu nombre o dejarlo con Freeplug. Si compraste tu propio dominio a tu nombre, recibes un 20% de descuento en la compra. Ambos aplican también a las cotizaciones a medida.",
+    "faqAnswer": "Sí. Puedes comprar los archivos de tu sitio web con un pago único según cuántas páginas tenga tu sitio: 1 página $250, 2 páginas $300, 3 páginas $350, 4 páginas $400, 5 páginas $450, de 6 a 7 páginas $700, de 8 a 11 páginas $950, de 12 a 15 páginas $1,200 y de 16 a 25 páginas $2,000. ¿26+ páginas? Te damos una cotización. Cada dólar que ya nos pagaste cuenta para la compra. La compra incluye solo los archivos de tu sitio web. Tu dominio queda registrado a nombre de Freeplug hasta que completes la compra; después, puedes pasarlo a tu nombre o dejarlo con Freeplug. Si compraste tu propio dominio a tu nombre, recibes un 20% de descuento en la compra. Ambos aplican también a las cotizaciones a medida.",
     "requestRecordName": "Compra del sitio web"
   },
   "common": {
@@ -1593,7 +1597,7 @@
     "nudgePerk": {
       "priorityQueue": "un lugar antes que los planes más bajos cuando pides cambios",
       "includedSmallEdit": "un cambio pequeño hecho por nosotros en cada periodo de facturación",
-      "nextBusinessDayEdits": "cambios pequeños a más tardar al final del siguiente día hábil (lun–vie, sin contar días festivos)",
+      "nextBusinessDayEdits": "cambios pequeños en un plazo de 5 días hábiles (los planes superiores suelen ir más rápido)",
       "leadsReport": "un reporte mensual de visitas, solicitudes del formulario y toques al botón de llamada",
       "quoteAlerts": "un correo en cuanto alguien pide una cotización",
       "gbpManaged": "el cuidado de tu perfil de Google Business",

@@ -47,7 +47,7 @@ describe('consultation checklist', () => {
 
   it('shows the buyout tier live from the page count, with 20% off for an own domain', () => {
     expect(buyoutPreview(undefined, 'freeplug')).toBeNull()
-    expect(buyoutPreview(5, 'freeplug')).toMatchObject({ totalCents: 50_000, discountCents: 0 })
+    expect(buyoutPreview(5, 'freeplug')).toMatchObject({ totalCents: 45_000, discountCents: 0 })
     expect(buyoutPreview(6, 'freeplug')?.tier.id).toBe('up_to_7')
     expect(buyoutPreview(11, 'own')).toMatchObject({ baseCents: 95_000, discountCents: 19_000, totalCents: 76_000 })
     expect(buyoutPreview(16, 'own')?.line).toMatch(/\$1,600 with your own domain \(20% off\)/)
@@ -71,25 +71,23 @@ describe('consultation checklist', () => {
   })
 })
 
-describe('buyoutPreview page edges (Oct 30, 7:18 PM CT)', () => {
-  it('20 pages is $2,000; 21 and 35 are Custom enterprise (quoted); 36+ has no tier yet and returns null without throwing', () => {
-    expect(buyoutPreview(20, 'freeplug')?.baseCents).toBe(200000)
-    for (const n of [21, 35]) {
+describe('buyoutPreview page edges (Nov 2026)', () => {
+  it('25 pages is $2,000; 26+ is custom (quoted)', () => {
+    expect(buyoutPreview(25, 'freeplug')?.baseCents).toBe(200000)
+    for (const n of [26, 35, 200]) {
       const p = buyoutPreview(n, 'own')!
       expect(p.tier.id).toBe('custom')
       expect(p.baseCents).toBeNull()
       expect(p.line).toMatch(/quote it for you.*20% own-domain discount applies too/)
     }
-    expect(buyoutPreview(36, 'own')).toBeNull()
-    expect(buyoutPreview(200, 'freeplug')).toBeNull()
   })
 })
 
-describe('pageCountLine (36+ has no tier, Oct 30 7:33 PM CT)', () => {
-  it('says we build up to 35 pages for 36+, in EN and ES', () => {
-    expect(pageCountLine(36, buyoutPreview(36, 'own'), 'en')).toBe('We build up to 35 pages right now.')
+describe('pageCountLine (build cap vs buyout custom)', () => {
+  it('shows the build cap line above 35 pages; 26+ buyout is custom when previewed', () => {
+    expect(pageCountLine(36, null, 'en')).toBe('We build up to 35 pages right now.')
     expect(pageCountLine(200, null, 'es')).toBe('Por ahora construimos hasta 35 páginas.')
-    expect(pageCountLine(35, buyoutPreview(35, 'own'))).toMatch(/quote it for you/)
+    expect(pageCountLine(30, buyoutPreview(30, 'own'))).toMatch(/quote it for you/)
     expect(pageCountLine(undefined, null)).toBe('Enter a page count to see your buyout tier.')
   })
 })

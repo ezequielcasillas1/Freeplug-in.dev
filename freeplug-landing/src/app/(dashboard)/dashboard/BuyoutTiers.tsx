@@ -23,7 +23,18 @@ import { BuyoutRequestButton } from './BuyoutRequestButton'
  */
 /** Spanish approved by Sable Oct 19 (catalog still draft until Cheke signs off). English comes from tiers.ts. */
 const ES = {
-  labels: { quick: 'Hasta 5 páginas', up_to_7: 'De 6 a 7 páginas', up_to_11: 'De 8 a 11 páginas', up_to_15: 'De 12 a 15 páginas', up_to_20: 'De 16 a 20 páginas', custom: 'Empresarial a medida: de 21 a 35 páginas' } as Record<BuyoutTierId, string>,
+  labels: {
+    p1: '1 página',
+    p2: '2 páginas',
+    p3: '3 páginas',
+    p4: '4 páginas',
+    p5: '5 páginas',
+    up_to_7: 'De 6 a 7 páginas',
+    up_to_11: 'De 8 a 11 páginas',
+    up_to_15: 'De 12 a 15 páginas',
+    up_to_25: 'De 16 a 25 páginas',
+    custom: '26+ páginas',
+  } as Record<BuyoutTierId, string>,
   heading: 'Precios de compra',
   pick: '¿Cuántas páginas tiene tu sitio web?',
   filesOnly: 'La compra incluye solo los archivos de tu sitio web.',

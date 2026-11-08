@@ -23,7 +23,7 @@ import type {
 import { TipSlider, tipTotalText } from './TipSlider'
 import { TipChangeBox } from './TipChangeBox'
 import { AddonsBlock, type ConfirmTotals } from './AddonsBlock'
-import { editsCopy, planEditExplanation, editPackLine } from '@/lib/plans/edits-copy'
+import { editsCopy, planEditExplanation } from '@/lib/plans/edits-copy'
 import { PLAN_STEPS, type AddonId, type PlanStep, type PlanStepId } from '@/lib/plans/ladder'
 import { addonConfigCents } from '@/lib/plans/addons'
 import { tipRangeFor } from '@/lib/plans/tips'
@@ -481,13 +481,8 @@ export function HostingCheckoutCard({
           ))}
         </ul>
         {planEditExplanation(step.id, ladder.LOCALE) ? (
-          <span className="mt-2 block text-xs text-gray-500" data-testid="plan-edit-explanation">
+          <span className={cn('mt-2 block text-xs', muted ? 'text-gray-600' : 'text-gray-500')} data-testid="plan-edit-explanation">
             {planEditExplanation(step.id, ladder.LOCALE)}
-          </span>
-        ) : null}
-        {planEditExplanation(step.id, ladder.LOCALE) && editPackLine(step.id, ladder.LOCALE) ? (
-          <span className="mt-1 block text-xs text-gray-500" data-testid="plan-edit-pack">
-            {editPackLine(step.id, ladder.LOCALE)}
           </span>
         ) : null}
       </>
