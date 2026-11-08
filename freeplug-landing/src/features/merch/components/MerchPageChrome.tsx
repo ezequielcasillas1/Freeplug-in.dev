@@ -11,8 +11,11 @@ export function MerchPageChrome({ children, showSubNav = true }: Props) {
   return (
     <>
       <Navigation />
-      {showSubNav ? <MerchSecondaryNav /> : null}
-      {children}
+      {/* Offset fixed site nav (h-16 / sm:h-20) so merch sub-nav and titles are not covered on load */}
+      <div className="min-w-0 overflow-x-clip pt-16 sm:pt-20">
+        {showSubNav ? <MerchSecondaryNav /> : null}
+        {children}
+      </div>
       <Footer />
     </>
   )

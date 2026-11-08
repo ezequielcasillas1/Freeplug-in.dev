@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { PLAN_STEPS, type PlanStepId } from '@/lib/plans/ladder'
-import { BUYOUT_CUSTOM_MAX_PAGES, buyoutTierForPages, formatTierPrice, type BuyoutTier } from './tiers'
+import { WEBSITE_BUILD_MAX_PAGES, buyoutTierForPages, formatTierPrice, type BuyoutTier } from './tiers'
 
 /**
  * The consultation checklist (Aria's card, Oct 22 2026). ONE shape for both paths: the client fills
@@ -220,7 +220,7 @@ export const PAGE_COUNT_EMPTY_LINE = { en: 'Enter a page count to see your buyou
 
 export function pageCountLine(pageCount: number | undefined, preview: BuyoutPreview | null, lang: 'en' | 'es' = 'en'): string {
   if (preview) return preview.line
-  if (pageCount != null && pageCount > BUYOUT_CUSTOM_MAX_PAGES) return PAGE_COUNT_OVER_MAX_LINE[lang]
+  if (pageCount != null && pageCount > WEBSITE_BUILD_MAX_PAGES) return PAGE_COUNT_OVER_MAX_LINE[lang]
   return PAGE_COUNT_EMPTY_LINE[lang]
 }
 

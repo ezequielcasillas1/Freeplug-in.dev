@@ -8,12 +8,14 @@ export const FONT_BUNDLE_PRICE_CENTS = 4999
 
 export const FONT_BUNDLE_CURRENCY = 'usd' as const
 
-/** Twelve styles across three families × light / regular / bold. */
+/** Twelve styles in the paid bundle (3 + 6 + 3 families). */
 export const FONT_BUNDLE_STYLES = [
-  'FP Extended — Light, Regular, Bold',
-  'Freeplug Dispatch — Light, Regular, Bold',
+  'FP Extended — Light, Regular, Bold, Black, Outline, Italic',
+  'Freeplug Dispatch — Regular, Bold, Condensed Headline',
   'FP Cursive — Light, Regular, Bold (v2, matches the Fp logo)',
 ] as const
+
+export const FONT_BUNDLE_STYLE_COUNT = 12 as const
 
 export const FONT_BUNDLE_USE_CASES = [
   'Script and cursive logo marks',

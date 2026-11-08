@@ -48,9 +48,9 @@ export default function MerchSuccessPage() {
 
   return (
     <MerchPageChrome>
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-8">
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('heading')}</h1>
+      <main className="min-h-screen min-w-0 bg-gradient-to-b from-white to-zinc-50 pt-6 sm:pt-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-16 min-w-0 break-words">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{t('heading')}</h1>
           {loading ? <p className="text-gray-600">{t('loading')}</p> : null}
           {!sessionId ? <p className="text-gray-600">{t('missingSession')}</p> : null}
           {data?.error ? <p className="text-red-700" role="alert">{data.error}</p> : null}

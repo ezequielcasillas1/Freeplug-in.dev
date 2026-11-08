@@ -77,11 +77,11 @@ describe('BuyoutRequestButton', () => {
 })
 
 describe('Buyout tiers on the card (Oct 19)', () => {
-  it('lists all six tiers up front with their prices (26+ is a custom quote)', () => {
+  it('lists all buyout tiers up front with their prices (26+ is a custom quote)', () => {
     render(<BuyoutCard variant="cancel" alreadyRequested={false} onRequest={vi.fn()} />)
     const radios = screen.getAllByRole('radio')
-    expect(radios).toHaveLength(6)
-    for (const p of ['$500', '$700', '$950', '$1,200', '$2,000', 'Custom quote']) expect(screen.getByText(p)).toBeInTheDocument()
+    expect(radios).toHaveLength(10)
+    for (const p of ['$250', '$300', '$350', '$400', '$450', '$700', '$950', '$1,200', '$2,000', 'Custom quote']) expect(screen.getByText(p)).toBeInTheDocument()
     expect(screen.getByText(/The buyout covers your website files only/)).toBeInTheDocument()
   })
   it('passes the picked tier to the request, and shows what is left after paid amounts', async () => {

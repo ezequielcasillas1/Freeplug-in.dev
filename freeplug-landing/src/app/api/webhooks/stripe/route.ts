@@ -127,7 +127,7 @@ export async function POST(request: Request) {
         if (merch === 'handled') break
       } catch (e) {
         console.error('[webhook] merch checkout', e instanceof Error ? e.message : e)
-        return NextResponse.json({ error: 'Merch token not saved' }, { status: 500 })
+        return NextResponse.json({ error: 'Merch fulfillment not saved' }, { status: 500 })
       }
       const supabaseUserId = session.metadata?.supabase_user_id
       const customerId = getCustomerId(session.customer)

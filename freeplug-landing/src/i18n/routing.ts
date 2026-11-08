@@ -34,10 +34,15 @@ export function stripLocalePrefix(pathname: string): { locale: 'en' | 'es' | nul
 }
 
 /** True when the proxy should hand this path to next-intl (rewrite '/x' -> '/en/x', '/es/x' as is). */
+function isMerchTshirtsPublicPath(path: string): boolean {
+  return path === '/merch/t-shirts' || path.startsWith('/merch/t-shirts/')
+}
+
 export function isLocalizedPublicPath(pathname: string): boolean {
   const { locale, path } = stripLocalePrefix(pathname)
   if (locale === 'es' && !enabledLocales().includes('es')) return false
-  return (LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path)
+  if ((LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path)) return true
+  return isMerchTshirtsPublicPath(path)
 }
 
 /** The same page in another locale: ('/es/faq', 'en') -> '/faq'; ('/faq', 'es') -> '/es/faq'. */
@@ -56,7 +61,9 @@ export function publicHref(href: string, locale: 'en' | 'es'): string {
   const m = /^([^?#]*)([?#].*)?$/.exec(href)
   const path = m?.[1] || '/'
   const rest = m?.[2] ?? ''
-  if (!(LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path)) return href
+  const localized =
+    (LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path) || isMerchTshirtsPublicPath(path)
+  if (!localized) return href
   return localizedPath(path, locale) + rest
 }
 

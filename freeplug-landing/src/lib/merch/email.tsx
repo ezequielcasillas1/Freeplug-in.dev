@@ -40,3 +40,34 @@ export function merchDownloadUrl(token: string): string {
   const base = appBaseUrl()
   return `${base}/api/merch/download?token=${encodeURIComponent(token)}`
 }
+
+export async function sendMerchShirtOrderEmail(opts: {
+  to: string
+  title: string
+  color: string
+  size: string
+  quantity: number
+}): Promise<{ sent: boolean }> {
+  const res = await sendMail({
+    to: opts.to,
+    subject: 'Your Freeplug t-shirt order',
+    react: (
+      <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, color: '#111' }}>
+        <p>Thanks for your order.</p>
+        <p>
+          <strong>{opts.title}</strong>
+          <br />
+          {opts.color} · {opts.size} · Qty {opts.quantity}
+        </p>
+        <p style={{ fontSize: 14, color: '#555' }}>
+          Printed to order in the USA. We will email tracking when your shirt ships (usually within 2–7 business days
+          after production).
+        </p>
+        <p style={{ fontSize: 14, color: '#555' }}>
+          Questions? Reply to this email or write support@freeplug-in.dev.
+        </p>
+      </div>
+    ),
+  })
+  return { sent: res.success }
+}

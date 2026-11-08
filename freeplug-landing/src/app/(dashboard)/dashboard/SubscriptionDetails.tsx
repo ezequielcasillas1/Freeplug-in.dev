@@ -4,7 +4,7 @@ import type { SubscriptionDetail } from './dashboard-actions'
 import { formatBillingDate } from '@/lib/stripe/subscription-dates'
 import { cumulativePerks } from '@/lib/plans/ladder'
 import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
-import { editsIncludedLine, needMoreEditsLine } from '@/lib/plans/edits-copy'
+import { editsIncludedLine } from '@/lib/plans/edits-copy'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { formatUsdIn } from '@/i18n/format'
@@ -163,11 +163,6 @@ export function SubscriptionDetails({ subscriptions, websiteAccess = null, outre
                       <p className="text-sm text-gray-700 mt-1" data-testid="edits-included">
                         {editsIncludedLine(sub.editsIncluded, locale)}
                       </p>
-                      {sub.editStepId && !sub.editsIncluded.unlimited && needMoreEditsLine(sub.editStepId, locale) ? (
-                        <p className="text-xs text-gray-500 mt-0.5" data-testid="edits-need-more">
-                          {needMoreEditsLine(sub.editStepId, locale)}
-                        </p>
-                      ) : null}
                     </div>
                   ) : null}
                   {sub.addonsEnding ? (

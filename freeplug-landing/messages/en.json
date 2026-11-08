@@ -535,19 +535,19 @@
         "gotWellEmailAfter": "Got it. We'll email you at {email} after we review your request."
       },
       "chatNotFound": "Didn't find your answer? Email support@freeplug-in.dev. Our team is available {supportHours}.",
-      "starterSmallEditAddon": "Small edits are {price} with the {addonName} add-on. Turn it on and we'll take care of it this month. You can turn it off anytime.",
+      "starterSmallEditAddon": "If you use all your included edits this month, wait for your next billing period or request one-time maintenance for extra small changes.",
       "starterSmallEditAiBuilder": "Or make the change yourself with the AI builder, at no extra cost.",
       "goToPlans": "Go to Plans"
     },
     "answers": {
       "whatDoIPay": "Hosting is required. It keeps your website online. Plans are {priceList} a month, and each plan includes everything in the ones before it. Maintenance starts at $50, up to $100. You'll see the exact price before you pay. Building the website is free.",
       "hostingPlans": "Hosting plans are {priceList} a month. Each plan includes everything in the ones before it. See Plans in your dashboard for what each plan adds. Already have an add-on? You keep it at the same price.",
-      "requestChanges": "Yes. {name} ({price}) and higher plans include one small edit each billing period. For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You'll see the exact price before you pay.",
+      "requestChanges": "Yes. Each hosting plan includes a set number of small edits each billing period (see Plans for your tier). For other changes, request maintenance from your dashboard. Maintenance starts at $50, up to $100. You'll see the exact price before you pay.",
       "hiddenFees": "No. You pay for monthly hosting, which is required. One-time maintenance or a buyout costs extra only if you request it. Building your website is free, and you'll see the price before you pay.",
       "security": "Every site includes an SSL certificate, so it loads over a secure https connection.",
       "plansGuideTitleLine": "Plans: Choose a hosting plan, or request maintenance",
       "plansGuideDescription": "Compare hosting plans for your business",
-      "chatIncludedEditNote": "Your plan includes one small edit each billing period.",
+      "chatIncludedEditNote": "Your plan includes small edits each billing period.",
       "paymentMethod": "Go to your dashboard and open Manage billing. After your first payment, you can manage your billing and payment method there. If you have a plan switch planned, Manage billing opens Billing on your Plans page instead, where you can update your card and see your invoices."
     },
     "priority": {
@@ -579,18 +579,18 @@
       "submitWebsiteRequestFirst": "Submit a website request first",
       "hostingCheckoutOpensAfterSubmit": "Hosting checkout opens after you submit a website request from your dashboard."
     },
-    "nextBusinessDayTarget": "by end of next business day (Mon–Fri, excluding holidays)",
+    "nextBusinessDayTarget": "within 5 business days (higher plans are usually faster)",
     "stepBlurbs": {
       "starter": "Your website, hosted and kept secure.",
       "priority": "Everything in Starter. Your change requests go ahead of lower plans in line.",
-      "fast_lane": "Everything in Priority, plus one small edit by us each billing period.",
+      "fast_lane": "Everything in Priority, plus included small edits by us each billing period.",
       "leads": "Everything in Fast lane, plus a monthly report and quote alerts.",
       "get_found": "Everything in Leads, plus Google Business Profile upkeep.",
       "growth": "Everything in Get found, plus a seasonal refresh and a quarterly call."
     },
     "perkLines": {
       "priorityQueue": "When you ask us for a change, you're ahead of lower plans in line.",
-      "includedSmallEdit": "One small edit by us each billing period, like new hours, a photo swap or a price change. Unused edits don't roll over.",
+      "includedSmallEdit": "Small edits by us each billing period, like new hours, a photo swap or a price change. Unused edits don't carry over.",
       "leadsReport": "A monthly email showing how many people visited your site, filled out your form, and tapped your call button.",
       "quoteAlerts": "An email the moment someone asks for a quote.",
       "gbpManaged": "We keep your Google Business Profile up to date (hours, photos) and post to it for you.",
@@ -599,7 +599,7 @@
       "quarterlyCall": "A 15-minute planning call with us every quarter.",
       "doneForYouEdits": "Tell us what you want changed, and we make it for you."
     },
-    "smallEditsNextBusinessDay": "Small edits: by end of next business day (Mon–Fri, excluding holidays).",
+    "smallEditsNextBusinessDay": "Small edits: within 5 business days. Higher plans are usually faster.",
     "starterBaseLines": {
       "hostingSslSecureHttps": "Hosting and SSL (a secure https connection)",
       "emailSupportDuringSupport": "Email support during support hours"
@@ -939,9 +939,9 @@
         "indexTitle": "Merch & Fonts | Freeplug",
         "indexDescription": "Shop Freeplug digital goods. Script, cursive logo, and bold display fonts for brands, websites, and shirts.",
         "productTitle": "Freeplug Font Bundle — Script, Cursive & Display Fonts | Freeplug",
-        "productDescription": "12 styles: FP Extended, Freeplug Dispatch, and FP Cursive (v2). Cursive logo font, bold display font for shirts, extended type. $49.99 USD. Personal and client use.",
+        "productDescription": "12 styles: FP Extended (6), Freeplug Dispatch (3), and FP Cursive v2 (3). Cursive logo font, news-style display, extended type. $49.99 USD. Personal and client use.",
         "tshirtsTitle": "T-shirts | Freeplug Merch",
-        "tshirtsDescription": "Freeplug t-shirts — coming soon. Get notified when they drop.",
+        "tshirtsDescription": "Shop six Freeplug tee designs on soft unisex tees. US shipping at checkout.",
         "personalUseTitle": "Free fonts for personal use | Freeplug",
         "personalUseDescription": "Download a limited personal-use demo of Freeplug fonts. Commercial, website, and client work require the official font bundle."
       },
@@ -951,14 +951,53 @@
         "officialFonts": "Official fonts",
         "personalUse": "Free for personal use"
       },
-      "indexCardTshirts": "Shop tees soon — notify us if you want first access.",
-      "indexCardOfficial": "Full bundle: 12 styles for commercial and client work.",
+      "indexCardTshirts": "Six logo and tagline tees — printed to order, shipped in the USA.",
+      "indexCardOfficial": "Full bundle: 12 styles (6 + 3 + 3) for commercial and client work.",
       "indexCardPersonal": "Limited demo subset for personal, non-commercial use.",
       "tshirts": {
         "heading": "T-shirts",
-        "lead": "Freeplug tees are on the way. We are not taking orders yet.",
+        "listingLead": "Soft unisex tees with Freeplug artwork. Pick a design, color, and size.",
+        "lead": "Soft unisex tees with Freeplug artwork. Pick a design, color, and size.",
         "notify": "Email support to get notified",
-        "mailtoSubject": "Notify me about Freeplug t-shirts"
+        "mailtoSubject": "Notify me about Freeplug t-shirts",
+        "fromPrice": "From {price}",
+        "priceFrontOnly": "Front print: $15.99 (S–XL), $17.99 (2XL), $19.99 (3XL)",
+        "priceFrontBack": "Front and back print: $21.99 (S–XL), $23.99 (2XL), $25.99 (3XL)",
+        "breadcrumbMerch": "Merch",
+        "cardAlt": "{title} mockup",
+        "buyCta": "Buy shirt",
+        "comingSoon": "Coming soon",
+        "checkoutError": "Checkout could not start. Try again.",
+        "colorLabel": "Color",
+        "sizeLabel": "Size",
+        "quantityLabel": "Quantity",
+        "sizeNote": "Unisex fit. Sizes run true to size for most people; size up if you prefer a looser fit.",
+        "viewToggleAria": "Shirt view",
+        "viewFront": "Front",
+        "viewBack": "Back",
+        "mockupAlt": "{title} — {color}, {view}",
+        "lineTotal": "Subtotal {total} before shipping",
+        "productionInfo": "Printed to order in the USA. Production usually takes 2–7 business days before shipping.",
+        "shippingInfo": "Shipping added at checkout (from {shipping} for this quantity; US addresses only).",
+        "shippingUsOnly": "We currently ship t-shirts within the United States only.",
+        "productMetaDescription": "Freeplug soft-style tee. Choose color and size. US shipping at checkout.",
+        "successHeading": "Order received",
+        "successLead": "Thank you. We will send a confirmation email and tracking when your shirt ships.",
+        "successBack": "Back to this tee",
+        "colors": {
+          "Black": "Black",
+          "Charcoal": "Charcoal",
+          "Natural": "Natural",
+          "White": "White"
+        },
+        "products": {
+          "shirt01": "I Know a Plug",
+          "shirt02": "Circle Logo",
+          "shirt03": "Get Plugged In",
+          "shirt04": "Free Game",
+          "shirt05": "My Website Was Free. This Shirt Wasn't.",
+          "shirt06": "Plugged In Since Day One"
+        }
       },
       "personalUse": {
         "heading": "Free for personal use",
@@ -986,11 +1025,28 @@
       "breadcrumbMerch": "Merch",
       "productName": "Freeplug Font Bundle",
       "price": "$49.99 USD",
-      "productLead": "Twelve font files across three families. FP Cursive v2 is redrawn to match the Fp logo ligature.",
+      "productLead": "Twelve font files across three families (6 + 3 + 3). FP Cursive v2 is redrawn to match the Fp logo ligature.",
+      "includedStyles": {
+        "extended": "FP Extended — Light, Regular, Bold, Black, Outline, Italic",
+        "dispatch": "Freeplug Dispatch — Regular, Bold, Condensed Headline",
+        "cursive": "FP Cursive — Light, Regular, Bold (v2, matches the Fp logo)"
+      },
+      "specimensHeading": "Try the typefaces",
+      "specimenCursiveLabel": "FP Cursive",
+      "specimenCursiveLine": "Fp",
+      "specimenCursivePhrase": "It's so cheap it's free",
+      "specimenDispatchLabel": "Freeplug Dispatch",
+      "specimenDispatchHeadline": "FREEPLUG",
+      "specimenDispatchPhraseLeft": "I Know a Plug",
+      "specimenDispatchPhraseRight": "It's so cheap it's free",
+      "specimenExtendedLabel": "FP Extended",
+      "specimenExtendedHeadline": "FREEPLUG",
+      "specimenExtendedPhrase": "I Know a Plug",
+      "specimensNote": "Preview fonts on this page are a limited basic-Latin subset for demonstration, not the full commercial files.",
       "specimenAlt": "FP Cursive type specimen",
       "compareAlt": "Logo versus FP Cursive Regular comparison",
       "stylesHeading": "What's included",
-      "stylesSeo": "Includes script font, cursive logo font, bold display font, extended font styles — built for logos, headlines, and merch.",
+      "stylesSeo": "Six Extended styles, three Dispatch cuts (including Condensed Headline), and three Cursive weights — built for logos, headlines, and merch.",
       "useCasesHeading": "Use cases",
       "buyCta": "Buy font bundle",
       "comingSoon": "Coming soon",
@@ -1244,17 +1300,21 @@
         "heading": "Buy out your pages, <span>own your files</span>",
         "intro": "Rather own your website? Buy your website files once, priced by how many pages your site has. Every dollar you’ve paid counts toward it.",
         "tier": {
-          "quick": "Up to 5 pages",
+          "p1": "1 page",
+          "p2": "2 pages",
+          "p3": "3 pages",
+          "p4": "4 pages",
+          "p5": "5 pages",
           "up_to_7": "6 to 7 pages",
           "up_to_11": "8 to 11 pages",
           "up_to_15": "12 to 15 pages",
-          "up_to_20": "16 to 20 pages",
-          "custom": "Custom enterprise: 21 to 35 pages"
+          "up_to_25": "16 to 25 pages",
+          "custom": "26+ pages"
         },
         "oneTime": "one time",
         "customPrice": "Custom quote",
         "customScope": "scoped by hand",
-        "customLine": "21 to 35 pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
+        "customLine": "26+ pages? We'll quote it for you. Every dollar you've paid counts toward your quote, and the 20% own-domain discount applies too.",
         "note": "The buyout covers your website files only.",
         "compareLink": "Compare Freeplug with other options"
       },
@@ -1363,7 +1423,7 @@
           "upfront": "$0",
           "monthly": "$35–$65/mo",
           "counts": "Yes, every dollar counts toward the buyout",
-          "own": "From $500 (20% off if you own your domain)"
+          "own": "From $250 (20% off if you own your domain)"
         },
         "rwMedia": {
           "monthly": "$299–$999/mo",
@@ -1430,7 +1490,7 @@
     "cancelHeading": "Keep your website",
     "cancelBody": "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it.",
     "faqQuestion": "Can I keep my website if I stop hosting with Freeplug?",
-    "faqAnswer": "Yes. You can buy your website files for a one-time price based on how many pages your site has: up to 5 pages $500, 6 to 7 pages $700, 8 to 11 pages $950, 12 to 15 pages $1,200, and 16 to 20 pages $2,000. 21 to 35 pages? We'll quote it for you. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout. Both apply to custom quotes too.",
+    "faqAnswer": "Yes. You can buy your website files for a one-time price based on how many pages your site has: 1 page $250, 2 pages $300, 3 pages $350, 4 pages $400, 5 pages $450, 6 to 7 pages $700, 8 to 11 pages $950, 12 to 15 pages $1,200, and 16 to 25 pages $2,000. 26+ pages? We'll quote it for you. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout. Both apply to custom quotes too.",
     "requestRecordName": "Website buyout"
   },
   "common": {
@@ -1593,7 +1653,7 @@
     "nudgePerk": {
       "priorityQueue": "a place ahead of lower plans when you ask for changes",
       "includedSmallEdit": "one small edit by us each billing period",
-      "nextBusinessDayEdits": "small edits by end of next business day (Mon–Fri, excluding holidays)",
+      "nextBusinessDayEdits": "small edits within 5 business days (higher plans are usually faster)",
       "leadsReport": "a monthly report on visits, form requests and call button taps",
       "quoteAlerts": "an email the moment someone asks for a quote",
       "gbpManaged": "Google Business Profile upkeep",

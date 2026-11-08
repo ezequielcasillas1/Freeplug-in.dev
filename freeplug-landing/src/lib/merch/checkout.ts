@@ -30,7 +30,8 @@ export function buildMerchFontBundleSessionParams(locale: AppLocale, priceId?: s
             unit_amount: FONT_BUNDLE_PRICE_CENTS,
             product_data: {
               name: 'Freeplug Font Bundle',
-              description: '12 styles: FP Extended, Freeplug Dispatch, FP Cursive (v2). Personal & client use.',
+              description:
+                '12 styles: FP Extended (6), Freeplug Dispatch (3), FP Cursive v2 (3). Personal & client use.',
             },
           },
           quantity: 1,

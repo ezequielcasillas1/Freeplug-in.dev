@@ -1,0 +1,96 @@
+/**
+ * Merch pages only: preview webfonts subset to U+0020–007E (not the paid bundle files).
+ * Loaded via src/app/[locale]/merch/layout.tsx inside .merch-font-preview.
+ */
+
+@font-face {
+  font-family: 'FP Cursive Demo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/merch-preview/FPCursiveDemo-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'FP Extended Demo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/merch-preview/FPExtendedDemo-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Freeplug Dispatch';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/merch-preview/FreeplugDispatch-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Freeplug Dispatch';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/merch-preview/FreeplugDispatch-Bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Freeplug Dispatch Condensed';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/merch-preview/FreeplugDispatch-CondensedHeadline.woff2') format('woff2');
+}
+
+.merch-font-preview .merch-specimen-cursive {
+  font-family: 'FP Cursive Demo', cursive;
+}
+
+.merch-font-preview .merch-specimen-extended {
+  font-family: 'FP Extended Demo', sans-serif;
+}
+
+.merch-font-preview .merch-specimen-dispatch {
+  font-family: 'Freeplug Dispatch', sans-serif;
+  font-weight: 400;
+}
+
+.merch-font-preview .merch-specimen-dispatch-bold {
+  font-family: 'Freeplug Dispatch', sans-serif;
+  font-weight: 700;
+}
+
+.merch-font-preview .merch-specimen-dispatch-condensed {
+  font-family: 'Freeplug Dispatch Condensed', sans-serif;
+  font-weight: 400;
+}
+
+/* Responsive specimen lines: match former text-4xl/text-xl on ~375px; shrink below 320 if needed. */
+.merch-font-preview .merch-specimen-display {
+  font-size: clamp(1.375rem, 9.6vw, 2.25rem);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-display-md {
+  font-size: clamp(1.25rem, 8vw, 1.875rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-phrase {
+  font-size: clamp(0.9375rem, 5.35vw, 1.5rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-phrase-sm {
+  font-size: clamp(0.875rem, 4.8vw, 1.125rem);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

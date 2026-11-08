@@ -1,3 +1,8 @@
+### 2026-11-08 - Merch t-shirts (Printify + Stripe preview)
+**Status:** SUCCESS
+**Files:** `freeplug-landing/src/lib/merch/shirts/*`, t-shirt pages, checkout API, webhook fulfillment, migration `20261108180000_merch_shirt_orders.sql`, mockups `public/merch/shirts/*`
+**Result:** Six shirts catalog, local mockups, EN/ES shop UI, server-validated Stripe checkout, Printify order on webhook (idempotent), flag `MERCH_SHIRTS_ENABLED` default off.
+
 ### 2026-11-07 - Merch font bundle (preview)
 **Status:** SUCCESS
 **Files:** `freeplug-landing/src/lib/merch/*`, `app/[locale]/merch/*`, checkout/webhook/download APIs, migration `20261107090000_merch_font_bundle.sql`

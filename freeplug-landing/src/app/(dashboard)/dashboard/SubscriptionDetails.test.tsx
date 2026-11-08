@@ -222,7 +222,7 @@ describe('Active Subscriptions list name (Sable 5:11 PM)', () => {
 })
 
 describe('add-on lines (Oct 4)', () => {
-  it('Oct 18: edits included (plan edits - used), the edit pack line, add-ons that end; no Big change line', () => {
+  it('edits included (plan edits - used), no edit pack upsell; add-ons that end; no Big change line', () => {
     const ent = withAddons(entitlementsFor({ stepId: 'fast_lane' }), ['small_edit', 'big_change'])
     render(
       <SubscriptionDetails
@@ -230,21 +230,32 @@ describe('add-on lines (Oct 4)', () => {
           {
             ...plan(6500),
             entitlements: ent,
-            editsIncluded: { unlimited: false, total: 10, used: 3, remaining: 7 },
+            editsIncluded: { unlimited: false, total: 7, used: 3, remaining: 4 },
             editStepId: 'fast_lane',
             addonsEnding: { names: ['Big change'], date: 'November 3, 2026' },
           },
         ]}
       />
     )
-    expect(screen.getByTestId('edits-included')).toHaveTextContent('Edits included: 7 of 10 left this billing period')
-    expect(screen.getByTestId('edits-need-more')).toHaveTextContent('Need more edits this month? Add the $5 edit pack for 10 more.')
+    expect(screen.getByTestId('edits-included')).toHaveTextContent('Edits included: 4 of 7 left this billing period')
+    expect(screen.queryByTestId('edits-need-more')).toBeNull()
     expect(screen.queryByTestId('big-change')).toBeNull()
     expect(screen.getByTestId('home-addons-ending')).toHaveTextContent('Big change ends November 3, 2026.')
   })
-  it('Oct 18: the $100 plan shows Unlimited and no pack line', () => {
-    render(<SubscriptionDetails subscriptions={[{ ...plan(10000), entitlements: entitlementsFor({ stepId: 'growth' }), editsIncluded: { unlimited: true }, editStepId: 'growth' }]} />)
-    expect(screen.getByTestId('edits-included')).toHaveTextContent('Unlimited edits')
+  it('Growth partner shows 20 included edits and no edit pack line', () => {
+    render(
+      <SubscriptionDetails
+        subscriptions={[
+          {
+            ...plan(10000),
+            entitlements: entitlementsFor({ stepId: 'growth' }),
+            editsIncluded: { unlimited: false, total: 20, used: 0, remaining: 20 },
+            editStepId: 'growth',
+          },
+        ]}
+      />
+    )
+    expect(screen.getByTestId('edits-included')).toHaveTextContent('Edits included: 20 of 20 left this billing period')
     expect(screen.queryByTestId('edits-need-more')).toBeNull()
   })
   it('no add-ons: no Big change line, no ending line', () => {

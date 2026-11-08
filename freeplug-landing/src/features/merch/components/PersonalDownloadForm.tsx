@@ -57,7 +57,7 @@ export function PersonalDownloadForm({ label, emailOptional, emailPlaceholder, e
           placeholder={emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ba3d3d]/40"
+          className="w-full min-h-11 rounded-xl border border-gray-200 px-4 py-3 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ba3d3d]/40"
         />
       </div>
       <Button
@@ -65,7 +65,7 @@ export function PersonalDownloadForm({ label, emailOptional, emailPlaceholder, e
         size="lg"
         disabled={loading}
         onClick={() => void download()}
-        className="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white"
+        className="w-full min-h-11 sm:w-auto sm:min-w-[12rem] bg-gray-900 hover:bg-gray-800 text-white"
       >
         {loading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden /> : <Download className="w-5 h-5" aria-hidden />}
         <span className="ml-2">{label}</span>
