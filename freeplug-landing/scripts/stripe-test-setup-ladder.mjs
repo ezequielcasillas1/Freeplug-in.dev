@@ -232,11 +232,11 @@ export async function setupAddons(stripe, ladder, { dryRun = false, log = consol
 
 /** The idempotent setup. `stripe` is an initialised Stripe client on a test key. */
 export async function setupLadder(stripe, ladder, { dryRun = false, log = console.log } = {}) {
-  const { PLAN_STEPS, productNameFor } = ladder
+  const { PLAN_STEPS_WITH_STRIPE, productNameFor } = ladder
   const actions = []
 
-  // Products: one per step
-  for (const step of PLAN_STEPS) {
+  // Products: one per step that has a Stripe product (preview-only steps excluded in ladder.ts).
+  for (const step of PLAN_STEPS_WITH_STRIPE) {
     let product = null
     try {
       product = assertTestObject(await stripe.products.retrieve(step.productId), `product ${step.productId}`)
@@ -262,11 +262,11 @@ export async function setupLadder(stripe, ladder, { dryRun = false, log = consol
   }
 
   // Prices: one monthly price per step product
-  const existing = await stripe.prices.list({ lookup_keys: PLAN_STEPS.map((s) => s.lookupKey), limit: 100 })
+  const existing = await stripe.prices.list({ lookup_keys: PLAN_STEPS_WITH_STRIPE.map((s) => s.lookupKey), limit: 100 })
   for (const p of existing.data) assertTestObject(p, `price ${p.id}`)
   /** @type {Record<string, string>} */
   const priceIds = {}
-  for (const step of PLAN_STEPS) {
+  for (const step of PLAN_STEPS_WITH_STRIPE) {
     const found = existing.data.find((p) => p.lookup_key === step.lookupKey)
     if (found && priceMatches(found, step)) {
       priceIds[step.id] = found.id

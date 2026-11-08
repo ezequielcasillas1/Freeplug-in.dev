@@ -12,6 +12,7 @@ describe('edit counts per plan (Nov 2026)', () => {
     ['leads', 12],
     ['get_found', 15],
     ['growth', 20],
+    ['plug_authority', 25],
   ]
   it.each(table)('%s: %s edits', (step, plan) => {
     expect(PLAN_EDITS[step]).toBe(plan)

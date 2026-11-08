@@ -101,7 +101,7 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
     const tip = f.state.prices.find((x) => x.lookup_key === ladder.TIP_LOOKUP_KEY)!
     expect(tip).toMatchObject({ product: 'freeplug_tip', currency: 'usd', unit_amount: 100, recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' } })
     expect(r.tipPriceId).toBe(tip.id)
-    for (const s of ladder.PLAN_STEPS) {
+    for (const s of ladder.PLAN_STEPS_WITH_STRIPE) {
       expect(f.state.products.get(s.productId)).toMatchObject({ name: `Freeplug Hosting: ${s.name}`, metadata: { plan_step: s.id } })
       const p = f.state.prices.find((x) => x.lookup_key === s.lookupKey)!
       expect(p).toMatchObject({
@@ -147,13 +147,13 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
 
   it('moves lookup keys off the retired single product, then archives it', async () => {
     const g = fakeStripe({ retired: true })
-    for (const s of ladder.PLAN_STEPS) {
+    for (const s of ladder.PLAN_STEPS_WITH_STRIPE) {
       g.state.prices.push({ id: `old_${s.id}`, lookup_key: s.lookupKey, product: 'freeplug_hosting_ladder', active: true, currency: 'usd', unit_amount: s.monthlyCents, type: 'recurring', recurring: { interval: 'month', interval_count: 1 }, livemode: false })
     }
     await setupLadder(g.stripe, ladder, quiet)
     expect(g.state.prices.filter((p) => p.product === 'freeplug_hosting_ladder').every((p) => !p.active)).toBe(true)
     expect(g.state.products.get('freeplug_hosting_ladder')?.active).toBe(false)
-    for (const s of ladder.PLAN_STEPS) expect(g.state.prices.find((p) => p.lookup_key === s.lookupKey)?.product).toBe(s.productId)
+    for (const s of ladder.PLAN_STEPS_WITH_STRIPE) expect(g.state.prices.find((p) => p.lookup_key === s.lookupKey)?.product).toBe(s.productId)
   })
 
   it('dry run writes nothing', async () => {
@@ -171,7 +171,7 @@ describe('stripe-test-setup-ladder: idempotent setup (stubbed Stripe)', () => {
   })
 
   it('the probe-only switching configuration is what Aria asked the portal for (kept inactive)', () => {
-    const cfg = setup.switchingPortalConfig(ladder.PLAN_STEPS, Object.fromEntries(ladder.PLAN_STEPS.map((s) => [s.id, `price_${s.id}`])))
+    const cfg = setup.switchingPortalConfig(ladder.PLAN_STEPS_WITH_STRIPE, Object.fromEntries(ladder.PLAN_STEPS_WITH_STRIPE.map((s) => [s.id, `price_${s.id}`])))
     expect(cfg.features.subscription_update.products).toHaveLength(6)
     expect(cfg.features.subscription_update.schedule_at_period_end).toEqual({ conditions: [{ type: 'decreasing_item_amount' }] })
     expect(cfg.metadata).toEqual({ freeplug_ladder_probe: 'v1' })
