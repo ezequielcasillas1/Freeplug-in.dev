@@ -1758,10 +1758,14 @@
       "success": {
         "heading": "Thank you",
         "loading": "Preparing your download…",
-        "missingSession": "Missing checkout session. If you just paid, use the link from your email.",
+        "missingSession": "Missing checkout session. Open the link from your receipt email or contact support@freeplug-in.dev.",
         "loadError": "Could not load your download.",
-        "saveLink": "Save this link before it expires:",
+        "saveLink": "Your download link (valid for 24 hours, up to 5 downloads):",
         "expires": "Expires: {date}",
+        "emailAlso": "We also sent this link to your email.",
+        "emailRetry": "Your email is on the way. You can download from this page anytime before the link expires.",
+        "expiredSupport": "This download link has expired. Email support@freeplug-in.dev and include your receipt.",
+        "limitSupport": "You used all 5 downloads for this purchase. Email support@freeplug-in.dev for help.",
         "mock": "Demo mode: bundle file may be a placeholder on this environment.",
         "back": "Back to the product page"
       },
