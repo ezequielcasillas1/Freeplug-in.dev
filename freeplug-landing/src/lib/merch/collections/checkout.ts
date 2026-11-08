@@ -27,9 +27,11 @@ export function buildMerchCollectionSessionParams(
   const urls = merchCollectionCheckoutUrls(locale, line.collection, line.slug)
   const shippingCents = collectionLineShippingCents(line)
   const shippingLabel =
-    line.quantity === 1
-      ? `US shipping (${formatUsdFromCents(shippingCents)})`
-      : `US shipping — ${line.quantity} items (${formatUsdFromCents(shippingCents)})`
+    shippingCents === 0
+      ? 'Free US shipping (order over $50)'
+      : line.quantity === 1
+        ? `US shipping (${formatUsdFromCents(shippingCents)})`
+        : `US shipping — ${line.quantity} items (${formatUsdFromCents(shippingCents)})`
 
   return {
     mode: 'payment',

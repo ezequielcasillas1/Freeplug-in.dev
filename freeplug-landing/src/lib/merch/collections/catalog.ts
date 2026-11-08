@@ -1,5 +1,5 @@
 import rawCatalog from './collections-catalog.json'
-import { merchShippingCents, type MerchShippingClass } from './shipping'
+import { collectionMerchandiseShippingCents, type MerchShippingClass } from './shipping'
 
 export const MERCH_COLLECTION_CHECKOUT_TYPE = 'merch_collection_product' as const
 export const MERCH_CURRENCY = 'usd' as const
@@ -187,7 +187,7 @@ export function validateCollectionCheckoutLine(input: {
 }
 
 export function collectionLineShippingCents(line: ValidatedCollectionLine): number {
-  return merchShippingCents(line.shippingClass, line.quantity)
+  return collectionMerchandiseShippingCents(line.shippingClass, line.quantity, line.unitAmountCents)
 }
 
 export type PublicCollectionProduct = {

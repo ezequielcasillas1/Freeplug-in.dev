@@ -37,9 +37,10 @@ export function CollectionListClient({
             >
               {t(`collectionTitles.${collection}`)}
             </motion.h1>
-            <motion.p variants={fadeInUp} className="mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg text-gray-600 leading-relaxed">
-              {t(`collectionLeads.${collection}`)}
-            </motion.p>
+            <motion.div variants={fadeInUp} className="mb-6 sm:mb-8 max-w-2xl space-y-2">
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">{t(`collectionLeads.${collection}`)}</p>
+              <p className="text-sm sm:text-base text-[#ba3d3d] font-medium">{t('freeShippingPromo')}</p>
+            </motion.div>
 
             <ul className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 min-w-0">
               {products.map((p) => {

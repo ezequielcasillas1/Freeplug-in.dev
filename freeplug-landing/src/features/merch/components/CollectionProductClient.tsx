@@ -24,6 +24,7 @@ import {
   type MerchCollectionSlug,
   type PublicCollectionProduct,
 } from '@/lib/merch/collections/catalog'
+import { qualifiesForFreeCollectionShipping } from '@/lib/merch/collections/shipping'
 import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
 import { cn } from '@/lib/utils/cn'
 
@@ -80,6 +81,14 @@ export function CollectionProductClient({
         printifyVariantId: option.printify_variant_id,
       })
     : 0
+
+  const merchandiseSubtotalCents = unitCents * quantity
+  const shippingDisplay =
+    option && qualifiesForFreeCollectionShipping(merchandiseSubtotalCents)
+      ? t('shippingLineFree')
+      : option
+        ? t('shippingLine', { shipping: formatUsdFromCents(shippingCents) })
+        : ''
 
   const title = t(`products.${product.titleKey}`)
   const descriptionKey = `productDetails.${product.titleKey}` as const
@@ -233,10 +242,13 @@ export function CollectionProductClient({
                   errorGeneric={t('checkoutError')}
                 />
 
+                <p className="text-sm text-[#ba3d3d] font-medium">{t('freeShippingPromo')}</p>
                 <p className="text-sm text-gray-500">{t('productionInfo')}</p>
-                <p className="text-sm text-gray-500">
-                  {t('shippingInfo', { shipping: formatUsdFromCents(shippingCents) })}
-                </p>
+                {option ? (
+                  <p className="text-sm text-gray-700 font-medium" aria-live="polite">
+                    {shippingDisplay}
+                  </p>
+                ) : null}
                 <p className="text-sm text-gray-500">{t('shippingUsOnly')}</p>
               </motion.div>
             </div>

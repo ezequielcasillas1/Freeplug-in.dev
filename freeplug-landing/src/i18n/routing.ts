@@ -1,6 +1,7 @@
 import { defineRouting } from 'next-intl/routing'
 import { DEFAULT_LOCALE, LOCALE_COOKIE } from './config'
 import { enabledLocales } from './gate'
+import { MERCH_COLLECTIONS } from '@/lib/merch/collections/catalog'
 
 /**
  * Public, indexable pages only (card R3). English stays unprefixed; Spanish lives under /es with
@@ -38,11 +39,19 @@ function isMerchTshirtsPublicPath(path: string): boolean {
   return path === '/merch/t-shirts' || path.startsWith('/merch/t-shirts/')
 }
 
+function isMerchCollectionPublicPath(path: string): boolean {
+  const m = /^\/merch\/([^/]+)(\/|$)/.exec(path)
+  if (!m) return false
+  const slug = m[1]!
+  if (!(MERCH_COLLECTIONS as readonly string[]).includes(slug)) return false
+  return path === `/merch/${slug}` || path.startsWith(`/merch/${slug}/`)
+}
+
 export function isLocalizedPublicPath(pathname: string): boolean {
   const { locale, path } = stripLocalePrefix(pathname)
   if (locale === 'es' && !enabledLocales().includes('es')) return false
   if ((LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path)) return true
-  return isMerchTshirtsPublicPath(path)
+  return isMerchTshirtsPublicPath(path) || isMerchCollectionPublicPath(path)
 }
 
 /** The same page in another locale: ('/es/faq', 'en') -> '/faq'; ('/faq', 'es') -> '/es/faq'. */

@@ -5,7 +5,6 @@ import {
   validateCollectionCheckoutLine,
   crewneckUnitPriceCents,
 } from './catalog'
-import { merchShippingCents } from './shipping'
 
 describe('merch collections catalog', () => {
   it('lists 22 products', () => {
@@ -37,8 +36,4 @@ describe('merch collections catalog', () => {
     }
   })
 
-  it('mug shipping uses flat table', () => {
-    expect(merchShippingCents('mug', 1)).toBe(599)
-    expect(merchShippingCents('mug', 2)).toBe(849)
-  })
 })

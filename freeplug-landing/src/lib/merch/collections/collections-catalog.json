@@ -5,11 +5,11 @@
     "title": "Freeplug Fully Charged Mug",
     "title_key": "fullyChargedMug",
     "printify_product_id": "6af0dc189219dad501083c14",
-    "shipping_class": "mug",
+    "shipping_class": "mug_15",
     "mockup": "fully-charged-mug.jpg",
     "options": [
-      { "key": "11oz", "printify_variant_id": 65216, "price_cents": 899 },
-      { "key": "15oz", "printify_variant_id": 104692, "price_cents": 1199 }
+      { "key": "11oz", "printify_variant_id": 65216, "price_cents": 899, "shipping_class": "mug_11_12" },
+      { "key": "15oz", "printify_variant_id": 104692, "price_cents": 1199, "shipping_class": "mug_15" }
     ]
   },
   {
@@ -18,7 +18,7 @@
     "title": "Freeplug It's So Cheap It's Free Latte Mug",
     "title_key": "cheapFreeLatteMug",
     "printify_product_id": "6af0dc26e696fed2aa02d36b",
-    "shipping_class": "mug",
+    "shipping_class": "mug_11_12",
     "mockup": "cheap-free-latte.jpg",
     "options": [{ "key": "12oz", "printify_variant_id": 43321, "price_cents": 1599 }]
   },
@@ -28,7 +28,7 @@
     "title": "Freeplug I Know a Plug Mug",
     "title_key": "knowAPlugMug",
     "printify_product_id": "6af0dc2f5a7173e14f0ae104",
-    "shipping_class": "mug",
+    "shipping_class": "mug_15",
     "mockup": "know-a-plug-mug.jpg",
     "options": [{ "key": "15oz", "printify_variant_id": 62014, "price_cents": 1599 }]
   },
@@ -38,7 +38,7 @@
     "title": "Freeplug Plugged In Since Day One Tumbler",
     "title_key": "dayOneTumbler",
     "printify_product_id": "6af0dc297a7a4ea34b0b1d11",
-    "shipping_class": "drinkware_heavy",
+    "shipping_class": "drinkware_tall",
     "mockup": "day-one-tumbler.jpg",
     "options": [{ "key": "20oz", "printify_variant_id": 44519, "price_cents": 4499 }]
   },
@@ -48,7 +48,7 @@
     "title": "Freeplug Free Refills Travel Mug",
     "title_key": "freeRefillsTravelMug",
     "printify_product_id": "6af0dc2c5a7173e14f0ae0f4",
-    "shipping_class": "drinkware_heavy",
+    "shipping_class": "drinkware_tall",
     "mockup": "free-refills-travel.jpg",
     "options": [{ "key": "15oz", "printify_variant_id": 33765, "price_cents": 4099 }]
   },
@@ -58,7 +58,7 @@
     "title": "Freeplug Stay Plugged In Water Bottle",
     "title_key": "stayPluggedInWaterBottle",
     "printify_product_id": "6af0dc34c85eee5c4804a972",
-    "shipping_class": "drinkware_heavy",
+    "shipping_class": "drinkware_tall",
     "mockup": "water-bottle.jpg",
     "options": [{ "key": "20oz-white", "printify_variant_id": 72251, "price_cents": 3599 }]
   },
@@ -108,7 +108,7 @@
     "title": "Freeplug Hero Crewneck Sweatshirt",
     "title_key": "heroCrewneck",
     "printify_product_id": "6af0dc44fb9024aaf308bd94",
-    "shipping_class": "apparel",
+    "shipping_class": "crewneck",
     "mockup": "hero-crewneck.jpg",
     "options": []
   },
@@ -118,7 +118,7 @@
     "title": "Freeplug Running Over Luke 6:38 Candle",
     "title_key": "runningOverCandle",
     "printify_product_id": "6af0dc377a7a4ea34b0b1d36",
-    "shipping_class": "home_standard",
+    "shipping_class": "candle_keychain",
     "mockup": "running-over-candle.jpg",
     "options": [{ "key": "9oz-clean-cotton", "printify_variant_id": 80301, "price_cents": 2499 }]
   },
@@ -128,11 +128,11 @@
     "title": "Freeplug Running Over Luke 6:38 Canvas",
     "title_key": "runningOverCanvas",
     "printify_product_id": "6af0dd82e696fed2aa02d577",
-    "shipping_class": "home_canvas_sm",
+    "shipping_class": "canvas_sm",
     "mockup": "running-over-canvas-16x20.jpg",
     "options": [
-      { "key": "16x20", "printify_variant_id": 82231, "price_cents": 4899, "shipping_class": "home_canvas_sm" },
-      { "key": "24x36", "printify_variant_id": 82235, "price_cents": 8599, "shipping_class": "home_canvas_lg" }
+      { "key": "16x20", "printify_variant_id": 82231, "price_cents": 4899, "shipping_class": "canvas_sm" },
+      { "key": "24x36", "printify_variant_id": 82235, "price_cents": 8599, "shipping_class": "canvas_lg" }
     ]
   },
   {
@@ -141,7 +141,7 @@
     "title": "Freeplug Running Over Luke 6:38 Pillow",
     "title_key": "runningOverPillow",
     "printify_product_id": "6af0dd995dc84ade530375ea",
-    "shipping_class": "home_standard",
+    "shipping_class": "pillow",
     "mockup": "running-over-pillow.jpg",
     "options": [{ "key": "18x18", "printify_variant_id": 41527, "price_cents": 3699 }]
   },
@@ -151,7 +151,7 @@
     "title": "Freeplug Come On In Outdoor Coir Doormat",
     "title_key": "comeOnInDoormat",
     "printify_product_id": "6af0dd9ce696fed2aa02d5ce",
-    "shipping_class": "home_doormat",
+    "shipping_class": "doormat",
     "mockup": "outdoor-doormat.jpg",
     "options": [{ "key": "24x16", "printify_variant_id": 103043, "price_cents": 5199 }]
   },
@@ -161,7 +161,7 @@
     "title": "Freeplug Plug-In Station Desk Mat",
     "title_key": "plugInStationDeskMat",
     "printify_product_id": "6af0dc31e696fed2aa02d392",
-    "shipping_class": "home_standard",
+    "shipping_class": "desk_mat",
     "mockup": "desk-mat.jpg",
     "options": [{ "key": "12x22", "printify_variant_id": 65241, "price_cents": 2099 }]
   },
@@ -171,7 +171,7 @@
     "title": "Freeplug Build Plug In Repeat Journal",
     "title_key": "buildPlugInRepeatJournal",
     "printify_product_id": "6af0dd93f2139253b306e22a",
-    "shipping_class": "home_standard",
+    "shipping_class": "journal",
     "mockup": "build-journal.jpg",
     "options": [{ "key": "lined", "printify_variant_id": 65223, "price_cents": 1899 }]
   },
@@ -181,7 +181,7 @@
     "title": "Freeplug FP Circle Acrylic Keychain",
     "title_key": "fpCircleKeychain",
     "printify_product_id": "6af0dd96c85eee5c4804abd5",
-    "shipping_class": "home_standard",
+    "shipping_class": "candle_keychain",
     "mockup": "fp-keychain.jpg",
     "options": [{ "key": "circle", "printify_variant_id": 243784, "price_cents": 1599 }]
   },

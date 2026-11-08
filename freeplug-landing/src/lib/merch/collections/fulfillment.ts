@@ -88,7 +88,7 @@ export async function handleMerchCollectionCheckoutSessionCompleted(
         quantity: line.quantity,
         unitAmountCents: option?.price_cents ?? 0,
         shippingClass:
-          option?.shipping_class ?? getCatalogProduct(line.slug)?.shipping_class ?? 'home_standard',
+          option?.shipping_class ?? getCatalogProduct(line.slug)?.shipping_class ?? 'journal',
         printifyProductId: line.printifyProductId,
         printifyVariantId: line.printifyVariantId,
       },
