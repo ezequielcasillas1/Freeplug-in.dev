@@ -13,3 +13,7 @@ export function isMerchPersonalDownloadEnabled(env: Record<string, string | unde
 export function isMerchShirtsEnabled(env: Record<string, string | undefined> = process.env): boolean {
   return env.MERCH_SHIRTS_ENABLED?.trim().toLowerCase() === 'true'
 }
+
+export function isMerchCollectionsEnabled(env: Record<string, string | undefined> = process.env): boolean {
+  return env.MERCH_COLLECTIONS_ENABLED?.trim().toLowerCase() === 'true'
+}

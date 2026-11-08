@@ -122,6 +122,7 @@ describe('checkoutSessionExpiresAt', () => {
       'src/app/api/checkout/hosting/route.ts',
       'src/app/api/checkout/maintenance/route.ts',
       'src/app/api/checkout/merch/font-bundle/route.ts',
+      'src/app/api/checkout/merch/product/route.ts',
       'src/app/api/checkout/merch/shirt/route.ts',
       'src/lib/outreach/server.ts',
     ])

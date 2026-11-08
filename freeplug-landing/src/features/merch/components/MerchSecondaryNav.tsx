@@ -14,12 +14,19 @@ import {
   MERCH_PERSONAL_USE_SLUG,
   MERCH_TSHIRTS_SLUG,
 } from '@/lib/merch/product'
+import { MERCH_COLLECTIONS, type MerchCollectionSlug } from '@/lib/merch/collections/catalog'
 
-const TABS = [
+const FONT_TABS = [
   { slug: MERCH_TSHIRTS_SLUG, labelKey: 'subnav.tshirts' as const },
   { slug: MERCH_FONT_BUNDLE_SLUG, labelKey: 'subnav.officialFonts' as const },
   { slug: MERCH_PERSONAL_USE_SLUG, labelKey: 'subnav.personalUse' as const },
 ] as const
+
+const COLLECTION_TABS: { slug: MerchCollectionSlug; labelKey: `subnav.collections.${MerchCollectionSlug}` }[] =
+  MERCH_COLLECTIONS.map((collection) => ({
+    slug: collection,
+    labelKey: `subnav.collections.${collection}`,
+  }))
 
 export function MerchSecondaryNav() {
   const t = useTranslations('public.merch')
@@ -61,7 +68,7 @@ export function MerchSecondaryNav() {
             ref={listRef}
             className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain py-2 pl-0.5 pr-12 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5"
           >
-            {TABS.map((tab) => {
+            {[...FONT_TABS, ...COLLECTION_TABS].map((tab) => {
               const href = publicHref(`/merch/${tab.slug}`, locale)
               const base = `/merch/${tab.slug}`
               const active = path === base || path.startsWith(`${base}/`)

@@ -4,6 +4,7 @@ import { getStripeFetch } from '@/lib/stripe/server'
 import { isMerchFontBundleSession } from './checkout'
 import { issueMerchFontBundleToken, revokeMerchTokensByChargeId, revokeMerchTokensByPaymentIntent } from './tokens'
 import { merchDownloadUrl, sendMerchDownloadEmail } from './email'
+import { handleMerchCollectionCheckoutSessionCompleted } from './collections/fulfillment'
 import { handleMerchShirtCheckoutSessionCompleted } from './shirts/fulfillment'
 
 export async function handleMerchCheckoutSessionCompleted(
@@ -12,6 +13,8 @@ export async function handleMerchCheckoutSessionCompleted(
 ): Promise<'handled' | 'skipped'> {
   const shirt = await handleMerchShirtCheckoutSessionCompleted(admin, session)
   if (shirt === 'handled') return 'handled'
+  const collection = await handleMerchCollectionCheckoutSessionCompleted(admin, session)
+  if (collection === 'handled') return 'handled'
   if (!isMerchFontBundleSession(session)) return 'skipped'
   if (session.payment_status !== 'paid') {
     console.warn('[merch/webhook] checkout completed but not paid', session.id, session.payment_status)

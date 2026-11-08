@@ -1,3 +1,8 @@
+### 2026-11-08 - Merch collections (22 Printify products preview)
+**Status:** PARTIAL
+**Files:** `src/lib/merch/collections/*`, `/merch/[collection]/[slug]`, `POST /api/checkout/merch/product`, `public/merch/{drinkware,hats,...}`, migration `20261108210000_merch_collection_orders.sql`
+**Result:** Hardcoded Printify IDs/prices, Stripe + webhook fulfillment on hold, `MERCH_COLLECTIONS_ENABLED` default off; shirts unchanged.
+
 ### 2026-11-08 - Merch t-shirts (Printify + Stripe preview)
 **Status:** SUCCESS
 **Files:** `freeplug-landing/src/lib/merch/shirts/*`, t-shirt pages, checkout API, webhook fulfillment, migration `20261108180000_merch_shirt_orders.sql`, mockups `public/merch/shirts/*`

@@ -121,6 +121,7 @@ describe('shared rate limiter', () => {
         'app/(dashboard)/dashboard/billing-actions.ts',
         'app/(dashboard)/dashboard/request-website/actions.ts',
         // CSP report endpoint (security-headers, Oct 12): fails closed (report dropped)
+        'app/api/checkout/merch/product/route.ts',
         'app/api/checkout/merch/shirt/route.ts',
         'app/api/csp-report/route.ts',
         'app/api/merch/personal-download/route.ts',

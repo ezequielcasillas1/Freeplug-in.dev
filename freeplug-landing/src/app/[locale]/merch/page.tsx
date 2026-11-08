@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { MERCH_FONT_BUNDLE_SLUG, MERCH_PERSONAL_USE_SLUG, MERCH_TSHIRTS_SLUG } from '@/lib/merch/product'
+import { MERCH_COLLECTIONS } from '@/lib/merch/collections/catalog'
 
 export default function MerchIndexPage() {
   const t = useTranslations('public.merch')
@@ -16,6 +17,11 @@ export default function MerchIndexPage() {
 
   const cards = [
     { href: `/merch/${MERCH_TSHIRTS_SLUG}`, title: t('subnav.tshirts'), blurb: t('indexCardTshirts') },
+    ...MERCH_COLLECTIONS.map((slug) => ({
+      href: `/merch/${slug}`,
+      title: t(`subnav.collections.${slug}`),
+      blurb: t(`collections.collectionLeads.${slug}`),
+    })),
     { href: `/merch/${MERCH_FONT_BUNDLE_SLUG}`, title: t('subnav.officialFonts'), blurb: t('indexCardOfficial') },
     { href: `/merch/${MERCH_PERSONAL_USE_SLUG}`, title: t('subnav.personalUse'), blurb: t('indexCardPersonal') },
   ]

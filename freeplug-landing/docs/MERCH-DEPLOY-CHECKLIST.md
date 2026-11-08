@@ -8,6 +8,8 @@ Set on the **production** Worker when promoting a version (not in git as live de
 |-----|----------------|----------------------|
 | `MERCH_CHECKOUT_ENABLED` | `true` | unset / `false` |
 | `MERCH_PERSONAL_DOWNLOAD_ENABLED` | `true` | unset / `false` |
+| `MERCH_SHIRTS_ENABLED` | `true` | unset / `false` |
+| `MERCH_COLLECTIONS_ENABLED` | `true` | unset / `false` |
 
 Optional dev/demo:
 
