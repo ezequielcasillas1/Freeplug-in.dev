@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto'
+import { createHash, createHmac, randomBytes } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const MERCH_TOKEN_TTL_MS = 24 * 60 * 60 * 1000
@@ -16,6 +16,26 @@ export type MerchTokenRow = {
   download_count: number
   created_at: string
   last_download_at: string | null
+  emailed_at: string | null
+}
+
+/** Server-only signing material for deterministic per-session download tokens. */
+export function merchTokenSigningSecret(env: Record<string, string | undefined> = process.env): string {
+  const dedicated = env.MERCH_TOKEN_SECRET?.trim()
+  if (dedicated) return dedicated
+  const fallback = env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+  if (fallback) return fallback
+  throw new Error('MERCH_TOKEN_SECRET or SUPABASE_SERVICE_ROLE_KEY is required for merch download tokens')
+}
+
+/** Stable download token for a paid checkout session (re-derivable without storing plaintext). */
+export function deriveMerchDownloadToken(
+  stripeCheckoutSessionId: string,
+  env: Record<string, string | undefined> = process.env
+): string {
+  return createHmac('sha256', merchTokenSigningSecret(env))
+    .update(stripeCheckoutSessionId, 'utf8')
+    .digest('base64url')
 }
 
 export function hashMerchToken(token: string): string {
@@ -36,12 +56,16 @@ export type IssueMerchTokenInput = {
   buyerEmail?: string | null
 }
 
-/** Insert a row; returns the plaintext token once (store only the hash). */
+export type IssueMerchTokenResult =
+  | { token: string; expiresAt: string; created: boolean }
+  | { error: string }
+
+/** Insert a row if missing; store only the hash. Token is always re-derived for callers. */
 export async function issueMerchFontBundleToken(
   admin: SupabaseClient,
   input: IssueMerchTokenInput
-): Promise<{ token: string; expiresAt: string } | { error: string }> {
-  const token = generateMerchToken()
+): Promise<IssueMerchTokenResult> {
+  const token = deriveMerchDownloadToken(input.stripeCheckoutSessionId)
   const tokenHash = hashMerchToken(token)
   const expiresAt = merchTokenExpiresAt()
   const { error } = await admin.from('merch_font_bundle_tokens').insert({
@@ -60,12 +84,16 @@ export async function issueMerchFontBundleToken(
         .eq('stripe_checkout_session_id', input.stripeCheckoutSessionId)
         .maybeSingle()
       if (existing.data?.expires_at) {
-        return { error: 'token_already_issued' }
+        return {
+          token,
+          expiresAt: existing.data.expires_at,
+          created: false,
+        }
       }
     }
     return { error: error.message }
   }
-  return { token, expiresAt }
+  return { token, expiresAt, created: true }
 }
 
 export type MerchTokenValidation =
