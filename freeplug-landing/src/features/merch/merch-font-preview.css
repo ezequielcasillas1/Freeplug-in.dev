@@ -65,3 +65,25 @@
   font-family: 'Freeplug Dispatch Condensed', sans-serif;
   font-weight: 400;
 }
+
+/* Responsive specimen lines: scale down on narrow viewports, allow long words to wrap. */
+.merch-font-preview .merch-specimen-display {
+  font-size: clamp(1.625rem, 7vw, 2.75rem);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-phrase {
+  font-size: clamp(1rem, 4.25vw, 1.5rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-phrase-sm {
+  font-size: clamp(0.9375rem, 3.75vw, 1.25rem);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

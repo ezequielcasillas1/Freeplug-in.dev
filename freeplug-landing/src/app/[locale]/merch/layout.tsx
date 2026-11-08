@@ -20,5 +20,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function MerchLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   setRequestLocale(toAppLocale((await params).locale))
-  return <div className="merch-font-preview">{children}</div>
+  return <div className="merch-font-preview min-w-0 overflow-x-clip">{children}</div>
 }

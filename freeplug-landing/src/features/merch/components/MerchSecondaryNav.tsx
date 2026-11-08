@@ -30,8 +30,8 @@ export function MerchSecondaryNav() {
       aria-label={t('subnav.aria')}
       className="sticky top-16 sm:top-20 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md"
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ul className="flex gap-1 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-thin -mx-1 px-1">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+        <ul className="flex gap-2 overflow-x-auto overscroll-x-contain py-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((tab) => {
             const href = publicHref(`/merch/${tab.slug}`, locale)
             const active = path === `/merch/${tab.slug}`
@@ -40,7 +40,7 @@ export function MerchSecondaryNav() {
                 <Link
                   href={href}
                   className={cn(
-                    'inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors',
+                    'inline-flex items-center justify-center rounded-lg px-3 sm:px-4 min-h-11 text-sm font-medium whitespace-nowrap transition-colors',
                     active
                       ? 'bg-[#ba3d3d]/10 text-[#ba3d3d]'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'

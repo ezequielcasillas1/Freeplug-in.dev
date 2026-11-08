@@ -13,22 +13,22 @@ export function MerchFontSpecimens() {
       <h2 id="merch-font-specimens-heading" className="text-xl font-bold text-gray-900">
         {t('specimensHeading')}
       </h2>
-      <div className="grid gap-4 sm:grid-cols-1">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5" data-testid="merch-specimen-cursive">
+      <div className="grid gap-4 sm:grid-cols-1 min-w-0">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5" data-testid="merch-specimen-cursive">
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">{t('specimenCursiveLabel')}</p>
-          <p className="merch-specimen-cursive text-4xl sm:text-5xl text-gray-900 leading-tight">{t('specimenCursiveLine')}</p>
-          <p className="merch-specimen-cursive text-2xl text-gray-800 mt-2">{t('specimenCursivePhrase')}</p>
+          <p className="merch-specimen-cursive merch-specimen-display text-gray-900">{t('specimenCursiveLine')}</p>
+          <p className="merch-specimen-cursive merch-specimen-phrase text-gray-800 mt-2">{t('specimenCursivePhrase')}</p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5" data-testid="merch-specimen-dispatch">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5" data-testid="merch-specimen-dispatch">
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">{t('specimenDispatchLabel')}</p>
-          <p className="merch-specimen-dispatch-bold text-3xl sm:text-4xl text-gray-900 tracking-tight">{t('specimenDispatchHeadline')}</p>
-          <p className="merch-specimen-dispatch text-xl text-gray-800 mt-3">{t('specimenDispatchPhraseLeft')}</p>
-          <p className="merch-specimen-dispatch-condensed text-lg text-gray-700 mt-1">{t('specimenDispatchPhraseRight')}</p>
+          <p className="merch-specimen-dispatch-bold merch-specimen-display text-gray-900 tracking-tight">{t('specimenDispatchHeadline')}</p>
+          <p className="merch-specimen-dispatch merch-specimen-phrase text-gray-800 mt-3">{t('specimenDispatchPhraseLeft')}</p>
+          <p className="merch-specimen-dispatch-condensed merch-specimen-phrase-sm text-gray-700 mt-1">{t('specimenDispatchPhraseRight')}</p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5" data-testid="merch-specimen-extended">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5" data-testid="merch-specimen-extended">
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">{t('specimenExtendedLabel')}</p>
-          <p className="merch-specimen-extended text-3xl sm:text-4xl text-gray-900 tracking-tight">{t('specimenExtendedHeadline')}</p>
-          <p className="merch-specimen-extended text-xl text-gray-800 mt-3">{t('specimenExtendedPhrase')}</p>
+          <p className="merch-specimen-extended merch-specimen-display text-gray-900 tracking-tight">{t('specimenExtendedHeadline')}</p>
+          <p className="merch-specimen-extended merch-specimen-phrase text-gray-800 mt-3">{t('specimenExtendedPhrase')}</p>
         </div>
       </div>
       <p className="text-xs text-gray-500">{t('specimensNote')}</p>

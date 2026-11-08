@@ -12,20 +12,20 @@ export function MerchPersonalUseClient({ downloadEnabled }: { downloadEnabled: b
 
   return (
     <MerchPageChrome>
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-8 pb-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen min-w-0 bg-gradient-to-b from-white to-zinc-50 pt-6 sm:pt-8 pb-16 sm:pb-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6">
-            <motion.h1 variants={fadeInUp} className="text-3xl font-bold text-gray-900">
+            <motion.h1 variants={fadeInUp} className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">
               {t('heading')}
             </motion.h1>
-            <motion.p variants={fadeInUp} className="text-lg text-gray-600">
+            <motion.p variants={fadeInUp} className="text-base sm:text-lg text-gray-600 break-words">
               {t('lead')}
             </motion.p>
-            <motion.p variants={fadeInUp} className="text-gray-700">
+            <motion.p variants={fadeInUp} className="text-gray-700 break-words">
               {t('commercialNote')}
             </motion.p>
 
-            <motion.div variants={fadeInUp} className="relative aspect-[3/4] max-h-[520px] w-full rounded-2xl overflow-hidden border border-gray-200 bg-white">
+            <motion.div variants={fadeInUp} className="relative aspect-[3/4] max-h-[min(520px,80vh)] w-full min-w-0 rounded-2xl overflow-hidden border border-gray-200 bg-white">
               <Image
                 src="/images/merch/specimen-demo.png"
                 alt={t('specimenAlt')}
@@ -38,7 +38,7 @@ export function MerchPersonalUseClient({ downloadEnabled }: { downloadEnabled: b
 
             <motion.section variants={fadeInUp}>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('packHeading')}</h2>
-              <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm">
+              <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm break-words">
                 <li>{t('packItemExtended')}</li>
                 <li>{t('packItemDispatch')}</li>
                 <li>{t('packItemCursive')}</li>
