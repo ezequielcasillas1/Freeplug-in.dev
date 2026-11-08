@@ -1,7 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
+import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { MerchCheckoutBlock } from '@/features/merch/components/MerchCheckoutBlock'
@@ -45,26 +45,18 @@ export function FontBundleProductClient({ checkoutEnabled }: { checkoutEnabled: 
 
               <div className="grid lg:grid-cols-2 gap-6 sm:gap-10 mb-10 sm:mb-12 min-w-0">
                 <motion.div variants={fadeInUp} className="space-y-4 min-w-0">
-                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-gray-200">
-                    <Image
-                      src="/images/merch/specimen-fp-cursive.png"
-                      alt={t('specimenAlt')}
-                      fill
-                      unoptimized
-                      className="object-cover object-top"
-                      sizes="(max-width: 1024px) 100vw, 480px"
-                    />
-                  </div>
-                  <div className="relative aspect-video rounded-2xl overflow-hidden border border-gray-200">
-                    <Image
-                      src="/images/merch/compare-logo-vs-font.png"
-                      alt={t('compareAlt')}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 480px"
-                    />
-                  </div>
+                  <MerchContainedImage
+                    src="/images/merch/specimen-fp-cursive.png"
+                    alt={t('specimenAlt')}
+                    width={2400}
+                    height={2270}
+                  />
+                  <MerchContainedImage
+                    src="/images/merch/compare-logo-vs-font.png"
+                    alt={t('compareAlt')}
+                    width={2600}
+                    height={1860}
+                  />
                 </motion.div>
 
                 <motion.div variants={fadeInUp} className="space-y-6 sm:space-y-8 min-w-0">

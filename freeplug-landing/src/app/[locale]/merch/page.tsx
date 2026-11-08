@@ -1,7 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
+import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
@@ -44,15 +44,14 @@ export default function MerchIndexPage() {
                   ))}
                 </ul>
               </motion.div>
-              <motion.div variants={fadeInUp} className="relative aspect-[4/3] min-w-0 w-full rounded-2xl overflow-hidden border border-gray-200 shadow-lg">
-                <Image
+              <motion.div variants={fadeInUp} className="min-w-0 w-full shadow-lg rounded-2xl">
+                <MerchContainedImage
                   src="/images/merch/compare-logo-vs-font.png"
                   alt={t('previewAlt')}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  width={2600}
+                  height={1860}
                   priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </motion.div>
             </motion.div>

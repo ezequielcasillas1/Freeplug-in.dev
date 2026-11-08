@@ -1,7 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { PersonalDownloadBlock } from '@/features/merch/components/PersonalDownloadBlock'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
@@ -25,13 +25,12 @@ export function MerchPersonalUseClient({ downloadEnabled }: { downloadEnabled: b
               {t('commercialNote')}
             </motion.p>
 
-            <motion.div variants={fadeInUp} className="relative aspect-[3/4] max-h-[min(520px,80vh)] w-full min-w-0 rounded-2xl overflow-hidden border border-gray-200 bg-white">
-              <Image
+            <motion.div variants={fadeInUp} className="w-full min-w-0">
+              <MerchContainedImage
                 src="/images/merch/specimen-demo.png"
                 alt={t('specimenAlt')}
-                fill
-                unoptimized
-                className="object-contain object-top p-2"
+                width={1800}
+                height={1150}
                 sizes="(max-width: 768px) 100vw, 640px"
               />
             </motion.div>

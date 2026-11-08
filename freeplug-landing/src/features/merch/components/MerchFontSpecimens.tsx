@@ -21,13 +21,13 @@ export function MerchFontSpecimens() {
         </div>
         <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5" data-testid="merch-specimen-dispatch">
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">{t('specimenDispatchLabel')}</p>
-          <p className="merch-specimen-dispatch-bold merch-specimen-display text-gray-900 tracking-tight">{t('specimenDispatchHeadline')}</p>
+          <p className="merch-specimen-dispatch-bold merch-specimen-display-md text-gray-900 tracking-tight">{t('specimenDispatchHeadline')}</p>
           <p className="merch-specimen-dispatch merch-specimen-phrase text-gray-800 mt-3">{t('specimenDispatchPhraseLeft')}</p>
           <p className="merch-specimen-dispatch-condensed merch-specimen-phrase-sm text-gray-700 mt-1">{t('specimenDispatchPhraseRight')}</p>
         </div>
         <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5" data-testid="merch-specimen-extended">
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">{t('specimenExtendedLabel')}</p>
-          <p className="merch-specimen-extended merch-specimen-display text-gray-900 tracking-tight">{t('specimenExtendedHeadline')}</p>
+          <p className="merch-specimen-extended merch-specimen-display-md text-gray-900 tracking-tight">{t('specimenExtendedHeadline')}</p>
           <p className="merch-specimen-extended merch-specimen-phrase text-gray-800 mt-3">{t('specimenExtendedPhrase')}</p>
         </div>
       </div>
