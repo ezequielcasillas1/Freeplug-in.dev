@@ -1,0 +1,205 @@
+'use client'
+
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
+import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
+import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
+import { MerchShirtCheckoutButton } from '@/features/merch/components/MerchShirtCheckoutButton'
+import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
+import { useLocale, useTranslations } from 'next-intl'
+import { toAppLocale } from '@/i18n/config'
+import { publicHref } from '@/i18n/routing'
+import {
+  SHIRT_COLORS,
+  SHIRT_SIZES,
+  formatUsdFromCents,
+  getShirtBySlug,
+  shirtMockupPublicPath,
+  shirtPriceCents,
+  shirtShippingCents,
+  type PublicShirtProduct,
+  type ShirtColor,
+  type ShirtSize,
+} from '@/lib/merch/shirts/catalog'
+import { cn } from '@/lib/utils/cn'
+
+const SWATCH: Record<ShirtColor, string> = {
+  Black: '#1a1a1a',
+  Charcoal: '#5c5c5c',
+  Natural: '#e8e0d4',
+  White: '#ffffff',
+}
+
+export function ShirtProductClient({
+  product,
+  checkoutEnabled,
+}: {
+  product: PublicShirtProduct
+  checkoutEnabled: boolean
+}) {
+  const t = useTranslations('public.merch.tshirts')
+  const locale = toAppLocale(useLocale())
+  const entry = getShirtBySlug(product.slug)!
+
+  const [color, setColor] = useState<ShirtColor>('Black')
+  const [size, setSize] = useState<ShirtSize>('M')
+  const [quantity, setQuantity] = useState(1)
+  const [view, setView] = useState<'front' | 'back'>('front')
+
+  const canToggleBack = product.backPrint
+  const mockupSrc = useMemo(() => {
+    if (view === 'back' && canToggleBack) return shirtMockupPublicPath(product.slug, color, 'back')
+    return shirtMockupPublicPath(product.slug, color, 'front')
+  }, [canToggleBack, color, product.slug, view])
+
+  const unitCents = shirtPriceCents(entry, size)
+  const shippingCents = shirtShippingCents(quantity)
+  const title = t(`products.${product.titleKey}`)
+
+  return (
+    <MerchPageChrome>
+      <main className="min-h-screen min-w-0 bg-gradient-to-b from-white to-zinc-50 pt-6 sm:pt-8 pb-16 sm:pb-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="min-w-0">
+            <motion.p variants={fadeInUp} className="text-sm text-gray-500 mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <Link href={publicHref('/merch', locale)} className="hover:text-[#ba3d3d]">
+                {t('breadcrumbMerch')}
+              </Link>
+              <span aria-hidden>/</span>
+              <Link href={publicHref('/merch/t-shirts', locale)} className="hover:text-[#ba3d3d]">
+                {t('heading')}
+              </Link>
+            </motion.p>
+
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 min-w-0">
+              <motion.div variants={fadeInUp} className="min-w-0 space-y-4">
+                <MerchContainedImage
+                  src={mockupSrc}
+                  alt={t('mockupAlt', { title, color, view })}
+                  width={1000}
+                  height={1200}
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 480px"
+                />
+                {canToggleBack ? (
+                  <div className="flex gap-2" role="group" aria-label={t('viewToggleAria')}>
+                    {(['front', 'back'] as const).map((side) => (
+                      <button
+                        key={side}
+                        type="button"
+                        onClick={() => setView(side)}
+                        className={cn(
+                          'min-h-[44px] flex-1 rounded-lg border px-3 text-sm font-medium',
+                          view === side ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white' : 'border-gray-200 text-gray-600 bg-gray-50'
+                        )}
+                      >
+                        {t(side === 'front' ? 'viewFront' : 'viewBack')}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </motion.div>
+
+              <motion.div variants={fadeInUp} className="min-w-0 space-y-6">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{title}</h1>
+                  <p className="text-xl font-semibold text-[#ba3d3d] mt-2" aria-live="polite">
+                    {formatUsdFromCents(unitCents)}
+                    {quantity > 1 ? (
+                      <span className="text-base text-gray-600 font-normal">
+                        {' '}
+                        · {t('lineTotal', { total: formatUsdFromCents(unitCents * quantity) })}
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
+
+                <fieldset className="min-w-0 border-0 p-0 m-0">
+                  <legend className="text-sm font-semibold text-gray-900 mb-2">{t('colorLabel')}</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {SHIRT_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        aria-pressed={color === c}
+                        onClick={() => setColor(c)}
+                        className={cn(
+                          'min-h-[44px] min-w-[44px] rounded-full border-2 p-1',
+                          color === c ? 'border-[#ba3d3d]' : 'border-transparent'
+                        )}
+                        title={t(`colors.${c}`)}
+                      >
+                        <span
+                          className="block h-8 w-8 rounded-full border border-gray-300"
+                          style={{ backgroundColor: SWATCH[c] }}
+                        />
+                        <span className="sr-only">{t(`colors.${c}`)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset className="min-w-0 border-0 p-0 m-0">
+                  <legend className="text-sm font-semibold text-gray-900 mb-2">{t('sizeLabel')}</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {SHIRT_SIZES.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        aria-pressed={size === s}
+                        onClick={() => setSize(s)}
+                        className={cn(
+                          'min-h-[44px] min-w-[44px] rounded-lg border px-3 text-sm font-semibold',
+                          size === s ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white' : 'border-gray-200 text-gray-700 bg-gray-50'
+                        )}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">{t('sizeNote')}</p>
+                </fieldset>
+
+                <div>
+                  <label htmlFor="shirt-qty" className="text-sm font-semibold text-gray-900 block mb-2">
+                    {t('quantityLabel')}
+                  </label>
+                  <select
+                    id="shirt-qty"
+                    value={quantity}
+                    onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+                    className="min-h-[44px] w-full max-w-[8rem] rounded-lg border border-gray-300 px-3 text-base"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <MerchShirtCheckoutButton
+                  slug={product.slug}
+                  color={color}
+                  size={size}
+                  quantity={quantity}
+                  enabled={checkoutEnabled}
+                  buyLabel={t('buyCta')}
+                  comingSoonLabel={t('comingSoon')}
+                  errorGeneric={t('checkoutError')}
+                />
+
+                <section className="text-sm text-gray-600 space-y-2 border-t border-gray-200 pt-4">
+                  <p>{t('productionInfo')}</p>
+                  <p>{t('shippingInfo', { shipping: formatUsdFromCents(shippingCents) })}</p>
+                  <p>{t('shippingUsOnly')}</p>
+                </section>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </main>
+    </MerchPageChrome>
+  )
+}

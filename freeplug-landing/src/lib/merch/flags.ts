@@ -9,3 +9,7 @@ export function isMerchCheckoutEnabled(env: Record<string, string | undefined> =
 export function isMerchPersonalDownloadEnabled(env: Record<string, string | undefined> = process.env): boolean {
   return env.MERCH_PERSONAL_DOWNLOAD_ENABLED?.trim().toLowerCase() === 'true'
 }
+
+export function isMerchShirtsEnabled(env: Record<string, string | undefined> = process.env): boolean {
+  return env.MERCH_SHIRTS_ENABLED?.trim().toLowerCase() === 'true'
+}
