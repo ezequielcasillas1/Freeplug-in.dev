@@ -1,0 +1,32 @@
+/**
+ * Mobile specimen typography (clamp + wrap). Used by PR #20's MerchFontSpecimens when merged;
+ * safe to load early — rules only apply under .merch-font-preview with specimen classes.
+ */
+
+.merch-font-preview .merch-specimen-display {
+  font-size: clamp(1.375rem, 9.6vw, 2.25rem);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-display-md {
+  font-size: clamp(1.25rem, 8vw, 1.875rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-phrase {
+  font-size: clamp(0.9375rem, 5.35vw, 1.5rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.merch-font-preview .merch-specimen-phrase-sm {
+  font-size: clamp(0.875rem, 4.8vw, 1.125rem);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

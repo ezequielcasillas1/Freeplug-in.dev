@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ogLocale, publicAlternates } from '@/i18n/seo'
 import { toAppLocale } from '@/i18n/config'
+import '@/features/merch/merch-mobile-specimen.css'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const locale = toAppLocale((await params).locale)
@@ -19,5 +20,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function MerchLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   setRequestLocale(toAppLocale((await params).locale))
-  return children
+  return <div className="merch-font-preview min-w-0 overflow-x-clip">{children}</div>
 }

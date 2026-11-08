@@ -13,10 +13,10 @@ export default function MerchTshirtsPage() {
 
   return (
     <MerchPageChrome>
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-8 pb-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="text-center">
-            <motion.h1 variants={fadeInUp} className="text-3xl font-bold text-gray-900 mb-4">
+      <main className="min-h-screen min-w-0 bg-gradient-to-b from-white to-zinc-50 pt-6 sm:pt-8 pb-16 sm:pb-20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="text-center min-w-0">
+            <motion.h1 variants={fadeInUp} className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 break-words">
               {t('heading')}
             </motion.h1>
             <motion.p variants={fadeInUp} className="text-lg text-gray-600 mb-8">

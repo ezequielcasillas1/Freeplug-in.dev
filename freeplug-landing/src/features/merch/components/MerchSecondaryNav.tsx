@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useLocale } from 'next-intl'
+import { ChevronRight } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { cn } from '@/lib/utils/cn'
@@ -24,35 +26,71 @@ export function MerchSecondaryNav() {
   const locale = toAppLocale(useLocale())
   const pathname = usePathname() ?? ''
   const { path } = stripMerchPath(pathname)
+  const listRef = useRef<HTMLUListElement>(null)
+  const [scrollHint, setScrollHint] = useState(false)
+
+  const updateScrollHint = useCallback(() => {
+    const el = listRef.current
+    if (!el) return
+    const overflow = el.scrollWidth > el.clientWidth + 2
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4
+    setScrollHint(overflow && !atEnd)
+  }, [])
+
+  useEffect(() => {
+    const el = listRef.current
+    if (!el) return
+    updateScrollHint()
+    el.addEventListener('scroll', updateScrollHint, { passive: true })
+    const ro = new ResizeObserver(updateScrollHint)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', updateScrollHint)
+      ro.disconnect()
+    }
+  }, [updateScrollHint])
 
   return (
     <nav
       aria-label={t('subnav.aria')}
       className="sticky top-16 sm:top-20 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md"
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ul className="flex gap-1 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-thin -mx-1 px-1">
-          {TABS.map((tab) => {
-            const href = publicHref(`/merch/${tab.slug}`, locale)
-            const active = path === `/merch/${tab.slug}`
-            return (
-              <li key={tab.slug} className="snap-start shrink-0">
-                <Link
-                  href={href}
-                  className={cn(
-                    'inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors',
-                    active
-                      ? 'bg-[#ba3d3d]/10 text-[#ba3d3d]'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  )}
-                  aria-current={active ? 'page' : undefined}
-                >
-                  {t(tab.labelKey)}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+        <div className="relative min-w-0">
+          <ul
+            ref={listRef}
+            className="flex gap-2 overflow-x-auto overscroll-x-contain py-2 pr-10 sm:pr-12 lg:pr-0 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {TABS.map((tab) => {
+              const href = publicHref(`/merch/${tab.slug}`, locale)
+              const active = path === `/merch/${tab.slug}`
+              return (
+                <li key={tab.slug} className="snap-start shrink-0">
+                  <Link
+                    href={href}
+                    className={cn(
+                      'inline-flex items-center justify-center rounded-lg px-3 sm:px-4 min-h-11 text-sm font-medium whitespace-nowrap transition-colors',
+                      active
+                        ? 'bg-[#ba3d3d]/10 text-[#ba3d3d]'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    )}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    {t(tab.labelKey)}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+          {scrollHint ? (
+            <div
+              className="pointer-events-none absolute inset-y-0 right-0 flex w-14 items-center justify-end bg-gradient-to-l from-white from-30% via-white/90 to-transparent pr-0.5 lg:hidden"
+              aria-hidden
+            >
+              <ChevronRight className="h-5 w-5 text-gray-400" strokeWidth={2} />
+            </div>
+          ) : null}
+        </div>
       </div>
     </nav>
   )

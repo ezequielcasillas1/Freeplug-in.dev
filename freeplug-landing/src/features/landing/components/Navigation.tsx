@@ -140,7 +140,7 @@ export function Navigation() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-gray-600 hover:text-[#ba3d3d] transition-colors rounded-xl hover:bg-gray-100"
+            className="lg:hidden inline-flex items-center justify-center min-h-11 min-w-11 p-2 text-gray-600 hover:text-[#ba3d3d] transition-colors rounded-xl hover:bg-gray-100"
             aria-label={t('navigation.ariaLabel.toggleMenu')}
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -165,7 +165,7 @@ export function Navigation() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={isOpen ? { opacity: 1, x: 0 } : {}}
                 transition={{ delay: index * 0.05 }}
-                className="block px-4 py-3 text-gray-600 hover:text-[#ba3d3d] hover:bg-[#ba3d3d]/5 transition-colors font-medium rounded-xl"
+                className="block px-4 py-3 min-h-11 text-gray-600 hover:text-[#ba3d3d] hover:bg-[#ba3d3d]/5 transition-colors font-medium rounded-xl"
               >
                 {t(link.labelKey)}
               </motion.a>
@@ -175,7 +175,7 @@ export function Navigation() {
               <Link
                 href="/login"
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-3 text-gray-600 hover:text-[#ba3d3d] hover:bg-[#ba3d3d]/5 transition-colors font-medium rounded-xl"
+                className="block px-4 py-3 min-h-11 text-gray-600 hover:text-[#ba3d3d] hover:bg-[#ba3d3d]/5 transition-colors font-medium rounded-xl"
               >
                 {t('navigation.logIn')}
               </Link>
