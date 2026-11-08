@@ -6,7 +6,8 @@ import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { MerchCheckoutBlock } from '@/features/merch/components/MerchCheckoutBlock'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
-import { FONT_BUNDLE_STYLES, FONT_BUNDLE_USE_CASES } from '@/lib/merch/product'
+import { MerchFontSpecimens } from '@/features/merch/components/MerchFontSpecimens'
+import { FONT_BUNDLE_USE_CASES } from '@/lib/merch/product'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
@@ -38,6 +39,8 @@ export function FontBundleProductClient({ checkoutEnabled }: { checkoutEnabled: 
                 {t('productLead')}
               </motion.p>
 
+              <MerchFontSpecimens />
+
               <div className="grid lg:grid-cols-2 gap-10 mb-12">
                 <motion.div variants={fadeInUp} className="space-y-4">
                   <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-gray-200">
@@ -66,9 +69,9 @@ export function FontBundleProductClient({ checkoutEnabled }: { checkoutEnabled: 
                   <section>
                     <h2 className="text-xl font-bold text-gray-900 mb-3">{t('stylesHeading')}</h2>
                     <ul className="list-disc pl-5 text-gray-700 space-y-2">
-                      {FONT_BUNDLE_STYLES.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
+                      <li>{t('includedStyles.extended')}</li>
+                      <li>{t('includedStyles.dispatch')}</li>
+                      <li>{t('includedStyles.cursive')}</li>
                     </ul>
                     <p className="mt-4 text-sm text-gray-600">{t('stylesSeo')}</p>
                   </section>
