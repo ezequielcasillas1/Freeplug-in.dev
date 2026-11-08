@@ -22,6 +22,7 @@ import {
   type ShirtColor,
   type ShirtSize,
 } from '@/lib/merch/shirts/catalog'
+import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
 import { cn } from '@/lib/utils/cn'
 
 const SWATCH: Record<ShirtColor, string> = {
@@ -59,21 +60,33 @@ export function ShirtProductClient({
 
   return (
     <MerchPageChrome>
-      <main className="min-h-screen min-w-0 bg-gradient-to-b from-white to-zinc-50 pt-6 sm:pt-8 pb-16 sm:pb-20">
+      <main className={MERCH_TSHIRT_MAIN_CLASS}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="min-w-0">
-            <motion.p variants={fadeInUp} className="text-sm text-gray-500 mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-              <Link href={publicHref('/merch', locale)} className="hover:text-[#ba3d3d]">
+            <motion.p variants={fadeInUp} className="text-sm text-gray-500 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <Link href={publicHref('/merch', locale)} className="hover:text-[#ba3d3d] min-h-[44px] inline-flex items-center">
                 {t('breadcrumbMerch')}
               </Link>
               <span aria-hidden>/</span>
-              <Link href={publicHref('/merch/t-shirts', locale)} className="hover:text-[#ba3d3d]">
+              <Link href={publicHref('/merch/t-shirts', locale)} className="hover:text-[#ba3d3d] min-h-[44px] inline-flex items-center">
                 {t('heading')}
               </Link>
             </motion.p>
 
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 min-w-0">
-              <motion.div variants={fadeInUp} className="min-w-0 space-y-4">
+            <motion.header variants={fadeInUp} className={`${MERCH_PAGE_TITLE_SCROLL_MT} mb-6 lg:mb-8 min-w-0`}>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{title}</h1>
+              <p className="text-xl sm:text-2xl font-semibold text-[#ba3d3d] mt-2" aria-live="polite">
+                {formatUsdFromCents(unitCents)}
+                {quantity > 1 ? (
+                  <span className="text-base sm:text-lg text-gray-600 font-normal block sm:inline sm:ml-1 mt-1 sm:mt-0">
+                    {t('lineTotal', { total: formatUsdFromCents(unitCents * quantity) })}
+                  </span>
+                ) : null}
+              </p>
+            </motion.header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 min-w-0">
+              <motion.div variants={fadeInUp} className="min-w-0 space-y-3 sm:space-y-4 order-1">
                 <MerchContainedImage
                   src={mockupSrc}
                   alt={t('mockupAlt', { title, color, view })}
@@ -83,14 +96,14 @@ export function ShirtProductClient({
                   sizes="(max-width: 1024px) 100vw, 480px"
                 />
                 {canToggleBack ? (
-                  <div className="flex gap-2" role="group" aria-label={t('viewToggleAria')}>
+                  <div className="flex w-full min-w-0 gap-2" role="group" aria-label={t('viewToggleAria')}>
                     {(['front', 'back'] as const).map((side) => (
                       <button
                         key={side}
                         type="button"
                         onClick={() => setView(side)}
                         className={cn(
-                          'min-h-[44px] flex-1 rounded-lg border px-3 text-sm font-medium',
+                          'min-h-11 flex-1 w-full min-w-0 rounded-lg border px-3 text-sm sm:text-base font-medium',
                           view === side ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white' : 'border-gray-200 text-gray-600 bg-gray-50'
                         )}
                       >
@@ -101,23 +114,10 @@ export function ShirtProductClient({
                 ) : null}
               </motion.div>
 
-              <motion.div variants={fadeInUp} className="min-w-0 space-y-6">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{title}</h1>
-                  <p className="text-xl font-semibold text-[#ba3d3d] mt-2" aria-live="polite">
-                    {formatUsdFromCents(unitCents)}
-                    {quantity > 1 ? (
-                      <span className="text-base text-gray-600 font-normal">
-                        {' '}
-                        · {t('lineTotal', { total: formatUsdFromCents(unitCents * quantity) })}
-                      </span>
-                    ) : null}
-                  </p>
-                </div>
-
-                <fieldset className="min-w-0 border-0 p-0 m-0">
+              <motion.div variants={fadeInUp} className="min-w-0 space-y-5 sm:space-y-6 order-2">
+                <fieldset className="min-w-0 border-0 p-0 m-0 w-full">
                   <legend className="text-sm font-semibold text-gray-900 mb-2">{t('colorLabel')}</legend>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5 w-full">
                     {SHIRT_COLORS.map((c) => (
                       <button
                         key={c}
@@ -125,13 +125,13 @@ export function ShirtProductClient({
                         aria-pressed={color === c}
                         onClick={() => setColor(c)}
                         className={cn(
-                          'min-h-[44px] min-w-[44px] rounded-full border-2 p-1',
+                          'min-h-11 min-w-11 rounded-full border-2 p-1 shrink-0',
                           color === c ? 'border-[#ba3d3d]' : 'border-transparent'
                         )}
                         title={t(`colors.${c}`)}
                       >
                         <span
-                          className="block h-8 w-8 rounded-full border border-gray-300"
+                          className="block h-9 w-9 rounded-full border border-gray-300"
                           style={{ backgroundColor: SWATCH[c] }}
                         />
                         <span className="sr-only">{t(`colors.${c}`)}</span>
@@ -140,9 +140,9 @@ export function ShirtProductClient({
                   </div>
                 </fieldset>
 
-                <fieldset className="min-w-0 border-0 p-0 m-0">
+                <fieldset className="min-w-0 border-0 p-0 m-0 w-full">
                   <legend className="text-sm font-semibold text-gray-900 mb-2">{t('sizeLabel')}</legend>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 w-full">
                     {SHIRT_SIZES.map((s) => (
                       <button
                         key={s}
@@ -150,7 +150,7 @@ export function ShirtProductClient({
                         aria-pressed={size === s}
                         onClick={() => setSize(s)}
                         className={cn(
-                          'min-h-[44px] min-w-[44px] rounded-lg border px-3 text-sm font-semibold',
+                          'min-h-11 min-w-11 flex-1 basis-[calc(33.33%-0.5rem)] max-w-[4.5rem] sm:max-w-none sm:flex-none rounded-lg border px-2 sm:px-3 text-sm font-semibold',
                           size === s ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white' : 'border-gray-200 text-gray-700 bg-gray-50'
                         )}
                       >
@@ -158,10 +158,10 @@ export function ShirtProductClient({
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">{t('sizeNote')}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-2 leading-relaxed">{t('sizeNote')}</p>
                 </fieldset>
 
-                <div>
+                <div className="w-full min-w-0">
                   <label htmlFor="shirt-qty" className="text-sm font-semibold text-gray-900 block mb-2">
                     {t('quantityLabel')}
                   </label>
@@ -169,7 +169,7 @@ export function ShirtProductClient({
                     id="shirt-qty"
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
-                    className="min-h-[44px] w-full max-w-[8rem] rounded-lg border border-gray-300 px-3 text-base"
+                    className="min-h-11 w-full rounded-lg border border-gray-300 px-3 text-base"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                       <option key={n} value={n}>
@@ -188,9 +188,10 @@ export function ShirtProductClient({
                   buyLabel={t('buyCta')}
                   comingSoonLabel={t('comingSoon')}
                   errorGeneric={t('checkoutError')}
+                  className="w-full"
                 />
 
-                <section className="text-sm text-gray-600 space-y-2 border-t border-gray-200 pt-4">
+                <section className="text-sm sm:text-base text-gray-600 space-y-2 border-t border-gray-200 pt-4 break-words">
                   <p>{t('productionInfo')}</p>
                   <p>{t('shippingInfo', { shipping: formatUsdFromCents(shippingCents) })}</p>
                   <p>{t('shippingUsOnly')}</p>

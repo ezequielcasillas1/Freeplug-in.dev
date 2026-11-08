@@ -59,17 +59,18 @@ export function MerchSecondaryNav() {
         <div className="relative min-w-0">
           <ul
             ref={listRef}
-            className="flex gap-2 overflow-x-auto overscroll-x-contain py-2 pr-10 sm:pr-12 lg:pr-0 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain py-2 pl-0.5 pr-12 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5"
           >
             {TABS.map((tab) => {
               const href = publicHref(`/merch/${tab.slug}`, locale)
-              const active = path === `/merch/${tab.slug}`
+              const base = `/merch/${tab.slug}`
+              const active = path === base || path.startsWith(`${base}/`)
               return (
                 <li key={tab.slug} className="snap-start shrink-0">
                   <Link
                     href={href}
                     className={cn(
-                      'inline-flex items-center justify-center rounded-lg px-3 sm:px-4 min-h-11 text-sm font-medium whitespace-nowrap transition-colors',
+                      'inline-flex items-center justify-center rounded-lg px-3 sm:px-4 min-h-11 min-w-[44px] text-sm font-medium whitespace-nowrap transition-colors',
                       active
                         ? 'bg-[#ba3d3d]/10 text-[#ba3d3d]'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'

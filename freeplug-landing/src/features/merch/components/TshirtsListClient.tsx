@@ -8,6 +8,7 @@ import { fadeInUp, staggerContainer } from '@/features/landing/animations/landin
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
+import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
 import { formatUsdFromCents, type PublicShirtProduct } from '@/lib/merch/shirts/catalog'
 
 export function TshirtsListClient({ products }: { products: PublicShirtProduct[] }) {
@@ -16,20 +17,22 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
 
   return (
     <MerchPageChrome>
-      <main className="min-h-screen min-w-0 bg-gradient-to-b from-white to-zinc-50 pt-6 sm:pt-8 pb-16 sm:pb-20">
+      <main className={MERCH_TSHIRT_MAIN_CLASS}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
           <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="min-w-0">
-            <motion.h1 variants={fadeInUp} className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 break-words">
+            <motion.h1
+              variants={fadeInUp}
+              className={`${MERCH_PAGE_TITLE_SCROLL_MT} text-2xl sm:text-3xl font-bold text-gray-900 mb-3 break-words`}
+            >
               {t('heading')}
             </motion.h1>
-            <motion.p variants={fadeInUp} className="text-base sm:text-lg text-gray-600 mb-2 max-w-2xl">
-              {t('listingLead')}
-            </motion.p>
-            <motion.p variants={fadeInUp} className="text-sm text-gray-500 mb-8 max-w-2xl">
-              {t('priceFrontOnly')} · {t('priceFrontBack')}
-            </motion.p>
+            <motion.div variants={fadeInUp} className="mb-6 sm:mb-8 max-w-2xl space-y-2 min-w-0">
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">{t('listingLead')}</p>
+              <p className="text-sm sm:text-base text-gray-500 break-words leading-relaxed">{t('priceFrontOnly')}</p>
+              <p className="text-sm sm:text-base text-gray-500 break-words leading-relaxed">{t('priceFrontBack')}</p>
+            </motion.div>
 
-            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 min-w-0">
+            <ul className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 min-w-0">
               {products.map((p) => {
                 const img = p.mockups['Black-front'] ?? p.mockups['White-front']
                 const title = t(`products.${p.titleKey}`)
@@ -49,9 +52,11 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
                           sizes="(max-width: 640px) 100vw, 320px"
                         />
                       ) : null}
-                      <div className="p-4 min-w-0">
-                        <h2 className="font-semibold text-gray-900 text-base break-words">{title}</h2>
-                        <p className="text-sm text-[#ba3d3d] font-medium mt-1">
+                      <div className="p-3.5 sm:p-4 min-w-0">
+                        <h2 className="font-semibold text-gray-900 text-[0.95rem] min-[360px]:text-base leading-snug break-words">
+                          {title}
+                        </h2>
+                        <p className="text-sm min-[360px]:text-base text-[#ba3d3d] font-semibold mt-1.5">
                           {t('fromPrice', { price: formatUsdFromCents(p.fromPriceCents) })}
                         </p>
                       </div>
