@@ -64,7 +64,7 @@ export function MerchCheckoutButton({
           placeholder={emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ba3d3d]/40"
+          className="w-full min-h-11 rounded-xl border border-gray-200 px-4 py-3 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ba3d3d]/40"
         />
       </div>
       <Button
@@ -72,7 +72,7 @@ export function MerchCheckoutButton({
         size="lg"
         disabled={loading || !checkoutEnabled}
         onClick={() => void startCheckout()}
-        className="w-full sm:w-auto bg-[#ba3d3d] hover:bg-[#8a2e2e] text-white disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full min-h-11 sm:w-auto sm:min-w-[12rem] bg-[#ba3d3d] hover:bg-[#8a2e2e] text-white disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {loading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden /> : <ShoppingBag className="w-5 h-5" aria-hidden />}
         <span className="ml-2">{label}</span>

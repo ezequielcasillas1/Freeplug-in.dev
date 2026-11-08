@@ -1,7 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
+import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
@@ -22,34 +22,36 @@ export default function MerchIndexPage() {
 
   return (
     <MerchPageChrome>
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-8 pb-20">
-        <section className="py-12 sm:py-16">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid lg:grid-cols-2 gap-12 items-start">
-              <motion.div variants={fadeInUp}>
+      <main className="min-h-screen min-w-0 bg-gradient-to-b from-white to-zinc-50 pt-6 sm:pt-8 pb-16 sm:pb-20">
+        <section className="py-10 sm:py-12 lg:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-start min-w-0">
+              <motion.div variants={fadeInUp} className="min-w-0">
                 <p className="text-sm font-semibold uppercase tracking-wider text-[#ba3d3d] mb-3">{t('eyebrow')}</p>
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{t('heading')}</h1>
-                <p className="text-lg text-gray-600 mb-8">{t('lead')}</p>
-                <ul className="space-y-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">{t('heading')}</h1>
+                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 break-words">{t('lead')}</p>
+                <ul className="space-y-3 sm:space-y-4">
                   {cards.map((c) => (
                     <li key={c.href}>
-                      <Link href={publicHref(c.href, locale)} className="block rounded-xl border border-gray-200 p-4 hover:border-[#ba3d3d]/40 transition-colors">
-                        <span className="font-semibold text-gray-900">{c.title}</span>
-                        <p className="text-sm text-gray-600 mt-1">{c.blurb}</p>
+                      <Link
+                        href={publicHref(c.href, locale)}
+                        className="block rounded-xl border border-gray-200 p-4 sm:p-5 min-h-11 hover:border-[#ba3d3d]/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ba3d3d]/40"
+                      >
+                        <span className="font-semibold text-gray-900 break-words">{c.title}</span>
+                        <p className="text-sm text-gray-600 mt-1 break-words">{c.blurb}</p>
                       </Link>
                     </li>
                   ))}
                 </ul>
               </motion.div>
-              <motion.div variants={fadeInUp} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-gray-200 shadow-lg">
-                <Image
+              <motion.div variants={fadeInUp} className="min-w-0 w-full shadow-lg rounded-2xl">
+                <MerchContainedImage
                   src="/images/merch/compare-logo-vs-font.png"
                   alt={t('previewAlt')}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  width={2600}
+                  height={1860}
                   priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </motion.div>
             </motion.div>
