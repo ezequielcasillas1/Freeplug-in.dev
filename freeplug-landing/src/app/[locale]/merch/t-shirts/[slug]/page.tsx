@@ -3,6 +3,9 @@ import { isMerchShirtsEnabled } from '@/lib/merch/flags'
 import { getShirtBySlug, listPublicShirtProducts } from '@/lib/merch/shirts/catalog'
 import { ShirtProductClient } from '@/features/merch/components/ShirtProductClient'
 
+// Read MERCH_SHIRTS_ENABLED at request time (Worker var), not at build time.
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return listPublicShirtProducts().map((p) => ({ slug: p.slug }))
 }
