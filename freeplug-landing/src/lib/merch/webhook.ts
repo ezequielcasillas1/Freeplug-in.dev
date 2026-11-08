@@ -2,8 +2,8 @@ import type Stripe from 'stripe'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getStripeFetch } from '@/lib/stripe/server'
 import { isMerchFontBundleSession } from './checkout'
-import { issueMerchFontBundleToken, revokeMerchTokensByChargeId, revokeMerchTokensByPaymentIntent } from './tokens'
-import { merchDownloadUrl, sendMerchDownloadEmail } from './email'
+import { ensureMerchFontBundleToken, revealMerchDownload, trySendMerchDownloadEmailOnce, loadMerchTokenRow } from './delivery'
+import { revokeMerchTokensByChargeId, revokeMerchTokensByPaymentIntent } from './tokens'
 
 export async function handleMerchCheckoutSessionCompleted(
   admin: SupabaseClient,
@@ -17,25 +17,20 @@ export async function handleMerchCheckoutSessionCompleted(
   const pi = session.payment_intent
   const paymentIntentId = typeof pi === 'string' ? pi : pi?.id ?? null
   const email = session.customer_details?.email ?? session.customer_email ?? null
-  const issued = await issueMerchFontBundleToken(admin, {
+  const ensured = await ensureMerchFontBundleToken(admin, {
     stripeCheckoutSessionId: session.id,
     stripePaymentIntentId: paymentIntentId,
     buyerEmail: email,
   })
-  if ('error' in issued) {
-    if (issued.error === 'token_already_issued') return 'handled'
-    console.error('[merch/webhook] issue token', issued.error)
-    throw new Error(issued.error)
+  if ('error' in ensured) {
+    console.error('[merch/webhook] issue token', ensured.error)
+    throw new Error(ensured.error)
   }
   if (email) {
-    try {
-      await sendMerchDownloadEmail({
-        to: email,
-        downloadUrl: merchDownloadUrl(issued.token),
-        expiresAtIso: issued.expiresAt,
-      })
-    } catch (e) {
-      console.error('[merch/webhook] email', e instanceof Error ? e.message : e)
+    const row = await loadMerchTokenRow(admin, session.id)
+    const reveal = row ? revealMerchDownload(row) : null
+    if (reveal?.state === 'ready') {
+      await trySendMerchDownloadEmailOnce(admin, session.id, email, reveal.token, reveal.expiresAt)
     }
   }
   return 'handled'

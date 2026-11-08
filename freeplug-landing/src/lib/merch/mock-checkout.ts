@@ -25,8 +25,7 @@ export async function ensureMockMerchToken(
     buyerEmail: email ?? 'buyer@example.com',
   })
   if ('error' in issued) {
-    if (issued.error === 'token_already_issued') return null
     throw new Error(issued.error)
   }
-  return issued
+  return { token: issued.token, expiresAt: issued.expiresAt }
 }

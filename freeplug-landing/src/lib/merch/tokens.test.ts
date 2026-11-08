@@ -1,6 +1,7 @@
 // @vitest-environment node
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
+  deriveMerchDownloadToken,
   generateMerchToken,
   hashMerchToken,
   issueMerchFontBundleToken,
@@ -16,6 +17,7 @@ describe('merch tokens', () => {
   })
 
   it('issues and validates a token', async () => {
+    process.env.MERCH_TOKEN_SECRET = 'unit-test-secret'
     const inserts: unknown[] = []
     const store = new Map<string, Record<string, unknown>>()
     const admin = {
@@ -73,5 +75,11 @@ describe('merch tokens', () => {
 
   it('TTL is about 24h', () => {
     expect(MERCH_TOKEN_TTL_MS).toBe(24 * 60 * 60 * 1000)
+  })
+
+  it('derives stable session tokens', () => {
+    process.env.MERCH_TOKEN_SECRET = 'unit-test-secret'
+    const cs = 'cs_deterministic'
+    expect(deriveMerchDownloadToken(cs)).toBe(deriveMerchDownloadToken(cs))
   })
 })
