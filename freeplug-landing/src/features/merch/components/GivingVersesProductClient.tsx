@@ -20,7 +20,7 @@ import {
 } from '@/lib/merch/collections/catalog'
 import {
   getGivingVerse,
-  givingVerseMockupPublicPath,
+  givingVersePreviewForColor,
   listGivingVerses,
 } from '@/lib/merch/collections/giving-verses'
 import { defaultSplitSelection, planSplitOptions, resolveSplitOptionKey } from '@/lib/merch/collections/option-groups'
@@ -70,7 +70,20 @@ export function GivingVersesProductClient({
 
   const option = splitOptionKey ? resolveCatalogOption(entry, splitOptionKey) : null
 
-  const mockupSrc = verseId ? givingVerseMockupPublicPath(verseId) : product.mockupSrc
+  const selectedColorName = splitPlan
+    ? splitPlan.dim1Kind === 'color'
+      ? splitDim1
+      : splitPlan.dim2Kind === 'color'
+        ? effectiveSplitDim2
+        : ''
+    : ''
+
+  const mockupSrc =
+    verseId && selectedColorName
+      ? givingVersePreviewForColor(verseId, selectedColorName)
+      : verseId
+        ? givingVersePreviewForColor(verseId, 'White')
+        : product.mockupSrc
 
   const unitCents = option?.price_cents ?? product.fromPriceCents
   const shippingCents = option
@@ -160,29 +173,48 @@ export function GivingVersesProductClient({
               <motion.div variants={fadeInUp} className="min-w-0 space-y-5 sm:space-y-6 order-2">
                 <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{t(descriptionKey)}</p>
 
-                <fieldset className="min-w-0 border-0 p-0 m-0 w-full">
+                <fieldset className="min-w-0 border-0 p-0 m-0 w-full mb-1">
                   <legend className="text-sm font-semibold text-gray-900 mb-2">{t('verseLabel')}</legend>
                   <motion.p className="sr-only" aria-live="polite">
                     {selectedVerse?.book ?? ''}
                   </motion.p>
-                  <div className="flex flex-wrap gap-2 w-full max-h-48 overflow-y-auto pr-1">
+                  <label className="sm:hidden block w-full">
+                    <span className="sr-only">{t('verseLabel')}</span>
+                    <select
+                      className="min-h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-900"
+                      value={verseId}
+                      onChange={(e) => setVerseId(e.target.value)}
+                    >
+                      {verses.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.book}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <motion.ol
+                    className="hidden sm:flex flex-wrap gap-2 w-full list-none p-0 m-0"
+                    aria-label={t('verseLabel')}
+                  >
                     {verses.map((v) => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setVerseId(v.id)}
-                        className={cn(
-                          'min-h-11 rounded-lg border px-3 text-sm font-medium text-left max-w-full',
-                          verseId === v.id
-                            ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white'
-                            : 'border-gray-200 text-gray-600 bg-gray-50'
-                        )}
-                        title={v.phrase}
-                      >
-                        {v.book}
-                      </button>
+                      <li key={v.id}>
+                        <button
+                          type="button"
+                          onClick={() => setVerseId(v.id)}
+                          className={cn(
+                            'min-h-11 rounded-lg border px-3 text-sm font-medium text-left',
+                            verseId === v.id
+                              ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white'
+                              : 'border-gray-200 text-gray-600 bg-gray-50'
+                          )}
+                          title={v.phrase}
+                          aria-pressed={verseId === v.id}
+                        >
+                          {v.book}
+                        </button>
+                      </li>
                     ))}
-                  </div>
+                  </motion.ol>
                 </fieldset>
 
                 {splitPlan ? (

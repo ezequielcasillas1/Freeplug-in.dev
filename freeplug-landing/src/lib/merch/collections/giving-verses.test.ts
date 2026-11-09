@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { getCatalogProduct, validateCollectionCheckoutLine } from './catalog'
-import { GIVING_VERSES_PRODUCT_SLUG, listGivingVerses } from './giving-verses'
+import {
+  GIVING_VERSES_PRODUCT_SLUG,
+  givingVersePreviewForColor,
+  listGivingVerses,
+} from './giving-verses'
 
 describe('giving verses tee', () => {
   it('lists 22 verses from handoff catalog', () => {
@@ -13,6 +17,14 @@ describe('giving verses tee', () => {
     expect(entry.checkout_sellable).toBe(false)
     expect(entry.printify_product_id).toBe('')
     expect(entry.options.length).toBeGreaterThan(0)
+  })
+
+  it('picks light vs dark preview art from blank color', () => {
+    const id = listGivingVerses()[0]!.id
+    expect(givingVersePreviewForColor(id, 'White')).toContain('-on-light.webp')
+    expect(givingVersePreviewForColor(id, 'Black')).toContain('-on-dark.webp')
+    expect(givingVersePreviewForColor(id, 'Athletic Heather')).toContain('-on-light.webp')
+    expect(givingVersePreviewForColor(id, 'Navy')).toContain('-on-dark.webp')
   })
 
   it('rejects checkout while sellable is false', () => {

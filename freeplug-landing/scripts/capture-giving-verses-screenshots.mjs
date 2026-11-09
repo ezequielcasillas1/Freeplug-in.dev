@@ -18,7 +18,7 @@ const GRID = `${base}/merch/apparel`
 async function waitPdpReady(page) {
   await page.goto(PDP, { waitUntil: 'networkidle' })
   await page.waitForSelector('h1', { state: 'visible', timeout: 20000 })
-  await page.waitForSelector('main img[src*="giving-verses"]', { state: 'visible', timeout: 20000 })
+  await page.waitForSelector('main img[src*="giving-verses/"]', { state: 'visible', timeout: 20000 })
   await page.waitForFunction(
     () => {
       const h1 = document.querySelector('h1')
@@ -40,7 +40,7 @@ async function main() {
 
   await page.goto(PDP_ES, { waitUntil: 'networkidle' })
   await page.waitForSelector('h1', { state: 'visible', timeout: 20000 })
-  await page.waitForSelector('main img[src*="giving-verses"]', { state: 'visible', timeout: 20000 })
+  await page.waitForSelector('main img[src*="giving-verses/"]', { state: 'visible', timeout: 20000 })
   await page.screenshot({ path: path.join(OUT, 'giving-verses-es-desktop.png'), fullPage: true })
 
   await waitPdpReady(page)
@@ -55,6 +55,19 @@ async function main() {
     { timeout: 10000 }
   )
   await page.screenshot({ path: path.join(OUT, 'giving-verses-verse-07-acts-desktop.png'), fullPage: true })
+
+  await waitPdpReady(page)
+  const whiteBtn = page.getByRole('button', { name: 'White', exact: true })
+  if (await whiteBtn.isVisible()) {
+    await whiteBtn.click()
+    await page.waitForSelector('main img[src*="on-light"]', { timeout: 10000 })
+    await page.screenshot({ path: path.join(OUT, 'giving-verses-color-white-desktop.png'), fullPage: true })
+  }
+  const blackBtn = page.getByRole('button', { name: 'Black', exact: true })
+  if (await blackBtn.isVisible()) {
+    await blackBtn.click()
+    await page.waitForSelector('main img[src*="on-dark"]', { timeout: 10000 })
+  }
 
   const iphone = await browser.newContext({ ...devices['iPhone 13'] })
   const mobile = await iphone.newPage()
