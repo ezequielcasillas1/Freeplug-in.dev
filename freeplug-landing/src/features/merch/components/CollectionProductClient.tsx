@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
@@ -24,6 +24,7 @@ import {
   type MerchCollectionSlug,
   type PublicCollectionProduct,
 } from '@/lib/merch/collections/catalog'
+import { defaultSplitSelection, planSplitOptions, resolveSplitOptionKey } from '@/lib/merch/collections/option-groups'
 import { qualifiesForFreeCollectionShipping } from '@/lib/merch/collections/shipping'
 import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
 import { cn } from '@/lib/utils/cn'
@@ -52,11 +53,32 @@ export function CollectionProductClient({
   const locale = toAppLocale(useLocale())
   const entry = getCatalogProduct(product.slug)!
 
+  const splitPlan = useMemo(() => (product.isCrewneck ? null : planSplitOptions(entry)), [entry, product.isCrewneck])
+  const defaultSplit = splitPlan ? defaultSplitSelection(splitPlan) : null
+
   const defaultOption = product.isCrewneck ? null : (entry.options[0]?.key ?? null)
   const [optionKey, setOptionKey] = useState<string | null>(defaultOption)
+  const [splitDim1, setSplitDim1] = useState(defaultSplit?.dim1 ?? '')
+  const [splitDim2, setSplitDim2] = useState(defaultSplit?.dim2 ?? '')
   const [color, setColor] = useState<CrewneckColor>('Black')
   const [size, setSize] = useState<CrewneckSize>('M')
   const [quantity, setQuantity] = useState(1)
+
+  const splitDim2Values = useMemo(() => {
+    if (!splitPlan) return []
+    return splitPlan.dim2Values.filter((d2) => splitPlan.pairs.has(`${splitDim1}\0${d2}`))
+  }, [splitPlan, splitDim1])
+
+  useEffect(() => {
+    if (!splitPlan) return
+    const key = resolveSplitOptionKey(splitPlan, splitDim1, splitDim2)
+    if (key) setOptionKey(key)
+  }, [splitPlan, splitDim1, splitDim2])
+
+  useEffect(() => {
+    if (!splitPlan || splitDim2Values.includes(splitDim2)) return
+    if (splitDim2Values[0]) setSplitDim2(splitDim2Values[0])
+  }, [splitPlan, splitDim2, splitDim2Values])
 
   const resolvedKey = product.isCrewneck ? `${size} / ${color}` : optionKey
   const option = resolvedKey ? resolveCatalogOption(entry, resolvedKey) : null
@@ -92,6 +114,26 @@ export function CollectionProductClient({
 
   const title = t(`products.${product.titleKey}`)
   const descriptionKey = `productDetails.${product.titleKey}` as const
+
+  const splitDim1Legend =
+    splitPlan?.dim1Kind === 'style'
+      ? t('styleLabel')
+      : splitPlan?.dim1Kind === 'color'
+        ? t('colorLabel')
+        : splitPlan?.dim1Kind === 'size'
+          ? t('sizeLabel')
+          : t('optionLabel')
+  const splitDim2Legend =
+    splitPlan?.dim2Kind === 'size' ? t('sizeLabel') : splitPlan?.dim2Kind === 'color' ? t('colorLabel') : t('optionLabel')
+
+  const labelSplitDim1 = (v: string) => {
+    if (splitPlan?.dim1Kind === 'style') {
+      if (v === 'Artwork') return t('styleArtwork')
+      if (v === 'Photo') return t('stylePhoto')
+    }
+    return splitPlan ? splitPlan.formatDim1(v) : v
+  }
+  const labelSplitDim2 = (v: string) => (splitPlan ? splitPlan.formatDim2(v) : v)
 
   return (
     <MerchPageChrome>
@@ -135,7 +177,50 @@ export function CollectionProductClient({
               <motion.div variants={fadeInUp} className="min-w-0 space-y-5 sm:space-y-6 order-2">
                 <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{t(descriptionKey)}</p>
 
-                {!product.isCrewneck && entry.options.length > 1 ? (
+                {!product.isCrewneck && splitPlan ? (
+                  <>
+                    <fieldset className="min-w-0 border-0 p-0 m-0 w-full">
+                      <legend className="text-sm font-semibold text-gray-900 mb-2">{splitDim1Legend}</legend>
+                      <div className="flex flex-wrap gap-2 w-full">
+                        {splitPlan.dim1Values.map((v) => (
+                          <button
+                            key={v}
+                            type="button"
+                            onClick={() => setSplitDim1(v)}
+                            className={cn(
+                              'min-h-11 rounded-lg border px-3 text-sm font-medium',
+                              splitDim1 === v
+                                ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white'
+                                : 'border-gray-200 text-gray-600 bg-gray-50'
+                            )}
+                          >
+                            {labelSplitDim1(v)}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <fieldset className="min-w-0 border-0 p-0 m-0 w-full">
+                      <legend className="text-sm font-semibold text-gray-900 mb-2">{splitDim2Legend}</legend>
+                      <div className="flex flex-wrap gap-2 w-full">
+                        {splitDim2Values.map((v) => (
+                          <button
+                            key={v}
+                            type="button"
+                            onClick={() => setSplitDim2(v)}
+                            className={cn(
+                              'min-h-11 rounded-lg border px-3 text-sm font-medium',
+                              splitDim2 === v
+                                ? 'border-[#ba3d3d] text-[#ba3d3d] bg-white'
+                                : 'border-gray-200 text-gray-600 bg-gray-50'
+                            )}
+                          >
+                            {labelSplitDim2(v)}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  </>
+                ) : !product.isCrewneck && entry.options.length > 1 ? (
                   <fieldset className="min-w-0 border-0 p-0 m-0 w-full">
                     <legend className="text-sm font-semibold text-gray-900 mb-2">{t('optionLabel')}</legend>
                     <div className="flex flex-wrap gap-2 w-full">
@@ -151,7 +236,7 @@ export function CollectionProductClient({
                               : 'border-gray-200 text-gray-600 bg-gray-50'
                           )}
                         >
-                          {opt.label ?? t(`options.${opt.key}`, { default: opt.key })}
+                          {opt.label ?? opt.key}
                         </button>
                       ))}
                     </div>

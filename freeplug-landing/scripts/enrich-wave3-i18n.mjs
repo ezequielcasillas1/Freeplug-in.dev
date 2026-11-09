@@ -82,17 +82,22 @@ const DETAIL_EN = {
 
 const DETAIL_ES = {
   'pin-fp-mark': 'Pin de 1.25″ con marca FP. Se vende por unidad.',
-  'good-measure-longsleeve': 'Camiseta manga larga con Lucas 6:38 solo en el frente (este blank no lleva arte en manga).',
+  'good-measure-longsleeve':
+    'Camiseta manga larga; arte Lucas 6:38 en inglés (KJV) solo en el frente (este blank no lleva arte en manga).',
   'day-one-zip': 'Sudadera con cremallera y bordado en el pecho izquierdo. La digitalización del bordado sigue al primer pedido.',
   'hustle-joggers': 'Joggers unisex con bordado en el muslo. La digitalización del bordado sigue al primer pedido.',
-  'kjv-woven-blanket': 'Manta tejida con la frase RVR 1960: Dad, y se os dará.',
-  'kjv-serving-tray': 'Bandeja acrílica transparente con el texto completo de Lucas 6:38.',
-  'kjv-bookmark-1': 'Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños.',
-  'kjv-bookmark-2': 'Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños.',
-  'kjv-bookmark-3': 'Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños.',
-  'kjv-bookmark-4': 'Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños.',
+  'kjv-woven-blanket': 'Manta tejida; el texto impreso va en inglés (KJV): Give, and it shall be given unto you.',
+  'kjv-serving-tray': 'Bandeja acrílica transparente; el versículo impreso va en inglés (KJV).',
+  'kjv-bookmark-1': 'Marcapáginas con una cláusula de Lucas 6:38 en inglés (KJV). Uno de cuatro diseños.',
+  'kjv-bookmark-2': 'Marcapáginas con una cláusula de Lucas 6:38 en inglés (KJV). Uno de cuatro diseños.',
+  'kjv-bookmark-3': 'Marcapáginas con una cláusula de Lucas 6:38 en inglés (KJV). Uno de cuatro diseños.',
+  'kjv-bookmark-4': 'Marcapáginas con una cláusula de Lucas 6:38 en inglés (KJV). Uno de cuatro diseños.',
+  'pressed-down-framed': 'Lámina enmarcada; el texto impreso va en inglés (KJV) sobre Lucas 6:38.',
+  'thanksgiving-tea-towel': 'Paño de cocina de 28″; el texto impreso va en inglés (KJV).',
+  'good-measure-longsleeve':
+    'Camiseta manga larga; arte Lucas 6:38 en inglés (KJV) solo en el frente (este blank no lleva arte en manga).',
   'coaster-fp': 'Set de cuatro portavasos de cartón con corcho, mismo diseño en cada uno.',
-  'thanksgiving-tea-towel': 'Paño de cocina 28″ con la frase bíblica aprobada.',
+  'thanksgiving-tea-towel': 'Paño de cocina de 28″; el texto impreso va en inglés (KJV).',
 }
 
 const copy = JSON.parse(fs.readFileSync(COPY_PATH, 'utf8'))

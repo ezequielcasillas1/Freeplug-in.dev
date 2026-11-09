@@ -91,7 +91,7 @@ const SHIPPING_BY_KEY = {
   'coaster-plug': 'home_standard',
   'coaster-bolt': 'home_standard',
   'coaster-charged': 'home_standard',
-  'recharge-pint': 'drinkware_heavy',
+  'recharge-pint': 'desk_mat',
   'cool-can-cooler': 'drinkware_heavy',
   'unplugged-wine': 'drinkware_heavy',
   'good-boy-bandana': 'home_standard',
@@ -235,11 +235,8 @@ if (!messagesOnly) for (const p of created) {
     if (p.key === 'solar-towel' && v.price > 5000) {
       row.shipping_class = 'desk_mat'
     }
-    if (p.key === 'stay-connected-framed' || p.key === 'pressed-down-framed') {
-      row.shipping_class = v.price > 9000 ? 'canvas_lg' : 'canvas_sm'
-    }
-    if (p.key === 'plugged-cutting-board' && v.title.includes('11')) {
-      row.shipping_class = 'home_standard'
+    if (p.key === 'plugged-cutting-board' || p.key === 'stay-connected-framed' || p.key === 'pressed-down-framed') {
+      row.shipping_class = 'canvas_lg'
     }
     return row
   })
@@ -301,7 +298,7 @@ function mergeMessages(filePath, locale) {
   block.collectionLeads['home-faith'] =
     locale === 'en'
       ? 'Home goods featuring the King James scripture: Give, and it shall be given unto you.'
-      : 'Artículos para el hogar con la Escritura Reina-Valera 1960: Dad, y se os dará.'
+      : 'Artículos para el hogar con Lucas 6:38; el texto impreso va en inglés (KJV).'
   block.collectionLeads.apparel =
     locale === 'en'
       ? 'Hoodies, joggers, long sleeves, socks, and seasonal crewnecks with Freeplug art.'
@@ -320,9 +317,6 @@ function mergeMessages(filePath, locale) {
     const detailEs = c.detailEs ?? `${titleEs}. Impreso bajo pedido en EE. UU.`
     block.products[tk] = locale === 'en' ? titleEn : titleEs
     block.productDetails[tk] = locale === 'en' ? detailEn : detailEs
-    for (const opt of row.options) {
-      block.options[opt.key] = opt.label
-    }
   }
 
   block.meta['kids-babyTitle'] = locale === 'en' ? meta.collections['kids-baby'].metaTitleEn : meta.collections['kids-baby'].metaTitleEs

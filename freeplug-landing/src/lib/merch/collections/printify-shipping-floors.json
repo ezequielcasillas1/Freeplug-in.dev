@@ -1,0 +1,371 @@
+{
+  "floors": {
+    "fully-charged-mug": {
+      "first": 749,
+      "extra": 349
+    },
+    "cheap-free-latte-mug": {
+      "first": 749,
+      "extra": 349
+    },
+    "know-a-plug-mug": {
+      "first": 949,
+      "extra": 399
+    },
+    "day-one-tumbler": {
+      "first": 749,
+      "extra": 399
+    },
+    "free-refills-travel-mug": {
+      "first": 749,
+      "extra": 399
+    },
+    "stay-plugged-in-water-bottle": {
+      "first": 749,
+      "extra": 399
+    },
+    "fp-circle-trucker-cap": {
+      "first": 699,
+      "extra": 300
+    },
+    "fp-dad-hat": {
+      "first": 699,
+      "extra": 300
+    },
+    "plugged-in-low-profile-cap": {
+      "first": 699,
+      "extra": 300
+    },
+    "cuffed-beanie": {
+      "first": 699,
+      "extra": 300
+    },
+    "hero-crewneck": {
+      "first": 799,
+      "extra": 209
+    },
+    "running-over-candle": {
+      "first": 849,
+      "extra": 349
+    },
+    "running-over-canvas": {
+      "first": 1399,
+      "extra": 449
+    },
+    "running-over-pillow": {
+      "first": 1249,
+      "extra": 1199
+    },
+    "come-on-in-doormat": {
+      "first": 2149,
+      "extra": 2049
+    },
+    "plug-in-station-desk-mat": {
+      "first": 1099,
+      "extra": 749
+    },
+    "build-plug-in-repeat-journal": {
+      "first": 799,
+      "extra": 400
+    },
+    "fp-circle-keychain": {
+      "first": 849,
+      "extra": 349
+    },
+    "sticker-fp-circle": {
+      "first": 549,
+      "extra": 75
+    },
+    "sticker-know-a-plug": {
+      "first": 549,
+      "extra": 75
+    },
+    "sticker-zero-price-tag": {
+      "first": 549,
+      "extra": 75
+    },
+    "sticker-plug-heart": {
+      "first": 549,
+      "extra": 75
+    },
+    "stay-charged-pullover": {
+      "first": 899,
+      "extra": 249
+    },
+    "day-one-zip": {
+      "first": 899,
+      "extra": 249
+    },
+    "good-measure-longsleeve": {
+      "first": 495,
+      "extra": 240
+    },
+    "hustle-joggers": {
+      "first": 899,
+      "extra": 249
+    },
+    "charged-socks": {
+      "first": 495,
+      "extra": 240
+    },
+    "fp-gaiter": {
+      "first": 699,
+      "extra": 300
+    },
+    "pin-set": {
+      "first": 549,
+      "extra": 75
+    },
+    "carry-tote": {
+      "first": 799,
+      "extra": 400
+    },
+    "gym-drawstring": {
+      "first": 799,
+      "extra": 400
+    },
+    "charger-backpack": {
+      "first": 1099,
+      "extra": 749
+    },
+    "pocket-fanny": {
+      "first": 799,
+      "extra": 400
+    },
+    "recharge-blanket": {
+      "first": 799,
+      "extra": 400
+    },
+    "plug-clock": {
+      "first": 1099,
+      "extra": 749
+    },
+    "rinse-curtain": {
+      "first": 1099,
+      "extra": 749
+    },
+    "chef-apron": {
+      "first": 3749,
+      "extra": 649
+    },
+    "plugged-cutting-board": {
+      "first": 1999,
+      "extra": 800
+    },
+    "coaster-set": {
+      "first": 799,
+      "extra": 400
+    },
+    "recharge-pint": {
+      "first": 1099,
+      "extra": 749
+    },
+    "cool-can-cooler": {
+      "first": 749,
+      "extra": 399
+    },
+    "unplugged-wine": {
+      "first": 749,
+      "extra": 399
+    },
+    "good-boy-bandana": {
+      "first": 799,
+      "extra": 400
+    },
+    "fuel-bowl": {
+      "first": 1999,
+      "extra": 800
+    },
+    "recharge-pet-bed": {
+      "first": 2749,
+      "extra": 2499
+    },
+    "human-knows-dog-tee": {
+      "first": 699,
+      "extra": 300
+    },
+    "newest-onesie": {
+      "first": 495,
+      "extra": 240
+    },
+    "mini-plug-tee": {
+      "first": 495,
+      "extra": 240
+    },
+    "charging-kids-hoodie": {
+      "first": 899,
+      "extra": 249
+    },
+    "dont-hit-1-case": {
+      "first": 799,
+      "extra": 400
+    },
+    "slim-fp-case": {
+      "first": 799,
+      "extra": 400
+    },
+    "click-mousepad": {
+      "first": 1099,
+      "extra": 749
+    },
+    "website-laptop-sleeve": {
+      "first": 799,
+      "extra": 400
+    },
+    "ideas-notebook": {
+      "first": 799,
+      "extra": 400
+    },
+    "poster-1-plug-map": {
+      "first": 1399,
+      "extra": 449
+    },
+    "poster-2-hustle-hours": {
+      "first": 1399,
+      "extra": 449
+    },
+    "poster-3-free-is-a-feeling": {
+      "first": 1399,
+      "extra": 449
+    },
+    "poster-4-wired-different": {
+      "first": 1399,
+      "extra": 449
+    },
+    "stay-connected-framed": {
+      "first": 1999,
+      "extra": 800
+    },
+    "plug-parking-sign": {
+      "first": 1999,
+      "extra": 800
+    },
+    "solar-towel": {
+      "first": 849,
+      "extra": 349
+    },
+    "offgrid-camping-mug": {
+      "first": 749,
+      "extra": 399
+    },
+    "unplug-picnic": {
+      "first": 1099,
+      "extra": 749
+    },
+    "plug-lives-flag": {
+      "first": 799,
+      "extra": 400
+    },
+    "plugged-ornament": {
+      "first": 699,
+      "extra": 300
+    },
+    "ugly-sweater-crew": {
+      "first": 899,
+      "extra": 249
+    },
+    "running-over-stocking": {
+      "first": 1099,
+      "extra": 749
+    },
+    "kjv-woven-blanket": {
+      "first": 1099,
+      "extra": 749
+    },
+    "kjv-serving-tray": {
+      "first": 2399,
+      "extra": 499
+    },
+    "kjv-bookmarks": {
+      "first": 699,
+      "extra": 300
+    },
+    "pressed-down-framed": {
+      "first": 1999,
+      "extra": 800
+    },
+    "thanksgiving-tea-towel": {
+      "first": 799,
+      "extra": 400
+    },
+    "pin-fp-mark": {
+      "first": 549,
+      "extra": 75
+    },
+    "pin-plug": {
+      "first": 549,
+      "extra": 75
+    },
+    "pin-bolt": {
+      "first": 549,
+      "extra": 75
+    },
+    "coaster-fp": {
+      "first": 799,
+      "extra": 400
+    },
+    "coaster-plug": {
+      "first": 799,
+      "extra": 400
+    },
+    "coaster-bolt": {
+      "first": 799,
+      "extra": 400
+    },
+    "coaster-charged": {
+      "first": 799,
+      "extra": 400
+    },
+    "kjv-bookmark-1": {
+      "first": 699,
+      "extra": 300
+    },
+    "kjv-bookmark-2": {
+      "first": 699,
+      "extra": 300
+    },
+    "kjv-bookmark-3": {
+      "first": 699,
+      "extra": 300
+    },
+    "kjv-bookmark-4": {
+      "first": 699,
+      "extra": 300
+    }
+  },
+  "optionFloors": {
+    "fully-charged-mug": {
+      "11oz": {
+        "first": 749,
+        "extra": 349
+      },
+      "15oz": {
+        "first": 949,
+        "extra": 399
+      }
+    },
+    "running-over-canvas": {
+      "16x20": {
+        "first": 1399,
+        "extra": 449
+      },
+      "24x36": {
+        "first": 1999,
+        "extra": 800
+      }
+    }
+  },
+  "aliases": {
+    "coaster-fp": "coaster-set",
+    "coaster-plug": "coaster-set",
+    "coaster-bolt": "coaster-set",
+    "coaster-charged": "coaster-set",
+    "pin-fp-mark": "pin-set",
+    "pin-plug": "pin-set",
+    "pin-bolt": "pin-set",
+    "kjv-bookmark-1": "kjv-bookmarks",
+    "kjv-bookmark-2": "kjv-bookmarks",
+    "kjv-bookmark-3": "kjv-bookmarks",
+    "kjv-bookmark-4": "kjv-bookmarks"
+  }
+}

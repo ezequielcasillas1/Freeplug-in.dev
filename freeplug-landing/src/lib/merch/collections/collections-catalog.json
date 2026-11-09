@@ -535,7 +535,7 @@
     "title": "Freeplug Recharge Station Pint Glass",
     "title_key": "rechargePint",
     "printify_product_id": "6af1158de16bc2f47108adee",
-    "shipping_class": "drinkware_heavy",
+    "shipping_class": "desk_mat",
     "mockup": "recharge-pint.jpg",
     "options": [
       {
@@ -999,14 +999,14 @@
         "label": "8\" x 11\" / Rectangle",
         "printify_variant_id": 77936,
         "price_cents": 2799,
-        "shipping_class": "home_standard"
+        "shipping_class": "canvas_lg"
       },
       {
         "key": "11-x-15-rectangle",
         "label": "11\" x 15\" / Rectangle",
         "printify_variant_id": 78183,
         "price_cents": 3899,
-        "shipping_class": "home_standard"
+        "shipping_class": "canvas_lg"
       }
     ]
   },
@@ -3278,7 +3278,7 @@
         "label": "11\" x 14\" / Black",
         "printify_variant_id": 69663,
         "price_cents": 7799,
-        "shipping_class": "canvas_sm"
+        "shipping_class": "canvas_lg"
       },
       {
         "key": "16-x-20-black",
@@ -3303,7 +3303,7 @@
         "label": "11\" x 14\" / Black",
         "printify_variant_id": 69663,
         "price_cents": 7799,
-        "shipping_class": "canvas_sm"
+        "shipping_class": "canvas_lg"
       },
       {
         "key": "16-x-20-black",

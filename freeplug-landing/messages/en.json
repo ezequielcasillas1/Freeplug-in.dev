@@ -955,8 +955,14 @@
           "drinkware": "Drinkware",
           "hats": "Hats",
           "apparel": "Apparel",
+          "kids-baby": "Kids & Baby",
+          "bags-accessories": "Bags & Accessories",
+          "pets": "Pets",
+          "home-living": "Home & Living",
           "home-faith": "Home & Faith",
-          "desk-extras": "Desk & Extras"
+          "desk-extras": "Desk & Tech",
+          "wall-art": "Wall Art",
+          "outdoor": "Outdoor"
         }
       },
       "indexCardTshirts": "Six logo and tagline tees — printed to order, shipped in the USA.",
@@ -1017,6 +1023,9 @@
         "optionLabel": "Choose size",
         "colorLabel": "Color",
         "sizeLabel": "Size",
+        "styleLabel": "Style",
+        "styleArtwork": "Artwork weave",
+        "stylePhoto": "Photo weave",
         "quantityLabel": "Quantity",
         "quantityDecrease": "Decrease quantity",
         "quantityIncrease": "Increase quantity",
