@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { merchServiceRoleClient } from '@/lib/merch/server'
 import { getStripeFetch } from '@/lib/stripe/server'
 import { stripeConfigured } from '@/lib/merch/product'
 import { isMerchMockCheckoutEnabled } from '@/lib/merch/product'
@@ -20,9 +20,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing session_id.' }, { status: 400 })
   }
 
-  let admin: ReturnType<typeof createAdminClient>
+  let admin: ReturnType<typeof merchServiceRoleClient>
   try {
-    admin = createAdminClient()
+    admin = merchServiceRoleClient()
   } catch (e) {
     return NextResponse.json({ error: 'Server misconfigured.' }, { status: 500 })
   }

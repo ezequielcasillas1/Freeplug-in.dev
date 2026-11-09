@@ -24,7 +24,7 @@ export const routing = defineRouting({
 export { LOCALE_COOKIE }
 
 /** Unprefixed public paths that have a Spanish twin under /es. */
-export const LOCALIZED_PUBLIC_PATHS = ['/', '/faq', '/privacy', '/compare', '/signup', '/request-website', '/merch', '/merch/t-shirts', '/merch/freeplug-font-bundle', '/merch/fonts-personal-use'] as const
+export const LOCALIZED_PUBLIC_PATHS = ['/', '/faq', '/privacy', '/compare', '/signup', '/request-website', '/merch', '/merch/t-shirts', '/merch/freeplug-font-bundle', '/merch/fonts-personal-use', '/shop'] as const
 export type LocalizedPublicPath = (typeof LOCALIZED_PUBLIC_PATHS)[number]
 
 /** Strips a leading /es or /en locale prefix: '/es/faq' -> '/faq', '/es' -> '/'. */
@@ -47,11 +47,15 @@ function isMerchCollectionPublicPath(path: string): boolean {
   return path === `/merch/${slug}` || path.startsWith(`/merch/${slug}/`)
 }
 
+function isShopPublicPath(path: string): boolean {
+  return path === '/shop' || path.startsWith('/shop/')
+}
+
 export function isLocalizedPublicPath(pathname: string): boolean {
   const { locale, path } = stripLocalePrefix(pathname)
   if (locale === 'es' && !enabledLocales().includes('es')) return false
   if ((LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path)) return true
-  return isMerchTshirtsPublicPath(path) || isMerchCollectionPublicPath(path)
+  return isMerchTshirtsPublicPath(path) || isMerchCollectionPublicPath(path) || isShopPublicPath(path)
 }
 
 /** The same page in another locale: ('/es/faq', 'en') -> '/faq'; ('/faq', 'es') -> '/es/faq'. */
@@ -73,7 +77,8 @@ export function publicHref(href: string, locale: 'en' | 'es'): string {
   const localized =
     (LOCALIZED_PUBLIC_PATHS as readonly string[]).includes(path) ||
     isMerchTshirtsPublicPath(path) ||
-    isMerchCollectionPublicPath(path)
+    isMerchCollectionPublicPath(path) ||
+    isShopPublicPath(path)
   if (!localized) return href
   return localizedPath(path, locale) + rest
 }

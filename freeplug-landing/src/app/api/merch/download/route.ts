@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { merchServiceRoleClient } from '@/lib/merch/server'
 import { recordMerchDownload, validateMerchToken } from '@/lib/merch/tokens'
 import { merchDownloadFilename, readMerchBundleBytes, isMerchMockBundle } from '@/lib/merch/storage'
 
@@ -11,9 +11,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid download token.' }, { status: 400 })
   }
 
-  let admin: ReturnType<typeof createAdminClient>
+  let admin: ReturnType<typeof merchServiceRoleClient>
   try {
-    admin = createAdminClient()
+    admin = merchServiceRoleClient()
   } catch (e) {
     console.error('[merch/download] admin', e)
     return NextResponse.json({ error: 'Server misconfigured.' }, { status: 500 })
