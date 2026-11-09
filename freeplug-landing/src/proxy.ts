@@ -3,7 +3,8 @@ import createIntlMiddleware from 'next-intl/middleware'
 import { updateSession } from '@/lib/supabase/middleware'
 import { oversizedActionResponse } from '@/lib/outreach/body-limit'
 import { withTerminalResponseHeaders } from '@/lib/outreach/headers'
-import { routing, shouldRunIntlRouting } from '@/i18n/routing'
+import { routing, shouldRunIntlRouting, LOCALE_COOKIE } from '@/i18n/routing'
+import { MAINTENANCE_MODE, isMaintenanceExempt, maintenanceLocale, maintenanceResponse } from '@/lib/maintenance'
 
 const handleI18nRouting = createIntlMiddleware(routing)
 
@@ -21,6 +22,11 @@ const handleI18nRouting = createIntlMiddleware(routing)
  */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+  // Maintenance mode (Oct 19 2026): everything but the exempt paths gets the 503 "back soon" page.
+  if (MAINTENANCE_MODE && !isMaintenanceExempt(pathname)) {
+    const locale = maintenanceLocale(pathname, request.headers.get('accept-language'), request.cookies.get(LOCALE_COOKIE)?.value)
+    return withTerminalResponseHeaders(maintenanceResponse(locale), pathname)
+  }
   // A server-action body over the 6 MB limit gets a clean 413, not Next's HTTP 500 (Vera QA #4),
   // with or without a Content-Length (Vera r2 N5: chunked bodies are counted as they stream).
   const tooLarge = await oversizedActionResponse(request)
