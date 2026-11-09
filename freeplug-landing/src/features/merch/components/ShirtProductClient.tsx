@@ -24,6 +24,8 @@ import {
 } from '@/lib/merch/shirts/catalog'
 import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
 import { cn } from '@/lib/utils/cn'
+import { OtherLayersRow } from '@/features/merch/components/OtherLayersRow'
+import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
 
 const SWATCH: Record<ShirtColor, string> = {
   Black: '#1a1a1a',
@@ -35,9 +37,11 @@ const SWATCH: Record<ShirtColor, string> = {
 export function ShirtProductClient({
   product,
   checkoutEnabled,
+  otherLayerItems = [],
 }: {
   product: PublicShirtProduct
   checkoutEnabled: boolean
+  otherLayerItems?: AllMerchItem[]
 }) {
   const t = useTranslations('public.merch.tshirts')
   const locale = toAppLocale(useLocale())
@@ -199,6 +203,7 @@ export function ShirtProductClient({
               </motion.div>
             </div>
           </motion.div>
+          <OtherLayersRow items={otherLayerItems} />
         </div>
       </main>
     </MerchPageChrome>

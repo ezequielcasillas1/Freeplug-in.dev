@@ -14,6 +14,15 @@ describe('catalog filter logic', () => {
   const all = listAllMerchItems()
   const shop = listShopFilterItems()
 
+  it('filters by merch layer via layer param', () => {
+    const state = parseCatalogFilterSearchParams(new URLSearchParams('layer=give'), 'all-merch')
+    const out = applyCatalogFilters(all, state)
+    expect(out.length).toBeGreaterThan(10)
+    expect(out.every((i) => i.layer === 'give')).toBe(true)
+    const back = catalogFilterToSearchParams(state, 'all-merch')
+    expect(back.get('layer')).toBe('give')
+  })
+
   it('parses and round-trips URL search params', () => {
     const q = new URLSearchParams('cat=hats,drinkware&avail=buyable&sort=price-asc&min=1000&max=5000&col=Black')
     const state = parseCatalogFilterSearchParams(q, 'all-merch')

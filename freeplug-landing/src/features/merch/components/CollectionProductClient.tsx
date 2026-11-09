@@ -28,6 +28,8 @@ import { defaultSplitSelection, planSplitOptions, resolveSplitOptionKey } from '
 import { qualifiesForFreeCollectionShipping } from '@/lib/merch/collections/shipping'
 import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
 import { cn } from '@/lib/utils/cn'
+import { OtherLayersRow } from '@/features/merch/components/OtherLayersRow'
+import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
 
 const SWATCH: Record<CrewneckColor, string> = {
   Black: '#1a1a1a',
@@ -44,10 +46,12 @@ export function CollectionProductClient({
   collection,
   product,
   checkoutEnabled,
+  otherLayerItems = [],
 }: {
   collection: MerchCollectionSlug
   product: PublicCollectionProduct
   checkoutEnabled: boolean
+  otherLayerItems?: AllMerchItem[]
 }) {
   const t = useTranslations('public.merch.collections')
   const locale = toAppLocale(useLocale())
@@ -342,6 +346,7 @@ export function CollectionProductClient({
               </motion.div>
             </div>
           </motion.div>
+          <OtherLayersRow items={otherLayerItems} />
         </div>
       </main>
     </MerchPageChrome>

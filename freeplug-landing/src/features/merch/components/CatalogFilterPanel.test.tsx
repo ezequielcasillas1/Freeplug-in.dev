@@ -8,6 +8,7 @@ import { EMPTY_CATALOG_FILTER, type CatalogFacets } from '@/lib/merch/catalog-fi
 import { listCatalogProductTypeSlugs } from '@/lib/merch/catalog-product-types'
 
 const baseFacets: CatalogFacets = {
+  layers: { everyday: 260, give: 20, mind: 0 },
   sources: { 'merch-store': 79, 't-shirts': 6, 'buyer-shop': 195 },
   categories: {
     apparel: 10,

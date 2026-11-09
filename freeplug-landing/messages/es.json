@@ -951,6 +951,11 @@
         "officialFonts": "Fuentes oficiales",
         "personalUse": "Gratis para uso personal",
         "allMerch": "Toda la mercancía",
+        "layers": {
+          "everyday": "Día a día",
+          "give": "Dar",
+          "mind": "Mente"
+        },
         "shopAll": "Ver todo",
         "collections": {
           "drinkware": "Bebidas",
@@ -1766,6 +1771,33 @@
         "back": "Volver al producto"
       },
       "indexCardAll": "Todos los productos en un solo lugar: la tienda de mercancía y la tienda completa.",
+      "layers": {
+        "names": {
+          "everyday": "Día a día",
+          "give": "Dar",
+          "mind": "Mente"
+        },
+        "everydayBlurb": "Cercano, divertido y para el día a día: juegos de palabras con «plug», orgullo texano y Stay Charged.",
+        "giveBlurb": "Escritura sobre dar a los pobres y necesitados, ligada a la misión de Freeplug.",
+        "mindBlurb": "Diseños que activan la mente: ilusiones, rompecabezas y tipografía de doble lectura.",
+        "otherLayersHeading": "Más de las otras capas",
+        "comingSoonTitle": "Pronto habrá más diseños",
+        "comingSoonBody": "Estamos añadiendo más piezas a esta capa. Mientras tanto, explora toda la mercancía u otras capas.",
+        "landing": {
+          "everyday": {
+            "title": "Día a día",
+            "lead": "Diseños mundanos, divertidos y con orgullo local para el día a día: juegos de palabras, San Marcos y Texas, Stay Charged y la marca Freeplug."
+          },
+          "give": {
+            "title": "Dar",
+            "lead": "Versículos en KJV y arte sobre dar a los pobres y necesitados, alineado con la misión de Freeplug de ayudar a quienes lo necesitan."
+          },
+          "mind": {
+            "title": "Mente",
+            "lead": "Diseños que invitan a mirar dos veces: ilusiones, rompecabezas, tipografía de doble lectura y señales de enfoque."
+          }
+        }
+      },
       "allMerch": {
         "heading": "Toda la mercancía",
         "lead": "Todos los productos Freeplug en un solo lugar: {count} artículos entre la tienda de mercancía y la tienda.",
@@ -1779,6 +1811,12 @@
         "closeFilters": "Cerrar filtros",
         "done": "Listo",
         "clearAll": "Borrar todo",
+        "layerTitle": "Capa",
+        "layer": {
+          "everyday": "Día a día",
+          "give": "Dar",
+          "mind": "Mente"
+        },
         "showingOf": "Mostrando {shown} de {total} ({all} en total)",
         "showMoreOptions": "Ver {count} más",
         "showLessOptions": "Ver menos",

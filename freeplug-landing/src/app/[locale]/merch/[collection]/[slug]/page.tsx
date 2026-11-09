@@ -7,6 +7,8 @@ import {
   listPublicCollectionProducts,
   type MerchCollectionSlug,
 } from '@/lib/merch/collections/catalog'
+import { attachMerchLayer } from '@/lib/merch/layers/attach-layer'
+import { pickOtherLayerMerchItems } from '@/lib/merch/layers/other-layer-picks'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,5 +33,15 @@ export default async function MerchCollectionProductPage({
   if (!entry || entry.collection !== collection) notFound()
   const product = listPublicCollectionProducts(collection).find((p) => p.slug === slug)!
   const checkoutEnabled = isMerchCollectionsEnabled()
-  return <CollectionProductClient collection={collection} product={product} checkoutEnabled={checkoutEnabled} />
+  const catalogKey = `${collection}/${slug}`
+  const layer = attachMerchLayer(catalogKey)
+  const otherLayerItems = pickOtherLayerMerchItems(catalogKey, layer)
+  return (
+    <CollectionProductClient
+      collection={collection}
+      product={product}
+      checkoutEnabled={checkoutEnabled}
+      otherLayerItems={otherLayerItems}
+    />
+  )
 }

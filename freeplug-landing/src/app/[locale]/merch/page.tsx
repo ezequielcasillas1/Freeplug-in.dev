@@ -10,6 +10,7 @@ import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { MERCH_FONT_BUNDLE_SLUG, MERCH_PERSONAL_USE_SLUG, MERCH_TSHIRTS_SLUG } from '@/lib/merch/product'
 import { MERCH_COLLECTIONS } from '@/lib/merch/collections/catalog'
+import { MerchLayerTiles } from '@/features/merch/components/MerchLayerTiles'
 
 export default function MerchIndexPage() {
   const t = useTranslations('public.merch')
@@ -37,6 +38,7 @@ export default function MerchIndexPage() {
                 <p className="text-sm font-semibold uppercase tracking-wider text-[#ba3d3d] mb-3">{t('eyebrow')}</p>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">{t('heading')}</h1>
                 <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 break-words">{t('lead')}</p>
+                <MerchLayerTiles />
                 <ul className="space-y-3 sm:space-y-4">
                   {cards.map((c) => (
                     <li key={c.href}>

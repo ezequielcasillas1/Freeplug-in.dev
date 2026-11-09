@@ -15,6 +15,15 @@ import {
   MERCH_TSHIRTS_SLUG,
 } from '@/lib/merch/product'
 import { MERCH_COLLECTIONS, type MerchCollectionSlug } from '@/lib/merch/collections/catalog'
+import { MERCH_LAYERS, MERCH_LAYER_PUBLIC_PATH, type MerchLayer } from '@/lib/merch/layers/layers'
+
+const LAYER_TABS: { layer: MerchLayer; path: string; labelKey: `subnav.layers.${MerchLayer}` }[] = MERCH_LAYERS.map(
+  (layer) => ({
+    layer,
+    path: MERCH_LAYER_PUBLIC_PATH[layer].replace('/merch/', ''),
+    labelKey: `subnav.layers.${layer}`,
+  })
+)
 
 const FONT_TABS = [
   { slug: 'all', labelKey: 'subnav.allMerch' as const },
@@ -68,12 +77,15 @@ export function MerchSecondaryNav() {
             ref={listRef}
             className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain py-2 pl-0.5 pr-14 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 max-lg:scroll-smooth"
           >
-            {[...FONT_TABS, ...COLLECTION_TABS].map((tab) => {
-              const href = publicHref(`/merch/${tab.slug}`, locale)
-              const base = `/merch/${tab.slug}`
+            {[...FONT_TABS, ...LAYER_TABS, ...COLLECTION_TABS].map((tab) => {
+              const slug = 'layer' in tab ? tab.path : tab.slug
+              const href = publicHref(`/merch/${slug}`, locale)
+              const base = `/merch/${slug}`
               const active = path === base || path.startsWith(`${base}/`)
+              const key = 'layer' in tab ? tab.layer : tab.slug
+              const labelKey = tab.labelKey
               return (
-                <li key={tab.slug} className="snap-start shrink-0">
+                <li key={key} className="snap-start shrink-0">
                   <Link
                     href={href}
                     className={cn(
@@ -84,7 +96,7 @@ export function MerchSecondaryNav() {
                     )}
                     aria-current={active ? 'page' : undefined}
                   >
-                    {t(tab.labelKey)}
+                    {t(labelKey)}
                   </Link>
                 </li>
               )
