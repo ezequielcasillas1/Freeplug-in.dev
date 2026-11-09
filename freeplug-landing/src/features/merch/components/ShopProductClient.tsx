@@ -10,7 +10,8 @@ import { ShopMockupPreview } from '@/features/merch/components/ShopMockupPreview
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import { shopProductImageSrc, shopShippingCents } from '@/lib/merch/shop/catalog'
 import { logoPathForBlank } from '@/lib/merch/shop/contrast'
-import { mockupsForShopColor, pickFrontPrintifyMockup } from '@/lib/merch/shop/printify-catalog'
+import { mockupsForShopColor } from '@/lib/merch/shop/printify-catalog'
+import { isRemoteShopImage } from '@/lib/merch/shop/shop-listing-image'
 import type { ShopCatalogItem } from '@/lib/merch/shop/types'
 import {
   pickerMode,
@@ -76,14 +77,27 @@ export function ShopProductClient({
     () => mockupsForShopColor(item.slug, colorForMockup),
     [item.slug, colorForMockup]
   )
-  const printifyMockupFront = useMemo(() => pickFrontPrintifyMockup(printifyMockups), [printifyMockups])
-  const usePrintifyMockup = designMode === 'freeplug' && Boolean(printifyMockupFront)
+
+  const gallerySlides = useMemo(() => {
+    if (designMode === 'custom') {
+      return item.gallery.map((src) => ({ kind: 'blank' as const, src }))
+    }
+    const branded = printifyMockups.map((src) => ({ kind: 'branded' as const, src }))
+    const blanks = item.gallery.map((src) => ({ kind: 'blank' as const, src }))
+    return [...branded, ...blanks]
+  }, [designMode, printifyMockups, item.gallery])
+
+  const activeSlide = gallerySlides[galleryIndex] ?? gallerySlides[0]
+  const usePrintifyMockup = designMode === 'freeplug' && activeSlide?.kind === 'branded'
 
   const logoSrc =
     designMode === 'freeplug' && !usePrintifyMockup
       ? logoPathForBlank(variant?.blankKind ?? 'light')
       : null
-  const productSrc = usePrintifyMockup ? printifyMockupFront! : shopProductImageSrc(item, galleryIndex)
+  const productSrc =
+    designMode === 'custom'
+      ? shopProductImageSrc(item, galleryIndex)
+      : (activeSlide?.src ?? shopProductImageSrc(item, 0))
 
   useEffect(() => {
     void fetch('/api/merch/shop/cap')
@@ -171,11 +185,11 @@ export function ShopProductClient({
               placement={designMode === 'custom' ? customPlacement : placement}
               alt={t('mockupAlt', { title: item.title })}
             />
-            {item.gallery.length > 1 ? (
-              <div className="flex gap-2 mt-3">
-                {item.gallery.map((src, idx) => (
+            {gallerySlides.length > 1 ? (
+              <div className="flex gap-2 mt-3 flex-wrap">
+                {gallerySlides.map((slide, idx) => (
                   <button
-                    key={src}
+                    key={`${slide.kind}-${slide.src}-${idx}`}
                     type="button"
                     className={cn(
                       'rounded-lg border p-1',
@@ -184,7 +198,13 @@ export function ShopProductClient({
                     onClick={() => setGalleryIndex(idx)}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt="" className="h-14 w-14 object-contain rounded-md bg-zinc-50" />
+                    <img
+                      src={slide.src}
+                      alt=""
+                      loading="lazy"
+                      className="h-14 w-14 object-contain rounded-md bg-zinc-50"
+                      referrerPolicy={isRemoteShopImage(slide.src) ? 'no-referrer' : undefined}
+                    />
                   </button>
                 ))}
               </div>
@@ -205,14 +225,24 @@ export function ShopProductClient({
             </p>
 
             <div className="flex gap-2 mb-6">
-              <button type="button" className={pill(designMode === 'freeplug')} onClick={() => setDesignMode('freeplug')}>
+              <button
+                type="button"
+                className={pill(designMode === 'freeplug')}
+                onClick={() => {
+                  setDesignMode('freeplug')
+                  setGalleryIndex(0)
+                }}
+              >
                 {t('designFreeplug')}
               </button>
               <button
                 type="button"
                 data-testid="shop-design-custom"
                 className={pill(designMode === 'custom')}
-                onClick={() => setDesignMode('custom')}
+                onClick={() => {
+                  setDesignMode('custom')
+                  setGalleryIndex(0)
+                }}
                 disabled={customSoldOut}
                 title={customSoldOut ? t('customSoldOutToday') : undefined}
               >
@@ -231,6 +261,7 @@ export function ShopProductClient({
                     setColor(nextColor)
                     const nextSizes = sizesForColor(item.variants, nextColor)
                     setSize(nextSizes[0] ?? '')
+                    setGalleryIndex(0)
                   }}
                 >
                   {colorOptions.map((c) => (

@@ -1,8 +1,6 @@
 import shopCatalog from './shop-catalog.json'
-import {
-  printifyProductIdForVariant,
-  shopHasPrintifyFreeplug,
-} from './printify-catalog'
+import { printifyProductIdForVariant } from './printify-catalog'
+import { shopListingImageSrc } from './shop-listing-image'
 import type { ShopCard, ShopCatalogItem, ShopTabSlug, ShopVariant } from './types'
 import { MERCH_SHOP_FREE_SHIPPING_THRESHOLD_CENTS } from './types'
 import { verifyShopUploadToken } from './upload-token'
@@ -34,7 +32,7 @@ export function listShopCards(tab?: ShopTabSlug): ShopCard[] {
     featuredRank: i.featuredRank,
     placeholder: i.placeholder,
     colors: i.colors,
-    gridImage: i.gridImage,
+    gridImage: shopListingImageSrc(i.slug, i.gridImage),
   }))
 }
 

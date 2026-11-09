@@ -1,3 +1,4 @@
+import { normalizeSizeFacetKey, sizeFacetFilterMatches, uniqueSizeFacetKeys } from '@/lib/merch/catalog-size-facet'
 import { SHOP_TABS, type ShopTabSlug } from '@/lib/merch/shop/types'
 import {
   EMPTY_CATALOG_FILTER,
@@ -31,9 +32,7 @@ export function matchesCatalogFilter(item: CatalogFilterItem, state: CatalogFilt
   if (state.colors.length && !state.colors.some((c) => item.colors.some((ic) => ic.toLowerCase() === c.toLowerCase()))) {
     return false
   }
-  if (state.sizes.length && !state.sizes.some((s) => item.sizes.some((is) => is.toLowerCase() === s.toLowerCase()))) {
-    return false
-  }
+  if (state.sizes.length && !sizeFacetFilterMatches(item.sizes, state.sizes)) return false
   if (state.designs.length && !state.designs.some((d) => item.designs.includes(d))) return false
   return true
 }
@@ -79,9 +78,8 @@ export function computeCatalogFacets(items: CatalogFilterItem[]): CatalogFacets 
       const key = c.trim()
       if (key) colors[key] = (colors[key] ?? 0) + 1
     }
-    for (const s of item.sizes) {
-      const key = s.trim()
-      if (key) sizes[key] = (sizes[key] ?? 0) + 1
+    for (const key of uniqueSizeFacetKeys(item.sizes)) {
+      sizes[key] = (sizes[key] ?? 0) + 1
     }
     priceMinCents = Math.min(priceMinCents, item.fromPriceCents)
     priceMaxCents = Math.max(priceMaxCents, item.fromPriceCents)
@@ -151,7 +149,7 @@ export function parseCatalogFilterSearchParams(
   state.productTypes = splitCsv(params.get('pt'))
   state.availability = splitCsv(params.get('avail')).filter(isAvailability)
   state.colors = splitCsv(params.get('col'))
-  state.sizes = splitCsv(params.get('sz'))
+  state.sizes = splitCsv(params.get('sz')).map(normalizeSizeFacetKey).filter(Boolean)
   state.designs = splitCsv(params.get('design')).filter(isDesign)
 
   const min = parseInt(params.get('min') ?? '', 10)

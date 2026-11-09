@@ -1801,6 +1801,7 @@
         "priceMax": "Max",
         "colors": "Colors",
         "sizes": "Sizes",
+        "sizeOneSize": "One size",
         "designTitle": "Design option",
         "design": {
           "freeplug": "Freeplug logo",

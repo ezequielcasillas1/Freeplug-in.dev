@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { useEffect, useId, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { SHOP_TABS, type ShopTabSlug } from '@/lib/merch/shop/types'
+import { CATALOG_SIZE_FACET_ONE_SIZE } from '@/lib/merch/catalog-size-facet'
 import { catalogFilterIsActive, facetKeysSorted } from '@/lib/merch/catalog-filter-logic'
 import type { CatalogFacets, CatalogFilterState, CatalogSource } from '@/lib/merch/catalog-filter-types'
 import type { CatalogAvailability, CatalogDesign } from '@/lib/merch/catalog-filter-types'
@@ -157,7 +158,11 @@ export function CatalogFilterPanel({ scope, panelFacets, state, onChange, onClea
         <FilterSection title={t('sizes')} defaultOpen>
           <MultiCheck
             t={t}
-            options={sizeKeys.map((id) => ({ id, label: id, count: panelFacets.sizes[id] ?? 0 }))}
+            options={sizeKeys.map((id) => ({
+              id,
+              label: id === CATALOG_SIZE_FACET_ONE_SIZE ? t('sizeOneSize') : id,
+              count: panelFacets.sizes[id] ?? 0,
+            }))}
             selected={state.sizes}
             onToggle={(id) => toggleInList(state.sizes, id, (sizes) => onChange({ ...state, sizes }))}
             maxVisible={14}

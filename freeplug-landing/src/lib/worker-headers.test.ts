@@ -51,9 +51,8 @@ describe('next/image never spends the Images quota or touches private photos', (
     expect(users.map((f) => path.relative(src, f)).sort()).toEqual(
       [
         'features/landing/components/OutreachSection.tsx',
-        'features/merch/components/AllMerchListClient.tsx',
+        'features/merch/components/CatalogCardImage.tsx',
         'features/merch/components/MerchContainedImage.tsx',
-        'features/merch/components/ShopListClient.tsx',
         'features/merch/components/ShopMockupPreview.tsx',
       ].sort()
     )

@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import { CatalogCardImage } from '@/features/merch/components/CatalogCardImage'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -62,15 +62,7 @@ export function ShopListClient({ items }: { items: CatalogFilterItem[] }) {
                       className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-[#ba3d3d]/40 transition-colors min-h-full"
                     >
                       <div className="aspect-square rounded-lg bg-zinc-100 mb-3 overflow-hidden relative">
-                        <Image
-                          src={item.image}
-                          alt=""
-                          fill
-                          unoptimized
-                          loading="lazy"
-                          className="object-contain p-2"
-                          sizes="(max-width: 768px) 50vw, 240px"
-                        />
+                        <CatalogCardImage src={item.image} sizes="(max-width: 768px) 50vw, 240px" />
                         {item.comingSoonLabel ? (
                           <span className="absolute top-2 left-2 rounded-full bg-gray-900/80 px-2.5 py-1 text-xs font-medium text-white">
                             {t('comingSoon')}
