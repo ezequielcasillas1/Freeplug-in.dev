@@ -1,17 +1,12 @@
 /** Client-safe pieces of /merch/all (no catalog JSON imports). */
+import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { SHOP_TABS, type ShopTabSlug } from '@/lib/merch/shop/types'
 
 /** One card on /merch/all: merch-store products (t-shirts + collections) and every /shop item. */
-export type AllMerchItem = {
-  key: string
-  href: string
-  /** Shared category (the /shop tab slugs). */
-  category: ShopTabSlug
+export type AllMerchItem = CatalogFilterItem & {
   /** Translated client-side when set (merch-store titles live in messages); else `title` is used. */
   titleKey: string | null
-  title: string
-  image: string
-  fromPriceCents: number
+  /** @deprecated Use comingSoonLabel */
   comingSoon: boolean
 }
 

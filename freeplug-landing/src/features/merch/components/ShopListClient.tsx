@@ -1,26 +1,30 @@
 'use client'
 
-import Image from 'next/image'
+import { CatalogCardImage } from '@/features/merch/components/CatalogCardImage'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
+import { CatalogFilterPanel } from '@/features/merch/components/CatalogFilterPanel'
+import { useCatalogFilterUrl } from '@/features/merch/hooks/useCatalogFilterUrl'
+import { applyCatalogFilters, computePanelFacets, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
+import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
-import { filterShopCards, sortShopCards, uniqueProductTypes, type ShopFilters, type ShopSort } from '@/lib/merch/shop/filters'
-import { SHOP_TABS, type ShopCard, type ShopTabSlug } from '@/lib/merch/shop/types'
+import { ALL_MERCH_PAGE_SIZE } from '@/features/merch/components/AllMerchListClient'
 
-export function ShopListClient({ cards, initialTab }: { cards: ShopCard[]; initialTab: ShopTabSlug | 'all' }) {
+export function ShopListClient({ items }: { items: CatalogFilterItem[] }) {
   const t = useTranslations('public.merch.shop')
+  const tMerch = useTranslations('public.merch')
   const locale = toAppLocale(useLocale())
-  const [tab, setTab] = useState<ShopTabSlug | 'all'>(initialTab)
-  const [sort, setSort] = useState<ShopSort>('featured')
-  const [filters, setFilters] = useState<ShopFilters>({})
+  const { state, setState, clearAll } = useCatalogFilterUrl('shop')
+  const [shown, setShown] = useState(ALL_MERCH_PAGE_SIZE)
 
-  const tabCards = useMemo(() => (tab === 'all' ? cards : cards.filter((c) => c.tab === tab)), [cards, tab])
-  const productTypes = useMemo(() => uniqueProductTypes(tabCards), [tabCards])
-  const visible = useMemo(() => sortShopCards(filterShopCards(tabCards, filters), sort), [tabCards, filters, sort])
+  const filtered = useMemo(() => sortCatalogItems(applyCatalogFilters(items, state), state.sort), [items, state])
+  const visible = filtered.slice(0, shown)
+
+  const panelFacets = useMemo(() => computePanelFacets(items, state), [items, state])
 
   return (
     <MerchPageChrome>
@@ -28,118 +32,65 @@ export function ShopListClient({ cards, initialTab }: { cards: ShopCard[]; initi
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <p className="text-sm font-semibold uppercase tracking-wider text-[#ba3d3d] mb-2">{t('eyebrow')}</p>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">{t('heading')}</h1>
-          <p className="text-gray-600 mb-8 max-w-2xl">{t('lead')}</p>
+          <p className="text-gray-600 mb-6 max-w-2xl">{t('lead')}</p>
 
-          <div className="flex flex-wrap gap-2 mb-6" role="tablist" aria-label={t('tabsAria')}>
-            <button
-              type="button"
-              className={tab === 'all' ? tabClass(true) : tabClass(false)}
-              onClick={() => setTab('all')}
-            >
-              {t('tabs.all')}
-            </button>
-            {SHOP_TABS.map((slug) => (
-              <button
-                key={slug}
-                type="button"
-                className={tab === slug ? tabClass(true) : tabClass(false)}
-                onClick={() => setTab(slug)}
-              >
-                {t(`tabs.${slug}`)}
-              </button>
-            ))}
-          </div>
+          <div className="lg:flex lg:gap-8 lg:items-start">
+            <CatalogFilterPanel
+              scope="shop"
+              panelFacets={panelFacets}
+              state={state}
+              onChange={(next) => {
+                setState(next)
+                setShown(ALL_MERCH_PAGE_SIZE)
+              }}
+              onClear={() => {
+                clearAll()
+                setShown(ALL_MERCH_PAGE_SIZE)
+              }}
+            />
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-            <label className="text-sm text-gray-600">
-              {t('filters.sort')}
-              <select
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2"
-                value={sort}
-                onChange={(e) => setSort(e.target.value as ShopSort)}
-              >
-                <option value="featured">{t('sort.featured')}</option>
-                <option value="price-asc">{t('sort.priceAsc')}</option>
-                <option value="price-desc">{t('sort.priceDesc')}</option>
-              </select>
-            </label>
-            <label className="text-sm text-gray-600">
-              {t('filters.price')}
-              <select
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2"
-                onChange={(e) => {
-                  const v = e.target.value
-                  if (v === 'under25') setFilters((f) => ({ ...f, minPriceCents: undefined, maxPriceCents: 2499 }))
-                  else if (v === '25-50') setFilters((f) => ({ ...f, minPriceCents: 2500, maxPriceCents: 5000 }))
-                  else if (v === 'over50') setFilters((f) => ({ ...f, minPriceCents: 5001, maxPriceCents: undefined }))
-                  else setFilters((f) => ({ ...f, minPriceCents: undefined, maxPriceCents: undefined }))
-                }}
-                defaultValue=""
-              >
-                <option value="">{t('filters.priceAny')}</option>
-                <option value="under25">{t('filters.priceUnder25')}</option>
-                <option value="25-50">{t('filters.price25to50')}</option>
-                <option value="over50">{t('filters.priceOver50')}</option>
-              </select>
-            </label>
-            <label className="text-sm text-gray-600">
-              {t('filters.productType')}
-              <select
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2"
-                onChange={(e) => setFilters((f) => ({ ...f, productType: e.target.value || undefined }))}
-                defaultValue=""
-              >
-                <option value="">{t('filters.typeAny')}</option>
-                {productTypes.map((pt) => (
-                  <option key={pt} value={pt}>
-                    {pt}
-                  </option>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-500 mb-4" aria-live="polite">
+                {tMerch('catalogFilter.showingOf', { shown: visible.length, total: filtered.length, all: items.length })}
+              </p>
+
+              <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {visible.map((item) => (
+                  <li key={item.key}>
+                    <Link
+                      href={publicHref(item.href, locale)}
+                      className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-[#ba3d3d]/40 transition-colors min-h-full"
+                    >
+                      <div className="aspect-square rounded-lg bg-zinc-100 mb-3 overflow-hidden relative">
+                        <CatalogCardImage src={item.image} sizes="(max-width: 768px) 50vw, 240px" />
+                        {item.comingSoonLabel ? (
+                          <span className="absolute top-2 left-2 rounded-full bg-gray-900/80 px-2.5 py-1 text-xs font-medium text-white">
+                            {t('comingSoon')}
+                          </span>
+                        ) : null}
+                      </div>
+                      <h2 className="font-semibold text-gray-900 line-clamp-2">{item.title}</h2>
+                      <p className="text-sm text-gray-500 mt-1">{t('fromPrice', { price: formatUsdFromCents(item.fromPriceCents) })}</p>
+                    </Link>
+                  </li>
                 ))}
-              </select>
-            </label>
-            <label className="text-sm text-gray-600">
-              {t('filters.color')}
-              <input
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2"
-                placeholder={t('filters.colorPlaceholder')}
-                onChange={(e) => setFilters((f) => ({ ...f, color: e.target.value || undefined }))}
-              />
-            </label>
+              </ul>
+
+              {visible.length < filtered.length ? (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    type="button"
+                    className="rounded-full px-6 py-3 min-h-11 text-sm font-medium bg-[#ba3d3d] text-white hover:bg-[#a33535]"
+                    onClick={() => setShown((n) => n + ALL_MERCH_PAGE_SIZE)}
+                  >
+                    {tMerch('allMerch.showMore')}
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
-
-          <p className="text-sm text-gray-500 mb-4">{t('results', { count: visible.length })}</p>
-
-          <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {visible.map((item) => (
-              <li key={item.slug}>
-                <Link
-                  href={publicHref(`/shop/${item.slug}`, locale)}
-                  className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-[#ba3d3d]/40 transition-colors min-h-full"
-                >
-                  <div className="aspect-square rounded-lg bg-zinc-100 mb-3 overflow-hidden relative">
-                    <Image
-                      src={item.gridImage}
-                      alt=""
-                      fill
-                      unoptimized
-                      className="object-contain p-2"
-                      sizes="(max-width: 768px) 50vw, 240px"
-                    />
-                  </div>
-                  <h2 className="font-semibold text-gray-900 line-clamp-2">{item.title}</h2>
-                  <p className="text-sm text-gray-500 mt-1">{t('fromPrice', { price: formatUsdFromCents(item.fromRetailCents) })}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </main>
     </MerchPageChrome>
   )
-}
-
-function tabClass(active: boolean): string {
-  return active
-    ? 'rounded-full px-4 py-2 text-sm font-medium bg-[#ba3d3d] text-white'
-    : 'rounded-full px-4 py-2 text-sm font-medium bg-white border border-gray-200 text-gray-700 hover:border-[#ba3d3d]/30'
 }
