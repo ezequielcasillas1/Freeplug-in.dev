@@ -1,4 +1,4 @@
-export const MERCH_SHOP_UPLOAD_MAX_BYTES = 12 * 1024 * 1024
+export const MERCH_SHOP_UPLOAD_MAX_BYTES = 20 * 1024 * 1024
 export const MERCH_SHOP_MIN_EFFECTIVE_DPI = 150
 
 const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'])
@@ -25,6 +25,11 @@ export function effectiveDpi(pixelWidth: number, pixelHeight: number, widthIn: n
 
 export function isDpiWarning(dpi: number): boolean {
   return dpi > 0 && dpi < MERCH_SHOP_MIN_EFFECTIVE_DPI
+}
+
+export function meetsMinDpi(pixelWidth: number, pixelHeight: number, widthIn: number, heightIn: number): boolean {
+  const dpi = effectiveDpi(pixelWidth, pixelHeight, widthIn, heightIn)
+  return dpi >= MERCH_SHOP_MIN_EFFECTIVE_DPI
 }
 
 export function parseDataUrlDimensions(dataUrl: string): { width: number; height: number; mime: string } | null {
