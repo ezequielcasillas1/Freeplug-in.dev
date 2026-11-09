@@ -7,28 +7,14 @@ import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
-import { CatalogFilterPanel, useCatalogFilterFacetLists } from '@/features/merch/components/CatalogFilterPanel'
+import { CatalogFilterPanel } from '@/features/merch/components/CatalogFilterPanel'
 import { useCatalogFilterUrl } from '@/features/merch/hooks/useCatalogFilterUrl'
-import { applyCatalogFilters, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
-import type { CatalogFacets, CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
+import { applyCatalogFilters, computePanelFacets, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
+import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import { ALL_MERCH_PAGE_SIZE } from '@/features/merch/components/AllMerchListClient'
 
-type FacetLists = {
-  productTypeKeys: string[]
-  colorKeys: string[]
-  sizeKeys: string[]
-}
-
-export function ShopListClient({
-  items,
-  facets,
-  facetLists,
-}: {
-  items: CatalogFilterItem[]
-  facets: CatalogFacets
-  facetLists: FacetLists
-}) {
+export function ShopListClient({ items }: { items: CatalogFilterItem[] }) {
   const t = useTranslations('public.merch.shop')
   const tMerch = useTranslations('public.merch')
   const locale = toAppLocale(useLocale())
@@ -38,7 +24,7 @@ export function ShopListClient({
   const filtered = useMemo(() => sortCatalogItems(applyCatalogFilters(items, state), state.sort), [items, state])
   const visible = filtered.slice(0, shown)
 
-  const lists = useCatalogFilterFacetLists(facets)
+  const panelFacets = useMemo(() => computePanelFacets(items, state), [items, state])
 
   return (
     <MerchPageChrome>
@@ -51,7 +37,7 @@ export function ShopListClient({
           <div className="lg:flex lg:gap-8 lg:items-start">
             <CatalogFilterPanel
               scope="shop"
-              facets={facets}
+              panelFacets={panelFacets}
               state={state}
               onChange={(next) => {
                 setState(next)
@@ -61,9 +47,6 @@ export function ShopListClient({
                 clearAll()
                 setShown(ALL_MERCH_PAGE_SIZE)
               }}
-              productTypeKeys={facetLists.productTypeKeys.length ? facetLists.productTypeKeys : lists.productTypeKeys}
-              colorKeys={facetLists.colorKeys.length ? facetLists.colorKeys : lists.colorKeys}
-              sizeKeys={facetLists.sizeKeys.length ? facetLists.sizeKeys : lists.sizeKeys}
             />
 
             <div className="flex-1 min-w-0">

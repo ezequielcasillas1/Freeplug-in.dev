@@ -56,7 +56,13 @@ describe('catalog filter logic', () => {
     expect(facets.sources['t-shirts']).toBe(6)
     expect(facets.sources['merch-store']).toBe(79)
     expect(facets.availability['coming-soon']).toBe(6)
-    expect(facets.availability['buyable']).toBeGreaterThan(270)
+    expect(facets.availability['buyable']).toBe(274)
+  })
+
+  it('does not tag coming-soon shop items as buyable', () => {
+    const soon = all.filter((i) => i.availability.includes('coming-soon'))
+    expect(soon).toHaveLength(6)
+    expect(soon.every((i) => !i.availability.includes('buyable'))).toBe(true)
   })
 
   it('matches color filter case-insensitively', () => {

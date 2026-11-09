@@ -7,30 +7,15 @@ import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
-import { CatalogFilterPanel, useCatalogFilterFacetLists } from '@/features/merch/components/CatalogFilterPanel'
+import { CatalogFilterPanel } from '@/features/merch/components/CatalogFilterPanel'
 import { useCatalogFilterUrl } from '@/features/merch/hooks/useCatalogFilterUrl'
-import { applyCatalogFilters, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
-import type { CatalogFacets } from '@/lib/merch/catalog-filter-types'
+import { applyCatalogFilters, computePanelFacets, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
 
 export const ALL_MERCH_PAGE_SIZE = 48
 
-type FacetLists = {
-  productTypeKeys: string[]
-  colorKeys: string[]
-  sizeKeys: string[]
-}
-
-export function AllMerchListClient({
-  items,
-  facets,
-  facetLists,
-}: {
-  items: AllMerchItem[]
-  facets: CatalogFacets
-  facetLists: FacetLists
-}) {
+export function AllMerchListClient({ items }: { items: AllMerchItem[] }) {
   const t = useTranslations('public.merch')
   const locale = toAppLocale(useLocale())
   const { state, setState, clearAll } = useCatalogFilterUrl('all-merch')
@@ -42,10 +27,7 @@ export function AllMerchListClient({
   )
   const visible = filtered.slice(0, shown)
 
-  const lists = useCatalogFilterFacetLists(facets)
-  const productTypes = facetLists.productTypeKeys.length ? facetLists.productTypeKeys : lists.productTypeKeys
-  const colorKeys = facetLists.colorKeys.length ? facetLists.colorKeys : lists.colorKeys
-  const sizeKeys = facetLists.sizeKeys.length ? facetLists.sizeKeys : lists.sizeKeys
+  const panelFacets = useMemo(() => computePanelFacets(items, state), [items, state])
 
   return (
     <MerchPageChrome>
@@ -62,7 +44,7 @@ export function AllMerchListClient({
           <div className="lg:flex lg:gap-8 lg:items-start">
             <CatalogFilterPanel
               scope="all-merch"
-              facets={facets}
+              panelFacets={panelFacets}
               state={state}
               onChange={(next) => {
                 setState(next)
@@ -72,9 +54,6 @@ export function AllMerchListClient({
                 clearAll()
                 setShown(ALL_MERCH_PAGE_SIZE)
               }}
-              productTypeKeys={productTypes}
-              colorKeys={colorKeys}
-              sizeKeys={sizeKeys}
             />
 
             <div className="flex-1 min-w-0">

@@ -12,7 +12,8 @@ export function listShopFilterItems(): CatalogFilterItem[] {
     const comingSoon = isFreeplugShopComingSoon(item.slug)
     const hasFreeplug = shopHasPrintifyFreeplug(item.slug)
     const hasMockups = shopHasColorMockups(item.slug)
-    const availability: CatalogFilterItem['availability'][number][] = ['buyable']
+    const availability: CatalogFilterItem['availability'][number][] = []
+    if (!comingSoon) availability.push('buyable')
     if (comingSoon) availability.push('coming-soon')
     if (!hasMockups || item.placeholder) availability.push('missing-mockup')
 

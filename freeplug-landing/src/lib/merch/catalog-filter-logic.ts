@@ -52,6 +52,12 @@ export function sortCatalogItems(items: CatalogFilterItem[], sort: CatalogSort):
   return copy
 }
 
+/** Facet counts for the current filter context (colors/sizes/types not applied). */
+export function computePanelFacets(items: CatalogFilterItem[], state: CatalogFilterState): CatalogFacets {
+  const relaxed: CatalogFilterState = { ...state, colors: [], sizes: [], productTypes: [] }
+  return computeCatalogFacets(applyCatalogFilters(items, relaxed))
+}
+
 export function computeCatalogFacets(items: CatalogFilterItem[]): CatalogFacets {
   const sources = Object.fromEntries(ALL_SOURCES.map((s) => [s, 0])) as Record<CatalogSource, number>
   const categories = Object.fromEntries(SHOP_TABS.map((c) => [c, 0])) as Record<ShopTabSlug, number>
