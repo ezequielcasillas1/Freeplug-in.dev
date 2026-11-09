@@ -9,6 +9,7 @@ import { isSetToEnd, subscriptionEndDate } from '@/lib/stripe/active-subscriptio
 import { stepById } from '@/lib/plans/ladder'
 import { ADDON_NAMES } from '@/lib/plans/ladder-copy'
 import { planDisplayName } from '@/lib/stripe/plan-line'
+import { currentLocale } from '@/i18n/current-locale'
 import { tierItems, tipDollarsOfItems } from '@/lib/plans/tips'
 import { addonCentsOfItems } from '@/lib/plans/addons'
 
@@ -148,7 +149,7 @@ async function loadSubscriptions(
       id: sub.id,
       status: sub.status,
       productName: product.name,
-      planName: tiers.length > 0 ? planDisplayName(planItems.map((i, n) => ({ lookupKey: i.price.lookup_key ?? null, productName: planProducts[n].name, productId: planProducts[n].id ?? null, unitAmountCents: i.price.unit_amount ?? undefined, quantity: i.quantity ?? 1 }))) : product.name,
+      planName: tiers.length > 0 ? planDisplayName(planItems.map((i, n) => ({ lookupKey: i.price.lookup_key ?? null, productName: planProducts[n].name, productId: planProducts[n].id ?? null, unitAmountCents: i.price.unit_amount ?? undefined, quantity: i.quantity ?? 1 })), await currentLocale()) : product.name,
       amount: planItems.reduce((sum, i) => sum + (i.price.unit_amount ?? 0) * (i.quantity ?? 1), 0),
       tipCents: tipDollarsOfItems(sub.items.data) * 100,
       addonCents: addonCentsOfItems(sub.items.data),

@@ -37,7 +37,13 @@
   "vars": {
     // Trust Cloudflare's CF-Connecting-IP for per-IP rate limits (src/lib/rate-limit/client-ip.ts).
     "TRUST_CF_CONNECTING_IP": "true",
-    "ADMIN_ROUTE_ENABLED": "true"
+    "ADMIN_ROUTE_ENABLED": "true",
+    // Owner alerts (src/lib/owner-alerts): one email per important customer event to this address.
+    // Not a secret. Remove it to turn the alerts off (unset = no alerts). Preview Worker: unset.
+    "OWNER_ALERT_EMAIL": "fplgn.dev.72@gmail.com",
+    // Who may use /admin once past Cloudflare Access (src/lib/admin/guard.ts): the signed-in Supabase
+    // account's email must be in this comma-separated list. Not a secret.
+    "ADMIN_EMAILS": "ezequielcasillas1@gmail.com,fplgn.dev.72@gmail.com"
   },
   "env": {
     // Rehearsal Worker on freeplug-preview.<account>.workers.dev with test keys and test data.
@@ -49,7 +55,12 @@
       "routes": [],
       "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "freeplug-preview" }],
       "images": { "binding": "IMAGES" },
-      "vars": { "TRUST_CF_CONNECTING_IP": "true" }
+      // Wrangler does not inherit top-level "vars" into envs: repeat every one here.
+      // The admin route stays off on the preview Worker (src/lib/admin/guard.ts returns 404).
+      "vars": {
+        "TRUST_CF_CONNECTING_IP": "true",
+        "ADMIN_ROUTE_ENABLED": "false"
+      }
     }
   }
   // Email: Resend is the only app sender (src/lib/email/mailer.ts sendMail(); nodemailer removed).

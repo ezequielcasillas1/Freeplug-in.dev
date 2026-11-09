@@ -4,26 +4,32 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Mail, MapPin, ArrowUpRight } from 'lucide-react'
 import { fadeIn, fadeInUp, staggerContainer } from '../animations/landing.variants'
+import { useLocale, useTranslations } from 'next-intl'
+import { LanguagePicker } from '@/components/i18n/LanguagePicker'
+import { TranslationNotice } from '@/components/i18n/TranslationNotice'
+import { toAppLocale } from '@/i18n/config'
+import { publicHref } from '@/i18n/routing'
 
+// Labels are message keys under public.landing.footer.label; hrefs get /es on Spanish pages.
 const footerLinks = {
   company: [
-    { label: 'About', href: '/#about' },
-    { label: 'Outreach', href: '/#outreach' },
-    { label: 'Services', href: '/#services' },
-    { label: 'Reviews', href: '/#reviews' },
-    { label: 'Plans', href: '/#hosting-plans' },
+    { label: 'about', href: '/#about' },
+    { label: 'outreach', href: '/#outreach' },
+    { label: 'services', href: '/#services' },
+    { label: 'reviews', href: '/#reviews' },
+    { label: 'plans', href: '/#hosting-plans' },
   ],
   legal: [
-    { label: 'Terms & Conditions', href: null },
-    { label: 'Privacy Policy', href: null },
-    { label: 'Cookie Policy', href: null },
+    { label: 'termsConditions', href: null },
+    { label: 'privacyPolicy', href: null },
+    { label: 'cookiePolicy', href: null },
   ],
   contact: [
-    { label: 'Get Started', href: '/signup' },
-    { label: 'Support', href: 'mailto:support@freeplug-in.dev' },
-    { label: 'FAQ', href: '/faq' },
+    { label: 'getStarted', href: '/signup' },
+    { label: 'support', href: 'mailto:support@freeplug-in.dev' },
+    { label: 'faq', href: '/faq' },
   ],
-}
+} as const
 
 const socialLinks: { label: string; href: string }[] = [
   // Real profiles TBD — omit href="#" so we don't fake destinations
@@ -31,6 +37,8 @@ const socialLinks: { label: string; href: string }[] = [
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const t = useTranslations('public.landing.footer')
+  const locale = toAppLocale(useLocale())
 
   return (
     <motion.footer
@@ -58,12 +66,11 @@ export function Footer() {
           className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16"
         >
           <motion.div variants={fadeInUp} className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-6 group">
-              <span className="text-3xl font-bold text-[#ba3d3d] group-hover:text-[#d44d4d] transition-colors">Freeplug</span>
+            <Link href={publicHref('/', locale)} className="flex items-center gap-2 mb-6 group">
+              <span className="text-3xl font-bold text-[#ba3d3d] group-hover:text-[#d44d4d] transition-colors">{t('freeplug')}</span>
             </Link>
             <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
-              Freeplug handles owner outreach; 72 After builds the free websites.
-              Starting in Central Texas and growing from there.
+              {t('freeplugHandlesOwnerOutreach72')}
             </p>
             
             <div className="space-y-3">
@@ -71,30 +78,30 @@ export function Footer() {
                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-[#ba3d3d]/20 transition-colors">
                   <Mail className="w-5 h-5" />
                 </div>
-                <span className="text-sm">support@freeplug-in.dev</span>
+                <span className="text-sm">{t('supportFreeplugDev')}</span>
               </a>
               <div className="flex items-center gap-3 text-gray-400">
                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                   <MapPin className="w-5 h-5" />
                 </div>
-                <span className="text-sm">Central Texas · Outside the US via partners</span>
+                <span className="text-sm">{t('centralTexasOutsideUsVia')}</span>
               </div>
             </div>
           </motion.div>
 
           <motion.div variants={fadeInUp}>
             <h4 className="font-semibold text-white mb-6 flex items-center gap-2">
-              Company
+              {t('headingCompany')}
               <span className="flex-1 h-px bg-gradient-to-r from-gray-700 to-transparent" />
             </h4>
             <ul className="space-y-4">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
                   <a
-                    href={link.href}
+                    href={publicHref(link.href, locale)}
                     className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1 group"
                   >
-                    {link.label}
+                    {t(`label.${link.label}`)}
                     <ArrowUpRight className="w-3 h-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
                   </a>
                 </li>
@@ -104,7 +111,7 @@ export function Footer() {
 
           <motion.div variants={fadeInUp}>
             <h4 className="font-semibold text-white mb-6 flex items-center gap-2">
-              Legal
+              {t('headingLegal')}
               <span className="flex-1 h-px bg-gradient-to-r from-gray-700 to-transparent" />
             </h4>
             <ul className="space-y-4">
@@ -115,12 +122,12 @@ export function Footer() {
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1 group"
                     >
-                      {link.label}
+                      {t(`label.${link.label}`)}
                       <ArrowUpRight className="w-3 h-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
                     </a>
                   ) : (
-                    <span className="text-gray-500 text-sm" title="Coming soon">
-                      {link.label} <span className="text-gray-600">(soon)</span>
+                    <span className="text-gray-500 text-sm" title={t('legalComingSoonTitle')}>
+                      {t(`label.${link.label}`)} <span className="text-gray-600">{t('legalSoonTag')}</span>
                     </span>
                   )}
                 </li>
@@ -130,17 +137,17 @@ export function Footer() {
 
           <motion.div variants={fadeInUp}>
             <h4 className="font-semibold text-white mb-6 flex items-center gap-2">
-              Get Started
+              {t('headingGetStarted')}
               <span className="flex-1 h-px bg-gradient-to-r from-gray-700 to-transparent" />
             </h4>
             <ul className="space-y-4">
               {footerLinks.contact.map((link) => (
                 <li key={link.label}>
                   <a
-                    href={link.href}
+                    href={publicHref(link.href, locale)}
                     className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1 group"
                   >
-                    {link.label}
+                    {t(`label.${link.label}`)}
                     <ArrowUpRight className="w-3 h-3 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
                   </a>
                 </li>
@@ -149,7 +156,7 @@ export function Footer() {
             
             {socialLinks.length > 0 && (
               <div className="mt-8">
-                <p className="text-gray-500 text-xs mb-3">Follow us</p>
+                <p className="text-gray-500 text-xs mb-3">{t('followUs')}</p>
                 <div className="flex gap-2">
                   {socialLinks.map((social) => (
                     <a
@@ -170,12 +177,15 @@ export function Footer() {
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm">
-              &copy; {currentYear} Freeplug. All rights reserved.
+              {t('copyright', { year: currentYear })}
             </p>
             <p className="text-gray-600 text-sm flex items-center gap-2">
-              Outreach = Freeplug · Builds = 72 After
+              {t('outreachFreeplugBuilds72After')}
             </p>
+            <LanguagePicker variant="dark" />
           </div>
+          {/* Aria 9:53: legal line in the footer of every Spanish page (renders nothing in English). */}
+          <TranslationNotice className="mt-6 text-center text-gray-500" />
         </div>
       </div>
     </motion.footer>

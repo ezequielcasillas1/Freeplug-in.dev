@@ -205,7 +205,7 @@ describe('the tipping system: entitlements come from the step price only', () =>
   it('the tier is found whatever the item order (tip item first)', async () => {
     const e = await entitlementsForSubscription(sub([tipItem(5), ladderItem('fast_lane')]), noProduct)
     expect(e.step?.id).toBe('fast_lane')
-    expect(e.includedEditsPerMonth).toBe(1)
+    expect(e.includedEditsPerMonth).toBe(10) // Oct 18: Fast lane = 10 edits
     expect(e.tipCents).toBe(500)
   })
 

@@ -1,11 +1,15 @@
+import Link from 'next/link'
 import { MessageCircle, Mail, HelpCircle } from 'lucide-react'
-import { SUPPORT_AVAILABILITY_LABEL, SUPPORT_CARD_LINE } from '@/lib/support-hours'
+import { useTranslations } from 'next-intl'
+import { responseDaysKey } from '@/lib/plans/response-days'
 
-export function SupportCard() {
+/** `weekendReplies`: hasWeekendReplies(entitlements) (Priority $55 and up). Starter or no plan: business days. */
+export function SupportCard({ weekendReplies = false }: { weekendReplies?: boolean }) {
+  const t = useTranslations()
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-        Need Help?
+        {t('dashboard.home.needHelp')}
       </h2>
       <div className="space-y-3">
         <a
@@ -17,13 +21,13 @@ export function SupportCard() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 group-hover:text-[#ba3d3d]">
-              Email Support
+              {t('dashboard.home.emailSupport')}
             </p>
             <p className="text-xs text-gray-500">support@freeplug-in.dev</p>
           </div>
         </a>
 
-        <a
+        <Link
           href="/dashboard/help"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-zinc-50 transition-colors group"
         >
@@ -32,19 +36,19 @@ export function SupportCard() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 group-hover:text-[#ba3d3d]">
-              Help Center
+              {t('dashboard.home.helpCenter')}
             </p>
-            <p className="text-xs text-gray-500">FAQs and guides</p>
+            <p className="text-xs text-gray-500">{t('dashboard.home.faqsGuides')}</p>
           </div>
-        </a>
+        </Link>
 
         <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
           <div className="rounded-lg bg-green-50 p-2">
             <MessageCircle className="h-4 w-4 text-green-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900">{SUPPORT_AVAILABILITY_LABEL}</p>
-            <p className="text-xs text-gray-500">{SUPPORT_CARD_LINE}</p>
+            <p className="text-sm font-medium text-gray-900">{t('common.support.respondLabel')}</p>
+            <p className="text-xs text-gray-500" data-testid="support-response-days">{t(`common.support.${responseDaysKey(weekendReplies)}`)}</p>
           </div>
         </div>
       </div>

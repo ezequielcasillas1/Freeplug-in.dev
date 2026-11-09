@@ -1,11 +1,16 @@
 import type { NextConfig } from "next";
 import path from "path";
+import createNextIntlPlugin from "next-intl/plugin";
 import {
   PREVIEW_HEADER_SOURCES,
   PREVIEW_RESPONSE_HEADERS,
   SITE_SECURITY_HEADER_SOURCE,
   SITE_SECURITY_HEADERS,
+  assertCspSupabaseUrl,
 } from "./src/lib/outreach/headers";
+
+// The CSP's connect-src needs the Supabase project: fail a production build without it (Aria nit).
+if (process.env.NODE_ENV === "production") assertCspSupabaseUrl();
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -31,4 +36,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// next-intl (Spanish build, Oct 4): request config in src/i18n/request.ts.
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withNextIntl(nextConfig);

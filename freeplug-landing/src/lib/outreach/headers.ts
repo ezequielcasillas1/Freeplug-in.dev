@@ -10,10 +10,61 @@
  * them for static files that Cloudflare serves without running the Worker; headers.test.ts keeps
  * the two in sync.
  */
+/**
+ * Supabase project origin + its realtime wss origin, from NEXT_PUBLIC_SUPABASE_URL (inlined at build).
+ * Empty when unset or unparsable.
+ */
+export function supabaseCspSources(raw: string | undefined = process.env.NEXT_PUBLIC_SUPABASE_URL): string[] {
+  try {
+    const u = new URL(raw ?? '')
+    return [u.origin, `${u.protocol === 'http:' ? 'ws:' : 'wss:'}//${u.host}`]
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Aria nit: a CSP without the Supabase origin would block auth and data calls once enforced, so a
+ * production build (next.config.ts) fails when NEXT_PUBLIC_SUPABASE_URL is missing or not a URL.
+ */
+export function assertCspSupabaseUrl(raw: string | undefined = process.env.NEXT_PUBLIC_SUPABASE_URL): void {
+  if (supabaseCspSources(raw).length === 0) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is missing or not a URL; the Content-Security-Policy needs it')
+  }
+}
+
+/** CSP violation reports go here (src/app/api/csp-report/route.ts: logs only, size-capped, rate limited). */
+export const CSP_REPORT_PATH = '/api/csp-report'
+
+/**
+ * Report-only for now (Oct 12): only 'self', Stripe (js/api/hooks/checkout), the Supabase project
+ * (https + wss) and Cloudflare Turnstile (challenges.cloudflare.com).
+ */
+function contentSecurityPolicyReportOnly(): string {
+  const supabase = supabaseCspSources()
+  const stripeFrames = ['https://js.stripe.com', 'https://hooks.stripe.com', 'https://checkout.stripe.com']
+  return [
+    "default-src 'self'",
+    "script-src 'self' https://js.stripe.com https://challenges.cloudflare.com",
+    "style-src 'self' 'unsafe-inline'",
+    ['img-src', "'self'", 'data:', 'blob:', ...supabase.slice(0, 1)].join(' '),
+    "font-src 'self'",
+    ['connect-src', "'self'", 'https://api.stripe.com', ...supabase].join(' '),
+    ['frame-src', ...stripeFrames, 'https://challenges.cloudflare.com'].join(' '),
+    "form-action 'self' https://checkout.stripe.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    `report-uri ${CSP_REPORT_PATH}`,
+  ].join('; ')
+}
+
 export const SITE_SECURITY_HEADERS = {
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Strict-Transport-Security': 'max-age=86400',
+  'Content-Security-Policy-Report-Only': contentSecurityPolicyReportOnly(),
 } as const
 
 /** next.config.ts headers() source that matches every path, including "/". */

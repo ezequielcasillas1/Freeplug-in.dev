@@ -8,6 +8,7 @@ import {
   HELP_WHAT_DO_I_PAY,
   HELP_PAYMENT_METHOD,
 } from '@/lib/plans/ladder-copy'
+import type { LadderCopy } from '@/lib/plans/ladder-copy'
 
 /**
  * Scripted help chat (no AI). Wording is Sable's Sep 25 spec (sable-deliverables-2026-09-25.md, section 3).
@@ -84,7 +85,7 @@ export const HELP_QUICK_QUESTIONS: readonly HelpQuickQuestion[] = [
     question: 'How do I cancel my plan?',
     // help:85 (revised Sable Sep 25 3:30 PM: buyout instead of "export your data")
     answer:
-      "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.",
+      "Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can buy your website files. See the buyout prices in the FAQ.",
     lockedRef: 'help/page.tsx:85',
   },
   {
@@ -150,3 +151,81 @@ export function changeRequestSentMessage(email: string): string {
 
 /** Strict: hours come from SUPPORT_HOURS (exact days, times and "(Central time)"). */
 export const HELP_CHAT_NOT_FOUND = `Didn't find your answer? Email support@freeplug-in.dev. Our team is available ${SUPPORT_HOURS}.`
+
+// ------------------------------------------------------------------ Spanish build (Oct 12)
+/**
+ * The help chat in one language, from the catalog (help.chat.*, help.answers.*, buyout.*,
+ * help.priority.*). Ids, lockedRefs and CHANGE_TYPES values stay as above: the change type is
+ * stored in English (admin reads it); only its on-screen label is translated. The English
+ * constants above stay the word-for-word lock that help-chat-content.test.ts checks.
+ */
+export type HelpChatContent = {
+  greeting: string
+  quickQuestions: readonly Pick<HelpQuickQuestion, 'id' | 'question' | 'answer'>[]
+  changeTypeLabel: Record<ChangeType, string>
+  copy: { [K in keyof typeof CHANGE_REQUEST_COPY]: string }
+  sentMessage: (email: string) => string
+  notFound: string
+  back: string
+  next: string
+  sending: string
+  requestChange: string
+  ariaLabel: string
+}
+
+type Tr = (key: string, values?: Record<string, string | number>) => string
+type LadderHelpCopy = Pick<
+  LadderCopy,
+  'HELP_WHAT_DO_I_PAY' | 'HELP_HIDDEN_FEES' | 'HELP_PAYMENT_METHOD' | 'HELP_REQUEST_CHANGES' | 'HELP_CHAT_INCLUDED_EDIT_NOTE'
+>
+
+const QUESTION_KEYS: Record<string, [question: string, answer: string | keyof LadderHelpCopy]> = {
+  'is-it-free': ['help.chat.question.reallyFree', 'help.chat.answer.yesWebsiteDevelopmentFree'],
+  'what-do-i-pay': ['help.chat.question.whatDoIPay', 'HELP_WHAT_DO_I_PAY'],
+  'hidden-fees': ['help.chat.question.thereAnyHiddenFees', 'HELP_HIDDEN_FEES'],
+  'how-long': ['help.chat.question.longSiteTake', 'help.chat.answer.wellGiveTimelineAfter'],
+  'payment-method': ['help.chat.question.updatePaymentMethod', 'HELP_PAYMENT_METHOD'],
+  'cancel-plan': ['help.chat.question.cancelPlan', 'help.chat.answer.yesCancelAnyTime'],
+  'buy-website': ['help.chat.question.buyWebsite', 'buyout.faqAnswer'],
+  'reset-password': ['help.chat.question.resetPassword', 'help.chat.answer.signPageClickForgot'],
+  'request-changes': ['help.chat.question.requestChangesSite', 'HELP_REQUEST_CHANGES'],
+  priority: ['help.priority.priorityHelpQuestion', 'help.priority.priorityHelpAnswer'],
+}
+
+const CHANGE_TYPE_KEYS: Record<ChangeType, string> = {
+  'Text or prices': 'help.chat.changeTypes.textPrices',
+  Photos: 'help.chat.changeTypes.photos',
+  'Hours or contact info': 'help.chat.changeTypes.hoursContactInfo',
+  'Something else': 'help.chat.changeTypes.somethingElse',
+}
+
+export function helpChatContent(t: Tr, ladder: LadderHelpCopy): HelpChatContent {
+  if (typeof t !== 'function' || !ladder || typeof ladder !== 'object') throw new TypeError('helpChatContent: translator and ladder copy required')
+  return {
+    greeting: t('help.chat.chatGreeting'),
+    quickQuestions: HELP_QUICK_QUESTIONS.map((q) => {
+      const [qk, ak] = QUESTION_KEYS[q.id]
+      return { id: q.id, question: t(qk), answer: ak in ladder ? ladder[ak as keyof LadderHelpCopy] : t(ak) }
+    }),
+    changeTypeLabel: Object.fromEntries(CHANGE_TYPES.map((c) => [c, t(CHANGE_TYPE_KEYS[c])])) as Record<ChangeType, string>,
+    copy: {
+      step1: t('help.chat.step1.wouldLikeChanged'),
+      step2: t('help.chat.step2.whichPage'),
+      step2Placeholder: t('help.chat.step2Placeholder.exampleHomeServicesContact'),
+      step3: t('help.chat.step3.describeChange'),
+      step3Placeholder: t('help.chat.step3Placeholder.shouldSayShowInstead'),
+      step4: t('help.chat.step4.addPhotoScreenshotOptional'),
+      review: t('help.chat.review.heresRequestWellReview'),
+      send: t('help.chat.send.sendRequest'),
+      edit: t('help.chat.edit.edit'),
+      includedEditNote: ladder.HELP_CHAT_INCLUDED_EDIT_NOTE,
+    },
+    sentMessage: (email) => t('help.chat.changeRequestSentMessage.gotWellEmailAfter', { email }),
+    notFound: t('help.chat.chatNotFound', { supportHours: t('common.support.hours') }),
+    back: t('help.chat.back'),
+    next: t('help.chat.next'),
+    sending: t('help.chat.sending'),
+    requestChange: t('help.chat.requestChange'),
+    ariaLabel: t('help.chat.ariaLabel.helpChat'),
+  }
+}

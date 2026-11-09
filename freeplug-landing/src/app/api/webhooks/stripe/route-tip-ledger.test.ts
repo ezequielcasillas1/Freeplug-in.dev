@@ -14,6 +14,7 @@ vi.mock('@/lib/outreach/server', () => ({ handleOutreachInvoicePaid: async () =>
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     rpc: async (fn: string, args: RecordArgs) => {
+      if (fn === 'record_ownership_entry') return { data: 'inserted', error: null } as never
       if (fn !== 'record_invoice_paid') throw new Error(`unexpected rpc ${fn}`)
       return recordInvoicePaidRpc(
         args,

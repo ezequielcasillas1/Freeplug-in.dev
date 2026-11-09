@@ -19,129 +19,114 @@ import {
   Palette,
 } from 'lucide-react'
 import { PLAN_STEPS } from '@/lib/plans/ladder'
-import {
-  HELP_HIDDEN_FEES,
-  HELP_PAYMENT_METHOD,
-  HELP_HOSTING_PLANS,
-  HELP_PLANS_GUIDE_DESCRIPTION,
-  HELP_PLANS_GUIDE_TITLE_LINE,
-  HELP_REQUEST_CHANGES,
-  HELP_SECURITY,
-  COMING_SOON_LABEL,
-  STEP_BLURBS,
-} from '@/lib/plans/ladder-copy'
+import type { LadderCopy } from '@/lib/plans/ladder-copy'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
+import { useTranslations } from 'next-intl'
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion'
-import {
-  SUPPORT_AVAILABILITY_LABEL,
-  SUPPORT_AVAILABILITY_LINE,
-  SUPPORT_HOURS,
-} from '@/lib/support-hours'
 
+type T = (key: string, values?: Record<string, string | number>) => string
+
+/** Labels are help.center.label.* keys. */
 const tabs = [
-  { id: 'faq', label: 'FAQ', icon: HelpCircle },
-  { id: 'guides', label: 'Guides', icon: Book },
-  { id: 'contact', label: 'Contact', icon: Mail },
+  { id: 'faq', label: 'faq', icon: HelpCircle },
+  { id: 'guides', label: 'guides', icon: Book },
+  { id: 'contact', label: 'contact', icon: Mail },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
 
-const faqCategories = [
+function faqCategoriesFor(t: T, copy: LadderCopy) {
+  const { HELP_HIDDEN_FEES, HELP_PAYMENT_METHOD, HELP_HOSTING_PLANS, HELP_REQUEST_CHANGES, HELP_SECURITY } = copy
+  return [
   {
     id: 'getting-started',
-    title: 'Getting started',
+    title: t('help.center.title.gettingStarted'),
     icon: Rocket,
     color: 'bg-blue-100 text-blue-600',
     questions: [
       {
         id: 'gs-1',
-        question: 'How do I request a website?',
-        answer:
-          'Go to "Request website" in your dashboard. Fill out the form with your business details and what you need. Our team will review your request and contact you about next steps.',
+        question: t('help.center.question.requestWebsite'),
+        answer: t('help.center.answer.goRequestWebsiteDashboard'),
       },
       {
         id: 'gs-2',
-        question: 'What information do I need to provide?',
-        answer:
-          'You\'ll need your business name, description, contact information, and any branding materials (logo, colors) you have. The more details you provide about your vision, the better we can match your expectations.',
+        question: t('help.center.question.informationNeedProvide'),
+        answer: t('help.center.answer.youllNeedBusinessName'),
       },
       {
         id: 'gs-3',
-        question: 'How long does the process take?',
-        answer:
-          'We\'ll give you a timeline after we review your request. The process includes the first design, your revisions, and launch. Most of the time depends on how quickly we get your details and approvals. We\'ll keep you updated along the way.',
+        question: t('help.center.question.longDoesProcessTake'),
+        answer: t('help.center.answer.wellGiveTimelineAfter'),
       },
     ],
   },
   {
     id: 'billing',
-    title: 'Billing and plans',
+    title: t('help.center.title.billingPlans'),
     icon: CreditCard,
     color: 'bg-green-100 text-green-600',
     questions: [
       {
         id: 'b-1',
-        question: 'What are the hosting plan options?',
+        question: t('help.center.question.hostingPlanOptions'),
         // PLACEHOLDER (hosting ladder, src/lib/plans/ladder-copy.ts) until Sable's [STRICT] line.
         answer: HELP_HOSTING_PLANS,
       },
       {
         id: 'b-2',
-        question: 'How do I update my payment method?',
+        question: t('help.center.question.updatePaymentMethod'),
         // Locked help/page.tsx:79 + Sable's Manage-billing-while-a-switch-is-planned sentence (Oct 3); shared with the help chat.
         answer: HELP_PAYMENT_METHOD,
       },
       {
         id: 'b-3',
-        question: 'Can I cancel my plan?',
-        answer:
-          'Yes, you can cancel at any time. Choose Cancel options in your dashboard. Your website stays online until the end of your paid period. If you want to keep your website, you can request a buyout quote.',
+        question: t('help.center.question.cancelPlan'),
+        answer: t('help.center.answer.yesCancelAnyTime'),
       },
       {
         id: 'b-4',
-        question: 'Are there any hidden fees?',
+        question: t('help.center.question.thereAnyHiddenFees'),
         // PLACEHOLDER (hosting ladder): add-ons are retired. Was locked help/page.tsx:91.
         answer: HELP_HIDDEN_FEES,
       },
       {
         id: 'b-5',
-        question: 'How do I close my request or cancel my plan?',
-        answer:
-          'You can close a request from the request page (Dashboard, then View or update). If you have an active hosting plan, you\'ll need to cancel the plan first, because your site is still hosted under it and we don\'t want you charged for a request that\'s closed. To cancel your plan, choose Cancel options in your dashboard. Your plan stays active until the end of the current billing period. Once it has ended, you can close the request. Closing a request never cancels a plan on its own.',
+        question: t('help.center.question.closeRequestCancelPlan'),
+        answer: t('help.center.answer.closeRequestFromRequest'),
       },
     ],
   },
   {
     id: 'technical',
-    title: 'Technical support',
+    title: t('help.center.title.technicalSupport'),
     icon: Settings,
     color: 'bg-purple-100 text-purple-600',
     questions: [
       {
         id: 't-1',
-        question: 'Can I request changes to my website?',
+        question: t('help.center.question.requestChangesWebsite'),
         // PLACEHOLDER (hosting ladder) until Sable's [STRICT] line.
         answer: HELP_REQUEST_CHANGES,
       },
       {
         id: 't-2',
-        question: 'Is my website mobile-friendly?',
-        answer:
-          'Yes. Every site we build works on phones, tablets and computers, and we check it on each before launch.',
+        question: t('help.center.question.websiteMobileFriendly'),
+        answer: t('help.center.answer.yesEverySiteBuild'),
       },
       {
         id: 't-3',
-        question: 'Do you help with SEO (search engine optimization)?',
-        answer:
-          'Every site includes the basics that help search engines read it: a page title and description for each page, clean page structure, and a mobile-friendly layout. We can\'t promise any search ranking.',
+        question: t('help.center.question.helpSeoSearchEngine'),
+        answer: t('help.center.answer.everySiteIncludesBasics'),
       },
       {
         id: 't-4',
-        question: 'How secure is my website?',
+        question: t('help.center.question.secureWebsite'),
         // Backups are not advertised until they're built (Aria, Oct 3). PLACEHOLDER until Sable.
         answer: HELP_SECURITY,
       },
@@ -149,92 +134,100 @@ const faqCategories = [
   },
   {
     id: 'account',
-    title: 'Account',
+    title: t('help.center.title.account'),
     icon: User,
     color: 'bg-amber-100 text-amber-600',
     questions: [
       {
         id: 'a-1',
-        question: 'How do I reset my password?',
-        answer:
-          'On the sign-in page, click "Forgot password?" and enter your email. We\'ll email you a link to set a new password. No email after a few minutes? Check your spam folder, or email support@freeplug-in.dev. If you sign in with Google, use "Continue with Google" instead.',
+        question: t('help.center.question.resetPassword'),
+        answer: t('help.center.answer.signPageClickForgot'),
       },
       {
         id: 'a-2',
-        question: 'Can I change my email address?',
-        answer:
-          'Contact support at support@freeplug-in.dev to request an email change. We\'ll confirm it\'s you, then update your account and let you know.',
+        question: t('help.center.question.changeEmailAddress'),
+        answer: t('help.center.answer.contactSupportSupportFreeplug'),
       },
       {
         id: 'a-3',
-        question: 'How do I delete my account?',
-        answer:
-          'Email support@freeplug-in.dev with your account deletion request. We\'ll delete it and email you when it\'s done. This can\'t be undone.',
+        question: t('help.center.question.deleteAccount'),
+        answer: t('help.center.answer.emailSupportFreeplugDev'),
       },
     ],
   },
 ]
+}
 
-const guides = [
+function guidesFor(t: T, copy: LadderCopy) {
+  const { HELP_PLANS_GUIDE_DESCRIPTION, HELP_PLANS_GUIDE_TITLE_LINE, STEP_BLURBS } = copy
+  return [
   {
     id: 'guide-1',
-    title: 'Getting your first website',
-    description: 'Step-by-step guide to requesting and launching your business website',
+    title: t('help.center.title.gettingFirstWebsite'),
+    description: t('help.center.description.stepStepGuideRequesting'),
     icon: Globe,
     steps: [
-      'Create your Freeplug account',
-      'Complete your business profile',
-      'Submit a website request with your requirements',
-      'Review and approve the initial design',
-      'Provide feedback during development',
-      'Launch your website',
+      t('help.center.steps.createFreeplugAccount'),
+      t('help.center.steps.completeBusinessProfile'),
+      t('help.center.steps.submitWebsiteRequestRequirements'),
+      t('help.center.steps.reviewApproveInitialDesign'),
+      t('help.center.steps.provideFeedbackDuringDevelopment'),
+      t('help.center.steps.launchWebsite'),
     ],
   },
   {
     id: 'guide-2',
-    title: 'Understanding your dashboard',
-    description: 'Learn how to navigate and use all dashboard features',
+    title: t('help.center.title.understandingDashboard'),
+    description: t('help.center.description.learnNavigateUseAll'),
     icon: FileText,
     steps: [
-      'Overview: See your website status and quick actions',
+      t('help.center.steps.overviewSeeWebsiteStatus'),
       HELP_PLANS_GUIDE_TITLE_LINE,
-      'Request website: Submit or update your website request',
-      'Help: Access FAQs, guides, and contact support',
+      t('help.center.steps.requestWebsiteSubmitUpdate'),
+      t('help.center.steps.helpAccessFaqsGuides'),
     ],
   },
   {
     id: 'guide-3',
-    title: 'Choosing the right plan',
+    title: t('help.center.title.choosingRightPlan'),
     description: HELP_PLANS_GUIDE_DESCRIPTION,
     icon: CreditCard,
     // Built from the ladder (PLACEHOLDER copy until Sable/Wren).
-    steps: PLAN_STEPS.map((s) => `${s.name} ($${s.monthlyCents / 100}/mo)${s.sellable ? '' : ` (${COMING_SOON_LABEL.toLowerCase()})`}: ${STEP_BLURBS[s.id]}`),
+    steps: PLAN_STEPS.map((s) =>
+      t(s.sellable ? 'help.center.planGuideStep' : 'help.center.planGuideStepComingSoon', { name: s.name, price: `$${s.monthlyCents / 100}`, blurb: STEP_BLURBS[s.id] })
+    ),
   },
   {
     id: 'guide-4',
-    title: 'Preparing your brand assets',
-    description: 'What to have ready before requesting your website',
+    title: t('help.center.title.preparingBrandAssets'),
+    description: t('help.center.description.haveReadyBeforeRequesting'),
     icon: Palette,
     steps: [
-      'Logo files (PNG, SVG preferred)',
-      'Brand colors (hex codes if available)',
-      'Business description and tagline',
-      'Contact information',
-      'Photos of your business, products, or team',
-      'Examples of websites you like: you can pick a few yourself, or let us pick for you. We recommend letting us pick.',
+      t('help.center.steps.logoFilesPngSvg'),
+      t('help.center.steps.brandColorsHexCodes'),
+      t('help.center.steps.businessDescriptionTagline'),
+      t('help.center.steps.contactInformation'),
+      t('help.center.steps.photosBusinessProductsTeam'),
+      t('help.center.steps.examplesWebsitesLikePick'),
     ],
   },
 ]
+}
 
 export default function HelpPage() {
+  const tr = useTranslations()
+  const t: T = (key, values) => tr(key as never, values as never)
+  const copy = useLadderCopy()
+  const faqCategories = faqCategoriesFor(t, copy)
+  const guides = guidesFor(t, copy)
   const [activeTab, setActiveTab] = useState<TabId>('faq')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Help center</h1>
-        <p className="text-gray-600 mt-1">Find answers, guides, and support resources</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('help.center.helpCenter')}</h1>
+        <p className="text-gray-600 mt-1">{t('help.center.findAnswersGuidesSupportResources')}</p>
       </div>
 
       <div className="flex gap-2 border-b border-zinc-200">
@@ -249,7 +242,7 @@ export default function HelpPage() {
             }`}
           >
             <tab.icon className="w-4 h-4" />
-            {tab.label}
+            {t(`help.center.label.${tab.label}`)}
           </button>
         ))}
       </div>
@@ -280,7 +273,7 @@ export default function HelpPage() {
                         {category.title}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {category.questions.length} questions
+                        {t('help.center.questionCount', { count: category.questions.length })}
                       </p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-[#ba3d3d] transition-colors" />
@@ -294,7 +287,7 @@ export default function HelpPage() {
                   className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#ba3d3d] transition-colors mb-4"
                 >
                   <ChevronRight className="w-4 h-4 rotate-180" />
-                  Back to categories
+                  {t('help.center.backCategories')}
                 </button>
                 {(() => {
                   const category = faqCategories.find((c) => c.id === selectedCategory)
@@ -371,7 +364,7 @@ export default function HelpPage() {
             className="space-y-4"
           >
             <div className="rounded-xl border border-zinc-200 bg-white p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact support</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('help.center.contactSupport')}</h2>
               <div className="space-y-4">
                 <a
                   href="mailto:support@freeplug-in.dev"
@@ -382,7 +375,7 @@ export default function HelpPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-gray-900 group-hover:text-[#ba3d3d] transition-colors">
-                      Email support
+                      {t('help.center.emailSupport')}
                     </p>
                     <p className="text-sm text-gray-500">support@freeplug-in.dev</p>
                   </div>
@@ -394,8 +387,8 @@ export default function HelpPage() {
                     <Clock className="w-5 h-5 text-green-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{SUPPORT_AVAILABILITY_LABEL}</p>
-                    <p className="text-sm text-gray-500">{SUPPORT_AVAILABILITY_LINE}</p>
+                    <p className="font-medium text-gray-900">{t('common.support.availabilityLabel')}</p>
+                    <p className="text-sm text-gray-500">{t('common.support.availabilityLine')}</p>
                   </div>
                 </div>
 
@@ -404,8 +397,8 @@ export default function HelpPage() {
                     <MessageCircle className="w-5 h-5 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">Support hours</p>
-                    <p className="text-sm text-gray-500">{SUPPORT_HOURS}</p>
+                    <p className="font-medium text-gray-900">{t('help.center.supportHours')}</p>
+                    <p className="text-sm text-gray-500">{t('common.support.hours')}</p>
                   </div>
                 </div>
               </div>
@@ -417,17 +410,16 @@ export default function HelpPage() {
                   <Shield className="w-5 h-5 text-[#ba3d3d]" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Need urgent help?</h3>
+                  <h3 className="font-semibold text-gray-900 mb-1">{t('help.center.needUrgentHelp')}</h3>
                   <p className="text-sm text-gray-600 mb-3">
-                    For critical issues affecting your live website, include &quot;URGENT&quot; in
-                    your email subject line so it stands out in our inbox.
+                    {t('help.center.criticalIssuesAffectingLiveWebsite')}
                   </p>
                   <a
-                    href="mailto:support@freeplug-in.dev?subject=URGENT:%20"
+                    href={`mailto:support@freeplug-in.dev?subject=${encodeURIComponent(t('help.center.urgentPrefillSubject'))}`}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#ba3d3d] text-white text-sm font-medium hover:bg-[#a53434] transition-colors"
                   >
                     <Mail className="w-4 h-4" />
-                    Send urgent request
+                    {t('help.center.sendUrgentRequest')}
                   </a>
                 </div>
               </div>

@@ -3,21 +3,16 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { GO_TO_PLANS } from '@/lib/plans/ladder-copy'
-import {
-  CHANGE_REQUEST_COPY as C,
-  CHANGE_TYPES,
-  HELP_CHAT_GREETING,
-  HELP_CHAT_NOT_FOUND,
-  HELP_QUICK_QUESTIONS,
-  changeRequestSentMessage,
-  type ChangeType,
-} from '@/lib/help/help-chat-content'
+import { useLadderCopy } from '@/lib/plans/use-ladder-copy'
+import { MAINTENANCE_OPTION_HREF, editsCopy, fieldNoteParts } from '@/lib/plans/edits-copy'
+import { useTranslations } from 'next-intl'
+import { CHANGE_TYPES, helpChatContent, type ChangeType } from '@/lib/help/help-chat-content'
 import { SUPPORT_EMAIL } from '@/lib/site'
 import type {
   HelpChangeRequestInput,
   HelpChangeRequestResult,
 } from '@/app/(dashboard)/dashboard/request-website/actions'
+
 
 type Props = {
   email: string
@@ -60,6 +55,16 @@ function UserBubble({ children }: { children: React.ReactNode }) {
 }
 
 export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, sendRequest }: Props) {
+  const ladder = useLadderCopy()
+  /** Oct 18: the edit field note, split around its "one-time maintenance" link (page language). */
+  const NOTE = fieldNoteParts(ladder.LOCALE)
+  const EDITS = editsCopy(ladder.LOCALE)
+  const { GO_TO_PLANS } = ladder
+  const tr = useTranslations()
+  // Server-resolved messages (useTranslations reads the provider), so the chat follows the page's language.
+  const H = helpChatContent((key, values) => tr(key as never, values as never), ladder)
+  const C = H.copy
+  const HELP_QUICK_QUESTIONS = H.quickQuestions
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null)
   const [step, setStep] = useState<Step>('menu')
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT)
@@ -97,11 +102,11 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
 
   return (
     <section
-      aria-label="Help chat"
+      aria-label={H.ariaLabel}
       className="rounded-xl border border-zinc-200 bg-white p-4 sm:p-6 shadow-sm"
     >
       <div className="space-y-3">
-        <BotBubble>{HELP_CHAT_GREETING}</BotBubble>
+        <BotBubble>{H.greeting}</BotBubble>
 
         {openQuestion ? (
           <>
@@ -128,7 +133,7 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
                       : 'border-zinc-300 text-gray-700 hover:border-[#ba3d3d] hover:text-[#ba3d3d]'
                   }`}
                 >
-                  {t}
+                  {H.changeTypeLabel[t]}
                 </button>
               ))}
             </div>
@@ -136,7 +141,7 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
         ) : null}
 
         {step === 2 || step === 3 || step === 4 ? (
-          <UserBubble>{draft.changeType}</UserBubble>
+          <UserBubble>{draft.changeType ? H.changeTypeLabel[draft.changeType] : null}</UserBubble>
         ) : null}
 
         {step === 2 ? (
@@ -162,10 +167,10 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
             />
             <div className="flex gap-2">
               <Button type="button" variant="secondary" size="sm" onClick={() => setStep(1)}>
-                Back
+                {H.back}
               </Button>
               <Button type="submit" size="sm" disabled={!draft.page.trim()}>
-                Next
+                {H.next}
               </Button>
             </div>
           </form>
@@ -183,8 +188,16 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
           >
             <BotBubble>
               <label htmlFor="help-change-description">{C.step3}</label>
+              {/* Oct 18 edit explanation: hint + examples under the label (first edit field only). */}
+              <span id="help-change-edit-hint" className="mt-1 block text-xs text-gray-500" data-testid="edit-field-hint">
+                {EDITS.fieldHint}
+              </span>
+              <span className="mt-0.5 block text-xs text-gray-500" data-testid="edit-field-examples">
+                {EDITS.fieldExamples}
+              </span>
             </BotBubble>
             <textarea
+              aria-describedby="help-change-edit-hint help-change-edit-note"
               id="help-change-description"
               className={`${inputClass} resize-y`}
               rows={4}
@@ -195,12 +208,20 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
               value={draft.description}
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
             />
+            {/* Once, under the last edit field. Wraps on phones. */}
+            <p id="help-change-edit-note" className="text-xs text-gray-500 break-words" data-testid="edit-field-note">
+              {NOTE.before}
+              <Link href={MAINTENANCE_OPTION_HREF} className="underline underline-offset-2 hover:text-gray-700" data-testid="edit-field-maintenance-link">
+                {NOTE.link}
+              </Link>
+              {NOTE.after}
+            </p>
             <div className="flex gap-2">
               <Button type="button" variant="secondary" size="sm" onClick={() => setStep(2)}>
-                Back
+                {H.back}
               </Button>
               <Button type="submit" size="sm" disabled={!draft.description.trim()}>
-                Next
+                {H.next}
               </Button>
             </div>
           </form>
@@ -228,10 +249,10 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
               />
               <div className="flex gap-2">
                 <Button type="button" variant="secondary" size="sm" onClick={() => setStep(3)}>
-                  Back
+                  {H.back}
                 </Button>
                 <Button type="submit" size="sm">
-                  Next
+                  {H.next}
                 </Button>
               </div>
             </form>
@@ -257,7 +278,7 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
             <dl className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm space-y-2">
               <div>
                 <dt className="text-gray-500">{C.step1}</dt>
-                <dd className="text-gray-900">{draft.changeType}</dd>
+                <dd className="text-gray-900">{draft.changeType ? H.changeTypeLabel[draft.changeType] : null}</dd>
               </div>
               <div>
                 <dt className="text-gray-500">{C.step2}</dt>
@@ -283,7 +304,7 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
             ) : null}
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button type="button" onClick={send} disabled={pending} className="w-full sm:w-auto">
-                {pending ? 'Sending…' : C.send}
+                {pending ? H.sending : C.send}
               </Button>
               <Button
                 type="button"
@@ -298,7 +319,7 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
           </>
         ) : null}
 
-        {step === 'sent' ? <BotBubble>{changeRequestSentMessage(sentTo)}</BotBubble> : null}
+        {step === 'sent' ? <BotBubble>{H.sentMessage(sentTo)}</BotBubble> : null}
       </div>
 
       {!inFlow || step === 'sent' ? (
@@ -331,17 +352,17 @@ export function HelpChat({ email, hasIncludedEdit, smallEditAddonNote = null, se
             }}
             className="rounded-full bg-[#ba3d3d] px-4 py-2 text-sm font-medium text-white hover:bg-[#a53434] transition-colors"
           >
-            Request a change
+            {H.requestChange}
           </button>
         </div>
       ) : null}
 
       <p className="mt-5 border-t border-zinc-100 pt-4 text-sm text-gray-600">
-        {HELP_CHAT_NOT_FOUND.split(SUPPORT_EMAIL)[0]}
+        {H.notFound.split(SUPPORT_EMAIL)[0]}
         <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#ba3d3d] hover:underline">
           {SUPPORT_EMAIL}
         </a>
-        {HELP_CHAT_NOT_FOUND.split(SUPPORT_EMAIL)[1]}
+        {H.notFound.split(SUPPORT_EMAIL)[1]}
       </p>
     </section>
   )

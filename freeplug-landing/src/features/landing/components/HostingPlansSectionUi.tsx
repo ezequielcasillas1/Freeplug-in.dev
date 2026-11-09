@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { CreditCard } from 'lucide-react'
 import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
-import { LANDING_PLANS_INTRO } from '@/lib/plans/ladder-copy'
+import { useTranslations } from 'next-intl'
 import { fadeInUp, staggerContainer } from '../animations/landing.variants'
 
 const MAINTENANCE_LOGIN_NEXT = encodeURIComponent(
@@ -20,6 +20,7 @@ export function HostingPlansSectionUi({
   signedIn,
   hostingCheckoutAllowed,
 }: Props) {
+  const t = useTranslations()
   return (
     <section
       id="hosting-plans"
@@ -35,13 +36,13 @@ export function HostingPlansSectionUi({
         <motion.div variants={fadeInUp} className="text-center mb-12">
           <span className="inline-flex items-center gap-2 text-[#ba3d3d] text-sm font-medium mb-2">
             <CreditCard size={16} />
-            Stripe checkout
+            {t('public.landing.hostingPlans.stripeCheckout')}
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-            Hosting & maintenance
+            {t('public.landing.hostingPlans.hostingMaintenance')}
           </h2>
           <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            {LANDING_PLANS_INTRO}
+            {t('plans.landingPlansIntro')}
           </p>
         </motion.div>
 

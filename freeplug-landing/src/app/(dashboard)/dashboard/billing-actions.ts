@@ -8,40 +8,22 @@ import { sendAddonRefundNoticeOnce } from '@/lib/email/addon-refund-notice'
 import { recordRemovalOwedNow, removalOwedStore, resumeRemovalOwed, sendPendingRestoreFailedAlert, sendRemovalOwedUnrecordedAlert } from '@/lib/stripe/addon-removal-owed-server'
 import { resumeEndingSubscriptions, resumeOutcomeFromLive, type ResumeOutcome } from '@/lib/stripe/resume-hosting'
 import { PortalNotConfiguredError } from '@/lib/stripe/portal'
+import { readProfileLocale } from '@/i18n/profile-locale'
+import type { AppLocale } from '@/i18n/config'
 import { findScheduledSubscription, paymentMethodUpdateSessionParams, PLANS_CARD_RETURN_PATH, PLANS_PENDING_BILLING_PATH, RESUME_BUSY_PATH, RESUME_FAILED_PATH, RESUMED_PATH, RESUMED_REMOVAL_OWED_FOCUS_PATH, RESUMED_REMOVAL_OWED_PATH } from '@/lib/stripe/billing-routing'
 import { revalidatePath } from 'next/cache'
 import { resolvePlanStep } from '@/lib/plans/ladder'
 import { cancelPlanAtPeriodEnd, changeAddon, changePlanStep, changeTip, previewAddonChange, previewPlanStepChange, previewTipChange, type AddonAction, type AddonChangeRefusal, type TipChangeRefusal } from '@/lib/stripe/change-plan'
 import { PLAN_PREVIEW_LIMIT, rateCheck } from '@/lib/rate-limit'
 import { getAddonPriceId, getStepPriceId, getTipPriceId } from '@/lib/stripe/prices'
-import { addonById, type AddonId } from '@/lib/plans/ladder'
-import { ADDON_ERROR, ADDON_NAMES, ADDON_PRICE_UNCONFIRMED, ADDON_PENDING_REMOVAL, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, addonFinishing, addonKeepDone, addonOffDone, addonOnDone, addonPaymentFailed, addonRefunded, addonRefundFailed, addonsLockedBySwitch } from '@/lib/plans/ladder-copy'
+import { addonById, RETIRED_ADDON_IDS, type AddonId } from '@/lib/plans/ladder'
+import { ladderCopy, type LadderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
 import { formatPlanEndDate, listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { loadPlanSnapshotRow } from '@/lib/plans/plan-snapshot'
 import { syncPlanSnapshotForCustomer } from '@/lib/stripe/sync-checkout-customer'
 import { withPlanChangeLock } from '@/lib/plans/plan-change-lock'
 import { planChangeLockStore } from '@/lib/plans/plan-change-lock-server'
-import {
-  CHANGE_PLAN_ENDING,
-  CHANGE_PLAN_PAYMENT_FAILED,
-  CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST,
-  CHANGE_PLAN_SCHEDULED,
-  CHANGE_PLAN_UNAVAILABLE,
-  CHANGE_PLAN_UNCHANGED,
-  CHANGE_PLAN_UPGRADED,
-  STEP_NOT_SELLABLE_MESSAGE,
-  UPGRADE_IN_PROGRESS,
-  UPGRADE_PREVIEW_EXPIRED,
-  TIP_CHANGE_PENDING,
-  TIP_CHANGE_UNAVAILABLE,
-  TIP_CHANGED,
-  TIP_IN_PROGRESS,
-  renewalLineText,
-  renewalCarriedLine,
-  TIP_NOT_FOR_PLAN,
-  TIP_OUT_OF_RANGE,
-  TIP_CHANGE_ENDING,
-} from '@/lib/plans/ladder-copy'
 
 /**
  * Manage billing (Aria, Oct 3 4:05 PM): a card-only portal session (payment_method_update flow on the
@@ -81,14 +63,14 @@ export async function openBillingPortal() {
   }
   if (scheduled) redirect(PLANS_PENDING_BILLING_PATH)
 
-  redirect((await cardOnlyPortalUrl(customerId)) ?? '/dashboard/plans?billing=unavailable')
+  redirect((await cardOnlyPortalUrl(customerId, await readProfileLocale(supabase, user.id))) ?? '/dashboard/plans?billing=unavailable')
 }
 
 /** The card-only portal session URL, or null (no configuration id, or Stripe failed). */
-async function cardOnlyPortalUrl(customerId: string): Promise<string | null> {
+async function cardOnlyPortalUrl(customerId: string, locale: AppLocale = 'en'): Promise<string | null> {
   try {
     const session = await getStripe().billingPortal.sessions.create(
-      paymentMethodUpdateSessionParams(customerId, `${appBaseUrl()}${PLANS_CARD_RETURN_PATH}`)
+      paymentMethodUpdateSessionParams(customerId, `${appBaseUrl()}${PLANS_CARD_RETURN_PATH}`, process.env, locale)
     )
     return session.url ?? null
   } catch (e) {
@@ -113,7 +95,7 @@ export async function updatePaymentMethod() {
   const customerId = prof?.stripe_customer_id
   if (!customerId) redirect('/dashboard/plans?billing=unavailable')
 
-  redirect((await cardOnlyPortalUrl(customerId)) ?? '/dashboard/plans?billing=unavailable')
+  redirect((await cardOnlyPortalUrl(customerId, await readProfileLocale(supabase, user.id))) ?? '/dashboard/plans?billing=unavailable')
 }
 
 /**
@@ -214,6 +196,7 @@ export type PlanPreviewResponse =
   | { ok: false; reason: 'not_upgrade' | 'rate_limited' | 'preview_failed' | 'unavailable'; prorationDate: number | null }
 
 export async function previewPlanChange(planStep: string): Promise<PlanPreviewResponse> {
+  const locale = await currentLocale()
   const step = resolvePlanStep(planStep)
   if (!step) return { ok: false, reason: 'unavailable', prorationDate: null }
   const supabase = await createClient()
@@ -237,7 +220,7 @@ export async function previewPlanChange(planStep: string): Promise<PlanPreviewRe
       prorationDate: p.prorationDate,
       amountDueCents: p.amountDueCents,
       nextAmountCents: p.nextAmountCents,
-      nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null,
+      nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt), locale) : null,
       tipDollars: p.tipDollars,
       addons: p.addons,
     }
@@ -248,6 +231,8 @@ export async function previewPlanChange(planStep: string): Promise<PlanPreviewRe
 }
 
 export async function changeHostingPlan(planStep: string, prorationDate?: number): Promise<ChangeHostingPlanResult> {
+  const locale = await currentLocale()
+  const { CHANGE_PLAN_UNAVAILABLE, UPGRADE_IN_PROGRESS } = ladderCopy(locale)
   const step = resolvePlanStep(planStep)
   if (!step) return { ok: false, message: CHANGE_PLAN_UNAVAILABLE }
   if (prorationDate !== undefined && (typeof prorationDate !== 'number' || !Number.isSafeInteger(prorationDate))) {
@@ -285,6 +270,8 @@ async function runHostingPlanChange(
   step: NonNullable<ReturnType<typeof resolvePlanStep>>,
   prorationDate: number | undefined
 ): Promise<ChangeHostingPlanResult> {
+  const locale = await currentLocale()
+  const { ADDON_TURN_OFF_FIRST, CHANGE_PLAN_ENDING, CHANGE_PLAN_PAYMENT_FAILED, CHANGE_PLAN_PAYMENT_FAILED_PENDING_LOST, CHANGE_PLAN_SCHEDULED, CHANGE_PLAN_UNAVAILABLE, CHANGE_PLAN_UNCHANGED, CHANGE_PLAN_UPGRADED, STEP_NOT_SELLABLE_MESSAGE, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } = ladderCopy(locale)
   try {
     const live = (await listLiveSubscriptions(customerId)).filter((s) => s.status === 'active' || s.status === 'trialing')
     if (live.length !== 1) return { ok: false, message: CHANGE_PLAN_UNAVAILABLE }
@@ -298,7 +285,7 @@ async function runHostingPlanChange(
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
     if (r.ok && r.kind === 'upgraded') return { ok: true, message: CHANGE_PLAN_UPGRADED(step.name) }
-    if (r.ok && r.kind === 'scheduled') return { ok: true, message: CHANGE_PLAN_SCHEDULED(step.name, formatPlanEndDate(new Date(r.effectiveAt))) }
+    if (r.ok && r.kind === 'scheduled') return { ok: true, message: CHANGE_PLAN_SCHEDULED(step.name, formatPlanEndDate(new Date(r.effectiveAt), locale)) }
     if (r.ok) return { ok: true, message: CHANGE_PLAN_UNCHANGED }
     if (r.code === 'ending') return { ok: false, message: CHANGE_PLAN_ENDING }
     if (r.code === 'not_sellable') return { ok: false, message: STEP_NOT_SELLABLE_MESSAGE(step.name) }
@@ -358,7 +345,8 @@ export type TipPreviewResponse =
 /** carriedNote: Sable's gray line under the next-bill line while a carried small amount is pending (Aria 2:40 PM). */
 export type ChangeTipResponse = { ok: boolean; message: string; carriedNote?: string }
 
-function tipRefusalMessage(code: TipChangeRefusal | 'mismatch' | 'rate_limited'): string {
+function tipRefusalMessage(code: TipChangeRefusal | 'mismatch' | 'rate_limited', copy: LadderCopy): string {
+  const { TIP_CHANGE_PENDING, TIP_CHANGE_ENDING, TIP_NOT_FOR_PLAN, TIP_OUT_OF_RANGE, TIP_CHANGE_UNAVAILABLE } = copy
   if (code === 'pending_change') return TIP_CHANGE_PENDING
   if (code === 'ending') return TIP_CHANGE_ENDING
   if (code === 'no_tip_plan') return TIP_NOT_FOR_PLAN
@@ -385,18 +373,20 @@ async function ownLiveSubscription(): Promise<{ userId: string; sub: Awaited<Ret
  * re-checked against the step's range on the server.
  */
 export async function previewTipChangeAction(tipDollars: number): Promise<TipPreviewResponse> {
+  const locale = await currentLocale()
+  const { TIP_CHANGE_UNAVAILABLE } = ladderCopy(locale)
   try {
     const own = await ownLiveSubscription()
     if (!own) return { ok: false, message: TIP_CHANGE_UNAVAILABLE }
-    if (!(await rateCheck(PLAN_PREVIEW_LIMIT, own.userId))) return { ok: false, message: tipRefusalMessage('rate_limited') }
+    if (!(await rateCheck(PLAN_PREVIEW_LIMIT, own.userId))) return { ok: false, message: tipRefusalMessage('rate_limited', ladderCopy(locale)) }
     const stripe = getStripe()
     const p = await previewTipChange({ stripe, tipPriceId: () => getTipPriceId(stripe) }, own.sub, tipDollars)
-    if (!p.ok) return { ok: false, message: tipRefusalMessage(p.code) }
+    if (!p.ok) return { ok: false, message: tipRefusalMessage(p.code, ladderCopy(locale)) }
     return {
       ok: true,
       tipDollars: p.tipDollars,
       nextAmountCents: p.nextAmountCents,
-      nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null,
+      nextDate: p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt), locale) : null,
       confirmId: crypto.randomUUID(),
       carriedCents: p.carriedCents,
     }
@@ -412,6 +402,8 @@ export async function previewTipChangeAction(tipDollars: number): Promise<TipPre
  * interleave (e.g. a tip added while an upgrade is removing it).
  */
 export async function changeTipAction(tipDollars: number, confirmId?: string): Promise<ChangeTipResponse> {
+  const locale = await currentLocale()
+  const { TIP_CHANGE_UNAVAILABLE, TIP_IN_PROGRESS } = ladderCopy(locale)
   const supabase = await createClient()
   const {
     data: { user },
@@ -430,6 +422,8 @@ export async function changeTipAction(tipDollars: number, confirmId?: string): P
 }
 
 async function runTipChange(tipDollars: number, confirmId?: string): Promise<ChangeTipResponse> {
+  const locale = await currentLocale()
+  const { TIP_CHANGE_UNAVAILABLE, TIP_CHANGED, renewalLineText, renewalCarriedLine } = ladderCopy(locale)
   try {
     const own = await ownLiveSubscription()
     if (!own) return { ok: false, message: TIP_CHANGE_UNAVAILABLE }
@@ -437,8 +431,8 @@ async function runTipChange(tipDollars: number, confirmId?: string): Promise<Cha
     const r = await changeTip({ stripe, tipPriceId: () => getTipPriceId(stripe) }, own.sub, tipDollars, { userId: own.userId, confirmId })
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/plans')
-    if (!r.ok) return { ok: false, message: tipRefusalMessage(r.code) }
-    const date = r.nextBillingAt ? formatPlanEndDate(new Date(r.nextBillingAt)) : null
+    if (!r.ok) return { ok: false, message: tipRefusalMessage(r.code, ladderCopy(locale)) }
+    const date = r.nextBillingAt ? formatPlanEndDate(new Date(r.nextBillingAt), locale) : null
     // The tip box shows "Saved." + the next-bill line the customer confirmed; this is the fallback.
     return {
       ok: true,
@@ -480,9 +474,12 @@ export type ChangeAddonResponse = { ok: boolean; message: string; code?: 'tip_dr
 function addonRefusalMessage(
   code: AddonChangeRefusal | 'in_progress' | 'mismatch' | 'payment_failed',
   addonId: AddonId,
-  switchAt?: string | null
+  switchAt: string | null | undefined,
+  copy: LadderCopy,
+  locale: AppLocale
 ): string {
-  if (code === 'pending_switch') return addonsLockedBySwitch(switchAt ? formatPlanEndDate(new Date(switchAt)) : null)
+  const { ADDON_NAMES, addonsLockedBySwitch, ADDON_PENDING_REMOVAL, ADDON_PRICE_UNCONFIRMED, ADDON_TURN_OFF_FIRST, ADDONS_LEGACY_NOTE, CHANGE_PLAN_ENDING, UPGRADE_PREVIEW_EXPIRED, UPGRADE_IN_PROGRESS, addonPaymentFailed, ADDON_ERROR } = copy
+  if (code === 'pending_switch') return addonsLockedBySwitch(switchAt ? formatPlanEndDate(new Date(switchAt), locale) : null)
   if (code === 'pending_addons') return ADDON_PENDING_REMOVAL
   if (code === 'over_cap') return ADDON_TURN_OFF_FIRST
   if (code === 'price_mismatch') return ADDON_PRICE_UNCONFIRMED
@@ -504,9 +501,13 @@ const parseAddonAction = (v: unknown): AddonAction | null => (v === 'on' || v ==
  * comes from the browser.
  */
 export async function previewAddonChangeAction(addonId: string, action: string): Promise<AddonPreviewResponse> {
+  const locale = await currentLocale()
+  const { ADDON_ERROR } = ladderCopy(locale)
   const addon = addonById(addonId)
   const act = parseAddonAction(action)
   if (!addon || !act) return { ok: false, message: ADDON_ERROR, prorationDate: null }
+  // Oct 18: retired add-ons can't be turned on again (turning one off or keeping it still works).
+  if (act === 'on' && RETIRED_ADDON_IDS.includes(addon.id)) return { ok: false, message: ADDON_ERROR, prorationDate: null }
   const prorationDate = Math.floor(Date.now() / 1000)
   try {
     const own = await ownLiveSubscription()
@@ -514,8 +515,8 @@ export async function previewAddonChangeAction(addonId: string, action: string):
     if (!(await rateCheck(PLAN_PREVIEW_LIMIT, own.userId))) return { ok: false, message: ADDON_ERROR, prorationDate }
     const stripe = getStripe()
     const p = await previewAddonChange({ stripe, addonPriceIdFor: (id) => getAddonPriceId(id, stripe) }, own.sub, addon.id, act, prorationDate)
-    if (!p.ok) return { ok: false, message: addonRefusalMessage(p.code, addon.id, p.switchAt), prorationDate: null }
-    const nextDate = p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt)) : null
+    if (!p.ok) return { ok: false, message: addonRefusalMessage(p.code, addon.id, p.switchAt, ladderCopy(locale), locale), prorationDate: null }
+    const nextDate = p.nextBillingAt ? formatPlanEndDate(new Date(p.nextBillingAt), locale) : null
     if (p.action === 'on') {
       return {
         ok: true,
@@ -530,7 +531,7 @@ export async function previewAddonChangeAction(addonId: string, action: string):
         tipDollarsAfter: p.tipDollarsAfter,
       }
     }
-    return { ok: true, action: p.action, endDate: p.effectiveAt ? formatPlanEndDate(new Date(p.effectiveAt)) : null, nextAmountCents: p.nextAmountCents, nextDate }
+    return { ok: true, action: p.action, endDate: p.effectiveAt ? formatPlanEndDate(new Date(p.effectiveAt), locale) : null, nextAmountCents: p.nextAmountCents, nextDate }
   } catch (e) {
     console.error('[previewAddonChange] failed', e instanceof Error ? e.message : e)
     // Turning on: the confirm still opens with "up to" the full price (credit can only lower it); the
@@ -548,9 +549,12 @@ export async function previewAddonChangeAction(addonId: string, action: string):
  * undoes a planned removal.
  */
 export async function changeAddonAction(addonId: string, action: string, opts: { prorationDate?: number; tipDropTo?: number } = {}): Promise<ChangeAddonResponse> {
+  const locale = await currentLocale()
+  const { ADDON_ERROR, UPGRADE_IN_PROGRESS } = ladderCopy(locale)
   const addon = addonById(addonId)
   const act = parseAddonAction(action)
   if (!addon || !act) return { ok: false, message: ADDON_ERROR }
+  if (act === 'on' && RETIRED_ADDON_IDS.includes(addon.id)) return { ok: false, message: ADDON_ERROR }
   if (opts.prorationDate !== undefined && (typeof opts.prorationDate !== 'number' || !Number.isSafeInteger(opts.prorationDate))) return { ok: false, message: ADDON_ERROR }
   const supabase = await createClient()
   const {
@@ -568,6 +572,8 @@ export async function changeAddonAction(addonId: string, action: string, opts: {
 }
 
 async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { prorationDate?: number; tipDropTo?: number }): Promise<ChangeAddonResponse> {
+  const locale = await currentLocale()
+  const { ADDON_ERROR, ADDON_NAMES, addonFinishing, addonKeepDone, addonOffDone, addonOnDone, addonRefunded, addonRefundFailed, UPGRADE_IN_PROGRESS, UPGRADE_PREVIEW_EXPIRED } = ladderCopy(locale)
   try {
     const own = await ownLiveSubscription()
     if (!own) return { ok: false, message: ADDON_ERROR }
@@ -590,7 +596,7 @@ async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { pro
       }
       return { ok: true, message: addonKeepDone(name) }
     }
-    if (r.ok) return { ok: true, message: addonOffDone(name, r.effectiveAt ? formatPlanEndDate(new Date(r.effectiveAt)) : null) }
+    if (r.ok) return { ok: true, message: addonOffDone(name, r.effectiveAt ? formatPlanEndDate(new Date(r.effectiveAt), locale) : null) }
     if (r.code === 'tip_drop_needed') return { ok: false, message: `${ADDON_NAMES[addonId]}: ${r.message}`, code: 'tip_drop_needed', tipDollars: r.tipDollars }
     if (r.code === 'stale_preview') return { ok: false, message: UPGRADE_PREVIEW_EXPIRED, code: 'stale_preview' }
     if (r.code === 'in_progress') return { ok: false, message: UPGRADE_IN_PROGRESS, code: 'in_progress' }
@@ -604,7 +610,7 @@ async function runAddonChange(addonId: AddonId, action: AddonAction, opts: { pro
     }
     // Paid, not on yet: the invoice.paid self-heal adds it (or refunds automatically).
     if (r.code === 'finishing') return { ok: false, message: addonFinishing(name), code: 'finishing' }
-    return { ok: false, message: addonRefusalMessage(r.code, addonId, 'switchAt' in r ? r.switchAt : null) }
+    return { ok: false, message: addonRefusalMessage(r.code, addonId, 'switchAt' in r ? r.switchAt : null, ladderCopy(locale), locale) }
   } catch (e) {
     console.error('[changeAddon] failed', e instanceof Error ? e.message : e)
     return { ok: false, message: ADDON_ERROR }

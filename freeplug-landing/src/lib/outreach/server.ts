@@ -12,6 +12,8 @@ import { appBaseUrl } from '@/lib/stripe/config'
 import { getStripe } from '@/lib/stripe/server'
 import { listLiveSubscriptions } from '@/lib/stripe/active-subscription'
 import { createCheckoutCustomer, findCustomersToCheck } from '@/lib/stripe/checkout-customer'
+import { localeKeyPart, stripeLocaleParam } from '@/lib/stripe/locale'
+import { readProfileLocale } from '@/i18n/profile-locale'
 import {
   completeSetupSession,
   markLiveFromPaidInvoice,
@@ -684,7 +686,9 @@ export async function startSetupCheckout(user: { id: string; email?: string | nu
   const { customerIds, ownCustomerId } = await findCustomersToCheck(stripe, user, saved)
   const live = (await Promise.all(customerIds.map((id) => listLiveSubscriptions(id)))).flat()
   if (live.length > 0) return { ok: false, error: 'already_has_plan', code: 'already_has_plan' }
-  const customerId = ownCustomerId ?? (await createCheckoutCustomer(stripe, user))
+  // Card R7: setup Checkout in the customer's language (nothing changes with the gate off).
+  const locale = await readProfileLocale(client, user.id)
+  const customerId = ownCustomerId ?? (await createCheckoutCustomer(stripe, user, locale))
   const base = appBaseUrl()
   // Every Checkout Session expires an hour after it is created (Aria, Oct 3 12:56).
   const expiresAt = checkoutSessionExpiresAt()
@@ -696,12 +700,13 @@ export async function startSetupCheckout(user: { id: string; email?: string | nu
       customer: customerId,
       success_url: `${base}/claim?setup=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/claim?setup=cancelled`,
+      ...stripeLocaleParam(locale),
       metadata: { type: 'outreach_setup', outreach_site_id: site.id, supabase_user_id: user.id },
       setup_intent_data: {
         metadata: { type: 'outreach_setup', outreach_site_id: site.id, supabase_user_id: user.id },
       },
     },
-    { idempotencyKey: `outreach-setup:${site.id}:${expiresAt}` }
+    { idempotencyKey: `outreach-setup:${site.id}:${expiresAt}${localeKeyPart(locale)}` }
   )
   if (!session.url) return { ok: false, error: 'no_url', code: 'no_url' }
   const { error } = await client

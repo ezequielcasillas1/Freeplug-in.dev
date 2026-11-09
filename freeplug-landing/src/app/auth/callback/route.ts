@@ -3,6 +3,8 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { appBaseUrl } from '@/lib/stripe/config'
 import { safeNext } from '@/lib/auth/safe-next'
+import { syncLocaleCookieFromProfile } from '@/i18n/locale-cookie-sync'
+import { alertOwner } from '@/lib/owner-alerts/events'
 import { requestAwareBaseUrl } from '@/lib/site'
 import {
   RESET_COOKIE_NAME,
@@ -27,6 +29,13 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Google / email-link sign-in: cookie follows profiles.locale.
+      await syncLocaleCookieFromProfile(supabase, data.user?.id)
+      // Owner alert: a Google account created just now (email sign-ups alert from signUp; same dedupe key).
+      const u = data.user
+      if (u && u.app_metadata?.provider === 'google' && Date.now() - Date.parse(u.created_at) < 10 * 60_000) {
+        alertOwner({ kind: 'signup', dedupeKey: `signup:${u.id}`, userId: u.id, email: u.email ?? null, details: [['Signed up with', 'Google']] })
+      }
       // Supabase-mailer fallback: only a session that really came from a recovery link
       // (amr method "recovery") gets the /reset-password marker cookie.
       const secret = resetCookieSecret()

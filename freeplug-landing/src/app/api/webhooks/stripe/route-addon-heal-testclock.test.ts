@@ -75,6 +75,7 @@ vi.mock('@/lib/supabase/admin', () => ({
           (n) => (h.total += n)
         )
       }
+      if (fn === 'record_ownership_entry') return { data: 'inserted', error: null } as never
       throw new Error(`unexpected rpc ${fn}`)
     },
     from: (table: string) => {

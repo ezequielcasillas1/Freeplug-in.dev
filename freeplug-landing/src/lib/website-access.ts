@@ -1,3 +1,5 @@
+import type { AppLocale } from '@/i18n/config'
+import { translatorFor } from '@/i18n/translate'
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/server'
 import { formatBillingDate, stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
@@ -140,16 +142,26 @@ export const ADMIN_ACCESS_OFFLINE_LABEL = 'Website offline (hosting canceled)'
 /** Splits a template around {accessEndDate} so the UI can bold only the date. */
 export function splitAccessTemplate(
   template: string,
-  accessEndsAt: Date | null
+  accessEndsAt: Date | null,
+  locale: AppLocale = 'en'
 ): { before: string; date: string; after: string } {
   const [before, after = ''] = template.split('{accessEndDate}')
-  return { before, date: formatBillingDate(accessEndsAt), after }
+  const fallback = locale === 'en' ? undefined : translatorFor(locale)('common.dateFallback')
+  return { before, date: formatBillingDate(accessEndsAt, fallback, locale), after }
 }
 
 /** Fills {accessEndDate} with the formatted date (fallback text when the date is missing). */
-export function fillAccessTemplate(template: string, accessEndsAt: Date | null): string {
-  const { before, date, after } = splitAccessTemplate(template, accessEndsAt)
+export function fillAccessTemplate(template: string, accessEndsAt: Date | null, locale: AppLocale = 'en'): string {
+  const { before, date, after } = splitAccessTemplate(template, accessEndsAt, locale)
   return template.includes('{accessEndDate}') ? `${before}${date}${after}` : template
+}
+
+/**
+ * A customer access template in a language (Spanish build): the catalog line with its {date}
+ * left as {accessEndDate}, ready for split/fillAccessTemplate. English = the constants above.
+ */
+export function accessTemplate(key: 'dashboard.access.accessEndingMessage' | 'cancel.accessWarning' | 'cancel.resumeUntilText', locale: AppLocale = 'en'): string {
+  return translatorFor(locale)(key, { date: '{accessEndDate}' })
 }
 
 /** Admin badge label for a status. */
@@ -189,22 +201,23 @@ export type WebsiteAccessAlert = {
   date: string | null
   after: string
   button:
-    | { kind: 'resume'; label: typeof RESUME_PLAN_LABEL }
-    | { kind: 'checkout'; label: typeof RESTART_HOSTING_LABEL; href: string }
+    | { kind: 'resume'; label: string }
+    | { kind: 'checkout'; label: string; href: string }
 }
 
-export function websiteAccessAlert(access: WebsiteAccess | null): WebsiteAccessAlert | null {
+export function websiteAccessAlert(access: WebsiteAccess | null, locale: AppLocale = 'en'): WebsiteAccessAlert | null {
   if (!access || access.status === 'active' || !access.hasHostingHistory) return null
+  const t = translatorFor(locale, 'dashboard.access')
   if (access.status === 'ending') {
-    const { before, date, after } = splitAccessTemplate(ACCESS_ENDING_MESSAGE, access.accessEndsAt)
-    return { status: 'ending', before, date, after, button: { kind: 'resume', label: RESUME_PLAN_LABEL } }
+    const { before, date, after } = splitAccessTemplate(accessTemplate('dashboard.access.accessEndingMessage', locale), access.accessEndsAt, locale)
+    return { status: 'ending', before, date, after, button: { kind: 'resume', label: t('resumePlanLabel') } }
   }
   return {
     status: 'offline',
-    before: ACCESS_OFFLINE_MESSAGE,
+    before: t('accessOfflineMessage'),
     date: null,
     after: '',
-    button: { kind: 'checkout', label: RESTART_HOSTING_LABEL, href: RESTART_HOSTING_HREF },
+    button: { kind: 'checkout', label: t('restartHostingLabel'), href: RESTART_HOSTING_HREF },
   }
 }
 
@@ -213,7 +226,7 @@ export function websiteAccessAlert(access: WebsiteAccess | null): WebsiteAccessA
  * "ending" card duplicated the "Subscription ending" alert, which stays (it links to the cancel page
  * Resume box, /dashboard/cancel#resume-plan) and now covers trials and cancel_at as this card did.
  */
-export function dashboardAccessAlert(access: WebsiteAccess | null): WebsiteAccessAlert | null {
-  const alert = websiteAccessAlert(access)
+export function dashboardAccessAlert(access: WebsiteAccess | null, locale: AppLocale = 'en'): WebsiteAccessAlert | null {
+  const alert = websiteAccessAlert(access, locale)
   return alert?.status === 'offline' ? alert : null
 }

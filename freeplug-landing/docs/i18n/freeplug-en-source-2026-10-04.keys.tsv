@@ -1,0 +1,952 @@
+key	file:line	STRICT	placeholders
+auth.messages.subject.signFreeplug	src/app/(auth)/actions.ts:198	n	
+auth.password.forgotMetaTitle	src/app/(auth)/forgot-password/page.tsx:8	n	
+auth.password.forgotPassword	src/app/(auth)/forgot-password/page.tsx:21	n	
+auth.password.enterEmailUseSignWell	src/app/(auth)/forgot-password/page.tsx:23	n	
+auth.password.securityChangingPasswordNeedsFresh	src/app/(auth)/forgot-password/page.tsx:28	n	
+auth.password.email	src/app/(auth)/forgot-password/page.tsx:46	n	
+auth.password.sendResetLink	src/app/(auth)/forgot-password/page.tsx:58	n	
+auth.password.rememberedBackLog	src/app/(auth)/forgot-password/page.tsx:63	n	<<a>> <</a>>
+auth.password.linkExpiredMetaTitle	src/app/(auth)/link-expired/page.tsx:6	n	
+auth.password.label.requestNewResetLink	src/app/(auth)/link-expired/page.tsx:11; src/app/(auth)/reset-password/page.tsx:47	n	
+auth.password.backToLogin	src/app/(auth)/link-expired/page.tsx:12; src/app/(auth)/link-expired/page.tsx:13; src/app/(auth)/reset-password/page.tsx:51	n	
+auth.password.linkExpired	src/app/(auth)/link-expired/page.tsx:23	n	
+auth.login.metaTitle	src/app/(auth)/login/page.tsx:8	n	
+auth.login.heading	src/app/(auth)/login/page.tsx:46	n	
+auth.login.subtitle	src/app/(auth)/login/page.tsx:48	y	
+auth.login.continueGoogle	src/app/(auth)/login/page.tsx:73	n	
+auth.login.or	src/app/(auth)/login/page.tsx:82	n	
+auth.login.email	src/app/(auth)/login/page.tsx:92	n	
+auth.login.password	src/app/(auth)/login/page.tsx:105	n	
+auth.login.forgotPassword	src/app/(auth)/login/page.tsx:117	n	
+auth.login.signIn	src/app/(auth)/login/page.tsx:122	n	
+auth.login.noAccountCreateOne	src/app/(auth)/login/page.tsx:127	n	<<a>> <</a>>
+auth.login.backSite	src/app/(auth)/login/page.tsx:137	n	
+auth.password.resetMetaTitle	src/app/(auth)/reset-password/page.tsx:12	n	
+auth.password.resetLinkExpired	src/app/(auth)/reset-password/page.tsx:39	n	
+auth.password.passwordResetLinkInvalidHas	src/app/(auth)/reset-password/page.tsx:41	n	
+auth.password.setNewPassword	src/app/(auth)/reset-password/page.tsx:60	n	
+auth.password.chooseNewPasswordFor	src/app/(auth)/reset-password/page.tsx:62	n	email
+auth.password.yourAccountFallback	src/app/(auth)/reset-password/page.tsx:62	n	
+auth.password.newPassword	src/app/(auth)/reset-password/page.tsx:74	n	
+auth.password.leastCharacters	src/app/(auth)/reset-password/page.tsx:85	n	min
+auth.password.confirmNewPassword	src/app/(auth)/reset-password/page.tsx:89	n	
+auth.password.saveNewPassword	src/app/(auth)/reset-password/page.tsx:102	n	
+auth.signup.metaTitle	src/app/(auth)/signup/page.tsx:20; src/app/(auth)/signup/page.tsx:23	n	
+auth.signup.metaDescription	src/app/(auth)/signup/page.tsx:21; src/app/(auth)/signup/page.tsx:24	y	
+auth.signup.heading	src/app/(auth)/signup/page.tsx:73	n	
+auth.signup.subtitle	src/app/(auth)/signup/page.tsx:75	n	
+auth.signup.continueGoogle	src/app/(auth)/signup/page.tsx:95	n	
+auth.signup.or	src/app/(auth)/signup/page.tsx:104	n	
+auth.signup.businessName	src/app/(auth)/signup/page.tsx:115	n	
+auth.signup.email	src/app/(auth)/signup/page.tsx:129	n	
+auth.signup.password	src/app/(auth)/signup/page.tsx:143	n	
+auth.signup.confirmPassword	src/app/(auth)/signup/page.tsx:157	n	
+auth.signup.signUp	src/app/(auth)/signup/page.tsx:170	n	
+auth.signup.SignUpPage.alreadyHaveAccount	src/app/(auth)/signup/page.tsx:176	n	
+auth.signup.logIn	src/app/(auth)/signup/page.tsx:178	n	
+auth.signup.backSite	src/app/(auth)/signup/page.tsx:183	n	
+dashboard.nav.freeplug	src/app/(dashboard)/DashboardHeader.tsx:14	n	
+dashboard.nav.signOut	src/app/(dashboard)/DashboardHeader.tsx:25	n	
+dashboard.nav.label.overview	src/app/(dashboard)/DashboardNav.tsx:7	n	
+dashboard.nav.label.plans	src/app/(dashboard)/DashboardNav.tsx:8	y	
+dashboard.nav.label.requestWebsite	src/app/(dashboard)/DashboardNav.tsx:9	n	
+dashboard.nav.label.help	src/app/(dashboard)/DashboardNav.tsx:10	n	
+dashboard.nav.label.cancel	src/app/(dashboard)/DashboardNav.tsx:11	y	
+dashboard.nav.ariaLabel.dashboard	src/app/(dashboard)/DashboardNav.tsx:23	n	
+dashboard.home.account	src/app/(dashboard)/dashboard/AccountCard.tsx:20	n	
+dashboard.home.activeSubscriptions	src/app/(dashboard)/dashboard/OutreachPlanCard.tsx:24; src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:76; src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:99	y	
+dashboard.home.label.live	src/app/(dashboard)/dashboard/QuickStats.tsx:14	n	
+dashboard.home.label.pending	src/app/(dashboard)/dashboard/QuickStats.tsx:15	n	
+dashboard.home.label.offline	src/app/(dashboard)/dashboard/QuickStats.tsx:16	n	
+dashboard.home.label.notStarted	src/app/(dashboard)/dashboard/QuickStats.tsx:17	n	
+dashboard.home.totalPaid	src/app/(dashboard)/dashboard/QuickStats.tsx:33	y	
+dashboard.home.activePlans	src/app/(dashboard)/dashboard/QuickStats.tsx:47	y	
+dashboard.home.customerSince	src/app/(dashboard)/dashboard/QuickStats.tsx:61	n	
+dashboard.home.today	src/app/(dashboard)/dashboard/QuickStats.tsx:65	n	
+dashboard.home.daysShort	src/app/(dashboard)/dashboard/QuickStats.tsx:66	n	days
+dashboard.home.website	src/app/(dashboard)/dashboard/QuickStats.tsx:79	n	
+dashboard.home.justNow	src/app/(dashboard)/dashboard/RecentActivity.tsx:17	n	
+dashboard.home.minutesAgo	src/app/(dashboard)/dashboard/RecentActivity.tsx:18	n	minutes
+dashboard.home.hoursAgo	src/app/(dashboard)/dashboard/RecentActivity.tsx:19	n	hours
+dashboard.home.daysAgo	src/app/(dashboard)/dashboard/RecentActivity.tsx:20	n	days
+dashboard.home.recentActivity	src/app/(dashboard)/dashboard/RecentActivity.tsx:60; src/app/(dashboard)/dashboard/RecentActivity.tsx:79; src/app/(dashboard)/dashboard/RecentActivity.tsx:92	n	
+dashboard.home.couldntLoadActivity	src/app/(dashboard)/dashboard/RecentActivity.tsx:67	n	
+dashboard.home.refreshPageTryAgain	src/app/(dashboard)/dashboard/RecentActivity.tsx:68	n	
+dashboard.home.noRecentActivityDisplay	src/app/(dashboard)/dashboard/RecentActivity.tsx:83	n	
+dashboard.home.showing5Activities	src/app/(dashboard)/dashboard/RecentActivity.tsx:124	y	total
+dashboard.home.noActiveSubscriptions	src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:79	y	
+dashboard.home.viewAvailablePlans	src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:86	y	
+dashboard.home.canceling	src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:126	y	
+dashboard.home.ends	src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:184	n	
+dashboard.home.renews	src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:184	y	
+dashboard.home.cancelOptions	src/app/(dashboard)/dashboard/SubscriptionDetails.tsx:204	y	
+dashboard.home.needHelp	src/app/(dashboard)/dashboard/SupportCard.tsx:8	n	
+dashboard.home.emailSupport	src/app/(dashboard)/dashboard/SupportCard.tsx:20	n	
+dashboard.home.supportFreeplugDev	src/app/(dashboard)/dashboard/SupportCard.tsx:22	n	
+dashboard.home.helpCenter	src/app/(dashboard)/dashboard/SupportCard.tsx:35	n	
+dashboard.home.faqsGuides	src/app/(dashboard)/dashboard/SupportCard.tsx:37	n	
+errors.buyout.error.mustSigned	src/app/(dashboard)/dashboard/buyout-actions.ts:19	y	
+errors.buyout.error.somethingWentWrongSide	src/app/(dashboard)/dashboard/buyout-actions.ts:25; src/app/(dashboard)/dashboard/buyout-actions.ts:33; src/lib/buyout/buyout.ts:136	y	
+cancel.managePlan	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:89; src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:134	y	
+cancel.reviewCurrentServicesUnderstandGet	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:91; src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:136	y	
+cancel.activeServices	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:145	y	
+cancel.active	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:161	y	
+cancel.nextBillingDate	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:165	y	date
+cancel.canceledScheduledCancel	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:178	y	
+cancel.canceled	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:194	y	
+cancel.canceling	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:194	y	
+cancel.accessUntil	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:199	y	date
+cancel.canceledOn	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:204	y	date
+cancel.noActiveSubscriptions	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:262	y	
+cancel.dontHaveAnyActiveHosting	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:265	y	
+cancel.startWebsiteRequestThenChoose	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:266	y	
+cancel.viewAvailablePlans	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:272	y	
+cancel.planIncludes	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:282	y	
+cancel.websiteHosting	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:289	y	
+cancel.keepsWebsiteOnlineOwnWeb	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:291	y	
+cancel.secureConnectionSsl	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:301	y	
+cancel.websiteLoadsOverSecureHttps	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:303	y	
+cancel.questionsAboutSite	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:313	y	
+cancel.askUsFromDashboardTeam	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:315	y	
+cancel.happensCancel	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:338	y	
+cancel.websiteGoesOfflineEndPaid	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:340	y	
+cancel.searchEnginesMayDropWebsite	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:341	y	
+cancel.whileItsOfflineCustomersCant	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:342	y	
+cancel.websiteSavedBringBackSigning	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:343	y	
+cancel.cancelSubscription	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:358	y	
+cancel.changedMindLater	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:408	y	
+cancel.cancelComeBackSignUp	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:410	y	
+cancel.viewPlans	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:418	y	
+cancel.backDashboard	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:424	y	
+cancel.haveQuestionsBeforeMakingDecision	src/app/(dashboard)/dashboard/cancel/CancelPlanView.tsx:459	y	<<a>> <</a>>
+cancel.cancelServices	src/app/(dashboard)/dashboard/cancel/page.tsx:27	y	
+cancel.unableLoadAccountInformationPlease	src/app/(dashboard)/dashboard/cancel/page.tsx:28	y	
+dashboard.activity.title.paymentReceived	src/app/(dashboard)/dashboard/dashboard-actions.ts:325	y	
+dashboard.activity.title.requestSubmitted	src/app/(dashboard)/dashboard/dashboard-actions.ts:340	n	
+dashboard.activity.title.requestReview	src/app/(dashboard)/dashboard/dashboard-actions.ts:342	n	
+dashboard.activity.title.requestClosed	src/app/(dashboard)/dashboard/dashboard-actions.ts:343	n	
+dashboard.activity.description.websiteRequest	src/app/(dashboard)/dashboard/dashboard-actions.ts:344	n	
+dashboard.activity.title.subscriptionStarted	src/app/(dashboard)/dashboard/dashboard-actions.ts:354	y	
+dashboard.activity.title.upcomingBilling	src/app/(dashboard)/dashboard/dashboard-actions.ts:374	y	
+dashboard.activity.upcomingBillingMessage	src/app/(dashboard)/dashboard/dashboard-actions.ts:375	y	amount days
+dashboard.activity.title.subscriptionEnding	src/app/(dashboard)/dashboard/dashboard-actions.ts:390	y	
+dashboard.activity.actionLabel.resumePlan	src/app/(dashboard)/dashboard/dashboard-actions.ts:392	y	
+dashboard.activity.title.getStarted	src/app/(dashboard)/dashboard/dashboard-actions.ts:402	n	
+dashboard.activity.message.submitWebsiteRequestBegin	src/app/(dashboard)/dashboard/dashboard-actions.ts:403	n	
+dashboard.activity.actionLabel.requestWebsite	src/app/(dashboard)/dashboard/dashboard-actions.ts:404	n	
+dashboard.meta.domainTitle	src/app/(dashboard)/dashboard/domain/page.tsx:5	n	
+help.center.label.guides	src/app/(dashboard)/dashboard/help/page.tsx:47	n	
+help.center.label.contact	src/app/(dashboard)/dashboard/help/page.tsx:48	n	
+help.center.title.gettingStarted	src/app/(dashboard)/dashboard/help/page.tsx:56	n	
+help.center.question.requestWebsite	src/app/(dashboard)/dashboard/help/page.tsx:62	n	
+help.center.answer.goRequestWebsiteDashboard	src/app/(dashboard)/dashboard/help/page.tsx:64	n	
+help.center.question.informationNeedProvide	src/app/(dashboard)/dashboard/help/page.tsx:68	n	
+help.center.answer.youllNeedBusinessName	src/app/(dashboard)/dashboard/help/page.tsx:70	n	
+help.center.question.longDoesProcessTake	src/app/(dashboard)/dashboard/help/page.tsx:74	n	
+help.center.answer.wellGiveTimelineAfter	src/app/(dashboard)/dashboard/help/page.tsx:76	n	
+help.center.title.billingPlans	src/app/(dashboard)/dashboard/help/page.tsx:82	y	
+help.center.question.hostingPlanOptions	src/app/(dashboard)/dashboard/help/page.tsx:88	y	
+help.center.question.updatePaymentMethod	src/app/(dashboard)/dashboard/help/page.tsx:94	y	
+help.center.question.cancelPlan	src/app/(dashboard)/dashboard/help/page.tsx:100	y	
+help.center.answer.yesCancelAnyTime	src/app/(dashboard)/dashboard/help/page.tsx:102	y	
+help.center.question.thereAnyHiddenFees	src/app/(dashboard)/dashboard/help/page.tsx:106	y	
+help.center.question.closeRequestCancelPlan	src/app/(dashboard)/dashboard/help/page.tsx:112	y	
+help.center.answer.closeRequestFromRequest	src/app/(dashboard)/dashboard/help/page.tsx:114	y	
+help.center.title.technicalSupport	src/app/(dashboard)/dashboard/help/page.tsx:120	n	
+help.center.question.requestChangesWebsite	src/app/(dashboard)/dashboard/help/page.tsx:126	n	
+help.center.question.websiteMobileFriendly	src/app/(dashboard)/dashboard/help/page.tsx:132	n	
+help.center.answer.yesEverySiteBuild	src/app/(dashboard)/dashboard/help/page.tsx:134	n	
+help.center.question.helpSeoSearchEngine	src/app/(dashboard)/dashboard/help/page.tsx:138	n	
+help.center.answer.everySiteIncludesBasics	src/app/(dashboard)/dashboard/help/page.tsx:140	n	
+help.center.question.secureWebsite	src/app/(dashboard)/dashboard/help/page.tsx:144	n	
+help.center.title.account	src/app/(dashboard)/dashboard/help/page.tsx:152	n	
+help.center.question.resetPassword	src/app/(dashboard)/dashboard/help/page.tsx:158	n	
+help.center.answer.signPageClickForgot	src/app/(dashboard)/dashboard/help/page.tsx:160	n	
+help.center.question.changeEmailAddress	src/app/(dashboard)/dashboard/help/page.tsx:164	n	
+help.center.answer.contactSupportSupportFreeplug	src/app/(dashboard)/dashboard/help/page.tsx:166	n	
+help.center.question.deleteAccount	src/app/(dashboard)/dashboard/help/page.tsx:170	n	
+help.center.answer.emailSupportFreeplugDev	src/app/(dashboard)/dashboard/help/page.tsx:172	n	
+help.center.title.gettingFirstWebsite	src/app/(dashboard)/dashboard/help/page.tsx:181	n	
+help.center.description.stepStepGuideRequesting	src/app/(dashboard)/dashboard/help/page.tsx:182	n	
+help.center.steps.createFreeplugAccount	src/app/(dashboard)/dashboard/help/page.tsx:185	n	
+help.center.steps.completeBusinessProfile	src/app/(dashboard)/dashboard/help/page.tsx:186	n	
+help.center.steps.submitWebsiteRequestRequirements	src/app/(dashboard)/dashboard/help/page.tsx:187	n	
+help.center.steps.reviewApproveInitialDesign	src/app/(dashboard)/dashboard/help/page.tsx:188	n	
+help.center.steps.provideFeedbackDuringDevelopment	src/app/(dashboard)/dashboard/help/page.tsx:189	n	
+help.center.steps.launchWebsite	src/app/(dashboard)/dashboard/help/page.tsx:190	n	
+help.center.title.understandingDashboard	src/app/(dashboard)/dashboard/help/page.tsx:195	n	
+help.center.description.learnNavigateUseAll	src/app/(dashboard)/dashboard/help/page.tsx:196	n	
+help.center.steps.overviewSeeWebsiteStatus	src/app/(dashboard)/dashboard/help/page.tsx:199	n	
+help.center.steps.requestWebsiteSubmitUpdate	src/app/(dashboard)/dashboard/help/page.tsx:201	n	
+help.center.steps.helpAccessFaqsGuides	src/app/(dashboard)/dashboard/help/page.tsx:202	n	
+help.center.title.choosingRightPlan	src/app/(dashboard)/dashboard/help/page.tsx:207	y	
+help.center.planGuideStep	src/app/(dashboard)/dashboard/help/page.tsx:211	y	name price blurb
+help.center.title.preparingBrandAssets	src/app/(dashboard)/dashboard/help/page.tsx:215	n	
+help.center.description.haveReadyBeforeRequesting	src/app/(dashboard)/dashboard/help/page.tsx:216	n	
+help.center.steps.logoFilesPngSvg	src/app/(dashboard)/dashboard/help/page.tsx:219	n	
+help.center.steps.brandColorsHexCodes	src/app/(dashboard)/dashboard/help/page.tsx:220	n	
+help.center.steps.businessDescriptionTagline	src/app/(dashboard)/dashboard/help/page.tsx:221	n	
+help.center.steps.contactInformation	src/app/(dashboard)/dashboard/help/page.tsx:222	n	
+help.center.steps.photosBusinessProductsTeam	src/app/(dashboard)/dashboard/help/page.tsx:223	n	
+help.center.steps.examplesWebsitesLikePick	src/app/(dashboard)/dashboard/help/page.tsx:224	n	
+help.center.helpCenter	src/app/(dashboard)/dashboard/help/page.tsx:236	n	
+help.center.findAnswersGuidesSupportResources	src/app/(dashboard)/dashboard/help/page.tsx:237	n	
+help.center.questionCount	src/app/(dashboard)/dashboard/help/page.tsx:283	n	count
+help.center.backCategories	src/app/(dashboard)/dashboard/help/page.tsx:297	n	
+help.center.contactSupport	src/app/(dashboard)/dashboard/help/page.tsx:374	n	
+help.center.emailSupport	src/app/(dashboard)/dashboard/help/page.tsx:385	n	
+help.center.supportFreeplugDev	src/app/(dashboard)/dashboard/help/page.tsx:387	n	
+help.center.supportHours	src/app/(dashboard)/dashboard/help/page.tsx:407	n	
+help.center.needUrgentHelp	src/app/(dashboard)/dashboard/help/page.tsx:420	n	
+help.center.criticalIssuesAffectingLiveWebsite	src/app/(dashboard)/dashboard/help/page.tsx:422	n	
+help.center.sendUrgentRequest	src/app/(dashboard)/dashboard/help/page.tsx:430	n	
+dashboard.home.requestStatusLabel.submitted	src/app/(dashboard)/dashboard/page.tsx:38	n	
+dashboard.home.requestStatusLabel.inReview	src/app/(dashboard)/dashboard/page.tsx:39	n	
+dashboard.home.requestStatusLabel.closed	src/app/(dashboard)/dashboard/page.tsx:40	n	
+dashboard.home.businessName.yourRequest	src/app/(dashboard)/dashboard/page.tsx:138; src/app/(dashboard)/dashboard/page.tsx:231	n	
+dashboard.home.dashboard	src/app/(dashboard)/dashboard/page.tsx:143	n	
+dashboard.home.welcomeBackHereOverviewAccount	src/app/(dashboard)/dashboard/page.tsx:144	n	
+dashboard.home.passwordHasBeenUpdatedYoure	src/app/(dashboard)/dashboard/page.tsx:170	n	
+dashboard.home.thanksRequestWasSubmittedFollow	src/app/(dashboard)/dashboard/page.tsx:176	n	
+dashboard.home.checkoutCompletedPaymentTotalsMay	src/app/(dashboard)/dashboard/page.tsx:182	y	
+dashboard.home.statusLine	src/app/(dashboard)/dashboard/page.tsx:239; src/app/(dashboard)/dashboard/page.tsx:248	n	status
+dashboard.home.requestClosedStartNewRequest	src/app/(dashboard)/dashboard/page.tsx:251	n	
+dashboard.home.noWebsiteRequestYet	src/app/(dashboard)/dashboard/page.tsx:255	n	
+dashboard.home.nextStep	src/app/(dashboard)/dashboard/page.tsx:258	n	
+dashboard.home.lastRequestClosedOpenNew	src/app/(dashboard)/dashboard/page.tsx:260	n	
+dashboard.home.tellUsAboutBusinessLink	src/app/(dashboard)/dashboard/page.tsx:262	n	
+dashboard.home.updateRequestDetailsWhileStill	src/app/(dashboard)/dashboard/page.tsx:264	n	
+dashboard.home.useRequestFormWhenReady	src/app/(dashboard)/dashboard/page.tsx:265	n	
+dashboard.home.viewUpdate	src/app/(dashboard)/dashboard/page.tsx:273	n	
+dashboard.home.newRequest	src/app/(dashboard)/dashboard/page.tsx:275	n	
+dashboard.home.startRequest	src/app/(dashboard)/dashboard/page.tsx:276	n	
+dashboard.home.viewPlansHosting	src/app/(dashboard)/dashboard/page.tsx:282	y	
+dashboard.home.manageBilling	src/app/(dashboard)/dashboard/page.tsx:294	y	
+dashboard.meta.photosTitle	src/app/(dashboard)/dashboard/photos/page.tsx:7	n	
+plans.page.plans	src/app/(dashboard)/dashboard/plans/page.tsx:67; src/app/(dashboard)/dashboard/plans/page.tsx:153	y	
+plans.page.afterSubmitWebsiteRequestChoose	src/app/(dashboard)/dashboard/plans/page.tsx:69	y	
+plans.page.submitBusinessDetailsSoReview	src/app/(dashboard)/dashboard/plans/page.tsx:73	y	
+plans.page.requestWebsite	src/app/(dashboard)/dashboard/plans/page.tsx:80	y	
+dashboard.request.CloseOpenRequestButton.noLongerWantUs	src/app/(dashboard)/dashboard/request-website/CloseOpenRequestButton.tsx:25	n	
+dashboard.request.CloseOpenRequestButton.closeRequestBeforeFinish	src/app/(dashboard)/dashboard/request-website/CloseOpenRequestButton.tsx:26	y	
+dashboard.request.CloseOpenRequestButton.closing	src/app/(dashboard)/dashboard/request-website/CloseOpenRequestButton.tsx:47	n	
+dashboard.request.CloseOpenRequestButton.closeRequest	src/app/(dashboard)/dashboard/request-website/CloseOpenRequestButton.tsx:47	n	
+dashboard.request.submitLabel.saveChanges	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:41	n	
+dashboard.request.submitLabel.submitRequest	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:41	n	
+dashboard.request.notesLabel.describeMaintenanceChangesNeeded	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:46	y	
+dashboard.request.notesLabel.tellUsAboutBusiness	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:47	n	
+dashboard.request.notesHint	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:50	n	
+dashboard.request.maintenancePricingFollowsQuickReview	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:67	y	
+dashboard.request.businessName	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:74	n	
+dashboard.request.googleBusinessProfileUrl	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:92	n	
+dashboard.request.phone	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:108	n	
+dashboard.request.sending	src/app/(dashboard)/dashboard/request-website/RequestWebsiteForm.tsx:141	n	
+errors.request.business_name.businessNameRequired	src/app/(dashboard)/dashboard/request-website/actions.ts:19	n	
+errors.request.message.enterValidUrlHttps	src/app/(dashboard)/dashboard/request-website/actions.ts:30	n	
+errors.request.error.requestAlreadyBeingReviewed	src/app/(dashboard)/dashboard/request-website/actions.ts:69	n	
+errors.request.error.alreadyHaveRequestProgress	src/app/(dashboard)/dashboard/request-website/actions.ts:103	n	
+errors.request.error.serverConfigurationIncompleteMissing	src/app/(dashboard)/dashboard/request-website/actions.ts:116	n	
+errors.request.error.mustSigned	src/app/(dashboard)/dashboard/request-website/actions.ts:153; src/app/(dashboard)/dashboard/request-website/actions.ts:203; src/app/(dashboard)/dashboard/request-website/actions.ts:278	n	
+errors.request.error.invalidInput	src/app/(dashboard)/dashboard/request-website/actions.ts:165; src/app/(dashboard)/dashboard/request-website/actions.ts:209	n	
+errors.request.page.tellUsWhichPage	src/app/(dashboard)/dashboard/request-website/actions.ts:180	n	
+errors.request.description.describeChange	src/app/(dashboard)/dashboard/request-website/actions.ts:181	n	
+errors.request.error.startWebsiteRequestFirst	src/app/(dashboard)/dashboard/request-website/actions.ts:229	n	
+errors.request.error.requestNotesFullEmail	src/app/(dashboard)/dashboard/request-website/actions.ts:250	n	
+errors.request.error.couldNotVerifyBilling	src/app/(dashboard)/dashboard/request-website/actions.ts:288; src/app/(dashboard)/dashboard/request-website/actions.ts:307	y	
+errors.request.error.serverConfigurationIncompleteTry	src/app/(dashboard)/dashboard/request-website/actions.ts:317	n	
+errors.request.error.couldNotCloseRequest	src/app/(dashboard)/dashboard/request-website/actions.ts:325	n	
+dashboard.meta.requestWebsiteTitle	src/app/(dashboard)/dashboard/request-website/page.tsx:16	n	
+dashboard.request.updateRequest	src/app/(dashboard)/dashboard/request-website/page.tsx:80	n	
+dashboard.request.changeAnythingBelowSaveWell	src/app/(dashboard)/dashboard/request-website/page.tsx:82	n	
+dashboard.request.requestBeingReviewed	src/app/(dashboard)/dashboard/request-website/page.tsx:87	n	
+dashboard.request.wereWorkingFromDetailsSent	src/app/(dashboard)/dashboard/request-website/page.tsx:89	n	<<a>> <</a>>
+dashboard.request.requestWebsite	src/app/(dashboard)/dashboard/request-website/page.tsx:99	n	
+dashboard.request.shareLocalBusinessDetailsEvaluate	src/app/(dashboard)/dashboard/request-website/page.tsx:101	n	
+dashboard.request.haveOpenRequest	src/app/(dashboard)/dashboard/request-website/page.tsx:109	n	
+dashboard.request.backDashboard	src/app/(dashboard)/dashboard/request-website/page.tsx:138	n	
+dashboard.meta.websiteTitle	src/app/(dashboard)/dashboard/website/page.tsx:8	n	
+dashboard.meta.dashboardTitle	src/app/(dashboard)/layout.tsx:9	n	
+errors.checkout.error.signStartCheckout	src/app/api/checkout/hosting/route.ts:39; src/app/api/checkout/maintenance/route.ts:27	y	
+errors.checkout.error.submitWebsiteRequestFrom	src/app/api/checkout/hosting/route.ts:47	y	
+errors.checkout.error.addOnsCustomAmounts	src/app/api/checkout/hosting/route.ts:62	y	
+errors.checkout.error.invalidHostingPlan	src/app/api/checkout/hosting/route.ts:68	y	
+errors.checkout.error.invalidAddOns	src/app/api/checkout/hosting/route.ts:79	y	
+errors.checkout.error.couldntLoadHostingPrices	src/app/api/checkout/hosting/route.ts:113	y	
+errors.checkout.error.couldntCheckCurrentPlan	src/app/api/checkout/hosting/route.ts:160	y	
+errors.checkout.error.couldNotStartCheckout	src/app/api/checkout/hosting/route.ts:254; src/app/api/checkout/maintenance/route.ts:69	y	
+errors.checkout.clientMsg	src/app/api/checkout/hosting/route.ts:267; src/app/api/checkout/maintenance/route.ts:78	y	
+errors.checkout.error.invalidAmountUse50	src/app/api/checkout/maintenance/route.ts:34	y	
+plans.maintenance.stripeLineItem	src/app/api/checkout/maintenance/route.ts:52	y	
+claim.thisPlanFallback	src/app/claim/actions.ts:48	y	
+claim.metaTitle	src/app/claim/layout.tsx:5	n	
+public.faq.metaTitle	src/app/faq/layout.tsx:4	n	
+public.faq.metaDescription	src/app/faq/layout.tsx:6	y	
+public.faq.question.whatIsFreeplug	src/app/faq/page.tsx:20	n	
+public.faq.answer.freeplugReachesLocalBusiness	src/app/faq/page.tsx:22	y	
+public.faq.question.reallyFree	src/app/faq/page.tsx:26	y	
+public.faq.answer.yesWebsiteDevelopmentFree	src/app/faq/page.tsx:28	y	
+public.faq.question.whatDoIPay	src/app/faq/page.tsx:32	y	
+public.faq.question.happensCancelHosting	src/app/faq/page.tsx:38	y	
+public.faq.answer.hostingRequiredKeepWebsite	src/app/faq/page.tsx:40	y	
+public.faq.question.longDoesTakeBuild	src/app/faq/page.tsx:50	n	
+public.faq.answer.everySiteDifferentSo	src/app/faq/page.tsx:52	n	
+public.faq.question.getStarted	src/app/faq/page.tsx:56	n	
+public.faq.answer.createAccountFillOut	src/app/faq/page.tsx:58	n	
+public.faq.helpCenter	src/app/faq/page.tsx:83	n	
+public.faq.frequentlyAskedQuestions	src/app/faq/page.tsx:89	n	<<span>> <</span>>
+public.faq.answersCommonQuestionsAboutFreeplug	src/app/faq/page.tsx:95	n	
+public.faq.stillHaveQuestions	src/app/faq/page.tsx:123	n	
+public.faq.wereHereHelpEmailSupport	src/app/faq/page.tsx:125	n	
+public.faq.contactSupport	src/app/faq/page.tsx:131	n	
+public.meta.siteTitle	src/app/layout.tsx:16	y	
+public.meta.siteDescription	src/app/layout.tsx:17	y	
+public.meta.ogTitle	src/app/layout.tsx:19; src/app/page.tsx:19	y	
+public.meta.ogDescription	src/app/layout.tsx:20; src/app/page.tsx:20	y	
+public.notFound.heading	src/app/not-found.tsx:7	n	
+public.notFound.link	src/app/not-found.tsx:8	n	
+public.notFound.metaTitle	src/app/not-found.tsx:11	n	
+public.meta.homeTitle	src/app/page.tsx:15	y	
+public.meta.homeDescription	src/app/page.tsx:17	y	
+public.meta.previewTitle	src/app/preview/layout.tsx:5	n	
+public.meta.requestWebsiteTitle	src/app/request-website/page.tsx:7	n	
+help.chat.ariaLabel.helpChat	src/components/help/HelpChat.tsx:100	n	
+help.chat.back	src/components/help/HelpChat.tsx:165; src/components/help/HelpChat.tsx:200; src/components/help/HelpChat.tsx:231	n	
+help.chat.next	src/components/help/HelpChat.tsx:168; src/components/help/HelpChat.tsx:203; src/components/help/HelpChat.tsx:234	n	
+help.chat.sending	src/components/help/HelpChat.tsx:286	n	
+help.chat.requestChange	src/components/help/HelpChat.tsx:334	n	
+claim.stepLine	src/components/outreach/ClaimStepLine.tsx:9	y	step total stepName
+claim.stepLineAria	src/components/outreach/ClaimStepLine.tsx:17	y	step total
+claim.ariaLabel.checked	src/components/outreach/DetailsForm.tsx:166	n	
+errors.plans.networkError	src/components/plans/HostingCheckoutCard.tsx:276; src/components/plans/HostingCheckoutCard.tsx:341; src/components/plans/HostingCheckoutCard.tsx:395; src/components/plans/TipChangeBox.tsx:116; src/components/plans/TipChangeBox.tsx:129	y	
+errors.plans.somethingWentWrong	src/components/plans/HostingCheckoutCard.tsx:386	y	
+errors.plans.startHostingCheckout.noCheckoutUrlReturned	src/components/plans/HostingCheckoutCard.tsx:392	y	
+plans.checkout.chooseText	src/components/plans/HostingCheckoutCard.tsx:660	y	
+plans.checkout.manageBilling	src/components/plans/HostingCheckoutCard.tsx:796	y	
+plans.checkout.signRequestWebsite	src/components/plans/HostingCheckoutCard.tsx:805	y	
+plans.checkout.submitWebsiteRequestFirst	src/components/plans/HostingCheckoutCard.tsx:809	y	
+plans.checkout.hostingCheckoutOpensAfterSubmit	src/components/plans/HostingCheckoutCard.tsx:813	y	
+public.landing.about.title.outreachOwnersWhoNeed	src/features/landing/components/AboutSection.tsx:11	n	
+public.landing.about.description.freeplugFindsLocalBusinesses	src/features/landing/components/AboutSection.tsx:12	y	
+public.landing.about.title.handOff72After	src/features/landing/components/AboutSection.tsx:16	y	
+public.landing.about.title.monthlyHostingKeepsOnline	src/features/landing/components/AboutSection.tsx:21	y	
+public.landing.about.description.onceSiteLivePay	src/features/landing/components/AboutSection.tsx:22	y	
+public.landing.about.aboutFreeplug	src/features/landing/components/AboutSection.tsx:44	n	
+public.landing.about.freeplugDoes	src/features/landing/components/AboutSection.tsx:50	n	<<span>> <</span>>
+public.landing.about.freeplug72AfterWorkTogether	src/features/landing/components/AboutSection.tsx:101	y	
+public.landing.cTA.freeplug72After	src/features/landing/components/CTASection.tsx:54	n	
+public.landing.cTA.readyFreeWebsite	src/features/landing/components/CTASection.tsx:62	y	
+public.landing.cTA.localOwnersSanMarcosKyle	src/features/landing/components/CTASection.tsx:69	n	
+public.landing.cTA.requestFreeWebsite	src/features/landing/components/CTASection.tsx:84; src/features/landing/components/HeroSection.tsx:140	y	
+public.landing.cTA.freeplugFindsBusinesses72After	src/features/landing/components/CTASection.tsx:94	n	
+public.landing.footer.label.about	src/features/landing/components/Footer.tsx:10; src/features/landing/components/Navigation.tsx:14	n	
+public.landing.footer.label.outreach	src/features/landing/components/Footer.tsx:11; src/features/landing/components/Navigation.tsx:15	n	
+public.landing.footer.label.services	src/features/landing/components/Footer.tsx:12; src/features/landing/components/Navigation.tsx:16	n	
+public.landing.footer.label.reviews	src/features/landing/components/Footer.tsx:13; src/features/landing/components/Navigation.tsx:17	n	
+public.landing.footer.label.plans	src/features/landing/components/Footer.tsx:14; src/features/landing/components/Navigation.tsx:18	y	
+public.landing.footer.label.termsConditions	src/features/landing/components/Footer.tsx:17	n	
+public.landing.footer.label.privacyPolicy	src/features/landing/components/Footer.tsx:18	n	
+public.landing.footer.label.cookiePolicy	src/features/landing/components/Footer.tsx:19	n	
+public.landing.footer.label.getStarted	src/features/landing/components/Footer.tsx:22; src/features/landing/components/Navigation.tsx:106; src/features/landing/components/Navigation.tsx:173	n	
+public.landing.footer.label.support	src/features/landing/components/Footer.tsx:23	n	
+public.landing.footer.freeplug	src/features/landing/components/Footer.tsx:62; src/features/landing/components/Navigation.tsx:68	n	
+public.landing.footer.freeplugHandlesOwnerOutreach72	src/features/landing/components/Footer.tsx:65	y	
+public.landing.footer.supportFreeplugDev	src/features/landing/components/Footer.tsx:74	n	
+public.landing.footer.centralTexasOutsideUsVia	src/features/landing/components/Footer.tsx:80	n	
+public.landing.footer.headingCompany	src/features/landing/components/Footer.tsx:87	n	
+public.landing.footer.headingLegal	src/features/landing/components/Footer.tsx:107	n	
+public.landing.footer.legalComingSoonTitle	src/features/landing/components/Footer.tsx:122	n	
+public.landing.footer.legalSoonTag	src/features/landing/components/Footer.tsx:123	n	
+public.landing.footer.headingGetStarted	src/features/landing/components/Footer.tsx:133	n	
+public.landing.footer.followUs	src/features/landing/components/Footer.tsx:152	n	
+public.landing.footer.copyright	src/features/landing/components/Footer.tsx:173	n	year
+public.landing.footer.outreachFreeplugBuilds72After	src/features/landing/components/Footer.tsx:176	n	
+public.landing.hero.freeplugOutreach72AfterBuilds	src/features/landing/components/HeroSection.tsx:92	n	
+public.landing.hero.headline	src/features/landing/components/HeroSection.tsx:98	y	<<br/>> <<span>> <</span>>
+public.landing.hero.freeplugReachesOwnersWhoNeed	src/features/landing/components/HeroSection.tsx:117	y	<<span>> <</span>>
+public.landing.hero.label.modernTech	src/features/landing/components/HeroSection.tsx:125	n	
+public.landing.hero.label.lightningFast	src/features/landing/components/HeroSection.tsx:126	n	
+public.landing.hero.label.customDesign	src/features/landing/components/HeroSection.tsx:127	n	
+public.landing.hero.label.secure	src/features/landing/components/HeroSection.tsx:128	n	
+public.landing.hero.seeWhereWork	src/features/landing/components/HeroSection.tsx:151	n	
+public.landing.hero.outreachHubFreeplugDevBuilds	src/features/landing/components/HeroSection.tsx:156	n	
+public.landing.hostingPlans.stripeCheckout	src/features/landing/components/HostingPlansSectionUi.tsx:38	y	
+public.landing.hostingPlans.hostingMaintenance	src/features/landing/components/HostingPlansSectionUi.tsx:41	y	
+public.landing.navigation.label.home	src/features/landing/components/Navigation.tsx:13	n	
+public.landing.navigation.logIn	src/features/landing/components/Navigation.tsx:89; src/features/landing/components/Navigation.tsx:149	n	
+public.landing.navigation.dashboard	src/features/landing/components/Navigation.tsx:98; src/features/landing/components/Navigation.tsx:162	n	
+public.landing.navigation.ariaLabel.toggleMenu	src/features/landing/components/Navigation.tsx:114	n	
+public.landing.outreach.name.sanMarcos	src/features/landing/components/OutreachSection.tsx:14	n	
+public.landing.outreach.alt.stockPhotoCitySkyline	src/features/landing/components/OutreachSection.tsx:16	n	
+public.landing.outreach.name.kyle	src/features/landing/components/OutreachSection.tsx:19	n	
+public.landing.outreach.alt.stockPhotoResidentialStreet	src/features/landing/components/OutreachSection.tsx:21	n	
+public.landing.outreach.name.newBraunfels	src/features/landing/components/OutreachSection.tsx:24	n	
+public.landing.outreach.alt.stockPhotoRiverLandscape	src/features/landing/components/OutreachSection.tsx:26	n	
+public.landing.outreach.name.sanAntonio	src/features/landing/components/OutreachSection.tsx:29	n	
+public.landing.outreach.alt.stockPhotoSanAntonio	src/features/landing/components/OutreachSection.tsx:31	n	
+public.landing.outreach.name.austin	src/features/landing/components/OutreachSection.tsx:34	n	
+public.landing.outreach.alt.stockPhotoAustinTexas	src/features/landing/components/OutreachSection.tsx:36	n	
+public.landing.outreach.title.freeplugReachesOut	src/features/landing/components/OutreachSection.tsx:44	n	
+public.landing.outreach.description.contactOwnersWhoNeed	src/features/landing/components/OutreachSection.tsx:45	n	
+public.landing.outreach.title.72AfterBuilds	src/features/landing/components/OutreachSection.tsx:50	n	
+public.landing.outreach.title.goLive	src/features/landing/components/OutreachSection.tsx:56	n	
+public.landing.outreach.description.reviewSiteAddPhone	src/features/landing/components/OutreachSection.tsx:57	y	
+public.landing.outreach.serviceAreas	src/features/landing/components/OutreachSection.tsx:80	n	
+public.landing.outreach.whereWorkTexas	src/features/landing/components/OutreachSection.tsx:86	n	<<span>> <</span>>
+public.landing.outreach.wereFocusedCentralTexasFirst	src/features/landing/components/OutreachSection.tsx:95	n	
+public.landing.outreach.stockPhoto	src/features/landing/components/OutreachSection.tsx:130	n	name
+public.landing.outreach.moreTexasCitiesCapacityGrows	src/features/landing/components/OutreachSection.tsx:144	n	
+public.landing.outreach.international	src/features/landing/components/OutreachSection.tsx:167	n	
+public.landing.outreach.beyondTexasUs	src/features/landing/components/OutreachSection.tsx:173	n	
+public.landing.outreach.freeplugReachBusinessesOutsideUs	src/features/landing/components/OutreachSection.tsx:176	y	
+public.landing.outreach.requestInternationalOutreach	src/features/landing/components/OutreachSection.tsx:190	n	
+public.landing.outreach.availabilityVariesRegionPartnerNo	src/features/landing/components/OutreachSection.tsx:195	n	
+public.landing.outreach.alt.stockPhotoInternationalCity	src/features/landing/components/OutreachSection.tsx:209	n	
+public.landing.outreach.label.internationalSkylineStockPhoto	src/features/landing/components/OutreachSection.tsx:210	n	
+public.landing.outreach.alt.stockPhotoCitySkyline2	src/features/landing/components/OutreachSection.tsx:214	n	
+public.landing.outreach.label.citySkylineStockPhoto	src/features/landing/components/OutreachSection.tsx:215	n	
+public.landing.outreach.howItConnects	src/features/landing/components/OutreachSection.tsx:255	n	
+public.landing.outreach.howItWorks	src/features/landing/components/OutreachSection.tsx:261	n	<<span>> <</span>>
+public.landing.outreach.freeplugConnectsConversation72After	src/features/landing/components/OutreachSection.tsx:270	n	
+public.landing.outreach.step	src/features/landing/components/OutreachSection.tsx:291	n	step
+public.landing.reviews.testimonials	src/features/landing/components/ReviewsSection.tsx:24	n	
+public.landing.reviews.reviewsComingSoon	src/features/landing/components/ReviewsSection.tsx:30	n	<<span>> <</span>>
+public.landing.reviews.wellShareRealOwnerFeedback	src/features/landing/components/ReviewsSection.tsx:39	n	
+public.landing.reviews.realReviewsComingSoonFreeplug	src/features/landing/components/ReviewsSection.tsx:57	n	<<span>> <</span>>
+public.landing.techStack.name.envatoTemplate	src/features/landing/components/TechStackSection.tsx:36	n	
+public.landing.techStack.description.premiumTemplatesDevelopersAccess	src/features/landing/components/TechStackSection.tsx:37	n	
+public.landing.techStack.name.htmlCss	src/features/landing/components/TechStackSection.tsx:40	n	
+public.landing.techStack.description.plainLightweightPagesLoad	src/features/landing/components/TechStackSection.tsx:40	n	
+public.landing.techStack.name.bootstrap5	src/features/landing/components/TechStackSection.tsx:41	n	
+public.landing.techStack.description.layoutFitsPhonesTablets	src/features/landing/components/TechStackSection.tsx:41	n	
+public.landing.techStack.name.cloudflare	src/features/landing/components/TechStackSection.tsx:42	n	
+public.landing.techStack.description.hostsSiteProvidesSsl	src/features/landing/components/TechStackSection.tsx:42	n	
+public.landing.techStack.name.cloudflareTurnstile	src/features/landing/components/TechStackSection.tsx:44	n	
+public.landing.techStack.description.filtersOutSpamBots	src/features/landing/components/TechStackSection.tsx:45	n	
+public.landing.techStack.name.resend	src/features/landing/components/TechStackSection.tsx:48	n	
+public.landing.techStack.description.emailsEachQuoteRequest	src/features/landing/components/TechStackSection.tsx:48	n	
+public.landing.techStack.title.fastLoading	src/features/landing/components/TechStackSection.tsx:54	n	
+public.landing.techStack.description.lightweightPagesServedFrom	src/features/landing/components/TechStackSection.tsx:55	n	
+public.landing.techStack.title.mobileFirst	src/features/landing/components/TechStackSection.tsx:60	n	
+public.landing.techStack.description.responsiveLayoutAdjustsPhones	src/features/landing/components/TechStackSection.tsx:61	n	
+public.landing.techStack.title.seoBasicsIncluded	src/features/landing/components/TechStackSection.tsx:66	n	
+public.landing.techStack.description.clearPageTitlesDescriptions	src/features/landing/components/TechStackSection.tsx:67	n	
+public.landing.techStack.title.secureConnection	src/features/landing/components/TechStackSection.tsx:72	n	
+public.landing.techStack.description.httpsEveryPageThrough	src/features/landing/components/TechStackSection.tsx:73	n	
+public.landing.techStack.ourTechnology	src/features/landing/components/TechStackSection.tsx:111	n	
+public.landing.techStack.builtProvenTools	src/features/landing/components/TechStackSection.tsx:117	n	<<span>> <</span>>
+public.landing.techStack.everyLocalBusinessSiteBuild	src/features/landing/components/TechStackSection.tsx:126	n	
+public.landing.techStack.performanceMatters	src/features/landing/components/TechStackSection.tsx:204	n	<<span>> <</span>>
+public.landing.techStack.sitesBuiltMobileFriendlyReasonably	src/features/landing/components/TechStackSection.tsx:208	n	
+public.landing.techStack.responsiveLayoutsClearQuoteRequest	src/features/landing/components/TechStackSection.tsx:212	y	
+auth.messages.googleDisabledMessage	src/lib/auth/google-enabled.ts:32	n	
+auth.messages.linkExpiredMessage	src/lib/auth/link-expired.ts:2	n	
+auth.messages.resetNeutralMessage	src/lib/auth/password-reset.ts:7	n	
+buyout.dashboardHeading	src/lib/buyout/buyout.ts:21	y	
+buyout.dashboardBody	src/lib/buyout/buyout.ts:23	y	
+buyout.requestLabel	src/lib/buyout/buyout.ts:24	y	
+buyout.thanks	src/lib/buyout/buyout.ts:26	y	
+buyout.cancelHeading	src/lib/buyout/buyout.ts:27	y	
+buyout.cancelBody	src/lib/buyout/buyout.ts:29	y	
+buyout.faqQuestion	src/lib/buyout/buyout.ts:30	y	
+buyout.faqAnswer	src/lib/buyout/buyout.ts:32	y	
+errors.buyout.error.requestNotesFullEmail	src/lib/buyout/buyout.ts:156	y	
+buyout.requestRecordName	src/lib/buyout/buyout.ts:169	y	
+dashboard.home.payment.amountOnDate	src/lib/dashboard/billing-activity.ts:31	y	amount date
+dashboard.home.payment.amount	src/lib/dashboard/billing-activity.ts:32	y	amount
+dashboard.home.payment.onDate	src/lib/dashboard/billing-activity.ts:33	y	date
+dashboard.home.payment.plain	src/lib/dashboard/billing-activity.ts:34	y	
+dashboard.home.alertSubjectPlan	src/lib/dashboard/subscription-alerts.ts:9	y	planName
+dashboard.home.alertSubjectGrandfathered	src/lib/dashboard/subscription-alerts.ts:9	n	name
+dashboard.home.alertEndingNoDate	src/lib/dashboard/subscription-alerts.ts:11	y	subject
+dashboard.home.alertEndingDays	src/lib/dashboard/subscription-alerts.ts:13	n	subject days
+common.listAnd	src/lib/dashboard/subscription-alerts.ts:32	n	list last
+errors.email.sendFailed	src/lib/email/mailer.ts:32	n	
+email.subjects.subject.welcomeFreeplug	src/lib/email/send.ts:28	n	
+email.subjects.subject.paymentReceived	src/lib/email/send.ts:52	y	amount
+email.subjects.subject.requestUpdate	src/lib/email/send.ts:73	n	businessName
+email.subjects.subject.upcomingBillingReminder	src/lib/email/send.ts:116	y	amount date
+email.subjects.subject.resetFreeplugPassword	src/lib/email/send.ts:136	n	
+email.common.copyright	src/lib/email/templates/base-layout.tsx:37	n	year
+email.baseLayout.visitWebsite	src/lib/email/templates/base-layout.tsx:41	n	
+email.baseLayout.contactSupport	src/lib/email/templates/base-layout.tsx:45	n	
+email.billingReminder.preview.upcomingBillingReminder	src/lib/email/templates/billing-reminder.tsx:27	y	amount date
+email.billingReminder.upcomingBillingReminder	src/lib/email/templates/billing-reminder.tsx:29	y	
+email.common.greetingNamed	src/lib/email/templates/billing-reminder.tsx:31; src/lib/email/templates/password-reset.tsx:22; src/lib/email/templates/payment-received.tsx:32; src/lib/email/templates/request-status-update.tsx:48; src/lib/email/templates/subscription-cancelled.tsx:29; src/lib/email/templates/welcome.tsx:20	n	userName
+email.billingReminder.friendlyReminderNextBillingComing	src/lib/email/templates/billing-reminder.tsx:34	y	days
+email.billingReminder.plan	src/lib/email/templates/billing-reminder.tsx:40	y	
+email.billingReminder.amount	src/lib/email/templates/billing-reminder.tsx:44	n	
+email.billingReminder.billingDate	src/lib/email/templates/billing-reminder.tsx:48	y	
+email.billingReminder.makeSurePaymentMethodUp	src/lib/email/templates/billing-reminder.tsx:54	y	
+email.billingReminder.viewDashboard	src/lib/email/templates/billing-reminder.tsx:59	n	
+email.billingReminder.manageSubscription	src/lib/email/templates/billing-reminder.tsx:62	y	<<a>> <</a>>
+email.billingReminder.haveQuestionsAboutBillingPlease	src/lib/email/templates/billing-reminder.tsx:70	y	
+email.googleSignIn.preview.freeplugAccountUsesGoogle	src/lib/email/templates/google-sign-in.tsx:14	n	
+email.googleSignIn.signGoogle	src/lib/email/templates/google-sign-in.tsx:15	n	
+email.googleSignIn.receivedRequestResetPasswordFreeplug	src/lib/email/templates/google-sign-in.tsx:17	n	
+email.googleSignIn.loginPageChooseContinueGoogle	src/lib/email/templates/google-sign-in.tsx:21	n	<<strong>> <</strong>>
+email.googleSignIn.goLog	src/lib/email/templates/google-sign-in.tsx:27	n	
+email.googleSignIn.didntRequestSafelyIgnoreEmail	src/lib/email/templates/google-sign-in.tsx:32	n	
+email.passwordReset.expiresInOneHour	src/lib/email/templates/password-reset.tsx:15	n	
+email.passwordReset.preview.resetFreeplugPassword	src/lib/email/templates/password-reset.tsx:19	n	
+email.passwordReset.resetPassword	src/lib/email/templates/password-reset.tsx:20	n	
+email.passwordReset.receivedRequestResetPasswordFreeplug	src/lib/email/templates/password-reset.tsx:25	n	
+email.passwordReset.resetPassword2	src/lib/email/templates/password-reset.tsx:31	n	
+email.passwordReset.linkExpireDidntRequestPassword	src/lib/email/templates/password-reset.tsx:36	n	expiresIn <<strong>> <</strong>>
+email.passwordReset.securityTips	src/lib/email/templates/password-reset.tsx:41	y	
+email.passwordReset.neverShareLinkAnyone	src/lib/email/templates/password-reset.tsx:42	n	
+email.passwordReset.neverAskPasswordViaEmail	src/lib/email/templates/password-reset.tsx:43	n	
+email.passwordReset.useStrongUniquePassword	src/lib/email/templates/password-reset.tsx:44	n	
+email.passwordReset.youreHavingTroubleClickingButton	src/lib/email/templates/password-reset.tsx:48	n	
+email.paymentReceived.preview.paymentReceived	src/lib/email/templates/payment-received.tsx:29	y	amount planName
+email.paymentReceived.paymentReceived	src/lib/email/templates/payment-received.tsx:30	y	
+email.paymentReceived.thankPaymentHereDetailsTransaction	src/lib/email/templates/payment-received.tsx:35	y	
+email.paymentReceived.amount	src/lib/email/templates/payment-received.tsx:40	n	
+email.paymentReceived.plan	src/lib/email/templates/payment-received.tsx:44	y	
+email.paymentReceived.date	src/lib/email/templates/payment-received.tsx:48	n	
+email.paymentReceived.invoice	src/lib/email/templates/payment-received.tsx:53	y	
+email.paymentReceived.nextBilling	src/lib/email/templates/payment-received.tsx:59	y	
+email.common.accountHistory	src/lib/email/templates/payment-received.tsx:67; src/lib/email/templates/subscription-cancelled.tsx:41	n	
+email.common.totalPaidToDate	src/lib/email/templates/payment-received.tsx:68; src/lib/email/templates/subscription-cancelled.tsx:42	y	amount
+email.paymentReceived.viewDashboard	src/lib/email/templates/payment-received.tsx:74	n	
+email.paymentReceived.viewAllInvoicesManageSubscription	src/lib/email/templates/payment-received.tsx:79	y	
+email.requestStatusUpdate.title.requestSubmitted	src/lib/email/templates/request-status-update.tsx:16	n	
+email.requestStatusUpdate.description.haveReceivedWebsiteRequest	src/lib/email/templates/request-status-update.tsx:17	n	
+email.requestStatusUpdate.title.requestReview	src/lib/email/templates/request-status-update.tsx:21	n	
+email.requestStatusUpdate.description.greatNewsTeamNow	src/lib/email/templates/request-status-update.tsx:23	n	
+email.requestStatusUpdate.title.requestClosed	src/lib/email/templates/request-status-update.tsx:27	n	
+email.requestStatusUpdate.description.websiteRequestHasBeen	src/lib/email/templates/request-status-update.tsx:29	n	
+email.requestStatusUpdate.websiteRequestHasBeenUpdated	src/lib/email/templates/request-status-update.tsx:51	n	businessName <<strong>> <</strong>>
+email.requestStatusUpdate.currentStatus	src/lib/email/templates/request-status-update.tsx:55	n	
+email.requestStatusUpdate.messageFromTeam	src/lib/email/templates/request-status-update.tsx:64	n	
+email.requestStatusUpdate.viewDashboard	src/lib/email/templates/request-status-update.tsx:71	n	
+email.requestStatusUpdate.haveQuestionsReplyEmailContact	src/lib/email/templates/request-status-update.tsx:76	n	
+email.subjects.subscriptionCancelled	src/lib/email/templates/subscription-cancelled.tsx:16	y	
+email.subscriptionCancelled.hostingPlanCanceled	src/lib/email/templates/subscription-cancelled.tsx:31	y	
+email.subscriptionCancelled.websiteStaysOnlineUntilThen	src/lib/email/templates/subscription-cancelled.tsx:35	n	date <<strong>> <</strong>>
+email.subscriptionCancelled.changedMind	src/lib/email/templates/subscription-cancelled.tsx:47	n	
+email.subscriptionCancelled.untilResumePlanFromDashboard	src/lib/email/templates/subscription-cancelled.tsx:49	y	date
+email.subscriptionCancelled.goDashboard	src/lib/email/templates/subscription-cancelled.tsx:53	n	
+email.welcome.preview.welcomeFreeplugLetsBuild	src/lib/email/templates/welcome.tsx:16	n	
+email.welcome.welcomeFreeplug	src/lib/email/templates/welcome.tsx:18	n	
+email.welcome.thankJoiningFreeplugExcitedHelp	src/lib/email/templates/welcome.tsx:23	y	
+email.welcome.hereNext	src/lib/email/templates/welcome.tsx:26	n	
+email.welcome.1SubmitWebsiteRequestFrom	src/lib/email/templates/welcome.tsx:28	n	
+email.welcome.2TeamReviewBusinessDetails	src/lib/email/templates/welcome.tsx:29	n	
+email.welcome.3ChooseHostingPlanFits	src/lib/email/templates/welcome.tsx:30	y	
+email.welcome.4WatchOnlinePresenceGrow	src/lib/email/templates/welcome.tsx:31	n	
+email.welcome.goDashboard	src/lib/email/templates/welcome.tsx:35	n	
+email.welcome.haveAnyQuestionsJustReply	src/lib/email/templates/welcome.tsx:39	n	
+email.welcome.freeplugTeam	src/lib/email/templates/welcome.tsx:42	n	
+help.chat.chatGreeting	src/lib/help/help-chat-content.ts:40	n	
+help.chat.question.reallyFree	src/lib/help/help-chat-content.ts:45	y	
+help.chat.answer.yesWebsiteDevelopmentFree	src/lib/help/help-chat-content.ts:48	y	
+help.chat.question.whatDoIPay	src/lib/help/help-chat-content.ts:53	y	
+help.chat.question.thereAnyHiddenFees	src/lib/help/help-chat-content.ts:61	y	
+help.chat.question.longSiteTake	src/lib/help/help-chat-content.ts:69	n	
+help.chat.answer.wellGiveTimelineAfter	src/lib/help/help-chat-content.ts:72	n	
+help.chat.question.updatePaymentMethod	src/lib/help/help-chat-content.ts:77	y	
+help.chat.question.cancelPlan	src/lib/help/help-chat-content.ts:84	y	
+help.chat.answer.yesCancelAnyTime	src/lib/help/help-chat-content.ts:87	y	
+help.chat.question.buyWebsite	src/lib/help/help-chat-content.ts:92	n	
+help.chat.question.resetPassword	src/lib/help/help-chat-content.ts:99	n	
+help.chat.answer.signPageClickForgot	src/lib/help/help-chat-content.ts:102	n	
+help.chat.question.requestChangesSite	src/lib/help/help-chat-content.ts:107	n	
+help.chat.changeTypes.textPrices	src/lib/help/help-chat-content.ts:124	y	
+help.chat.changeTypes.photos	src/lib/help/help-chat-content.ts:125	n	
+help.chat.changeTypes.hoursContactInfo	src/lib/help/help-chat-content.ts:126	n	
+help.chat.changeTypes.somethingElse	src/lib/help/help-chat-content.ts:127	n	
+help.chat.step1.wouldLikeChanged	src/lib/help/help-chat-content.ts:133	n	
+help.chat.step2.whichPage	src/lib/help/help-chat-content.ts:134	n	
+help.chat.step2Placeholder.exampleHomeServicesContact	src/lib/help/help-chat-content.ts:135	n	
+help.chat.step3.describeChange	src/lib/help/help-chat-content.ts:136	n	
+help.chat.step3Placeholder.shouldSayShowInstead	src/lib/help/help-chat-content.ts:137	n	
+help.chat.step4.addPhotoScreenshotOptional	src/lib/help/help-chat-content.ts:138	n	
+help.chat.review.heresRequestWellReview	src/lib/help/help-chat-content.ts:140	y	
+help.chat.send.sendRequest	src/lib/help/help-chat-content.ts:141	n	
+help.chat.edit.edit	src/lib/help/help-chat-content.ts:142	n	
+help.chat.changeRequestSentMessage.gotWellEmailAfter	src/lib/help/help-chat-content.ts:148	n	email
+help.chat.chatNotFound	src/lib/help/help-chat-content.ts:152	n	supportHours
+claim.bannerHeading	src/lib/outreach/copy.ts:14	n	businessName
+claim.bannerBody	src/lib/outreach/copy.ts:16	y	
+claim.underMainButton	src/lib/outreach/copy.ts:18	y	
+claim.label	src/lib/outreach/copy.ts:19	n	
+claim.cardLine	src/lib/outreach/copy.ts:26	y	
+claim.staleLine	src/lib/outreach/copy.ts:28	n	
+claim.neutralHeading	src/lib/outreach/copy.ts:33	n	
+claim.neutralBody	src/lib/outreach/copy.ts:34	n	
+claim.neutralHelpLine	src/lib/outreach/copy.ts:36	n	supportPhone supportEmail
+claim.neutralHelpPhone	src/lib/outreach/copy.ts:38	n	
+claim.confirmFirstLine	src/lib/outreach/copy.ts:43	n	accountEmail
+claim.resendLabel	src/lib/outreach/copy.ts:44	n	
+claim.resendSent	src/lib/outreach/copy.ts:45	n	
+claim.resendLimited	src/lib/outreach/copy.ts:51	n	
+claim.addDetailsLabel	src/lib/outreach/copy.ts:52	n	
+claim.requestChangeLabel	src/lib/outreach/copy.ts:53	n	
+claim.callTextLabel	src/lib/outreach/copy.ts:54	n	
+claim.emailUsLabel	src/lib/outreach/copy.ts:55	n	
+claim.notNowLabel	src/lib/outreach/copy.ts:56	n	
+claim.notNowConfirm	src/lib/outreach/copy.ts:57	n	expiryDate
+claim.expiredHeading	src/lib/outreach/copy.ts:58	n	
+claim.expiredBody	src/lib/outreach/copy.ts:60	n	supportPhone supportEmail
+claim.openFullScreenLabel	src/lib/outreach/copy.ts:61	n	
+claim.screenshotNote	src/lib/outreach/copy.ts:63	n	
+claim.desktopContactText	src/lib/outreach/copy.ts:65	n	supportPhone
+claim.callUsLabel	src/lib/outreach/copy.ts:66	n	
+claim.textUsLabel	src/lib/outreach/copy.ts:67	n	
+claim.callAria	src/lib/outreach/copy.ts:68	n	supportPhone
+claim.textAria	src/lib/outreach/copy.ts:69	n	supportPhone
+claim.emailAria	src/lib/outreach/copy.ts:70	n	supportEmail
+claim.detailsHeading	src/lib/outreach/copy.ts:73	n	
+claim.detailsIntro	src/lib/outreach/copy.ts:76	n	
+claim.fieldPhone	src/lib/outreach/copy.ts:77	n	
+claim.fieldAddress	src/lib/outreach/copy.ts:78	n	
+claim.fieldAddressHelp	src/lib/outreach/copy.ts:79	n	
+claim.fieldHours	src/lib/outreach/copy.ts:80	n	
+claim.fieldServiceArea	src/lib/outreach/copy.ts:81	n	
+claim.fieldServiceAreaHelp	src/lib/outreach/copy.ts:82	n	
+claim.fieldQuoteEmail	src/lib/outreach/copy.ts:83	n	
+claim.fieldQuoteEmailHelp	src/lib/outreach/copy.ts:84	n	
+claim.fieldPhotos	src/lib/outreach/copy.ts:85	n	
+claim.fieldPhotosHelp	src/lib/outreach/copy.ts:87	n	max
+claim.sendDetailsLabel	src/lib/outreach/copy.ts:88	n	
+claim.detailsSuccess	src/lib/outreach/copy.ts:90	n	
+claim.errorTooLarge	src/lib/outreach/copy.ts:91	n	
+claim.serverTooLarge	src/lib/outreach/copy.ts:94	n	supportEmail
+claim.serverBadType	src/lib/outreach/copy.ts:95	n	supportEmail
+claim.errorTooManyTries	src/lib/outreach/copy.ts:96	n	
+claim.errorTooManyPhotos	src/lib/outreach/copy.ts:97	n	max
+claim.sourceLine	src/lib/outreach/copy.ts:98; src/lib/outreach/schemas.ts:152	n	source
+claim.looksRightLabel	src/lib/outreach/copy.ts:99	n	
+claim.editLabel	src/lib/outreach/copy.ts:100	n	
+claim.blankFieldHint	src/lib/outreach/copy.ts:101	n	
+claim.servicesHeading	src/lib/outreach/copy.ts:102	n	
+claim.servicesIntro	src/lib/outreach/copy.ts:104	n	
+claim.serviceSourceSite	src/lib/outreach/copy.ts:106	n	
+claim.serviceSourceSiteAndThumbtack	src/lib/outreach/copy.ts:107	n	
+claim.serviceSourceThumbtackOnly	src/lib/outreach/copy.ts:108	n	
+claim.keepLabel	src/lib/outreach/copy.ts:109	n	
+claim.removeLabel	src/lib/outreach/copy.ts:110	n	
+claim.undoLabel	src/lib/outreach/copy.ts:111	n	
+claim.addServiceLabel	src/lib/outreach/copy.ts:112	n	
+claim.addLabel	src/lib/outreach/copy.ts:113	n	
+claim.counterText	src/lib/outreach/copy.ts:114	y	n total
+claim.step1Heading	src/lib/outreach/copy.ts:117	n	
+claim.step1Body	src/lib/outreach/copy.ts:118	n	
+claim.step1BodyNameOnly	src/lib/outreach/copy.ts:120	n	
+claim.step1SignInPrompt	src/lib/outreach/copy.ts:126	n	
+claim.step1SignInLink	src/lib/outreach/copy.ts:127	n	
+claim.step1BackLink	src/lib/outreach/copy.ts:128	n	
+claim.step1Button	src/lib/outreach/copy.ts:129	n	
+claim.step2Heading	src/lib/outreach/copy.ts:130	n	
+claim.step2Body	src/lib/outreach/copy.ts:131	n	
+claim.checkPhone	src/lib/outreach/copy.ts:133	n	
+claim.checkAddress	src/lib/outreach/copy.ts:134	n	
+claim.checkHours	src/lib/outreach/copy.ts:135	n	
+claim.checkServiceArea	src/lib/outreach/copy.ts:136	n	
+claim.checkQuoteEmail	src/lib/outreach/copy.ts:137	n	
+claim.checkPhotos	src/lib/outreach/copy.ts:138	n	
+claim.step2Button	src/lib/outreach/copy.ts:139	n	
+claim.uploadPhotosLabel	src/lib/outreach/copy.ts:140	n	
+claim.step3Heading	src/lib/outreach/copy.ts:141	y	
+claim.step3Button	src/lib/outreach/copy.ts:144	y	
+claim.noChargeUntilLive	src/lib/outreach/copy.ts:145	y	
+claim.step4Heading	src/lib/outreach/copy.ts:147	y	
+claim.step4Body	src/lib/outreach/copy.ts:149	y	
+claim.step4Button	src/lib/outreach/copy.ts:150	y	
+claim.step4Note	src/lib/outreach/copy.ts:151	y	
+claim.cardSavedLine	src/lib/outreach/copy.ts:153	y	
+claim.waitingLine	src/lib/outreach/copy.ts:155	n	
+claim.trackerOutreachSteps.built	src/lib/outreach/copy.ts:159	n	
+claim.trackerOutreachSteps.yourReview	src/lib/outreach/copy.ts:160	n	
+claim.trackerOutreachSteps.detailsConfirmed	src/lib/outreach/copy.ts:161	n	
+claim.trackerOutreachSteps.hostingSetUp	src/lib/outreach/copy.ts:162	y	
+claim.trackerOutreachSteps.live	src/lib/outreach/copy.ts:163	n	
+claim.viewWebsiteLabel	src/lib/outreach/copy.ts:165	n	
+claim.setUpDomainLabel	src/lib/outreach/copy.ts:166	n	
+claim.manageBillingLabel	src/lib/outreach/copy.ts:167	y	
+claim.domainHelper	src/lib/outreach/copy.ts:168	y	
+claim.needDomainLabel	src/lib/outreach/copy.ts:169	n	
+claim.needDomainHelper	src/lib/outreach/copy.ts:171	n	
+claim.stepNames.account	src/lib/outreach/copy.ts:177	n	
+claim.stepNames.yourDetails	src/lib/outreach/copy.ts:177	n	
+claim.stepNames.hostingPlan	src/lib/outreach/copy.ts:177	y	
+claim.stepNames.addCard	src/lib/outreach/copy.ts:177	y	
+claim.claimingForLine	src/lib/outreach/copy.ts:178	n	businessName
+claim.goToDashboardLabel	src/lib/outreach/copy.ts:179	n	
+claim.viewPreviewLabel	src/lib/outreach/copy.ts:180	n	
+claim.yourWebsiteHeading	src/lib/outreach/copy.ts:181	n	
+claim.phoneInvalid	src/lib/outreach/copy.ts:184	n	
+claim.refusedDismissAria	src/lib/outreach/copy.ts:186	n	fileName
+claim.trackerLiveWaiting	src/lib/outreach/copy.ts:187	n	
+claim.haveDomainLabel	src/lib/outreach/copy.ts:188	n	
+claim.trackerOrganicSteps.requestSent	src/lib/outreach/copy.ts:190	n	
+claim.trackerOrganicSteps.building	src/lib/outreach/copy.ts:191	n	
+claim.trackerOrganicSteps.yourReview	src/lib/outreach/copy.ts:192	n	
+claim.trackerOrganicSteps.hostingSetUp	src/lib/outreach/copy.ts:193	y	
+claim.trackerOrganicSteps.live	src/lib/outreach/copy.ts:194	n	
+claim.photoCountText	src/lib/outreach/copy.ts:196	n	n max
+claim.photoRetryingText	src/lib/outreach/copy.ts:197	n	
+claim.photoFailedText	src/lib/outreach/copy.ts:198	n	
+claim.photoLimitReached	src/lib/outreach/copy.ts:199	n	max supportEmail
+claim.photoRefused	src/lib/outreach/copy.ts:200	n	supportEmail max
+claim.showAllPhotos	src/lib/outreach/copy.ts:201	n	n
+claim.showFewerPhotos	src/lib/outreach/copy.ts:202	n	
+claim.thumbTryingAgain	src/lib/outreach/copy.ts:204	n	
+claim.thumbTapToRetry	src/lib/outreach/copy.ts:205	n	
+claim.reopenLinkLine	src/lib/outreach/copy.ts:209	n	
+claim.planWaitingForPublishMessage	src/lib/outreach/copy.ts:212	y	
+claim.planLiveUnavailableMessage	src/lib/outreach/copy.ts:214	y	supportEmail
+claim.accountAddCardLine	src/lib/outreach/copy.ts:220	y	
+claim.accountFirstPaymentLine	src/lib/outreach/copy.ts:221	y	
+claim.beforeLiveHelp	src/lib/outreach/copy.ts:226	n	supportEmail
+claim.genericTryAgain	src/lib/outreach/copy.ts:227	n	supportEmail
+claim.photoRemoveAria	src/lib/outreach/copy.ts:229	n	n
+claim.photoUploadingAria	src/lib/outreach/copy.ts:230	n	n
+claim.photoUploadedAria	src/lib/outreach/copy.ts:231	n	n
+claim.addPhotosLabel	src/lib/outreach/copy.ts:233	n	
+claim.confirmEmailLine	src/lib/outreach/copy.ts:235	n	
+claim.changeSent	src/lib/outreach/copy.ts:249	n	
+claim.domainRequestSent	src/lib/outreach/copy.ts:250	n	
+common.amountPerMonth	src/lib/outreach/plan.ts:32; src/lib/plans/ladder-copy.ts:406; src/lib/plans/ladder-copy.ts:475	y	amount
+claim.message.enterValidEmailAddress	src/lib/outreach/schemas.ts:32	n	
+claim.description.describeChange	src/lib/outreach/schemas.ts:49	n	
+claim.message.sourceLinksMustStart	src/lib/outreach/schemas.ts:66	n	
+claim.businessName.businessNameRequired	src/lib/outreach/schemas.ts:70	n	
+claim.message.enterValidEmail	src/lib/outreach/schemas.ts:75	n	
+claim.enterDomainLikeYourbusinessCom	src/lib/outreach/schemas.ts:97	n	
+claim.error.invalidPlan	src/lib/outreach/server.ts:620	y	
+claim.error.invalidInput	src/lib/outreach/server.ts:915	n	
+claim.error.couldNotSave	src/lib/outreach/server.ts:934	n	
+common.listOr	src/lib/plans/ladder-copy.ts:9	n	list last
+plans.nextBusinessDayTarget	src/lib/plans/ladder-copy.ts:28	y	
+plans.stepBlurbs.starter	src/lib/plans/ladder-copy.ts:32	y	
+plans.stepBlurbs.priority	src/lib/plans/ladder-copy.ts:33	y	
+plans.stepBlurbs.fast_lane	src/lib/plans/ladder-copy.ts:34	y	
+plans.stepBlurbs.leads	src/lib/plans/ladder-copy.ts:35	y	
+plans.stepBlurbs.get_found	src/lib/plans/ladder-copy.ts:36	y	
+plans.stepBlurbs.growth	src/lib/plans/ladder-copy.ts:37	y	
+plans.perkLines.priorityQueue	src/lib/plans/ladder-copy.ts:42	y	
+plans.perkLines.includedSmallEdit	src/lib/plans/ladder-copy.ts:44	y	
+plans.smallEditsNextBusinessDay	src/lib/plans/ladder-copy.ts:45; src/lib/plans/ladder-copy.ts:80	y	
+plans.perkLines.leadsReport	src/lib/plans/ladder-copy.ts:47	y	
+plans.perkLines.quoteAlerts	src/lib/plans/ladder-copy.ts:48	y	
+plans.perkLines.gbpManaged	src/lib/plans/ladder-copy.ts:49	y	
+plans.perkLines.reviewKit	src/lib/plans/ladder-copy.ts:50	y	
+plans.perkLines.seasonalRefresh	src/lib/plans/ladder-copy.ts:51	y	
+plans.perkLines.quarterlyCall	src/lib/plans/ladder-copy.ts:52	y	
+plans.perkLines.doneForYouEdits	src/lib/plans/ladder-copy.ts:53	y	
+plans.starterBaseLines.hostingSslSecureHttps	src/lib/plans/ladder-copy.ts:58	y	
+plans.starterBaseLines.emailSupportDuringSupport	src/lib/plans/ladder-copy.ts:59	y	
+plans.ladderHeading	src/lib/plans/ladder-copy.ts:63	y	
+plans.ladderSubheading	src/lib/plans/ladder-copy.ts:64	y	
+plans.mostPopularLabel	src/lib/plans/ladder-copy.ts:65	y	
+plans.everythingIn	src/lib/plans/ladder-copy.ts:66	y	name
+plans.continueToPayment	src/lib/plans/ladder-copy.ts:68	y	
+plans.legacyPlanNote	src/lib/plans/ladder-copy.ts:70	y	
+plans.legacyPlanLabel	src/lib/plans/ladder-copy.ts:71	y	
+plans.includedEdits.allUsed	src/lib/plans/ladder-copy.ts:75	y	
+plans.includedEdits.someLeft	src/lib/plans/ladder-copy.ts:76	y	remaining available
+plans.includedEdit.used	src/lib/plans/ladder-copy.ts:78	y	
+plans.includedEdit.available	src/lib/plans/ladder-copy.ts:79	y	remaining
+plans.aiEditsLine	src/lib/plans/ladder-copy.ts:87	y	count
+plans.landingPlansIntro	src/lib/plans/ladder-copy.ts:98	y	
+plans.dashboardPlansIntro	src/lib/plans/ladder-copy.ts:101	y	
+claim.step3Body	src/lib/plans/ladder-copy.ts:104	y	price
+help.answers.whatDoIPay	src/lib/plans/ladder-copy.ts:108	y	priceList
+help.answers.hostingPlans	src/lib/plans/ladder-copy.ts:110	y	priceList
+help.answers.requestChanges	src/lib/plans/ladder-copy.ts:112	y	name price
+help.answers.hiddenFees	src/lib/plans/ladder-copy.ts:114	y	
+help.answers.security	src/lib/plans/ladder-copy.ts:115	y	
+help.answers.plansGuideTitleLine	src/lib/plans/ladder-copy.ts:116	y	
+help.answers.plansGuideDescription	src/lib/plans/ladder-copy.ts:117	y	
+help.answers.chatIncludedEditNote	src/lib/plans/ladder-copy.ts:119	y	
+plans.comingSoonLabel	src/lib/plans/ladder-copy.ts:122	y	
+plans.stepNotSellableMessage	src/lib/plans/ladder-copy.ts:124	y	name
+plans.change.button	src/lib/plans/ladder-copy.ts:127	y	name
+plans.change.current	src/lib/plans/ladder-copy.ts:128	y	
+plans.change.help	src/lib/plans/ladder-copy.ts:130	y	
+plans.change.upgraded	src/lib/plans/ladder-copy.ts:132	y	name
+plans.change.scheduled	src/lib/plans/ladder-copy.ts:134	y	name date
+plans.change.unchanged	src/lib/plans/ladder-copy.ts:135	y	
+plans.change.ending	src/lib/plans/ladder-copy.ts:137	y	
+plans.change.paymentFailed	src/lib/plans/ladder-copy.ts:139	y	
+plans.change.paymentFailedPendingLost	src/lib/plans/ladder-copy.ts:141	y	
+plans.change.unavailable	src/lib/plans/ladder-copy.ts:142	y	
+plans.change.pendingChangeLine	src/lib/plans/ladder-copy.ts:145	y	name date
+plans.change.keepPlanButton	src/lib/plans/ladder-copy.ts:146	y	name
+cancel.withPendingNote	src/lib/plans/ladder-copy.ts:149	y	name date
+cancel.planButton	src/lib/plans/ladder-copy.ts:150	y	
+cancel.inAppLine	src/lib/plans/ladder-copy.ts:157	y	
+cancel.resumeFailedMessage	src/lib/plans/ladder-copy.ts:163	y	supportEmail supportPhone
+cancel.resumeBusyMessage	src/lib/plans/ladder-copy.ts:168	y	
+cancel.failedMessage	src/lib/plans/ladder-copy.ts:170	y	supportEmail supportPhone
+plans.billing.pendingNotice	src/lib/plans/ladder-copy.ts:173	y	name date
+plans.billing.unavailable	src/lib/plans/ladder-copy.ts:174	y	
+plans.billing.heading	src/lib/plans/ladder-copy.ts:175	y	
+plans.billing.updateCardButton	src/lib/plans/ladder-copy.ts:176	y	
+plans.billing.cardUpdatedNotice	src/lib/plans/ladder-copy.ts:177	y	
+plans.billing.invoicesHeading	src/lib/plans/ladder-copy.ts:178	y	
+plans.billing.invoicesEmpty	src/lib/plans/ladder-copy.ts:179	y	
+plans.billing.invoiceStatus.paid	src/lib/plans/ladder-copy.ts:180	y	
+plans.billing.invoiceStatus.open	src/lib/plans/ladder-copy.ts:180	y	
+plans.billing.invoiceStatus.uncollectible	src/lib/plans/ladder-copy.ts:180	y	
+plans.billing.viewInvoice	src/lib/plans/ladder-copy.ts:181	y	
+plans.billing.invoicePlanPart	src/lib/plans/ladder-copy.ts:183	y	amount
+tips.invoiceTipPart	src/lib/plans/ladder-copy.ts:184	y	amount
+plans.change.alreadyHasPlanSwitch	src/lib/plans/ladder-copy.ts:193	y	
+plans.currentPlanLine	src/lib/plans/ladder-copy.ts:202	y	line
+plans.change.startsOnBadge	src/lib/plans/ladder-copy.ts:204	y	date
+plans.seeComingSoon	src/lib/plans/ladder-copy.ts:206	y	count
+plans.chooseStepButton	src/lib/plans/ladder-copy.ts:208	y	name
+plans.change.changePlanLink	src/lib/plans/ladder-copy.ts:210; src/lib/plans/ladder-copy.ts:244	y	
+plans.change.pickToSwitch	src/lib/plans/ladder-copy.ts:212	y	
+plans.change.buttonNow	src/lib/plans/ladder-copy.ts:214	y	name
+plans.change.buttonOn	src/lib/plans/ladder-copy.ts:220	y	name date
+plans.change.helpUp	src/lib/plans/ladder-copy.ts:223	y	
+plans.change.helpDown	src/lib/plans/ladder-copy.ts:226	y	
+plans.change.calculating	src/lib/plans/ladder-copy.ts:228	y	
+plans.change.confirmLine	src/lib/plans/ladder-copy.ts:231	y	name todayAmount monthly date
+plans.change.confirmFallback	src/lib/plans/ladder-copy.ts:234	y	name
+plans.change.confirmButton	src/lib/plans/ladder-copy.ts:236	y	
+plans.change.cancelButton	src/lib/plans/ladder-copy.ts:238	y	
+plans.change.previewExpired	src/lib/plans/ladder-copy.ts:240	y	
+plans.change.inProgress	src/lib/plans/ladder-copy.ts:242	y	
+cancel.optionsLink	src/lib/plans/ladder-copy.ts:246	y	
+plans.grandfatheredHostingOnlyName	src/lib/plans/ladder-copy.ts:254	y	
+plans.grandfatheredHostingShort	src/lib/plans/ladder-copy.ts:256	y	
+plans.legacyAddonName	src/lib/plans/ladder-copy.ts:258	y	tier
+help.answers.paymentMethod	src/lib/plans/ladder-copy.ts:267	y	
+plans.change.confirmZero	src/lib/plans/ladder-copy.ts:275	y	name monthly date
+plans.change.replacesPending	src/lib/plans/ladder-copy.ts:277	y	pendingName
+tips.planChangeTipEnds	src/lib/plans/ladder-copy.ts:279	y	tip
+tips.planChangeTipEndsOn	src/lib/plans/ladder-copy.ts:281	y	tip date
+tips.sliderLabel	src/lib/plans/ladder-copy.ts:291	y	
+tips.sliderHelp	src/lib/plans/ladder-copy.ts:293	y	
+tips.valuetext.withTip	src/lib/plans/ladder-copy.ts:296	y	total tip
+tips.valuetext.noTip	src/lib/plans/ladder-copy.ts:296	y	total
+tips.totalLine.withTip	src/lib/plans/ladder-copy.ts:299	y	price tip total
+tips.totalLine.noTip	src/lib/plans/ladder-copy.ts:299	y	total
+tips.sliderHint	src/lib/plans/ladder-copy.ts:301	y	
+tips.endNone	src/lib/plans/ladder-copy.ts:303; src/lib/plans/ladder-copy.ts:411	y	
+tips.endMax	src/lib/plans/ladder-copy.ts:304	y	max
+tips.lowerLabel	src/lib/plans/ladder-copy.ts:306	y	
+tips.raiseLabel	src/lib/plans/ladder-copy.ts:307	y	
+tips.lockedAmount	src/lib/plans/ladder-copy.ts:312	y	tip
+tips.lockedNote	src/lib/plans/ladder-copy.ts:315	y	date
+tips.nudge	src/lib/plans/ladder-copy.ts:318	y	next price perk
+tips.nudgeButton	src/lib/plans/ladder-copy.ts:320	y	next
+tips.nudgePerk.priorityQueue	src/lib/plans/ladder-copy.ts:323	y	
+tips.nudgePerk.includedSmallEdit	src/lib/plans/ladder-copy.ts:324	y	
+tips.nudgePerk.nextBusinessDayEdits	src/lib/plans/ladder-copy.ts:325	y	
+tips.nudgePerk.leadsReport	src/lib/plans/ladder-copy.ts:326	y	
+tips.nudgePerk.quoteAlerts	src/lib/plans/ladder-copy.ts:327	y	
+tips.nudgePerk.gbpManaged	src/lib/plans/ladder-copy.ts:328	y	
+tips.nudgePerk.reviewKit	src/lib/plans/ladder-copy.ts:329	y	
+tips.nudgePerk.seasonalRefresh	src/lib/plans/ladder-copy.ts:330	y	
+tips.planStripTip	src/lib/plans/ladder-copy.ts:335	y	tip
+tips.changeHeading	src/lib/plans/ladder-copy.ts:337	y	
+tips.changeNote	src/lib/plans/ladder-copy.ts:339	y	
+tips.changeButton	src/lib/plans/ladder-copy.ts:341	y	
+tips.nextBill	src/lib/plans/ladder-copy.ts:343	y	amount date
+tips.nextBillNoDate	src/lib/plans/ladder-copy.ts:345	y	amount
+tips.changed	src/lib/plans/ladder-copy.ts:347	y	nextBill
+tips.changePending	src/lib/plans/ladder-copy.ts:350	y	
+tips.changeEnding	src/lib/plans/ladder-copy.ts:352	y	
+tips.notForPlan	src/lib/plans/ladder-copy.ts:354	y	
+tips.outOfRange	src/lib/plans/ladder-copy.ts:356	y	
+tips.changeUnavailable	src/lib/plans/ladder-copy.ts:358	y	
+tips.inProgress	src/lib/plans/ladder-copy.ts:363	y	
+addons.heading	src/lib/plans/ladder-copy.ts:369	y	
+addons.starterCapNote	src/lib/plans/ladder-copy.ts:371	y	amount
+addons.names.small_edit	src/lib/plans/ladder-copy.ts:373	y	
+addons.names.big_change	src/lib/plans/ladder-copy.ts:374	y	
+addons.names.visitor_snapshot	src/lib/plans/ladder-copy.ts:375	y	
+addons.perk.smallEditWithIncluded	src/lib/plans/ladder-copy.ts:384	y	
+addons.perk.smallEdit	src/lib/plans/ladder-copy.ts:385	y	
+addons.perk.bigChange	src/lib/plans/ladder-copy.ts:387	y	
+addons.perk.visitorSnapshot	src/lib/plans/ladder-copy.ts:388	y	
+addons.bigChangeBiggerNote	src/lib/plans/ladder-copy.ts:391	y	
+addons.chargeNote	src/lib/plans/ladder-copy.ts:395	y	price
+help.chat.starterSmallEditAddon	src/lib/plans/ladder-copy.ts:403	y	price addonName
+help.chat.starterSmallEditAiBuilder	src/lib/plans/ladder-copy.ts:404	y	
+addons.tipDropQuestionCheckout	src/lib/plans/ladder-copy.ts:408	y	tip name
+addons.turnOn	src/lib/plans/ladder-copy.ts:409	y	
+addons.turnOnQuestion	src/lib/plans/ladder-copy.ts:416	y	name
+addons.tipAmount	src/lib/plans/ladder-copy.ts:411	y	tip
+addons.cancel	src/lib/plans/ladder-copy.ts:412	y	
+addons.chargeToday	src/lib/plans/ladder-copy.ts:418	y	amount
+addons.chargeUpTo	src/lib/plans/ladder-copy.ts:426	y	price
+addons.thenMonthly	src/lib/plans/ladder-copy.ts:424	y	price date
+addons.thenMonthlyNoDate	src/lib/plans/ladder-copy.ts:424	y	price
+addons.turnOffQuestion	src/lib/plans/ladder-copy.ts:432	y	name date
+addons.turnOffQuestionNoDate	src/lib/plans/ladder-copy.ts:432	y	name
+addons.turnOff	src/lib/plans/ladder-copy.ts:433	y	
+addons.endsBadge	src/lib/plans/ladder-copy.ts:434	y	date
+addons.endsBadgeNoDate	src/lib/plans/ladder-copy.ts:434	y	
+addons.keep	src/lib/plans/ladder-copy.ts:435	y	
+addons.doneOn	src/lib/plans/ladder-copy.ts:436	y	name
+addons.doneOff	src/lib/plans/ladder-copy.ts:437	y	name date
+addons.doneOffNoDate	src/lib/plans/ladder-copy.ts:437	y	name
+addons.doneKeep	src/lib/plans/ladder-copy.ts:438	y	name
+addons.lockedBySwitch	src/lib/plans/ladder-copy.ts:441	y	date
+addons.lockedBySwitchNoDate	src/lib/plans/ladder-copy.ts:441; src/lib/plans/ladder-copy.ts:457	y	
+addons.lockedByRemoval	src/lib/plans/ladder-copy.ts:442; src/lib/plans/ladder-copy.ts:458	y	
+addons.legacyNote	src/lib/plans/ladder-copy.ts:443	y	
+addons.error	src/lib/plans/ladder-copy.ts:445	y	
+addons.paymentFailed	src/lib/plans/ladder-copy.ts:447	y	name
+addons.refunded	src/lib/plans/ladder-copy.ts:452	y	name
+addons.refundFailed	src/lib/plans/ladder-copy.ts:454	y	name
+addons.turnOffFirst	src/lib/plans/ladder-copy.ts:456	y	
+addons.stayOnLine	src/lib/plans/ladder-copy.ts:462	y	names
+plans.totalBreakdown.addons	src/lib/plans/ladder-copy.ts:471	y	amount
+plans.totalBreakdown.tip	src/lib/plans/ladder-copy.ts:472	y	amount
+addons.bigChangeUsage	src/lib/plans/ladder-copy.ts:477	y	used total
+addons.planStripAddons	src/lib/plans/ladder-copy.ts:481	y	amount
+cancel.addonTotalLine.withTip	src/lib/plans/ladder-copy.ts:484	y	plan addons tip total
+cancel.addonTotalLine.noTip	src/lib/plans/ladder-copy.ts:484	y	plan addons total
+plans.names.starter	src/lib/plans/ladder.ts:79	y	
+plans.names.priority	src/lib/plans/ladder.ts:80	y	
+plans.names.fastLane	src/lib/plans/ladder.ts:81	y	
+plans.names.leads	src/lib/plans/ladder.ts:82	y	
+plans.names.getFound	src/lib/plans/ladder.ts:83	y	
+plans.names.growthPartner	src/lib/plans/ladder.ts:84	y	
+plans.names.basic	src/lib/plans/ladder.ts:360	y	
+plans.names.plus	src/lib/plans/ladder.ts:361	y	
+plans.names.pro	src/lib/plans/ladder.ts:362	y	
+plans.maintenance.maintenancePlanTitle	src/lib/plans/maintenance-copy.ts:3	y	
+plans.maintenance.maintenancePlanSummary	src/lib/plans/maintenance-copy.ts:6	y	
+plans.maintenance.maintenancePlanBody.jobsTakeMoreThan	src/lib/plans/maintenance-copy.ts:9	y	
+plans.maintenance.maintenancePlanBody.maintenanceStarts50Up	src/lib/plans/maintenance-copy.ts:10	y	
+plans.maintenance.maintenanceCtaLabel	src/lib/plans/maintenance-copy.ts:13	y	
+help.priority.priorityHelpQuestion	src/lib/plans/priority.ts:20	y	
+help.priority.priorityHelpAnswer	src/lib/plans/priority.ts:22	y	
+errors.plans.closeBlockedActivePlanMessage	src/lib/stripe/active-subscription.ts:23	y	
+errors.plans.closeBlockedPlanEndingMessage.planCanceledEndsEnd	src/lib/stripe/active-subscription.ts:52	y	
+errors.plans.closeBlockedPlanEndingMessage.planCanceledEndsClose	src/lib/stripe/active-subscription.ts:54	y	date
+errors.plans.alreadyHasPlanMessage	src/lib/stripe/active-subscription.ts:121	y	
+addons.tipDropNeeded	src/lib/stripe/change-plan.ts:1243	y	addonName tip
+common.dateFallback	src/lib/stripe/subscription-dates.ts:15	n	
+common.support.hours	src/lib/support-hours.ts:6	n	
+common.support.availabilityLabel	src/lib/support-hours.ts:9	n	
+common.support.availabilityLine	src/lib/support-hours.ts:10	n	
+common.support.cardLine	src/lib/support-hours.ts:13	n	supportHours
+dashboard.access.accessEndingMessage	src/lib/website-access.ts:116	y	date
+dashboard.access.accessOfflineMessage	src/lib/website-access.ts:118	y	
+dashboard.access.restartHostingLabel	src/lib/website-access.ts:119	y	
+dashboard.access.resumePlanLabel	src/lib/website-access.ts:120	y	
+cancel.accessWarning	src/lib/website-access.ts:125	y	date
+cancel.resumeUntilText	src/lib/website-access.ts:128	y	date
+cancel.resumeHeading	src/lib/website-access.ts:130	y	
+cancel.offlineHeading	src/lib/website-access.ts:132	y	
+cancel.offlineSavedText	src/lib/website-access.ts:135	y	
+addons.chargeAfterCredit	src/lib/plans/ladder-copy.ts:420	y	amount
+addons.creditCovers	src/lib/plans/ladder-copy.ts:422	y	
+addons.tipGoesDownQuestion	src/lib/plans/ladder-copy.ts:429	y	tip date name
+addons.tipGoesDownQuestionNoDate	src/lib/plans/ladder-copy.ts:429	y	tip name
+addons.finishing	src/lib/plans/ladder-copy.ts:450	y	name
+help.chat.goToPlans	src/lib/plans/ladder-copy.ts:460; src/components/help/HelpChat.tsx:252	y	
+addons.pendingEndLine	src/lib/plans/ladder-copy.ts:446-448	y	names count ends end date
+plans.totalBreakdown.plan	src/lib/plans/ladder-copy.ts:470	y	plan amount
+help.center.planGuideStepComingSoon	src/app/(dashboard)/dashboard/help/page.tsx:211	y	name price blurb
+email.common.greeting	src/lib/email/templates/*.tsx	n	

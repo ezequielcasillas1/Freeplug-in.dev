@@ -222,7 +222,7 @@ describe('Active Subscriptions list name (Sable 5:11 PM)', () => {
 })
 
 describe('add-on lines (Oct 4)', () => {
-  it('Big change used count, 2 included edits with the add-on, and add-ons that end', () => {
+  it('Oct 18: edits included (plan edits - used), the edit pack line, add-ons that end; no Big change line', () => {
     const ent = withAddons(entitlementsFor({ stepId: 'fast_lane' }), ['small_edit', 'big_change'])
     render(
       <SubscriptionDetails
@@ -230,16 +230,22 @@ describe('add-on lines (Oct 4)', () => {
           {
             ...plan(6500),
             entitlements: ent,
-            includedEdit: { used: 1, available: 2 },
-            bigChange: { used: 0, available: 1 },
+            editsIncluded: { unlimited: false, total: 10, used: 3, remaining: 7 },
+            editStepId: 'fast_lane',
             addonsEnding: { names: ['Big change'], date: 'November 3, 2026' },
           },
         ]}
       />
     )
-    expect(screen.getByTestId('included-edit')).toHaveTextContent(INCLUDED_EDIT_LINE(1, 2))
-    expect(screen.getByTestId('big-change')).toHaveTextContent('Big change: 0 of 1 used this period')
+    expect(screen.getByTestId('edits-included')).toHaveTextContent('Edits included: 7 of 10 left this billing period')
+    expect(screen.getByTestId('edits-need-more')).toHaveTextContent('Need more edits this month? Add the $5 edit pack for 10 more.')
+    expect(screen.queryByTestId('big-change')).toBeNull()
     expect(screen.getByTestId('home-addons-ending')).toHaveTextContent('Big change ends November 3, 2026.')
+  })
+  it('Oct 18: the $100 plan shows Unlimited and no pack line', () => {
+    render(<SubscriptionDetails subscriptions={[{ ...plan(10000), entitlements: entitlementsFor({ stepId: 'growth' }), editsIncluded: { unlimited: true }, editStepId: 'growth' }]} />)
+    expect(screen.getByTestId('edits-included')).toHaveTextContent('Unlimited edits')
+    expect(screen.queryByTestId('edits-need-more')).toBeNull()
   })
   it('no add-ons: no Big change line, no ending line', () => {
     render(<SubscriptionDetails subscriptions={[{ ...plan(3500), entitlements: entitlementsFor({ stepId: 'starter' }) }]} />)

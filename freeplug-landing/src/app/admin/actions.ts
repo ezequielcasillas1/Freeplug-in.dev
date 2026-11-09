@@ -10,7 +10,7 @@ import { parseBuyoutPriceInput } from '@/lib/buyout/buyout'
 import { getUserEntitlements } from '@/lib/plans/user-entitlements'
 import { getStripe } from '@/lib/stripe/server'
 import { subscriptionPeriodStart } from '@/lib/stripe/subscription-dates'
-import { recordBigChange, recordIncludedEdit } from '@/lib/plans/included-edits'
+import { recordIncludedEdit } from '@/lib/plans/included-edits'
 import { nextBusinessDayDue } from '@/lib/plans/due-by'
 import { redirect } from 'next/navigation'
 import { expireUnsellableCheckoutSessions, type ExpireUnsellableReport } from '@/lib/stripe/expire-unsellable-checkouts'
@@ -133,6 +133,9 @@ export async function adminDeleteUser(
 }
 
 /** QA only: set `ADMIN_ALLOW_ADJUST_CUMULATIVE_PAID=true` — does not write billing_ledger. */
+/** int4 cents ceiling in whole dollars (floor(2147483647 / 100)). */
+const CUMULATIVE_PAID_MAX_DOLLARS = 21_474_836
+
 export async function adminSetProfileCumulativeWebsiteValuePaid(
   profileId: string,
   dollarsRaw: string
@@ -144,10 +147,15 @@ export async function adminSetProfileCumulativeWebsiteValuePaid(
   if (!uuidSchema.safeParse(profileId).success) {
     return { ok: false, error: 'Invalid profile id' }
   }
-  const t = dollarsRaw.trim()
+  // Oct 19 (Cheke): QA override is whole dollars from $0 up, no cap (not a buyout price).
+  const t = String(dollarsRaw ?? '').trim().replace(/^\$\s*/, '').replace(/,(?=\d{3}(\D|$))/g, '')
   const n = Number(t)
-  if (t === '' || !Number.isFinite(n) || !Number.isInteger(n) || n < 0 || n > 500_000) {
-    return { ok: false, error: 'Use whole dollars from 0 to 500,000.' }
+  if (!/^\d+$/.test(t) || !Number.isSafeInteger(n * 100)) {
+    return { ok: false, error: 'Enter a whole-dollar amount of $0 or more.' }
+  }
+  // The column is int4 cents (max 2,147,483,647), so the most it holds is $21,474,836.
+  if (n > CUMULATIVE_PAID_MAX_DOLLARS) {
+    return { ok: false, error: 'Enter a whole-dollar amount up to $21,474,836.' }
   }
   const cumulative_website_value_paid_cents = n * 100
   let admin
@@ -217,7 +225,7 @@ export async function adminSetBuyoutPrice(
  * Hosting ladder (admin only): mark a request as a small edit.
  *   * Fast lane and up: sets website_requests.due_by to the end of the next business day.
  *   * useIncludedEdit: also records one of the plan's included edits for the current billing period in
- *     included_edit_uses (the step's 1 + the "+1 small edit" add-on; slots refuse a third).
+ *     included_edit_uses (the plan's monthly edits, edit-allowance.ts).
  * Entitlements are read from Stripe (lookup key / metadata, or the grandfathered add-on).
  */
 export async function adminMarkSmallEdit(
@@ -275,50 +283,6 @@ export async function adminMarkSmallEdit(
   } else if (!opts.useIncludedEdit) {
     return { ok: false, error: "This customer's plan doesn't include next-business-day edits." }
   }
-  revalidatePath('/admin', 'layout')
-  revalidatePath('/dashboard')
-  return { ok: true }
-}
-
-/**
- * Add-ons (Oct 4, admin only): mark a request as the customer's Big change for the current billing
- * period (big_change_uses; one per period, and never a request already counted as a small edit).
- * Needs the Big change add-on (entitlements: webhook snapshot, Stripe for a never-synced profile).
- * Like adminMarkSmallEdit, the billing period comes from the ACTIVE subscription only.
- */
-export async function adminMarkBigChange(requestId: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  await assertAdminAccess()
-  if (!uuidSchema.safeParse(requestId).success) return { ok: false, error: 'Invalid request id' }
-  let admin
-  try {
-    admin = createAdminClient()
-  } catch {
-    return { ok: false, error: 'Admin client unavailable' }
-  }
-  const { data: req, error: reqErr } = await admin.from('website_requests').select('id, user_id, status').eq('id', requestId).maybeSingle()
-  if (reqErr || !req) return { ok: false, error: reqErr?.message ?? 'Request not found' }
-  const { data: prof } = await admin.from('profiles').select('stripe_customer_id').eq('id', req.user_id).maybeSingle()
-  const customerId = (prof?.stripe_customer_id as string | null) ?? null
-  if (!customerId) return { ok: false, error: 'This customer has no hosting plan.' }
-  let ent, periodStart: Date | null = null
-  try {
-    const stripe = getStripe()
-    ent = (await getUserEntitlements(admin, req.user_id as string, customerId, stripe)).entitlements
-    const subs = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 10 })
-    periodStart = subs.data[0] ? subscriptionPeriodStart(subs.data[0]) : null
-  } catch (e) {
-    return { ok: false, error: `Stripe lookup failed: ${e instanceof Error ? e.message : String(e)}` }
-  }
-  const res = await recordBigChange(
-    {
-      async insertUse(row) {
-        const { error } = await admin.from('big_change_uses').insert(row)
-        return error ? { code: error.code, message: error.message } : null
-      },
-    },
-    { userId: req.user_id as string, requestId, bigChangesPerMonth: ent.bigChangesPerMonth, periodStart }
-  )
-  if (!res.ok) return { ok: false, error: res.message }
   revalidatePath('/admin', 'layout')
   revalidatePath('/dashboard')
   return { ok: true }

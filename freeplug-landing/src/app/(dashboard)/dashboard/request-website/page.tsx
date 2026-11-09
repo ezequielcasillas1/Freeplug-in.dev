@@ -2,18 +2,20 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import {
-  CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE,
   closeBlockedPlanEndingMessage,
   getActiveSubscriptionStatus,
   type ActiveSubscriptionStatus,
 } from '@/lib/stripe/active-subscription'
-import { CANCEL_OPTIONS_LINK } from '@/lib/plans/ladder-copy'
+import { ladderCopy } from '@/lib/plans/ladder-copy'
+import { currentLocale } from '@/i18n/current-locale'
+import { getTranslations } from 'next-intl/server'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
-export const metadata: Metadata = {
-  title: 'Request a website | Freeplug',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('dashboard.meta')
+  return { title: t('requestWebsiteTitle') }
 }
 
 type Props = {
@@ -21,6 +23,10 @@ type Props = {
 }
 
 export default async function RequestWebsitePage({ searchParams }: Props) {
+  const locale = await currentLocale()
+  const { CANCEL_OPTIONS_LINK } = ladderCopy(locale)
+  const t = await getTranslations('dashboard.request')
+  const tp = await getTranslations('errors.plans')
   const q = await searchParams
   const focusMaintenance = q.focus === 'maintenance'
 
@@ -77,42 +83,37 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
     <div>
       {openRequestStatus === 'submitted' ? (
         <>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Update your request</h1>
-          <p className="text-gray-600 mb-8 max-w-2xl">
-            Change anything below and save. We&apos;ll use the latest version when we review it.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('updateRequest')}</h1>
+          <p className="text-gray-600 mb-8 max-w-2xl">{t('changeAnythingBelowSaveWell')}</p>
         </>
       ) : inReview ? (
         <>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Your request is being reviewed</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('requestBeingReviewed')}</h1>
           <p className="text-gray-600 mb-8 max-w-2xl">
-            We&apos;re working from the details you sent, so this form is locked for now. If
-            something changed, email{' '}
-            <a href="mailto:support@freeplug-in.dev" className="text-[#ba3d3d] hover:underline">
-              support@freeplug-in.dev
-            </a>{' '}
-            and we&apos;ll update it for you.
+            {t.rich('wereWorkingFromDetailsSent', {
+              a: (chunks) => (
+                <a href="mailto:support@freeplug-in.dev" className="text-[#ba3d3d] hover:underline">
+                  {chunks}
+                </a>
+              ),
+            })}
           </p>
         </>
       ) : (
         <>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Request a website</h1>
-          <p className="text-gray-600 mb-8 max-w-2xl">
-            Share your local business details. We evaluate every request in person, by email, or
-            phone. After we review your Google Business presence and scope, we will follow up with
-            next steps.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('requestWebsite')}</h1>
+          <p className="text-gray-600 mb-8 max-w-2xl">{t('shareLocalBusinessDetailsEvaluate')}</p>
         </>
       )}
       {openRequestStatus ? (
         <div className="mb-8 max-w-lg rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-3">
-          <p className="text-sm font-medium text-amber-950 mb-2">You have an open request</p>
+          <p className="text-sm font-medium text-amber-950 mb-2">{t('haveOpenRequest')}</p>
           {plan.active ? (
             <>
               <p className="text-sm text-gray-700 mb-3">
                 {plan.setToEnd
-                  ? closeBlockedPlanEndingMessage(plan.endsAt)
-                  : CLOSE_BLOCKED_ACTIVE_PLAN_MESSAGE}
+                  ? closeBlockedPlanEndingMessage(plan.endsAt, locale)
+                  : tp('closeBlockedActivePlanMessage')}
               </p>
               {/* Lina, round 5b: the message says "choose Cancel options in your dashboard", so link there. */}
               <Link
@@ -135,7 +136,7 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
       />
       <p className="mt-8 text-sm text-gray-500">
         <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">
-          ← Back to dashboard
+          {t('backDashboard')}
         </Link>
       </p>
     </div>
