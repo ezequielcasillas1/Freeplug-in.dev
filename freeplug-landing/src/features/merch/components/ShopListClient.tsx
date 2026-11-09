@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -116,8 +117,14 @@ export function ShopListClient({ cards, initialTab }: { cards: ShopCard[]; initi
                   className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-[#ba3d3d]/40 transition-colors min-h-full"
                 >
                   <div className="aspect-square rounded-lg bg-zinc-100 mb-3 overflow-hidden relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/merch/shop/placeholder-product.svg" alt="" className="w-full h-full object-contain" />
+                    <Image
+                      src={item.gridImage}
+                      alt=""
+                      fill
+                      unoptimized
+                      className="object-contain p-2"
+                      sizes="(max-width: 768px) 50vw, 240px"
+                    />
                   </div>
                   <h2 className="font-semibold text-gray-900 line-clamp-2">{item.title}</h2>
                   <p className="text-sm text-gray-500 mt-1">{t('fromPrice', { price: formatUsdFromCents(item.fromRetailCents) })}</p>

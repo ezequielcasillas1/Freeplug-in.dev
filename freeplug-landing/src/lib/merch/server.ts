@@ -2,6 +2,10 @@ import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export function merchServiceRoleClient() {
+  return createAdminClient()
+}
+
 export const MERCH_SHOP_UPLOAD_BUCKET = 'merch-shop-uploads'
 
 export async function uploadShopCustomArt(bytes: Buffer, contentType: string): Promise<{ path: string } | { error: string }> {

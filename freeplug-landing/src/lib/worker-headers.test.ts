@@ -52,6 +52,7 @@ describe('next/image never spends the Images quota or touches private photos', (
       [
         'features/landing/components/OutreachSection.tsx',
         'features/merch/components/MerchContainedImage.tsx',
+        'features/merch/components/ShopListClient.tsx',
         'features/merch/components/ShopMockupPreview.tsx',
       ].sort()
     )

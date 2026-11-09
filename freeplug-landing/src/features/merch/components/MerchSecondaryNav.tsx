@@ -47,15 +47,10 @@ export function MerchSecondaryNav() {
   useEffect(() => {
     const el = listRef.current
     if (!el) return
-    updateScrollHint()
-    const t1 = window.setTimeout(updateScrollHint, 400)
-    const t2 = window.setTimeout(updateScrollHint, 1200)
     el.addEventListener('scroll', updateScrollHint, { passive: true })
-    const ro = new ResizeObserver(updateScrollHint)
+    const ro = new ResizeObserver(() => updateScrollHint())
     ro.observe(el)
     return () => {
-      window.clearTimeout(t1)
-      window.clearTimeout(t2)
       el.removeEventListener('scroll', updateScrollHint)
       ro.disconnect()
     }

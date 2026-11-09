@@ -10,7 +10,12 @@ import { ShopMockupPreview } from '@/features/merch/components/ShopMockupPreview
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import { shopProductImageSrc, shopShippingCents } from '@/lib/merch/shop/catalog'
 import type { ShopCatalogItem } from '@/lib/merch/shop/types'
-import { logoPathForBlank, classifyBlankColor } from '@/lib/merch/shop/contrast'
+import {
+  pickerMode,
+  resolveVariant,
+  sizesForColor,
+  uniqueColors,
+} from '@/lib/merch/shop/variant-options'
 import { effectiveDpi, isDpiWarning, parseDataUrlDimensions } from '@/lib/merch/shop/upload-validation'
 import { cn } from '@/lib/utils/cn'
 
@@ -28,46 +33,50 @@ export function ShopProductClient({
   const t = useTranslations('public.merch.shop')
   const locale = toAppLocale(useLocale())
 
-  const colors = item.colors
-  const sizes = item.sizes
+  const colorOptions = useMemo(() => uniqueColors(item.variants), [item.variants])
+  const mode = useMemo(() => pickerMode(item.variants), [item.variants])
 
-  const [color, setColor] = useState(colors[0] ?? '')
-  const [size, setSize] = useState(sizes[0] ?? '')
-  const [variantId, setVariantId] = useState(item.variants[0]?.id ?? 0)
+  const [color, setColor] = useState(colorOptions[0] ?? '')
+  const [size, setSize] = useState(() => sizesForColor(item.variants, colorOptions[0] ?? null)[0] ?? '')
+  const [titleVariantId, setTitleVariantId] = useState(item.variants[0]?.id ?? 0)
+  const [galleryIndex, setGalleryIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [designMode, setDesignMode] = useState<'freeplug' | 'custom'>('freeplug')
   const [rightsConfirmed, setRightsConfirmed] = useState(false)
   const [customPreview, setCustomPreview] = useState<string | null>(null)
   const [customPath, setCustomPath] = useState<string | null>(null)
   const [dpiWarning, setDpiWarning] = useState(false)
-  const [placement, setPlacement] = useState(item.printArea.position)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
 
-  const variant = useMemo(
-    () => item.variants.find((v) => v.id === variantId) ?? item.variants[0],
-    [item.variants, variantId]
-  )
+  const sizeOptions = useMemo(() => sizesForColor(item.variants, color || null), [item.variants, color])
 
-  const matchingVariants = useMemo(() => {
-    return item.variants.filter((v) => {
-      if (colors.length && color && v.color !== color) return false
-      if (sizes.length && size && v.size !== size) return false
-      return true
+  const variant = useMemo(() => {
+    if (mode === 'title') {
+      return resolveVariant(item.variants, { color: null, size: null, variantId: titleVariantId })
+    }
+    return resolveVariant(item.variants, {
+      color: color || null,
+      size: mode === 'color-only' ? null : size || null,
+      variantId: null,
     })
-  }, [item.variants, color, size, colors.length, sizes.length])
+  }, [item.variants, mode, color, size, titleVariantId])
+
+  const placement = variant?.printArea.position ?? item.printArea.position
+  const printArea = variant?.printArea ?? item.printArea
+  const [placementScale, setPlacementScale] = useState(placement.scale)
+  const customPlacement = { ...placement, scale: placementScale }
 
   const unitCents = (variant?.retailCents ?? item.fromRetailCents) + (designMode === 'custom' ? customFeeCents : 0)
   const shippingCents = shopShippingCents(item, quantity, variant?.retailCents ?? item.fromRetailCents)
 
-  const blankKind = classifyBlankColor(variant?.color)
-  const logoSrc = designMode === 'freeplug' ? logoPathForBlank(blankKind) : null
-  const productSrc = shopProductImageSrc(item)
+  const logoSrc = designMode === 'freeplug' ? (variant?.logoFile ?? null) : null
+  const productSrc = shopProductImageSrc(item, galleryIndex)
 
   async function onFile(file: File | null) {
     if (!file) return
     setUploading(true)
-  setCheckoutError(null)
+    setCheckoutError(null)
     try {
       const fd = new FormData()
       fd.set('file', file)
@@ -83,8 +92,8 @@ export function ShopProductClient({
         setCustomPreview(json.previewDataUrl)
         const dims = parseDataUrlDimensions(json.previewDataUrl)
         if (dims) {
-          const widthIn = item.printArea.width / 300
-          const heightIn = item.printArea.height / 300
+          const widthIn = printArea.width / 300
+          const heightIn = printArea.height / 300
           const dpi = effectiveDpi(dims.width, dims.height, widthIn, heightIn)
           setDpiWarning(isDpiWarning(dpi))
         }
@@ -109,7 +118,7 @@ export function ShopProductClient({
         quantity,
         design_mode: designMode,
         custom_upload_path: designMode === 'custom' ? customPath : undefined,
-        custom_placement: designMode === 'custom' ? placement : undefined,
+        custom_placement: designMode === 'custom' ? customPlacement : undefined,
         rights_confirmed: designMode === 'custom' ? rightsConfirmed : undefined,
       }),
     })
@@ -129,13 +138,34 @@ export function ShopProductClient({
     <MerchPageChrome>
       <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-6 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-10">
-          <ShopMockupPreview
-            productSrc={productSrc}
-            logoSrc={logoSrc}
-            customSrc={designMode === 'custom' ? customPreview : null}
-            placement={placement}
-            alt={t('mockupAlt', { title: item.title })}
-          />
+          <div>
+            <ShopMockupPreview
+              productSrc={productSrc}
+              logoSrc={logoSrc}
+              customSrc={designMode === 'custom' ? customPreview : null}
+              printArea={printArea}
+              placement={designMode === 'custom' ? customPlacement : placement}
+              alt={t('mockupAlt', { title: item.title })}
+            />
+            {item.gallery.length > 1 ? (
+              <div className="flex gap-2 mt-3">
+                {item.gallery.map((src, idx) => (
+                  <button
+                    key={src}
+                    type="button"
+                    className={cn(
+                      'rounded-lg border p-1',
+                      galleryIndex === idx ? 'border-[#ba3d3d]' : 'border-gray-200'
+                    )}
+                    onClick={() => setGalleryIndex(idx)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="h-14 w-14 object-contain rounded-md bg-zinc-50" />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           <div>
             <Link href={publicHref('/shop', locale)} className="text-sm text-[#ba3d3d] hover:underline">
@@ -164,19 +194,20 @@ export function ShopProductClient({
               </button>
             </div>
 
-            {colors.length ? (
+            {mode === 'color-size' || mode === 'color-only' ? (
               <label className="block text-sm text-gray-600 mb-3">
                 {t('colorLabel')}
                 <select
                   className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2"
                   value={color}
                   onChange={(e) => {
-                    setColor(e.target.value)
-                    const match = matchingVariants.find((v) => v.color === e.target.value)
-                    if (match) setVariantId(match.id)
+                    const nextColor = e.target.value
+                    setColor(nextColor)
+                    const nextSizes = sizesForColor(item.variants, nextColor)
+                    setSize(nextSizes[0] ?? '')
                   }}
                 >
-                  {colors.map((c) => (
+                  {colorOptions.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -185,41 +216,39 @@ export function ShopProductClient({
               </label>
             ) : null}
 
-            {sizes.length ? (
+            {mode === 'color-size' || mode === 'size-only' ? (
               <label className="block text-sm text-gray-600 mb-3">
                 {t('sizeLabel')}
                 <select
                   className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2"
                   value={size}
-                  onChange={(e) => {
-                    setSize(e.target.value)
-                    const match = item.variants.find((v) => v.size === e.target.value && (!color || v.color === color))
-                    if (match) setVariantId(match.id)
-                  }}
+                  onChange={(e) => setSize(e.target.value)}
                 >
-                  {sizes.map((s) => (
+                  {sizeOptions.map((s) => (
                     <option key={s} value={s}>
                       {s}
                     </option>
                   ))}
                 </select>
               </label>
-            ) : (
+            ) : null}
+
+            {mode === 'title' ? (
               <label className="block text-sm text-gray-600 mb-3">
                 {t('variantLabel')}
                 <select
                   className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2"
-                  value={variantId}
-                  onChange={(e) => setVariantId(Number(e.target.value))}
+                  value={titleVariantId}
+                  onChange={(e) => setTitleVariantId(Number(e.target.value))}
                 >
-                  {item.variants.slice(0, 40).map((v) => (
+                  {item.variants.map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.title ?? v.id}
+                      {v.title ?? `${v.color ?? ''} ${v.size ?? ''}`.trim()}
                     </option>
                   ))}
                 </select>
               </label>
-            )}
+            ) : null}
 
             <label className="block text-sm text-gray-600 mb-4">
               {t('quantityLabel')}
@@ -254,8 +283,8 @@ export function ShopProductClient({
                   min={0.2}
                   max={0.7}
                   step={0.01}
-                  value={placement.scale}
-                  onChange={(e) => setPlacement((p) => ({ ...p, scale: Number(e.target.value) }))}
+                  value={placementScale}
+                  onChange={(e) => setPlacementScale(Number(e.target.value))}
                   className="w-full"
                 />
               </div>

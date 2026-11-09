@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
@@ -69,23 +69,23 @@ export function CollectionProductClient({
     return splitPlan.dim2Values.filter((d2) => splitPlan.pairs.has(`${splitDim1}\0${d2}`))
   }, [splitPlan, splitDim1])
 
-  useEffect(() => {
-    if (!splitPlan) return
-    const key = resolveSplitOptionKey(splitPlan, splitDim1, splitDim2)
-    if (key) setOptionKey(key)
-  }, [splitPlan, splitDim1, splitDim2])
-
-  useEffect(() => {
-    if (!splitPlan || splitDim2Values.includes(splitDim2)) return
-    if (splitDim2Values[0]) setSplitDim2(splitDim2Values[0])
+  const effectiveSplitDim2 = useMemo(() => {
+    if (!splitPlan) return splitDim2
+    if (splitDim2Values.includes(splitDim2)) return splitDim2
+    return splitDim2Values[0] ?? ''
   }, [splitPlan, splitDim2, splitDim2Values])
 
-  const resolvedKey = product.isCrewneck ? `${size} / ${color}` : optionKey
+  const splitOptionKey = useMemo(() => {
+    if (!splitPlan) return null
+    return resolveSplitOptionKey(splitPlan, splitDim1, effectiveSplitDim2)
+  }, [splitPlan, splitDim1, effectiveSplitDim2])
+
+  const resolvedKey = product.isCrewneck ? `${size} / ${color}` : splitPlan ? splitOptionKey : optionKey
   const option = resolvedKey ? resolveCatalogOption(entry, resolvedKey) : null
 
   const mockupSrc =
-    product.slug === 'running-over-canvas' && optionKey
-      ? collectionMockupPublicPath(collection, CANVAS_MOCKUP[optionKey] ?? 'running-over-canvas-16x20.jpg')
+    product.slug === 'running-over-canvas' && resolvedKey
+      ? collectionMockupPublicPath(collection, CANVAS_MOCKUP[resolvedKey] ?? 'running-over-canvas-16x20.jpg')
       : product.mockupSrc
 
   const unitCents = product.isCrewneck ? crewneckUnitPriceCents(size) : (option?.price_cents ?? product.fromPriceCents)
@@ -186,7 +186,11 @@ export function CollectionProductClient({
                           <button
                             key={v}
                             type="button"
-                            onClick={() => setSplitDim1(v)}
+                            onClick={() => {
+                              setSplitDim1(v)
+                              const d2 = splitPlan.dim2Values.filter((d2) => splitPlan.pairs.has(`${v}\0${d2}`))
+                              if (d2[0]) setSplitDim2(d2[0])
+                            }}
                             className={cn(
                               'min-h-11 rounded-lg border px-3 text-sm font-medium',
                               splitDim1 === v

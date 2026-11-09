@@ -28,6 +28,7 @@ export function listShopCards(tab?: ShopTabSlug): ShopCard[] {
     featuredRank: i.featuredRank,
     placeholder: i.placeholder,
     colors: i.colors,
+    gridImage: i.gridImage,
   }))
 }
 
@@ -39,8 +40,8 @@ export function resolveShopVariant(item: ShopCatalogItem, variantId: number): Sh
   return item.variants.find((v) => v.id === variantId) ?? null
 }
 
-export function shopProductImageSrc(item: ShopCatalogItem): string {
-  return item.imageUrl || '/merch/shop/placeholder-product.svg'
+export function shopProductImageSrc(item: ShopCatalogItem, index = 0): string {
+  return item.gallery[index] ?? item.gridImage ?? '/merch/shop/placeholder-product.svg'
 }
 
 export function shopShippingCents(item: ShopCatalogItem, quantity: number, unitAmountCents: number): number {

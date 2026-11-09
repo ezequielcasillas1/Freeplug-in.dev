@@ -1,12 +1,14 @@
 'use client'
 
 import Image from 'next/image'
+import type { ShopPrintArea } from '@/lib/merch/shop/types'
 import { cn } from '@/lib/utils/cn'
 
 export function ShopMockupPreview({
   productSrc,
   logoSrc,
   customSrc,
+  printArea,
   placement = { x: 0.5, y: 0.42, scale: 0.38 },
   alt,
   className,
@@ -14,12 +16,14 @@ export function ShopMockupPreview({
   productSrc: string
   logoSrc?: string | null
   customSrc?: string | null
+  printArea?: ShopPrintArea
   placement?: { x: number; y: number; scale: number }
   alt: string
   className?: string
 }) {
   const overlaySrc = customSrc || logoSrc
-  const widthPct = `${placement.scale * 55}%`
+  const aspect = printArea && printArea.height > 0 ? printArea.width / printArea.height : 1
+  const widthPct = `${placement.scale * 55 * Math.min(1.25, Math.max(0.75, aspect))}%`
 
   return (
     <div className={cn('relative w-full aspect-square rounded-2xl bg-zinc-100 overflow-hidden', className)}>

@@ -33,6 +33,7 @@ const eslintConfig = defineConfig([
       "src/lib/owner-alerts/events.ts",
       // Buyer shop custom uploads (service-role storage only).
       "src/lib/merch/server.ts",
+      "src/lib/merch/storage.ts",
       "src/**/*.test.{ts,tsx}",
     ],
     rules: {

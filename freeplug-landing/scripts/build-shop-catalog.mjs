@@ -2,7 +2,7 @@
  * Builds shop-catalog.json and SHOP-DRAFT-PLAN.json from TOP-ITEMS.csv + catalog-us.jsonl.
  * Run: node scripts/build-shop-catalog.mjs [path-to-catalog-us.jsonl]
  */
-import { createReadStream, readFileSync, writeFileSync } from 'node:fs'
+import { createReadStream, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { createInterface } from 'node:readline'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -16,6 +16,11 @@ const OUT_PLAN = path.join(ROOT, '..', 'docs/merch-research/SHOP-DRAFT-PLAN.json
 const OUT_PRODUCTS = path.join(ROOT, 'src/lib/merch/shop/printify-products.json')
 
 const jsonlPath = process.argv[2] || path.join(ROOT, '..', 'uploads/catalog-us.jsonl')
+const ENRICH_SLIM_PATH = process.argv[3] || path.join(ROOT, 'src/lib/merch/shop/shop-enrich-slim.json')
+
+const enrichSlim = existsSync(ENRICH_SLIM_PATH)
+  ? JSON.parse(readFileSync(ENRICH_SLIM_PATH, 'utf8')).items
+  : {}
 
 const contrast = JSON.parse(readFileSync(CONTRAST_PATH, 'utf8'))
 const lightBlanks = new Set(contrast.light_blanks.map((s) => s.toLowerCase()))
@@ -88,6 +93,25 @@ function productTypeFromCategory(category, title) {
   if (t.includes('hat') || t.includes('cap') || t.includes('beanie')) return 'hat'
   if (t.includes('tote') || t.includes('bag')) return 'bag'
   return category.split(/[—–-]/).pop()?.trim().toLowerCase().replace(/\s+/g, '-') || 'other'
+}
+
+function overlayFromPrint(ph) {
+  if (!ph?.width || !ph?.height) {
+    return { x: 0.5, y: 0.42, scale: 0.38 }
+  }
+  const aspect = ph.width / ph.height
+  const scale = aspect > 1.2 ? 0.42 : aspect < 0.6 ? 0.32 : 0.38
+  return { x: 0.5, y: 0.42, scale }
+}
+
+function printAreaFromPlaceholder(ph, fallback) {
+  if (!ph) return fallback
+  return {
+    place: String(ph.position ?? 'front'),
+    width: ph.width,
+    height: ph.height,
+    position: overlayFromPrint(ph),
+  }
 }
 
 function defaultPrintArea(category) {
@@ -168,41 +192,58 @@ for (const row of csv) {
   const slug = slugify(row.blueprint_title, blueprintId)
   const tab = tabForCategory(row.category)
   const productType = productTypeFromCategory(row.category, row.blueprint_title)
-  const printArea = defaultPrintArea(row.category)
+  const fallbackPrintArea = defaultPrintArea(row.category)
+  const enrich = enrichSlim[key]
+  const gallery =
+    enrich?.images?.map((f) => `/merch/shop/blanks/${f}`) ??
+    (catalogRow?.blueprint_image_url ? [catalogRow.blueprint_image_url] : [])
+  const gridImage = gallery[0] ?? '/merch/shop/placeholder-product.svg'
   const shippingFirstCents = catalogRow?.us_shipping_first_cents ?? Math.round(Number(row.us_shipping_first_usd) * 100)
   const shippingAddCents = catalogRow?.us_shipping_additional_cents ?? Math.round(Number(row.us_shipping_additional_usd) * 100)
 
-  const inStockVariants = (catalogRow?.variants ?? []).filter((v) => v.available && v.status === 'in-stock')
+  const costById = new Map(
+    (catalogRow?.variants ?? [])
+      .filter((v) => v.available && v.status === 'in-stock')
+      .map((v) => [v.id, v.cost_cents])
+  )
+  const enrichIds = enrich ? Object.keys(enrich.variants).map((id) => Number(id)) : []
+  const enabledIds =
+    enrichIds.length > 0 ? enrichIds.filter((id) => costById.has(id)) : [...costById.keys()]
+
   const variants = []
   const colors = new Set()
   const sizes = new Set()
-  for (const v of inStockVariants) {
-    const parsed = parseVariantTitle(v.title)
-    if (parsed.color) colors.add(parsed.color)
-    if (parsed.size) sizes.add(parsed.size)
-    const blankKind = classifyBlankColor(parsed.color || '')
-    const logoFile =
-      blankKind === 'dark'
-        ? 'public/merch/shop/freeplug-logo-light-garment.png'
-        : 'public/merch/shop/freeplug-logo-dark-garment.png'
-    const retailCents = retailCentsFromCost(v.cost_cents)
+  for (const variantId of enabledIds) {
+    const meta = enrich?.variants?.[String(variantId)]
+    const costCents = costById.get(variantId) ?? 0
+    const color = meta?.color ?? null
+    const size = meta?.size ?? null
+    const title = meta?.title ?? null
+    if (color) colors.add(color)
+    if (size) sizes.add(size)
+    const blankKind = classifyBlankColor(color || '')
+    const retailCents = retailCentsFromCost(costCents)
+    const printArea = printAreaFromPlaceholder(meta?.print, fallbackPrintArea)
     variants.push({
-      id: v.id,
-      title: v.title,
-      color: parsed.color,
-      size: parsed.size,
-      costCents: v.cost_cents,
+      id: variantId,
+      title,
+      color,
+      size,
+      costCents,
       retailCents,
       blankKind,
-      logoFile,
+      logoFile:
+        blankKind === 'dark'
+          ? '/merch/shop/freeplug-logo-light-garment.png'
+          : '/merch/shop/freeplug-logo-dark-garment.png',
+      printArea,
     })
   }
 
   const fromRetailCents =
     variants.length > 0 ? Math.min(...variants.map((v) => v.retailCents)) : Math.round(Number(row.suggested_retail_usd) * 100)
 
-  const mockupBase = catalogRow?.blueprint_image_url || null
-  const hasMockup = Boolean(mockupBase)
+  const itemPrintArea = variants[0]?.printArea ?? fallbackPrintArea
 
   items.push({
     slug,
@@ -225,9 +266,10 @@ for (const row of csv) {
     colors: [...colors].sort(),
     sizes: [...sizes].sort(),
     variants,
-    imageUrl: mockupBase,
-    placeholder: !hasMockup,
-    printArea,
+    gallery,
+    gridImage,
+    placeholder: gallery.length === 0,
+    printArea: itemPrintArea,
   })
 
   planItems.push({
@@ -237,7 +279,7 @@ for (const row of csv) {
   provider_name: row.provider_name,
     variant_ids: variants.map((v) => v.id),
     retail_cents_by_variant: Object.fromEntries(variants.map((v) => [String(v.id), v.retailCents])),
-    print_area: printArea,
+    print_area: itemPrintArea,
     logo_by_color: Object.fromEntries(
       variants
         .filter((v) => v.color)
@@ -260,4 +302,4 @@ for (const item of items) {
 writeFileSync(OUT_PRODUCTS, JSON.stringify(productMap, null, 2))
 
 console.log(`Wrote ${items.length} items to shop-catalog.json`)
-console.log(`Placeholders: ${items.filter((i) => i.placeholder).length}, with blueprint image: ${items.filter((i) => !i.placeholder).length}`)
+console.log(`Placeholders: ${items.filter((i) => i.placeholder).length}, with photos: ${items.filter((i) => !i.placeholder).length}`)

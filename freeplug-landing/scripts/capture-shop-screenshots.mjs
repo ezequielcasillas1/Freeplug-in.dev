@@ -36,4 +36,15 @@ const mobile = await browser.newContext({ ...devices['iPhone 12'], viewport: { w
 const mobilePage = await mobile.newPage()
 await mobilePage.goto(`${BASE}/shop`, { waitUntil: 'networkidle' })
 await mobilePage.screenshot({ path: path.join(OUT, 'shop-landing-mobile-390.png'), fullPage: true })
+await page.goto(`${BASE}${productPath}`, { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: 'Freeplug logo' }).click()
+const colorSelect = page.locator('select').first()
+if (await colorSelect.count()) {
+  const dark = await colorSelect.locator('option').allTextContents()
+  const pick = dark.find((c) => /black|navy|charcoal/i.test(c)) ?? dark[0]
+  if (pick) await colorSelect.selectOption({ label: pick })
+}
+await page.waitForTimeout(600)
+await shot(page, 'shop-product-dark-logo-en.png')
+
 await browser.close()

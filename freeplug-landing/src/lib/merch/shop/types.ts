@@ -27,6 +27,7 @@ export type ShopVariant = {
   retailCents: number
   blankKind: 'light' | 'dark'
   logoFile: string
+  printArea: ShopPrintArea
 }
 
 export type ShopCatalogItem = {
@@ -50,7 +51,8 @@ export type ShopCatalogItem = {
   colors: string[]
   sizes: string[]
   variants: ShopVariant[]
-  imageUrl: string | null
+  gallery: string[]
+  gridImage: string
   placeholder: boolean
   printArea: ShopPrintArea
 }
@@ -66,6 +68,7 @@ export type ShopCard = Pick<
   | 'featuredRank'
   | 'placeholder'
   | 'colors'
+  | 'gridImage'
 >
 
 export const SHOP_TABS: ShopTabSlug[] = [
