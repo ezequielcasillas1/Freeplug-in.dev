@@ -964,7 +964,8 @@
           "desk-extras": "Desk & Tech",
           "wall-art": "Wall Art",
           "outdoor": "Outdoor"
-        }
+        },
+        "merchHome": "Merch home"
       },
       "indexCardTshirts": "Six logo and tagline tees — printed to order, shipped in the USA.",
       "indexCardOfficial": "Full bundle: 12 styles (6 + 3 + 3) for commercial and client work.",
@@ -1763,6 +1764,14 @@
         "expires": "Expires: {date}",
         "mock": "Demo mode: bundle file may be a placeholder on this environment.",
         "back": "Back to the product page"
+      },
+      "indexCardAll": "Every product in one place: the merch store and the full shop.",
+      "allMerch": {
+        "heading": "All merch",
+        "lead": "Every Freeplug product in one place: {count} items across the merch store and the shop.",
+        "categoriesAria": "Filter by category",
+        "showing": "Showing {shown} of {total}",
+        "showMore": "Show more"
       }
     },
     "notFound": {

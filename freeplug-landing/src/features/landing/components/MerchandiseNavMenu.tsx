@@ -45,6 +45,16 @@ export function MerchandiseNavMenu({ className, onNavigate }: { className?: stri
       </button>
       {open ? (
         <div className="absolute left-0 top-full z-50 min-w-[12rem] rounded-xl border border-gray-200 bg-white py-2 shadow-lg">
+          <Link
+            href={publicHref('/merch/all', locale)}
+            className="block px-4 py-2.5 text-sm font-semibold text-[#ba3d3d] hover:bg-[#ba3d3d]/5"
+            onClick={() => {
+              setOpen(false)
+              onNavigate?.()
+            }}
+          >
+            {tMerch('subnav.allMerch')}
+          </Link>
           {shopNav ? (
             <Link
               href={publicHref('/shop', locale)}
@@ -78,7 +88,7 @@ export function MerchandiseNavMenu({ className, onNavigate }: { className?: stri
               onNavigate?.()
             }}
           >
-            {tMerch('subnav.allMerch')}
+            {tMerch('subnav.merchHome')}
           </Link>
         </div>
       ) : null}

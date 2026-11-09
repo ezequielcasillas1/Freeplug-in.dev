@@ -17,6 +17,7 @@ export const SITEMAP_PATHS = [
   '/privacy',
   '/compare',
   '/merch',
+  '/merch/all',
   '/merch/t-shirts',
   ...COLLECTION_PATHS,
   '/merch/freeplug-font-bundle',

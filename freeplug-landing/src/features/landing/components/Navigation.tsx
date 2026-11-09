@@ -42,6 +42,7 @@ export function Navigation() {
   const shopNav = isMerchShopNavVisible()
 
   const merchLinks = [
+    { slug: 'all', label: tMerch('subnav.allMerch') },
     { slug: MERCH_TSHIRTS_SLUG, label: tMerch('subnav.tshirts') },
     ...MERCH_COLLECTIONS.map((slug) => ({ slug, label: tMerch(`subnav.collections.${slug}`) })),
   ]

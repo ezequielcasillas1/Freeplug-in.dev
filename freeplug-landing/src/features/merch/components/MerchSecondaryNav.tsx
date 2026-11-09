@@ -17,6 +17,7 @@ import {
 import { MERCH_COLLECTIONS, type MerchCollectionSlug } from '@/lib/merch/collections/catalog'
 
 const FONT_TABS = [
+  { slug: 'all', labelKey: 'subnav.allMerch' as const },
   { slug: MERCH_TSHIRTS_SLUG, labelKey: 'subnav.tshirts' as const },
   { slug: MERCH_FONT_BUNDLE_SLUG, labelKey: 'subnav.officialFonts' as const },
   { slug: MERCH_PERSONAL_USE_SLUG, labelKey: 'subnav.personalUse' as const },
