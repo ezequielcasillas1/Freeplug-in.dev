@@ -22,6 +22,7 @@ describe('giving verses tee', () => {
   it('picks light vs dark preview art from blank color', () => {
     const id = listGivingVerses()[0]!.id
     expect(givingVersePreviewForColor(id, 'White')).toContain('-on-light.webp')
+    expect(givingVersePreviewForColor(id, 'Asphalt')).toContain('-on-dark.webp')
     expect(givingVersePreviewForColor(id, 'Black')).toContain('-on-dark.webp')
     expect(givingVersePreviewForColor(id, 'Athletic Heather')).toContain('-on-light.webp')
     expect(givingVersePreviewForColor(id, 'Navy')).toContain('-on-dark.webp')

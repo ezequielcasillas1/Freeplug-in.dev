@@ -154,6 +154,7 @@ export function GivingVersesProductClient({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 min-w-0">
               <motion.div variants={fadeInUp} className="min-w-0 order-1">
                 <MerchContainedImage
+                  key={`${verseId}:${selectedColorName || 'default'}`}
                   src={mockupSrc}
                   alt={t('mockupAlt', { title })}
                   width={1000}

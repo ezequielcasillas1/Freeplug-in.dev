@@ -3,6 +3,7 @@ import { classifyBlankColor, logoPathForBlank } from './contrast'
 
 describe('shop logo contrast', () => {
   it('uses dark-garment file (light ink) on dark blanks', () => {
+    expect(classifyBlankColor('Asphalt')).toBe('dark')
     expect(classifyBlankColor('Black')).toBe('dark')
     expect(logoPathForBlank('dark')).toBe('/merch/shop/freeplug-logo-dark-garment.png')
   })

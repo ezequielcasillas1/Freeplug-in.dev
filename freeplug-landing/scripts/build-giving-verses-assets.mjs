@@ -2,8 +2,8 @@
 /**
  * Rebuild Giving Verses web preview images from the bot handoff folder.
  *
- * Composites *-light-garment / *-dark-garment PNGs onto long-sleeve blank photos
- * (not Milo contact-sheet mockups). Does not commit 4500×5400 masters.
+ * Composites *-light-garment / *-dark-garment PNGs onto Printify blank long-sleeve
+ * photos (blueprint 41 — no prior print). Does not commit 4500×5400 masters.
  *
  * Run: npm run merch:rebuild-giving-verses
  */
@@ -17,20 +17,21 @@ const ROOT = path.resolve(__dirname, '..')
 const HANDOFF = process.env.GIVING_VERSES_HANDOFF ?? '/cursor/stores/bot/freeplug-handoff/giving-verses'
 const OUT_IMG = path.join(ROOT, 'public/merch/apparel/giving-verses')
 const OUT_JSON = path.join(ROOT, 'src/lib/merch/collections/giving-verses-catalog.json')
-const LIGHT_BLANK_SRC = path.join(ROOT, 'public/merch/apparel/good-measure-longsleeve.jpg')
+/** Printify catalog blank — unisex jersey long sleeve tee (blueprint 41), front. */
+const LIGHT_BLANK_SRC = path.join(ROOT, 'public/merch/shop/blanks/41-0.webp')
 
 const MAX_EDGE = 1200
-/** Chest print placement on the long-sleeve product photo (same blank as good-measure-longsleeve). */
 const ART_WIDTH_FRAC = 0.42
 const ART_TOP_FRAC = 0.22
+
+async function darkBlankFromLight(lightBuf) {
+  return sharp(lightBuf).modulate({ brightness: 0.42, saturation: 0.12 }).tint({ r: 58, g: 58, b: 60 }).toBuffer()
+}
 
 async function loadBlankBuffers() {
   const light = await sharp(LIGHT_BLANK_SRC).toBuffer()
   const lightMeta = await sharp(light).metadata()
-  const dark = await sharp(light)
-    .modulate({ brightness: 0.55, saturation: 0.35 })
-    .linear(0.9, -40)
-    .toBuffer()
+  const dark = await darkBlankFromLight(light)
   return { light, dark, lightMeta }
 }
 
@@ -54,10 +55,7 @@ async function main() {
   await fs.mkdir(OUT_IMG, { recursive: true })
 
   const { light, dark, lightMeta } = await loadBlankBuffers()
-  await fs.writeFile(
-    path.join(OUT_IMG, 'blank-light.webp'),
-    await sharp(light).webp({ quality: 82 }).toBuffer()
-  )
+  await fs.writeFile(path.join(OUT_IMG, 'blank-light.webp'), await sharp(light).webp({ quality: 82 }).toBuffer())
   await fs.writeFile(path.join(OUT_IMG, 'blank-dark.webp'), await sharp(dark).webp({ quality: 82 }).toBuffer())
 
   const verses = []
@@ -81,7 +79,7 @@ async function main() {
   }
 
   await fs.copyFile(
-    path.join(OUT_IMG, `${manifest.entries[0].slug}-on-light.webp`),
+    path.join(OUT_IMG, `${manifest.entries[0].slug}-on-dark.webp`),
     path.join(ROOT, 'public/merch/apparel/giving-verses-tee.webp')
   )
 
