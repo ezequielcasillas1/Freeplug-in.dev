@@ -151,7 +151,7 @@ export function ShopProductClient({
       setCheckoutError(json?.error ?? t('checkoutError'))
       return
     }
-    window.location.href = json.url
+    window.location.assign(json.url)
   }
 
   const canBuyFreeplug = designMode === 'freeplug' && hasPrintifyProduct
