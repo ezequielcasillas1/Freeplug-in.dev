@@ -1846,7 +1846,8 @@
       "navigation": {
         "label": {
           "home": "Inicio",
-          "merchandise": "Mercancía"
+          "merchandise": "Mercancía",
+          "shop": "Tienda"
         },
         "logIn": "Iniciar sesión",
         "dashboard": "Panel",

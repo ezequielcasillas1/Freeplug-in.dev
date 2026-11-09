@@ -1846,7 +1846,8 @@
       "navigation": {
         "label": {
           "home": "Home",
-          "merchandise": "Merchandise"
+          "merchandise": "Merchandise",
+          "shop": "Shop"
         },
         "logIn": "Log in",
         "dashboard": "Dashboard",

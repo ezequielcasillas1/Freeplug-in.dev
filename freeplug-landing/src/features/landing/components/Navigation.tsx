@@ -19,6 +19,7 @@ import { publicHref } from '@/i18n/routing'
 import { MerchandiseNavMenu } from '@/features/landing/components/MerchandiseNavMenu'
 import { MERCH_COLLECTIONS } from '@/lib/merch/collections/catalog'
 import { MERCH_TSHIRTS_SLUG } from '@/lib/merch/product'
+import { isMerchShopNavVisible } from '@/lib/merch/flags'
 
 // Labels are message keys (public.landing.*); hrefs get /es on Spanish pages (publicHref).
 const navLinks = [
@@ -38,6 +39,7 @@ export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [merchOpen, setMerchOpen] = useState(false)
   const [hasScrolled, setHasScrolled] = useState(false)
+  const shopNav = isMerchShopNavVisible()
 
   const merchLinks = [
     { slug: MERCH_TSHIRTS_SLUG, label: tMerch('subnav.tshirts') },
@@ -98,6 +100,15 @@ export function Navigation() {
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#ba3d3d] group-hover:w-1/2 transition-all duration-300 rounded-full" />
             </a>
             <MerchandiseNavMenu />
+            {shopNav ? (
+              <Link
+                href={publicHref('/shop', locale)}
+                className="relative px-4 py-2 text-gray-600 hover:text-[#ba3d3d] transition-colors font-medium group"
+              >
+                {t('navigation.label.shop')}
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#ba3d3d] group-hover:w-1/2 transition-all duration-300 rounded-full" />
+              </Link>
+            ) : null}
             {navLinks
               .filter((link) => link.labelKey !== 'navigation.label.home')
               .map((link) => (
@@ -206,6 +217,15 @@ export function Navigation() {
                   </Link>
                 ))
               : null}
+            {shopNav ? (
+              <Link
+                href={publicHref('/shop', locale)}
+                onClick={() => setIsOpen(false)}
+                className="block px-4 py-3 min-h-11 text-gray-600 hover:text-[#ba3d3d] hover:bg-[#ba3d3d]/5 transition-colors font-medium rounded-xl"
+              >
+                {t('navigation.label.shop')}
+              </Link>
+            ) : null}
             {navLinks
               .filter((link) => link.labelKey !== 'navigation.label.home')
               .map((link, index) => (
