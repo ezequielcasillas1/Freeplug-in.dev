@@ -172,7 +172,10 @@ export function AddonsBlock(props: Props) {
   // scroll margin). If the height never changes, a short fallback timer still scrolls once.
   const stickyBarHeight = props.stickyBarHeight
   const stickyBarHeightRef = useRef(stickyBarHeight)
-  stickyBarHeightRef.current = stickyBarHeight
+  // Sync in a layout effect (declared before the confirm layout effect below, so it runs first).
+  useLayoutEffect(() => {
+    stickyBarHeightRef.current = stickyBarHeight
+  }, [stickyBarHeight])
   const scrollWait = useRef<{ baseline: number; timer: ReturnType<typeof setTimeout> } | null>(null)
   const scrollConfirmOnce = useCallback(() => {
     if (scrollWait.current) clearTimeout(scrollWait.current.timer)

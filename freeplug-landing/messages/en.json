@@ -977,7 +977,7 @@
         },
         "eyebrow": "Shop",
         "heading": "Shop all merch",
-        "lead": "195 popular Printify blanks with the Freeplug logo on each item, or upload your own artwork. Orders are reviewed before production.",
+        "lead": "195 popular Printify blanks with the Freeplug logo on each item, or upload your own artwork. Custom uploads are checked automatically before checkout.",
         "tabsAria": "Product categories",
         "tabs": {
           "all": "All",
@@ -1028,14 +1028,17 @@
         "shippingLine": "Shipping for this order: {shipping}",
         "shippingUsOnly": "We currently ship these items within the United States only.",
         "uploadTitle": "Upload your design",
-        "uploadHint": "PNG, JPG, or SVG up to 12 MB.",
+        "uploadHint": "PNG, JPG, or SVG up to 20 MB. Minimum 150 DPI at the print area for this item.",
         "uploadChoose": "Choose image",
-        "uploadDpiWarning": "This file may print below 150 DPI at the selected size. For sharper results, use a higher-resolution image.",
-        "rightsLabel": "I confirm I own the rights to this artwork or have permission to print it.",
-        "rightsRequired": "Confirm rights to continue with custom artwork.",
+        "uploadDpiBlocked": "This file is below 150 DPI for this item’s print area. Use a higher-resolution image.",
+        "uploadModerationBlocked": "This image didn’t pass our content rules and can’t be used.",
+        "uploadErrorGeneric": "Upload failed. Try another file.",
+        "rightsLabel": "I own the rights to this design and agree to the content rules below.",
+        "rightsRequired": "Confirm rights and content rules to continue with custom artwork.",
+        "contentPolicyTitle": "Custom artwork rules",
+        "contentPolicyBody": "No nudity, sexual content, violence, hate symbols, or unauthorized logos. Borderline uploads may be held for review. See our content policy before you pay.",
+        "customSoldOutToday": "Custom uploads are sold out for today (20 per day). Try again tomorrow.",
         "placementTitle": "Placement preview",
-        "customFeeNote": "Custom design fee: {fee} (set via MERCH_SHOP_CUSTOM_DESIGN_FEE_CENTS).",
-        "customFeeNone": "No custom design fee on this store.",
         "successHeading": "Order received",
         "successLead": "Thank you. Custom orders are reviewed by our team before production. We will email you when your order is approved.",
         "successBack": "Back to this product"
@@ -1843,7 +1846,8 @@
       "navigation": {
         "label": {
           "home": "Home",
-          "merchandise": "Merchandise"
+          "merchandise": "Merchandise",
+          "shop": "Shop"
         },
         "logIn": "Log in",
         "dashboard": "Dashboard",

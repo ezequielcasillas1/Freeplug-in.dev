@@ -234,8 +234,8 @@ for (const row of csv) {
       blankKind,
       logoFile:
         blankKind === 'dark'
-          ? '/merch/shop/freeplug-logo-light-garment.png'
-          : '/merch/shop/freeplug-logo-dark-garment.png',
+          ? '/merch/shop/freeplug-logo-dark-garment.png'
+          : '/merch/shop/freeplug-logo-light-garment.png',
       printArea,
     })
   }

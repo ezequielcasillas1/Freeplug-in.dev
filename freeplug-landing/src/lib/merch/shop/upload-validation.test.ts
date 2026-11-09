@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   effectiveDpi,
   isDpiWarning,
+  meetsMinDpi,
   parseDataUrlDimensions,
   validateMerchShopUploadMime,
   validateMerchShopUploadSize,
@@ -17,7 +18,13 @@ describe('shop upload validation', () => {
 
   it('enforces size bounds', () => {
     expect(validateMerchShopUploadSize(100)).toBe(true)
-    expect(validateMerchShopUploadSize(20_000_000)).toBe(false)
+    expect(validateMerchShopUploadSize(20 * 1024 * 1024)).toBe(true)
+    expect(validateMerchShopUploadSize(20 * 1024 * 1024 + 1)).toBe(false)
+  })
+
+  it('blocks dpi below minimum at print size', () => {
+    expect(meetsMinDpi(100, 100, 10, 10)).toBe(false)
+    expect(meetsMinDpi(2000, 2000, 10, 10)).toBe(true)
   })
 
   it('warns under 150 dpi', () => {

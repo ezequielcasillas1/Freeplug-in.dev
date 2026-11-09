@@ -8,7 +8,9 @@ import { isMerchCheckoutEnabled, isMerchShopEnabled } from '@/lib/merch/flags'
 import { stripeConfigured } from '@/lib/merch/product'
 import { validateShopCheckoutLine } from '@/lib/merch/shop/catalog'
 import { buildMerchShopSessionParams } from '@/lib/merch/shop/checkout'
-import { merchShopCustomDesignFeeCents } from '@/lib/merch/shop/config'
+import { chicagoDayBoundsUtc } from '@/lib/merch/shop/daily-cap'
+import { countCustomOrdersPaidChicagoDay } from '@/lib/merch/shop/orders'
+import { createClient } from '@supabase/supabase-js'
 import { rateCheck } from '@/lib/rate-limit'
 import { clientIpFrom } from '@/lib/rate-limit/client-ip'
 
@@ -24,8 +26,17 @@ type Body = {
   custom_upload_path?: unknown
   custom_placement?: unknown
   rights_confirmed?: unknown
+  upload_token?: unknown
+  rights_accepted_locale?: unknown
   unitAmountCents?: unknown
   price?: unknown
+}
+
+function supabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createClient(url, key, { auth: { persistSession: false } })
 }
 
 export async function POST(request: Request) {
@@ -51,7 +62,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Price must not be sent from the client.' }, { status: 400 })
   }
 
-  const validated = validateShopCheckoutLine(body, merchShopCustomDesignFeeCents())
+  let customPaidToday: number | undefined
+  if (body.design_mode === 'custom') {
+    const admin = supabaseAdmin()
+    if (admin) {
+      const { start, end } = chicagoDayBoundsUtc()
+      customPaidToday = await countCustomOrdersPaidChicagoDay(admin, start.toISOString(), end.toISOString())
+    }
+  }
+
+  const validated = validateShopCheckoutLine(body, customPaidToday)
   if (!validated.ok) {
     return NextResponse.json({ error: validated.error }, { status: 400 })
   }

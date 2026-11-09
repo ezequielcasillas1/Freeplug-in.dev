@@ -1,7 +1,13 @@
 import shopCatalog from './shop-catalog.json'
-import printifyProducts from './printify-products.json'
+import {
+  printifyProductIdForVariant,
+  shopHasPrintifyFreeplug,
+} from './printify-catalog'
 import type { ShopCard, ShopCatalogItem, ShopTabSlug, ShopVariant } from './types'
 import { MERCH_SHOP_FREE_SHIPPING_THRESHOLD_CENTS } from './types'
+import { verifyShopUploadToken } from './upload-token'
+import { customOrdersCapReached } from './daily-cap'
+import { isMerchCustomAutosendEnabled } from './flags-custom'
 
 type RawCatalog = { items: ShopCatalogItem[] }
 
@@ -51,11 +57,7 @@ export function shopShippingCents(item: ShopCatalogItem, quantity: number, unitA
   return item.shippingFirstCents + item.shippingAdditionalCents * (quantity - 1)
 }
 
-export function printifyProductIdForSlug(slug: string): string | null {
-  const row = (printifyProducts as { bySlug: Record<string, { printifyProductId: string | null }> }).bySlug[slug]
-  const id = row?.printifyProductId
-  return id?.trim() ? id.trim() : null
-}
+export { printifyProductIdForVariant, shopHasPrintifyFreeplug } from './printify-catalog'
 
 export type ValidatedShopLine =
   | { ok: true; line: ShopCheckoutLine }
@@ -77,7 +79,9 @@ export type ShopCheckoutLine = {
   optionLabel: string
   shippingFirstCents: number
   shippingAdditionalCents: number
-  customFeeCents: number
+  uploadToken?: string
+  moderationResult?: 'pass' | 'held'
+  rightsAcceptedLocale?: string
 }
 
 type ValidateBody = {
@@ -88,12 +92,11 @@ type ValidateBody = {
   custom_upload_path?: unknown
   custom_placement?: unknown
   rights_confirmed?: unknown
+  upload_token?: unknown
+  rights_accepted_locale?: unknown
 }
 
-export function validateShopCheckoutLine(
-  body: ValidateBody,
-  customFeeCents: number
-): ValidatedShopLine {
+export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: number): ValidatedShopLine {
   const slug = typeof body.slug === 'string' ? body.slug.trim() : ''
   const item = getShopItem(slug)
   if (!item) return { ok: false, error: 'Unknown product.' }
@@ -114,19 +117,33 @@ export function validateShopCheckoutLine(
     if (body.rights_confirmed !== true) {
       return { ok: false, error: 'Rights confirmation required.' }
     }
+    if (typeof _customPaidToday === 'number' && customOrdersCapReached(_customPaidToday)) {
+      return { ok: false, error: 'Custom orders sold out for today.' }
+    }
     const uploadPath = typeof body.custom_upload_path === 'string' ? body.custom_upload_path.trim() : ''
     if (!uploadPath.startsWith('merch-shop-uploads/')) {
       return { ok: false, error: 'Custom artwork upload missing.' }
     }
+    const token = typeof body.upload_token === 'string' ? body.upload_token.trim() : ''
+    const verified = verifyShopUploadToken(token)
+    if (!verified || verified.path !== uploadPath || verified.slug !== slug || verified.variantId !== variantId) {
+      return { ok: false, error: 'Upload validation expired. Please upload again.' }
+    }
+    if (verified.moderation === 'fail') {
+      return { ok: false, error: 'Upload failed moderation.' }
+    }
+    if (isMerchCustomAutosendEnabled() && verified.moderation !== 'pass' && verified.moderation !== 'held') {
+      return { ok: false, error: 'Upload not cleared for checkout.' }
+    }
   }
 
-  const printifyProductId = designMode === 'freeplug' ? printifyProductIdForSlug(slug) : null
+  const printifyProductId =
+    designMode === 'freeplug' ? printifyProductIdForVariant(slug, variantId) : null
   if (designMode === 'freeplug' && !printifyProductId) {
     return { ok: false, error: 'This item is not available for purchase yet.' }
   }
 
-  const customFee = designMode === 'custom' ? customFeeCents : 0
-  const unitAmountCents = variant.retailCents + customFee
+  const unitAmountCents = variant.retailCents
   const optionLabel = variant.title ?? `${variant.color ?? ''} ${variant.size ?? ''}`.trim()
 
   let customPlacement: { x: number; y: number; scale: number } | undefined
@@ -159,7 +176,13 @@ export function validateShopCheckoutLine(
       optionLabel,
       shippingFirstCents: item.shippingFirstCents,
       shippingAdditionalCents: item.shippingAdditionalCents,
-      customFeeCents: customFee,
+      uploadToken: designMode === 'custom' && typeof body.upload_token === 'string' ? body.upload_token.trim() : undefined,
+      moderationResult:
+        designMode === 'custom'
+          ? (verifyShopUploadToken(String(body.upload_token ?? ''))?.moderation as 'pass' | 'held' | undefined)
+          : undefined,
+      rightsAcceptedLocale:
+        typeof body.rights_accepted_locale === 'string' ? body.rights_accepted_locale.trim().slice(0, 8) : undefined,
     },
   }
 }
