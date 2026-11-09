@@ -12,6 +12,11 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ogLocale, publicAlternates } from '@/i18n/seo'
 import { toAppLocale } from '@/i18n/config'
+import { OfferingsSection } from '@/features/landing/components/OfferingsSection'
+import { TemplatesSection } from '@/features/landing/components/TemplatesSection'
+import { BuyoutTiersSection } from '@/features/landing/components/BuyoutTiersSection'
+import { InPersonSection } from '@/features/landing/components/InPersonSection'
+import { CompareSection } from '@/features/compare/CompareSection'
 import { HostingPlansSectionUi } from '@/features/landing/components/HostingPlansSectionUi'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -22,6 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: t('homeDescription'),
     ...publicAlternates('/', locale),
     openGraph: { title: t('ogTitle'), description: t('ogDescription'), type: 'website', ...ogLocale(locale) },
+    twitter: { card: 'summary', title: t('ogTitle'), description: t('ogDescription') },
   }
 }
 
@@ -33,12 +39,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <main>
         {/* Lina order: Hero → What Freeplug does → TX → Outside US → How it works → Closing CTA */}
         <HeroSection />
+        {/* What we build (Oct 22): right after the hero */}
+        <OfferingsSection />
+        {/* TEST-ONLY Envato template tree (Oct 23), not deployed */}
+        <TemplatesSection />
         <AboutSection />
         <OutreachSection />
         <CTASection />
+        <InPersonSection />
         <TechStackSection />
         {/* Public plans block (no Supabase) so #hosting-plans nav/footer links resolve */}
         <HostingPlansSectionUi signedIn={false} hostingCheckoutAllowed={false} />
+        <BuyoutTiersSection />
+        {/* Compare (Oct 31): after pricing; the home page has no FAQ block, so it sits before Reviews */}
+        <CompareSection />
         <ReviewsSection />
       </main>
       <Footer />

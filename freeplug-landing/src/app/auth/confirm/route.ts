@@ -1,3 +1,5 @@
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { isAdminEmail } from '@/lib/auth/admin-login'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
@@ -44,6 +46,11 @@ export async function GET(request: Request) {
   if (tokenHash && type) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash })
+    if (!error && AUTH_MAINTENANCE && !isAdminEmail(data.user?.email)) {
+      // Auth maintenance (Oct 24): email links don't open a session for non-admins.
+      await supabase.auth.signOut()
+      return NextResponse.redirect(`${origin}/login`)
+    }
     if (!error) {
       const secret = resetCookieSecret()
       if (type === 'recovery' && data.user?.id && secret) {

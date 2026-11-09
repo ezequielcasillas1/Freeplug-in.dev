@@ -20,11 +20,11 @@ function strings(mod: Record<string, unknown>): string[] {
   return out
 }
 
-describe('ladder copy: next-business-day is a target (Aria, Oct 3 12:25)', () => {
-  it('uses the approved placeholder wording', () => {
-    expect(copy.NEXT_BUSINESS_DAY_TARGET).toBe('by end of next business day (Mon–Fri, excluding holidays)')
-    expect(copy.PERK_LINES.nextBusinessDayEdits).toContain(copy.NEXT_BUSINESS_DAY_TARGET)
-    expect(copy.NEXT_BUSINESS_DAY_LINE).toContain(copy.NEXT_BUSINESS_DAY_TARGET)
+describe('ladder copy: edit timing (Nov 2026)', () => {
+  it('uses the 5 business-day wording', () => {
+    expect(copy.NEXT_BUSINESS_DAY_TARGET).toBe('within 5 business days (higher plans are usually faster)')
+    expect(copy.PERK_LINES.nextBusinessDayEdits).toContain('within 5 business days')
+    expect(copy.NEXT_BUSINESS_DAY_LINE).toContain('within 5 business days')
   })
 
   it('no refund, credit or guarantee wording anywhere in ladder copy or the help chat', () => {

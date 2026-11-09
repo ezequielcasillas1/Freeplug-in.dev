@@ -78,6 +78,17 @@ describe('adminSetBuyoutPrice', () => {
     expect(Object.keys(db.updates[0])).not.toContain('notes')
   })
 
+  it('Oct 30: saves a Custom enterprise (21-35 pages) quote above $2,000, e.g. $3,500', async () => {
+    expect(await adminSetBuyoutPrice(BUYOUT_ID, '$3,500')).toEqual({ ok: true })
+    expect(db.rows[0].buyout_price_cents).toBe(350_000)
+    expect(db.updates[0]).toMatchObject({ buyout_price_cents: 350_000 })
+  })
+
+  it('Oct 30 7:33 PM CT: accepts the $20,000 ceiling', async () => {
+    expect(await adminSetBuyoutPrice(BUYOUT_ID, '20,000')).toEqual({ ok: true })
+    expect(db.rows[0].buyout_price_cents).toBe(2_000_000)
+  })
+
   it('refuses a non-buyout row', async () => {
     expect(await adminSetBuyoutPrice(NORMAL_ID, '500')).toEqual({ ok: false, error: 'Not a buyout request' })
     expect(db.updates).toHaveLength(0)
@@ -91,9 +102,9 @@ describe('adminSetBuyoutPrice', () => {
   it('validates the input on the server', async () => {
     expect(await adminSetBuyoutPrice(BUYOUT_ID, '12.50')).toEqual({
       ok: false,
-      error: 'Enter a whole-dollar amount from $1 to $2,000.',
+      error: 'Enter a whole-dollar amount from $1 to $20,000.',
     })
-    expect(await adminSetBuyoutPrice(BUYOUT_ID, '2500')).toEqual({ ok: false, error: 'Enter a whole-dollar amount from $1 to $2,000.' })
+    expect(await adminSetBuyoutPrice(BUYOUT_ID, '20001')).toEqual({ ok: false, error: 'Enter a whole-dollar amount from $1 to $20,000.' })
     expect(await adminSetBuyoutPrice('not-a-uuid', '500')).toEqual({ ok: false, error: 'Invalid request id' })
     expect(db.updates).toHaveLength(0)
   })

@@ -3,6 +3,9 @@ import type { Metadata } from 'next'
 import { signIn, signInWithGoogle } from '../actions'
 import { Button } from '@/components/ui/button'
 import { isGoogleSignInEnabled } from '@/lib/auth/google-enabled'
+import { AUTH_MAINTENANCE, SIGNUPS_PAUSED, SIGNUP_PAUSED_NOTICE, signupPausedLine } from '@/lib/auth/signups-paused'
+import { AuthMaintenanceCard } from '../AuthMaintenanceCard'
+import { currentLocale } from '@/i18n/current-locale'
 
 export const metadata: Metadata = {
   title: 'Log In | Freeplug',
@@ -10,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 type Props = {
-  searchParams: Promise<{ error?: string; next?: string; message?: string }>
+  searchParams: Promise<{ error?: string; next?: string; message?: string; notice?: string; lang?: string }>
 }
 
 function GoogleIcon() {
@@ -38,6 +41,9 @@ function GoogleIcon() {
 
 export default async function LoginPage({ searchParams }: Props) {
   const q = await searchParams
+  const es = q.lang === 'es' || (q.lang !== 'en' && (await currentLocale()) === 'es')
+  // Auth maintenance (Oct 24): no form. Set AUTH_MAINTENANCE = false to bring the form below back.
+  if (AUTH_MAINTENANCE) return <AuthMaintenanceCard locale={es ? 'es' : 'en'} />
   const google = await isGoogleSignInEnabled()
   const next = q.next ?? '/dashboard'
 
@@ -48,6 +54,11 @@ export default async function LoginPage({ searchParams }: Props) {
         Freeplug account — hosting and dashboard access.
       </p>
 
+      {q.notice === SIGNUP_PAUSED_NOTICE ? (
+        <p className="mb-4 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-2 text-sm text-gray-700" role="status" data-testid="signup-paused-notice">
+          {signupPausedLine(es ? 'es' : 'en')}
+        </p>
+      ) : null}
       {q.error ? (
         <p className="mb-4 text-sm text-red-600" role="alert">
           {q.error}
@@ -123,15 +134,15 @@ export default async function LoginPage({ searchParams }: Props) {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
-        No account?{' '}
-        <Link
-          href={q.next === '/claim' ? '/signup?next=/claim' : '/signup'}
-          className="font-medium text-[#ba3d3d] hover:underline"
-        >
-          Create one
-        </Link>
-      </p>
+      {/* Sign-ups paused (Oct 24): no "Create one" link while SIGNUPS_PAUSED. */}
+      {SIGNUPS_PAUSED ? null : (
+        <p className="mt-6 text-center text-sm text-gray-600">
+          No account?{' '}
+          <Link href={q.next === '/claim' ? '/signup?next=/claim' : '/signup'} className="font-medium text-[#ba3d3d] hover:underline">
+            Create one
+          </Link>
+        </p>
+      )}
       <p className="mt-3 text-center">
         <Link href="/" className="text-sm text-gray-500 hover:text-[#ba3d3d]">
           ← Back to site

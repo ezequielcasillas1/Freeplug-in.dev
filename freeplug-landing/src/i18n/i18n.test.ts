@@ -145,6 +145,10 @@ describe('routing helpers', () => {
     expect(isLocalizedPublicPath('/es/faq')).toBe(false)
     expect(isLocalizedPublicPath('/dashboard')).toBe(false)
     expect(isLocalizedPublicPath('/login')).toBe(false)
+    expect(isLocalizedPublicPath('/merch/drinkware')).toBe(true)
+    expect(isLocalizedPublicPath('/merch/drinkware/fully-charged-mug')).toBe(true)
+    expect(isLocalizedPublicPath('/merch/not-a-collection')).toBe(false)
+    expect(publicHref('/merch/drinkware/fully-charged-mug', 'es')).toBe('/es/merch/drinkware/fully-charged-mug')
   })
   it('localizedPath / publicHref only prefix public pages and keep query and hash', () => {
     expect(localizedPath('/es/faq', 'en')).toBe('/faq')

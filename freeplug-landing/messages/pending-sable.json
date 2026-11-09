@@ -33,5 +33,37 @@
     "plans.landingPlansIntro": "English still marked PLACEHOLDER in code. It uses \"—\" and \"we will\", and maintenance wording that predates the over-an-hour rule.",
     "plans.dashboardPlansIntro": "English still marked PLACEHOLDER (see 751).",
     "errors.plans.alreadyHasPlanMessage": "STALE English: \"Use Manage billing to change it\". Plan changes now happen on the Plans page (see plans.change.alreadyHasPlanSwitch, which isn't wired yet)."
+  },
+  "spanishEnglishFallback_about": "Consultation step (Oct 22 r2): Sable translated all 67 keys (freeplug-offerings-and-consultation-copy-2026-10-22.md). Nothing pending. Team-only subjects (emailAgreedTeamSubject, emailLiveBookedTeamSubject, emailCancelRequestTeamSubject) stay English by design (fplgn.dev inboxes only); STOP stays English as the SMS keyword.",
+  "spanishEnglishFallback": {},
+  "spanishDraftsAwaitingSable_about": "Oct 30 2026 (Cheke, 8:13 PM CT): 'we don't build high-risk PII websites' copy. Spanish is Owen's DRAFT, live in es.json so /es shows it; Sable to review/replace.",
+  "spanishDraftsAwaitingSable": {
+    "public.faq.question.highRiskPii": "DRAFT (Oct 30)",
+    "public.faq.answer.highRiskPii": "DRAFT (Oct 30)",
+    "dashboard.request.highRiskPiiNotice": "DRAFT (Oct 30)",
+    "public.privacy.sections.highRiskPii.h": "DRAFT (Oct 30)",
+    "public.privacy.sections.highRiskPii.p1": "DRAFT (Oct 30)",
+    "public.privacy.sections.highRiskPii.p2": "DRAFT (Oct 30)",
+    "public.privacy.sections.ageRequirement.h": "DRAFT (Oct 30, 18+)",
+    "public.privacy.sections.ageRequirement.p1": "DRAFT (Oct 30, 18+)",
+    "src/lib/cta-pause.ts ctaPauseCopy (Muy pronto / Freeplug está en desarrollo. Muy pronto.)": "DRAFT (Oct 31)",
+    "public.landing.footer.ownerLine": "DRAFT (Oct 31)",
+    "public.compare.* (all ES strings; title/description and h1/subline from Sable/SEO, rest drafts)": "DRAFT (Oct 31)",
+    "public.landing.footer.label.compare": "DRAFT (Oct 31)",
+    "public.landing.buyoutTiers.compareLink": "DRAFT (Oct 31)",
+    "public.meta.compareTitle / compareDescription": "SEO-provided (Oct 31), confirm",
+    "public.compare.groupRentToOwn (Servicios web mensuales)": "DRAFT (Oct 31)",
+    "public.compare.rows.grippyCode.counts (No, según su sitio)": "DRAFT (Oct 31)",
+    "public.compare.rows.sanMarcos.counts (Compra única)": "DRAFT (Oct 31)",
+    "public.compare.countsSourceHint": "DRAFT (Oct 31)"
+  },
+  "sableApproved_about": "Spanish strings Sable has approved (no longer drafts).",
+  "sableApproved": {
+    "public.compare.rows.sanMarcos.own (Desde $300 (pago único))": "APPROVED by Sable (Oct 31)",
+    "public.compare.groupDiy (Plataformas para hacerlo tú)": "APPROVED by Sable (Oct 31)",
+    "public.compare.rows.leaseReady.upfront ($250 de configuración inicial)": "APPROVED by Sable (Oct 31)",
+    "public.compare.homeLink (Compara Freeplug con Wix y otros)": "APPROVED by Sable (Oct 31)",
+    "public.compare.rows.sanMarcos.note (Es tuyo, con 1 mes de soporte.)": "APPROVED by Sable (Oct 31)",
+    "public.landing.inPerson.* (tú)": "APPROVED (Oct 31)"
   }
 }

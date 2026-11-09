@@ -1,0 +1,72 @@
+{
+  "collections": {
+    "kids-baby": {
+      "titleEn": "Kids & Baby",
+      "titleEs": "Niños y bebés",
+      "leadEn": "Onesies, toddler tees, and youth hoodies with Freeplug marks.",
+      "leadEs": "Bodies, camisetas infantiles y sudaderas juveniles con marcas Freeplug.",
+      "metaTitleEn": "Kids & Baby | Freeplug Merch",
+      "metaDescEn": "Baby onesies, toddler tees, and youth hoodies. US shipping at checkout.",
+      "metaTitleEs": "Niños y bebés | Merch Freeplug",
+      "metaDescEs": "Bodies, camisetas infantiles y sudaderas juveniles. Envío en EE. UU. al pagar."
+    },
+    "bags-accessories": {
+      "titleEn": "Bags & Accessories",
+      "titleEs": "Bolsas y accesorios",
+      "leadEn": "Totes, backpacks, gaiters, pins, and laptop sleeves.",
+      "leadEs": "Totes, mochilas, gaiters, pins y fundas para portátil.",
+      "metaTitleEn": "Bags & Accessories | Freeplug Merch",
+      "metaDescEn": "Totes, backpacks, fanny packs, gaiters, and pin buttons.",
+      "metaTitleEs": "Bolsas y accesorios | Merch Freeplug",
+      "metaDescEs": "Totes, mochilas, riñoneras, gaiters y pins."
+    },
+    "pets": {
+      "titleEn": "Pets",
+      "titleEs": "Mascotas",
+      "leadEn": "Bandanas, bowls, beds, and tanks for plugged-in pets.",
+      "leadEs": "Bandanas, bowls, camas y camisetas para mascotas conectadas.",
+      "metaTitleEn": "Pets | Freeplug Merch",
+      "metaDescEn": "Pet bandanas, bowls, beds, and tank tops.",
+      "metaTitleEs": "Mascotas | Merch Freeplug",
+      "metaDescEs": "Bandanas, bowls, camas y camisetas para mascotas."
+    },
+    "home-living": {
+      "titleEn": "Home & Living",
+      "titleEs": "Hogar",
+      "leadEn": "Blankets, clocks, coasters, curtains, and kitchen accents.",
+      "leadEs": "Mantas, relojes, portavasos, cortinas y detalles de cocina.",
+      "metaTitleEn": "Home & Living | Freeplug Merch",
+      "metaDescEn": "Blankets, wall clocks, shower curtains, coasters, and cutting boards.",
+      "metaTitleEs": "Hogar | Merch Freeplug",
+      "metaDescEs": "Mantas, relojes, cortinas de baño, portavasos y tablas de cocina."
+    },
+    "wall-art": {
+      "titleEn": "Wall Art",
+      "titleEs": "Arte mural",
+      "leadEn": "Matte posters and framed prints for studio walls.",
+      "leadEs": "Pósters mate y láminas enmarcadas para tu estudio.",
+      "metaTitleEn": "Wall Art | Freeplug Merch",
+      "metaDescEn": "Matte posters and framed vertical prints.",
+      "metaTitleEs": "Arte mural | Merch Freeplug",
+      "metaDescEs": "Pósters mate y láminas enmarcadas."
+    },
+    "outdoor": {
+      "titleEn": "Outdoor",
+      "titleEs": "Aire libre",
+      "leadEn": "Towels, picnic blankets, and garden banners.",
+      "leadEs": "Toallas, mantas de picnic y banderines de jardín.",
+      "metaTitleEn": "Outdoor | Freeplug Merch",
+      "metaDescEn": "Beach towels, picnic blankets, and house banners.",
+      "metaTitleEs": "Aire libre | Merch Freeplug",
+      "metaDescEs": "Toallas, mantas de picnic y banderines."
+    }
+  },
+  "deskExtrasTitleEn": "Desk & Tech",
+  "deskExtrasTitleEs": "Escritorio y tecnología",
+  "deskExtrasLeadEn": "Desk mat, journal, keychain, stickers, notebooks, mousepads, and phone cases.",
+  "deskExtrasLeadEs": "Alfombrilla, diario, llavero, stickers, cuadernos, mousepad y fundas de teléfono.",
+  "deskExtrasMetaTitleEn": "Desk & Tech | Freeplug Merch",
+  "deskExtrasMetaDescEn": "Desk mat, journal, mousepads, spiral notebooks, and phone cases.",
+  "deskExtrasMetaTitleEs": "Escritorio y tecnología | Merch Freeplug",
+  "deskExtrasMetaDescEs": "Alfombrilla, diario, mousepads, cuadernos y fundas de teléfono."
+}

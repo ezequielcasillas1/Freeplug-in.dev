@@ -1,6 +1,10 @@
 'use client'
 
 import Image from 'next/image'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { PausedCta, InDevelopmentLine } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Globe2, Handshake, MapPin, MessageCircle, Wrench } from 'lucide-react'
@@ -28,6 +32,18 @@ const texasCities = [
     },
   },
   {
+    name: 'New Braunfels',
+    image: '/images/outreach/new-braunfels-2026-10.jpg',
+    alt: 'Gruene Hall, the historic dance hall in New Braunfels',
+    credit: {
+      author: 'Larry D. Moore',
+      license: 'CC BY 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Gruene_hall.jpg',
+      cropped: true,
+    },
+  },
+  {
     name: 'Kyle',
     image: '/images/outreach/kyle-2026-10.jpg',
     alt: "The Kyle water tower with the city's name on it",
@@ -40,14 +56,38 @@ const texasCities = [
     },
   },
   {
-    name: 'New Braunfels',
-    image: '/images/outreach/new-braunfels-2026-10.jpg',
-    alt: 'Gruene Hall, the historic dance hall in New Braunfels',
+    name: 'Buda',
+    image: '/images/outreach/buda-2026-10.jpg',
+    alt: 'Historic storefronts in downtown Buda',
     credit: {
-      author: 'Larry D. Moore',
-      license: 'CC BY 4.0',
-      licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
-      source: 'https://commons.wikimedia.org/wiki/File:Gruene_hall.jpg',
+      author: 'Travis K. Witt',
+      license: 'CC BY-SA 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Buda_Texas_Historic_Downtown.JPG',
+      cropped: true,
+    },
+  },
+  {
+    name: 'Seguin',
+    image: '/images/outreach/seguin-2026-10.jpg',
+    alt: 'The Guadalupe County Courthouse in Seguin',
+    credit: {
+      author: 'Billy Hathorn',
+      license: 'CC BY 3.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Guadalupe_County,_TX,_Courthouse_in_Seguin_IMG_8159.JPG',
+      cropped: true,
+    },
+  },
+  {
+    name: 'Lockhart',
+    image: '/images/outreach/lockhart-2026-10.jpg',
+    alt: 'The Caldwell County Courthouse in Lockhart',
+    credit: {
+      author: 'Aleksomber',
+      license: 'CC BY-SA 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Caldwell_County_Courthouse_in_Lockhart.jpg',
       cropped: true,
     },
   },
@@ -72,6 +112,30 @@ const texasCities = [
       license: 'CC BY 4.0',
       licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
       source: 'https://commons.wikimedia.org/wiki/File:Downtown_Austin_Skyline_-_Lady_Bird_Lake_(54987239041).jpg',
+      cropped: true,
+    },
+  },
+  {
+    name: 'Wimberley',
+    image: '/images/outreach/wimberley-2026-10.jpg',
+    alt: 'Shops in downtown Wimberley',
+    credit: {
+      author: 'Travis K. Witt',
+      license: 'CC BY-SA 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Wimberley_Texas_Downtown_1.JPG',
+      cropped: true,
+    },
+  },
+  {
+    name: 'Dripping Springs',
+    image: '/images/outreach/dripping-springs-2026-10.jpg',
+    alt: 'Dripping Springs City Hall',
+    credit: {
+      author: 'Larry D. Moore',
+      license: 'CC BY 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+      source: 'https://commons.wikimedia.org/wiki/File:Dripping_Springs_Texas_City_Hall_2019.jpg',
       cropped: true,
     },
   },
@@ -105,6 +169,11 @@ const ES_ALT: Record<string, string> = {
   'New Braunfels': 'Gruene Hall, el histórico salón de baile en New Braunfels',
   'San Antonio': 'El Álamo en el centro de San Antonio',
   Austin: 'El horizonte de Austin sobre el lago Lady Bird',
+  Buda: 'Fachadas históricas en el centro de Buda',
+  Seguin: 'El Palacio de Justicia del Condado de Guadalupe en Seguin',
+  Lockhart: 'El Palacio de Justicia del Condado de Caldwell en Lockhart',
+  Wimberley: 'Tiendas en el centro de Wimberley',
+  'Dripping Springs': 'El ayuntamiento de Dripping Springs',
 }
 const CREDIT_WORDS = { en: { photo: 'Photo', cropped: ', cropped' }, es: { photo: 'Foto', cropped: ', recortada' } } as const
 
@@ -154,7 +223,7 @@ export function OutreachSection() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-8"
           >
             {texasCities.map((city) => (
               <motion.div key={city.name} variants={cardVariants}>
@@ -175,12 +244,12 @@ export function OutreachSection() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white">
-                      <MapPin className="w-4 h-4" />
-                      <span className="font-semibold text-lg drop-shadow">{city.name}</span>
+                      <MapPin className="w-4 h-4 shrink-0" />
+                      <span className="font-semibold text-sm sm:text-base drop-shadow">{city.name}</span>
                     </div>
                   </div>
-                  <CardContent className="p-4">
-                    <p className="text-xs text-gray-500">
+                  <CardContent className="p-2 sm:p-3">
+                    <p className="text-[10px] sm:text-xs leading-snug text-gray-500">
                       <a href={city.credit.source} target="_blank" rel="noopener noreferrer" className="hover:underline">
                         {CREDIT_WORDS[locale === 'es' ? 'es' : 'en'].photo}: {city.credit.author},{' '}
                       </a>
@@ -236,9 +305,18 @@ export function OutreachSection() {
               <motion.p variants={fadeInUp} className="text-lg text-gray-600 leading-relaxed">
                 {t('freeplugReachBusinessesOutsideUs')}
               </motion.p>
+              {CTA_PAUSED_NOW ? (
+                <motion.div variants={fadeInUp}>
+                  <InDevelopmentLine />
+                </motion.div>
+              ) : null}
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
+                {CTA_PAUSED_NOW ? (
+                  <PausedCta className={cn(buttonVariants({ size: 'lg' }), 'shadow-lg shadow-[#ba3d3d]/30')} />
+                ) : (
                 <Link
-                  href={publicHref('/signup', locale)}
+                  href={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : publicHref('/request-website', locale)}
+                {...(AUTH_MAINTENANCE ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                   className={cn(
                     buttonVariants({ size: 'lg' }),
                     'shadow-lg shadow-[#ba3d3d]/30'
@@ -247,6 +325,7 @@ export function OutreachSection() {
                   {t('requestInternationalOutreach')}
                   <ArrowRight size={18} className="ml-2" />
                 </Link>
+                )}
               </motion.div>
               <motion.p variants={fadeInUp} className="text-sm text-gray-500">
                 {t('availabilityVariesRegionPartnerNo')}

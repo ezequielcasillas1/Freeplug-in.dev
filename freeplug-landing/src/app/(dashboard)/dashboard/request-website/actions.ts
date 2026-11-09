@@ -1,5 +1,6 @@
 'use server'
 
+import { alertOwner } from '@/lib/owner-alerts/events'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -18,6 +19,10 @@ import { sendRowFailedAlert } from '@/lib/change-requests/alert'
 import { CHANGE_REQUEST_NOT_SAVED, CHANGE_REQUEST_TOO_LONG, CHANGE_REQUEST_TOO_LONG_KEY, DESCRIPTION_MAX, friendlyInsertError } from '@/lib/change-requests/submit-errors'
 import { currentLocale } from '@/i18n/current-locale'
 import { translatorFor, type Translate } from '@/i18n/translate'
+import { consultationTranslator } from '@/lib/consultation/i18n'
+import { sendConsultationMail, TEAM_INBOX } from '@/lib/consultation/mail'
+import { EMAIL_CANCEL_REQUEST_TEAM_SUBJECT } from '@/lib/consultation/copy'
+import { ConsultationCancelRequestTeamEmail } from '@/lib/email/templates/consultation'
 
 /** Customer-facing errors in the request's language (errors.request.*). */
 async function errorsT(): Promise<Translate> {
@@ -33,6 +38,7 @@ function issueText(t: Translate, issues: readonly { message: string }[]): string
   )
   return [...new Set(texts)].join(' ')
 }
+import { isIntakeStatus, isOpenRequestStatus, OPEN_REQUEST_STATUSES } from '@/lib/consultation/status'
 
 const requestSchema = z.object({
   business_name: z.string().min(1, 'errors.request.business_name.businessNameRequired').max(200),
@@ -81,10 +87,17 @@ async function saveWebsiteRequest(
     .from('website_requests')
     .select('id, status')
     .eq('user_id', userId)
-    .in('status', ['submitted', 'in_review'])
+    .in('status', [...OPEN_REQUEST_STATUSES])
     .maybeSingle()
 
   const t = await errorsT()
+  if (openRow && !isIntakeStatus(openRow.status)) {
+    return {
+      error:
+        'Your request is in the consultation step. Make changes from your consultation on the dashboard, or email support@freeplug-in.dev.',
+    }
+  }
+
   if (openRow?.status === 'in_review') {
     return { error: t('errors.request.error.requestAlreadyBeingReviewed') }
   }
@@ -193,6 +206,22 @@ export async function submitWebsiteRequest(
   if (saved.error) {
     return { error: saved.error }
   }
+  const maintenance = formData.get('focus') === 'maintenance'
+  const locale = await currentLocale().catch(() => 'en')
+  alertOwner({
+    kind: maintenance ? 'maintenance_quote_request' : 'website_request',
+    dedupeKey: `website-request:${saved.requestId ?? user.id}:${crypto.randomUUID()}`,
+    userId: user.id,
+    email: user.email ?? null,
+    business: parsed.data.business_name,
+    details: [
+      ['Phone', parsed.data.contact_phone || null],
+      ['Google Business', parsed.data.google_business_url || null],
+      [maintenance ? 'What they need' : 'Notes', parsed.data.notes || null],
+      ['Language', locale === 'es' ? 'Spanish' : 'English'],
+    ],
+    adminPath: '/admin/requests',
+  })
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/request-website')
@@ -276,7 +305,7 @@ export async function sendHelpChangeRequest(
     .join('\n')
 
   // Keep the open request's details and notes; start fresh notes on a new request.
-  const isOpen = latest.status === 'submitted' || latest.status === 'in_review'
+  const isOpen = isOpenRequestStatus(latest.status)
   const existingNotes = isOpen ? latest.notes?.trim() ?? '' : ''
   const notes = existingNotes ? `${existingNotes}\n\n${changeBlock}` : changeBlock
   if (notes.length > 5000) {
@@ -323,6 +352,15 @@ export async function sendHelpChangeRequest(
   }
 
   const userId = user.id
+  alertOwner({
+    kind: 'change_request',
+    dedupeKey: `change-request:${rowId ?? crypto.randomUUID()}`,
+    userId,
+    email: user.email ?? null,
+    business: latest.business_name,
+    details: [['Type', c.changeType], ['Page', c.page], ['Change', c.description], ['Photo', c.photoName || null]],
+    adminPath: rowId ? `/admin/change-requests/${rowId}` : '/admin/requests',
+  })
   if (!rowId) {
     const reason = rowErr?.message ?? 'insert returned no id'
     console.error('[change-requests] row not saved; the change is in the request notes only', reason)
@@ -356,7 +394,11 @@ export async function sendHelpChangeRequest(
   return { ok: true, email: user.email ?? '' }
 }
 
-/** Closes the user's open website request (submitted or in review) — withdraw / cancel early. */
+/**
+ * Closes the user's open website request. Allowed at submitted, in_review, consultation and agreed
+ * (SELF_CLOSABLE_STATUSES); refused at building (Aria, Oct 22 8:37 PM CT), where the dashboard
+ * offers "Request to cancel" instead. The SQL close functions refuse building too (20261022230000).
+ */
 export async function cancelOwnWebsiteRequest(): Promise<
   { ok: true } | { ok: false; error: string }
 > {
@@ -369,6 +411,16 @@ export async function cancelOwnWebsiteRequest(): Promise<
   if (!user) {
     return { ok: false, error: t('errors.request.error.mustSigned') }
   }
+
+  const tc = consultationTranslator(locale)
+  const { data: openRow, error: openErr } = await supabase
+    .from('website_requests')
+    .select('status')
+    .eq('user_id', user.id)
+    .in('status', [...OPEN_REQUEST_STATUSES])
+    .maybeSingle()
+  if (openErr) return { ok: false, error: tc('closeRequestError') }
+  if (openRow?.status === 'building') return { ok: false, error: tc('closeBuildingRefused') }
 
   // Closing does not touch Stripe billing, so refuse while a plan is still active or trialing.
   const { data: prof, error: profErr } = await supabase
@@ -410,6 +462,7 @@ export async function cancelOwnWebsiteRequest(): Promise<
   }
   const { error } = await admin.rpc('cancel_website_request_for_user', { p_user_id: user.id })
   if (error) {
+    if (error.hint === 'building') return { ok: false, error: tc('closeBuildingRefused') }
     if (error.message === 'No open request to close.') {
       return { ok: false, error: t('errors.request.error.noOpenRequest') }
     }
@@ -418,5 +471,43 @@ export async function cancelOwnWebsiteRequest(): Promise<
   }
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/request-website')
+  return { ok: true }
+}
+
+/**
+ * "Request to cancel" at building (Aria, Oct 22 8:37 PM CT): sends the team an alert and changes
+ * nothing. The status stays building; the team decides. TEST MODE: the alert is log-only
+ * (sendConsultationMail, CONSULTATION_MAIL_MODE).
+ */
+export async function requestCancelDuringBuild(): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const locale = await currentLocale()
+  const tc = consultationTranslator(locale)
+  if (!user) return { ok: false, error: translatorFor(locale)('errors.request.error.mustSigned') }
+  const { data: row, error } = await supabase
+    .from('website_requests')
+    .select('id, business_name, status')
+    .eq('user_id', user.id)
+    .eq('status', 'building')
+    .maybeSingle()
+  if (error || !row) return { ok: false, error: tc('requestCancelError') }
+  try {
+    await sendConsultationMail({
+      to: TEAM_INBOX,
+      subject: EMAIL_CANCEL_REQUEST_TEAM_SUBJECT(row.business_name ?? 'Website request'),
+      template: 'consultation-cancel-request-team',
+      react: ConsultationCancelRequestTeamEmail({
+        businessName: row.business_name ?? 'Website request',
+        clientEmail: user.email ?? '',
+        requestId: row.id,
+      }),
+    })
+  } catch (e) {
+    console.error('[request-website/request-cancel] alert failed', e instanceof Error ? e.message : e)
+    return { ok: false, error: tc('requestCancelError') }
+  }
   return { ok: true }
 }

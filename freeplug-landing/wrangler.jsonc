@@ -21,12 +21,13 @@
   // nodejs_compat: the Next.js Node runtime (node:crypto, Buffer, streams, net). global_fetch_strictly_public:
   // fetch() can't reach Cloudflare-internal/private addresses (OpenNext's recommended flags).
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS", "html_handling": "none" },
   // OpenNext calls itself through this binding (must match "name").
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "freeplug" }],
   // Cloudflare Images: re-encodes uploaded photos (src/lib/outreach/image-codec-cloudflare.ts)
   // and powers next/image. Free plan: 5,000 unique transformations a month, then error 9422.
   "images": { "binding": "IMAGES" },
+  // Private merch assets (font bundle zip). Upload the object out-of-band; never serve from /public.
   "observability": { "enabled": true },
   // Workers Paid plan (Ezequiel's decision to buy). Caps runaway CPU per request (Aria A2).
   "limits": { "cpu_ms": 10000 },
@@ -37,7 +38,16 @@
   "vars": {
     // Trust Cloudflare's CF-Connecting-IP for per-IP rate limits (src/lib/rate-limit/client-ip.ts).
     "TRUST_CF_CONNECTING_IP": "true",
-    "ADMIN_ROUTE_ENABLED": "true"
+    "ADMIN_ROUTE_ENABLED": "true",
+    // Owner alerts (src/lib/owner-alerts): one email per important customer event to this address.
+    // Not a secret. Remove it to turn the alerts off (unset = no alerts). Preview Worker: unset.
+    "OWNER_ALERT_EMAIL": "fplgn.dev.72@gmail.com",
+    // Who may use /admin once past Cloudflare Access (src/lib/admin/guard.ts): the signed-in Supabase
+    // account's email must be in this comma-separated list. Not a secret.
+    "ADMIN_EMAILS": "ezequielcasillas1@gmail.com,fplgn.dev.72@gmail.com",
+    // Merch go-live (Cheke, Nov 7 2026): live checkout + free personal demo. Needs Supabase Storage bucket merch-private + migration first (docs/MERCH-DEPLOY-CHECKLIST.md).
+    "MERCH_CHECKOUT_ENABLED": "true",
+    "MERCH_PERSONAL_DOWNLOAD_ENABLED": "true"
   },
   "env": {
     // Rehearsal Worker on freeplug-preview.<account>.workers.dev with test keys and test data.
@@ -53,7 +63,9 @@
       // The admin route stays off on the preview Worker (src/lib/admin/guard.ts returns 404).
       "vars": {
         "TRUST_CF_CONNECTING_IP": "true",
-        "ADMIN_ROUTE_ENABLED": "false"
+        "ADMIN_ROUTE_ENABLED": "false",
+        "MERCH_CHECKOUT_ENABLED": "false",
+        "MERCH_PERSONAL_DOWNLOAD_ENABLED": "false"
       }
     }
   }

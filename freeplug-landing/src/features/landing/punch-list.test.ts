@@ -78,7 +78,7 @@ describe('titles (G2)', () => {
     ['src/app/(dashboard)/dashboard/photos/page.tsx', 'dashboard.meta.photosTitle'],
     ['src/app/(dashboard)/dashboard/website/page.tsx', 'dashboard.meta.websiteTitle'],
   ])('%s sets its own "… | Freeplug" title from en.json (%s)', (rel, key) => {
-    expect(enValue(key)).toMatch(/^[^|]+ \| Freeplug$/)
+    expect(enValue(key)).toMatch(/^[^|]+( \| [^|]+)* \| Freeplug$/) // home title has an extra segment (SEO, Oct 24)
     const leaf = key.split('.').pop()!
     expect(read(rel)).toMatch(new RegExp(`'${leaf}'|${key.replace(/\./g, '\\.')}`))
   })
@@ -92,10 +92,12 @@ describe('titles (G2)', () => {
 })
 
 describe('favicon and starter assets (assets notes)', () => {
-  it('icon.svg is the Freeplug mark (brand red tile)', () => {
-    const svg = read('src/app/icon.svg')
-    expect(svg).toContain('#ba3d3d')
-    expect(svg).toContain('#8a2e2e')
+  it('app icons are the FP mark PNGs (icon.svg star tile retired Oct 22 2026)', () => {
+    expect(existsSync(join(ROOT, 'src/app/icon.svg'))).toBe(false)
+    for (const f of ['src/app/icon.png', 'src/app/apple-icon.png', 'public/images/brand/fp-logo-64.png']) {
+      const png = readFileSync(join(ROOT, f))
+      expect(png.subarray(1, 4).toString()).toBe('PNG')
+    }
   })
   it('favicon.ico is a real ICO and not the stock Next.js one (25,931 bytes)', () => {
     const ico = readFileSync(join(ROOT, 'src/app/favicon.ico'))

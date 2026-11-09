@@ -1,5 +1,6 @@
 'use server'
 
+import { isOpenRequestStatus } from '@/lib/consultation/status'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import { carriedPendingCents, upcomingBill, type UpcomingBill } from '@/lib/stripe/next-bill'
@@ -373,9 +374,9 @@ export async function getEnhancedDashboardData(
         title:
           req.status === 'submitted'
             ? t('dashboard.activity.title.requestSubmitted')
-            : req.status === 'in_review'
-              ? t('dashboard.activity.title.requestReview')
-              : t('dashboard.activity.title.requestClosed'),
+            : req.status === 'closed'
+              ? t('dashboard.activity.title.requestClosed')
+              : t('dashboard.activity.title.requestReview'),
         description: req.business_name || t('dashboard.activity.description.websiteRequest'),
         date: new Date(req.updated_at),
       })
@@ -435,7 +436,7 @@ export async function getEnhancedDashboardData(
     })
   }
 
-  const openRequest = requests?.find((r) => r.status === 'submitted' || r.status === 'in_review')
+  const openRequest = requests?.find((r) => isOpenRequestStatus(r.status))
   if (!openRequest && subscriptions.length === 0 && (!requests || requests.length === 0)) {
     alerts.push({
       id: 'get-started',

@@ -1,6 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { PausedCta } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import { ArrowRight, Sparkles, Code, Zap, Palette, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
@@ -10,6 +14,7 @@ import { VideoScene } from './VideoScene'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
+import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
 
 function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
@@ -48,6 +53,7 @@ function FeaturePill({ icon: Icon, label }: { icon: typeof Code; label: string }
 }
 
 export function HeroSection() {
+  const tb = useTranslations('booking')
   const t = useTranslations('public.landing')
   const locale = toAppLocale(useLocale())
   return (
@@ -91,9 +97,10 @@ export function HeroSection() {
                 backdrop-blur-xl bg-white/60 
                 border border-white/80
                 shadow-[0_4px_24px_rgba(186,61,61,0.1),inset_0_1px_0_rgba(255,255,255,0.9)]
-                rounded-full text-[#ba3d3d] text-sm font-semibold
+                rounded-full text-[#ba3d3d] text-xs sm:text-sm font-semibold
+                whitespace-nowrap max-w-full
               ">
-                <Sparkles size={16} className="animate-pulse" />
+                <Sparkles size={16} className="animate-pulse shrink-0" />
                 {t('hero.freeplugOutreach72AfterBuilds')}
               </span>
             </motion.div>
@@ -137,8 +144,17 @@ export function HeroSection() {
             </motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 pt-2">
+              {CTA_PAUSED_NOW ? (
+                <PausedCta
+                  className={cn(
+                    buttonVariants({ size: 'lg' }),
+                    'bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] shadow-[0_8px_32px_rgba(186,61,61,0.35)] text-base px-8 border-0'
+                  )}
+                />
+              ) : (
               <Link
-                href={publicHref('/signup', locale)}
+                href={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : publicHref('/request-website', locale)}
+                {...(AUTH_MAINTENANCE ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 className={cn(
                   buttonVariants({ size: 'lg' }),
                   'group relative overflow-hidden bg-gradient-to-r from-[#ba3d3d] to-[#8a2e2e] shadow-[0_8px_32px_rgba(186,61,61,0.35)] hover:shadow-[0_12px_40px_rgba(186,61,61,0.45)] transition-all duration-300 text-base px-8 border-0'
@@ -149,6 +165,7 @@ export function HeroSection() {
                   <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
+              )}
               <a
                 href="#outreach"
                 className={cn(
@@ -158,6 +175,14 @@ export function HeroSection() {
               >
                 {t('hero.seeWhereWork')}
               </a>
+              <BookLiveSessionLink
+                label={tb('bookLiveSession')}
+                newTabHint={tb('opensInNewTab')}
+                className={cn(
+                  buttonVariants({ variant: 'secondary', size: 'lg' }),
+                  'backdrop-blur-xl bg-white/70 border border-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white/90 text-gray-700 font-medium text-base px-8'
+                )}
+              />
             </motion.div>
 
             <motion.p variants={fadeInUp} className="text-sm text-gray-500">

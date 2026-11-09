@@ -19,6 +19,7 @@ const eslintConfig = defineConfig([
       "src/app/(auth)/actions.ts",
       "src/app/(dashboard)/dashboard/buyout-actions.ts",
       "src/app/(dashboard)/dashboard/request-website/actions.ts",
+      "src/app/(dashboard)/dashboard/consultation/actions.ts",
       "src/app/api/webhooks/stripe/route.ts",
       "src/lib/email/webhook-email-ledger.ts",
       "src/lib/plans/plan-change-lock-server.ts",
@@ -28,6 +29,11 @@ const eslintConfig = defineConfig([
       "src/lib/stripe/sync-checkout-customer.ts",
       // Oct 19: email_opt_outs store (service_role-only table, RLS on, no policies).
       "src/lib/unsubscribe/store.ts",
+      // Oct 19: owner alerts read the customer (Auth name/email, plan) for the owner-only email.
+      "src/lib/owner-alerts/events.ts",
+      // Buyer shop custom uploads (service-role storage only).
+      "src/lib/merch/server.ts",
+      "src/lib/merch/storage.ts",
       "src/**/*.test.{ts,tsx}",
     ],
     rules: {

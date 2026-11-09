@@ -47,7 +47,7 @@ function contentSecurityPolicyReportOnly(): string {
     "default-src 'self'",
     "script-src 'self' https://js.stripe.com https://challenges.cloudflare.com",
     "style-src 'self' 'unsafe-inline'",
-    ['img-src', "'self'", 'data:', 'blob:', ...supabase.slice(0, 1)].join(' '),
+    ['img-src', "'self'", 'data:', 'blob:', 'https://elements-resized.envatousercontent.com', ...supabase.slice(0, 1)].join(' '),
     "font-src 'self'",
     ['connect-src', "'self'", 'https://api.stripe.com', ...supabase].join(' '),
     ['frame-src', ...stripeFrames, 'https://challenges.cloudflare.com'].join(' '),

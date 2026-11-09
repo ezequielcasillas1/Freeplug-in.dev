@@ -1,0 +1,3469 @@
+[
+  {
+    "slug": "fully-charged-mug",
+    "collection": "drinkware",
+    "title": "Freeplug Fully Charged Mug",
+    "title_key": "fullyChargedMug",
+    "printify_product_id": "6af0dc189219dad501083c14",
+    "shipping_class": "mug_15",
+    "mockup": "fully-charged-mug.jpg",
+    "options": [
+      {
+        "key": "11oz",
+        "printify_variant_id": 65216,
+        "price_cents": 899,
+        "shipping_class": "mug_11_12"
+      },
+      {
+        "key": "15oz",
+        "printify_variant_id": 104692,
+        "price_cents": 1199,
+        "shipping_class": "mug_15"
+      }
+    ]
+  },
+  {
+    "slug": "cheap-free-latte-mug",
+    "collection": "drinkware",
+    "title": "Freeplug It's So Cheap It's Free Latte Mug",
+    "title_key": "cheapFreeLatteMug",
+    "printify_product_id": "6af0dc26e696fed2aa02d36b",
+    "shipping_class": "mug_11_12",
+    "mockup": "cheap-free-latte.jpg",
+    "options": [
+      {
+        "key": "12oz",
+        "printify_variant_id": 43321,
+        "price_cents": 1599
+      }
+    ]
+  },
+  {
+    "slug": "know-a-plug-mug",
+    "collection": "drinkware",
+    "title": "Freeplug I Know a Plug Mug",
+    "title_key": "knowAPlugMug",
+    "printify_product_id": "6af0dc2f5a7173e14f0ae104",
+    "shipping_class": "mug_15",
+    "mockup": "know-a-plug-mug.jpg",
+    "options": [
+      {
+        "key": "15oz",
+        "printify_variant_id": 62014,
+        "price_cents": 1599
+      }
+    ]
+  },
+  {
+    "slug": "day-one-tumbler",
+    "collection": "drinkware",
+    "title": "Freeplug Plugged In Since Day One Tumbler",
+    "title_key": "dayOneTumbler",
+    "printify_product_id": "6af0dc297a7a4ea34b0b1d11",
+    "shipping_class": "drinkware_tall",
+    "mockup": "day-one-tumbler.jpg",
+    "options": [
+      {
+        "key": "20oz",
+        "printify_variant_id": 44519,
+        "price_cents": 4499
+      }
+    ]
+  },
+  {
+    "slug": "free-refills-travel-mug",
+    "collection": "drinkware",
+    "title": "Freeplug Free Refills Travel Mug",
+    "title_key": "freeRefillsTravelMug",
+    "printify_product_id": "6af0dc2c5a7173e14f0ae0f4",
+    "shipping_class": "drinkware_tall",
+    "mockup": "free-refills-travel.jpg",
+    "options": [
+      {
+        "key": "15oz",
+        "printify_variant_id": 33765,
+        "price_cents": 4099
+      }
+    ]
+  },
+  {
+    "slug": "stay-plugged-in-water-bottle",
+    "collection": "drinkware",
+    "title": "Freeplug Stay Plugged In Water Bottle",
+    "title_key": "stayPluggedInWaterBottle",
+    "printify_product_id": "6af0dc34c85eee5c4804a972",
+    "shipping_class": "drinkware_tall",
+    "mockup": "water-bottle.jpg",
+    "options": [
+      {
+        "key": "20oz-white",
+        "printify_variant_id": 72251,
+        "price_cents": 3599
+      }
+    ]
+  },
+  {
+    "slug": "fp-circle-trucker-cap",
+    "collection": "hats",
+    "title": "Freeplug FP Circle Trucker Patch Cap",
+    "title_key": "fpCircleTruckerCap",
+    "printify_product_id": "6af0dd85bc999340580aba5e",
+    "shipping_class": "hat",
+    "mockup": "trucker-circle.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "printify_variant_id": 147781,
+        "price_cents": 3699
+      }
+    ]
+  },
+  {
+    "slug": "fp-dad-hat",
+    "collection": "hats",
+    "title": "Freeplug FP Dad Hat",
+    "title_key": "fpDadHat",
+    "printify_product_id": "6af0dd88bc999340580aba6b",
+    "shipping_class": "hat",
+    "mockup": "dad-fp.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "printify_variant_id": 118238,
+        "price_cents": 3299
+      }
+    ]
+  },
+  {
+    "slug": "plugged-in-low-profile-cap",
+    "collection": "hats",
+    "title": "Freeplug Plugged In Low-Profile Cap",
+    "title_key": "pluggedInLowProfileCap",
+    "printify_product_id": "6af0dd8bc85eee5c4804aba2",
+    "shipping_class": "hat",
+    "mockup": "low-profile-plugged.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "printify_variant_id": 104278,
+        "price_cents": 4099
+      }
+    ]
+  },
+  {
+    "slug": "cuffed-beanie",
+    "collection": "hats",
+    "title": "Freeplug Cuffed Beanie",
+    "title_key": "cuffedBeanie",
+    "printify_product_id": "6af0dd8ec85eee5c4804abb8",
+    "shipping_class": "hat",
+    "mockup": "beanie-freeplug.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "printify_variant_id": 116417,
+        "price_cents": 2799
+      }
+    ]
+  },
+  {
+    "slug": "hero-crewneck",
+    "collection": "apparel",
+    "title": "Freeplug Hero Crewneck Sweatshirt",
+    "title_key": "heroCrewneck",
+    "printify_product_id": "6af0dc44fb9024aaf308bd94",
+    "shipping_class": "crewneck",
+    "mockup": "hero-crewneck.jpg",
+    "options": []
+  },
+  {
+    "slug": "running-over-candle",
+    "collection": "home-faith",
+    "title": "Freeplug Running Over Luke 6:38 Candle",
+    "title_key": "runningOverCandle",
+    "printify_product_id": "6af0dc377a7a4ea34b0b1d36",
+    "shipping_class": "candle_keychain",
+    "mockup": "running-over-candle.jpg",
+    "options": [
+      {
+        "key": "9oz-clean-cotton",
+        "printify_variant_id": 80301,
+        "price_cents": 2499
+      }
+    ]
+  },
+  {
+    "slug": "running-over-canvas",
+    "collection": "home-faith",
+    "title": "Freeplug Running Over Luke 6:38 Canvas",
+    "title_key": "runningOverCanvas",
+    "printify_product_id": "6af0dd82e696fed2aa02d577",
+    "shipping_class": "canvas_sm",
+    "mockup": "running-over-canvas-16x20.jpg",
+    "options": [
+      {
+        "key": "16x20",
+        "printify_variant_id": 82231,
+        "price_cents": 4899,
+        "shipping_class": "canvas_sm"
+      },
+      {
+        "key": "24x36",
+        "printify_variant_id": 82235,
+        "price_cents": 8599,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "running-over-pillow",
+    "collection": "home-faith",
+    "title": "Freeplug Running Over Luke 6:38 Pillow",
+    "title_key": "runningOverPillow",
+    "printify_product_id": "6af0dd995dc84ade530375ea",
+    "shipping_class": "pillow",
+    "mockup": "running-over-pillow.jpg",
+    "options": [
+      {
+        "key": "18x18",
+        "printify_variant_id": 41527,
+        "price_cents": 3699
+      }
+    ]
+  },
+  {
+    "slug": "come-on-in-doormat",
+    "collection": "home-faith",
+    "title": "Freeplug Come On In Outdoor Coir Doormat",
+    "title_key": "comeOnInDoormat",
+    "printify_product_id": "6af0dd9ce696fed2aa02d5ce",
+    "shipping_class": "doormat",
+    "mockup": "outdoor-doormat.jpg",
+    "options": [
+      {
+        "key": "24x16",
+        "printify_variant_id": 103043,
+        "price_cents": 5199
+      }
+    ]
+  },
+  {
+    "slug": "plug-in-station-desk-mat",
+    "collection": "desk-extras",
+    "title": "Freeplug Plug-In Station Desk Mat",
+    "title_key": "plugInStationDeskMat",
+    "printify_product_id": "6af0dc31e696fed2aa02d392",
+    "shipping_class": "desk_mat",
+    "mockup": "desk-mat.jpg",
+    "options": [
+      {
+        "key": "12x22",
+        "printify_variant_id": 65241,
+        "price_cents": 2099
+      }
+    ]
+  },
+  {
+    "slug": "build-plug-in-repeat-journal",
+    "collection": "desk-extras",
+    "title": "Freeplug Build Plug In Repeat Journal",
+    "title_key": "buildPlugInRepeatJournal",
+    "printify_product_id": "6af0dd93f2139253b306e22a",
+    "shipping_class": "journal",
+    "mockup": "build-journal.jpg",
+    "options": [
+      {
+        "key": "lined",
+        "printify_variant_id": 65223,
+        "price_cents": 1899
+      }
+    ]
+  },
+  {
+    "slug": "fp-circle-keychain",
+    "collection": "desk-extras",
+    "title": "Freeplug FP Circle Acrylic Keychain",
+    "title_key": "fpCircleKeychain",
+    "printify_product_id": "6af0dd96c85eee5c4804abd5",
+    "shipping_class": "candle_keychain",
+    "mockup": "fp-keychain.jpg",
+    "options": [
+      {
+        "key": "circle",
+        "printify_variant_id": 243784,
+        "price_cents": 1599
+      }
+    ]
+  },
+  {
+    "slug": "sticker-fp-circle",
+    "collection": "desk-extras",
+    "title": "Freeplug FP Circle Die-Cut Sticker",
+    "title_key": "stickerFpCircle",
+    "printify_product_id": "6af0dc47bc999340580ab877",
+    "shipping_class": "sticker",
+    "mockup": "sticker-fp-circle.jpg",
+    "options": [
+      {
+        "key": "3x3",
+        "printify_variant_id": 72007,
+        "price_cents": 799
+      }
+    ]
+  },
+  {
+    "slug": "sticker-know-a-plug",
+    "collection": "desk-extras",
+    "title": "Freeplug I Know a Plug Die-Cut Sticker",
+    "title_key": "stickerKnowAPlug",
+    "printify_product_id": "6af0dc49e696fed2aa02d3cb",
+    "shipping_class": "sticker",
+    "mockup": "sticker-know-a-plug.jpg",
+    "options": [
+      {
+        "key": "3x3",
+        "printify_variant_id": 72007,
+        "price_cents": 799
+      }
+    ]
+  },
+  {
+    "slug": "sticker-zero-price-tag",
+    "collection": "desk-extras",
+    "title": "Freeplug Zero Price Tag Die-Cut Sticker",
+    "title_key": "stickerZeroPriceTag",
+    "printify_product_id": "6af0dc4c9219dad501083c71",
+    "shipping_class": "sticker",
+    "mockup": "sticker-zero-price-tag.jpg",
+    "options": [
+      {
+        "key": "3x3",
+        "printify_variant_id": 72007,
+        "price_cents": 799
+      }
+    ]
+  },
+  {
+    "slug": "sticker-plug-heart",
+    "collection": "desk-extras",
+    "title": "Freeplug Plug Heart Die-Cut Sticker",
+    "title_key": "stickerPlugHeart",
+    "printify_product_id": "6af0dc4ee696fed2aa02d3d1",
+    "shipping_class": "sticker",
+    "mockup": "sticker-plug-heart.jpg",
+    "options": [
+      {
+        "key": "3x3",
+        "printify_variant_id": 72007,
+        "price_cents": 799
+      }
+    ]
+  },
+  {
+    "slug": "pin-fp-mark",
+    "collection": "bags-accessories",
+    "title": "Freeplug FP Mark Pin Button",
+    "title_key": "pinFpMark",
+    "printify_product_id": "6af11570e16bc2f47108add8",
+    "shipping_class": "sticker",
+    "mockup": "pin-fp-mark.jpg",
+    "options": [
+      {
+        "key": "1-25",
+        "label": "1.25\"",
+        "printify_variant_id": 62070,
+        "price_cents": 399
+      }
+    ]
+  },
+  {
+    "slug": "pin-plug",
+    "collection": "bags-accessories",
+    "title": "Freeplug Plug Pin Button",
+    "title_key": "pinPlug",
+    "printify_product_id": "6af1157259d5223aba053784",
+    "shipping_class": "sticker",
+    "mockup": "pin-plug.jpg",
+    "options": [
+      {
+        "key": "1-25",
+        "label": "1.25\"",
+        "printify_variant_id": 62070,
+        "price_cents": 399
+      }
+    ]
+  },
+  {
+    "slug": "pin-bolt",
+    "collection": "bags-accessories",
+    "title": "Freeplug Bolt Pin Button",
+    "title_key": "pinBolt",
+    "printify_product_id": "6af1157559d5223aba05378a",
+    "shipping_class": "sticker",
+    "mockup": "pin-bolt.jpg",
+    "options": [
+      {
+        "key": "1-25",
+        "label": "1.25\"",
+        "printify_variant_id": 62070,
+        "price_cents": 399
+      }
+    ]
+  },
+  {
+    "slug": "coaster-fp",
+    "collection": "home-living",
+    "title": "Freeplug FP Mark Coaster Set",
+    "title_key": "coasterFp",
+    "printify_product_id": "6af11578e16bc2f47108adde",
+    "shipping_class": "home_standard",
+    "mockup": "coaster-fp.jpg",
+    "options": [
+      {
+        "key": "4-4",
+        "label": "4\" × 4\"",
+        "printify_variant_id": 149519,
+        "price_cents": 3699
+      }
+    ]
+  },
+  {
+    "slug": "click-mousepad",
+    "collection": "desk-extras",
+    "title": "Freeplug Click Connect Get Paid Mouse Pad",
+    "title_key": "clickMousepad",
+    "printify_product_id": "6af1157bfb9024aaf308ef2d",
+    "shipping_class": "desk_mat",
+    "mockup": "click-mousepad.jpg",
+    "options": [
+      {
+        "key": "9-8-rectangle",
+        "label": "9\" × 8\" / Rectangle",
+        "printify_variant_id": 71923,
+        "price_cents": 899
+      }
+    ]
+  },
+  {
+    "slug": "ideas-notebook",
+    "collection": "desk-extras",
+    "title": "Freeplug Ideas Worth Plugging Notebook",
+    "title_key": "ideasNotebook",
+    "printify_product_id": "6af1157efb9024aaf308ef2e",
+    "shipping_class": "journal",
+    "mockup": "ideas-notebook.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "label": "One Size",
+        "printify_variant_id": 34240,
+        "price_cents": 1499
+      }
+    ]
+  },
+  {
+    "slug": "plugged-ornament",
+    "collection": "home-faith",
+    "title": "Freeplug Plugged-In Christmas Ornament",
+    "title_key": "pluggedOrnament",
+    "printify_product_id": "6af11580621d8c64cd0119de",
+    "shipping_class": "hat",
+    "mockup": "plugged-ornament.jpg",
+    "options": [
+      {
+        "key": "circle-one-size",
+        "label": "Circle / One Size",
+        "printify_variant_id": 69370,
+        "price_cents": 1199
+      }
+    ]
+  },
+  {
+    "slug": "coaster-plug",
+    "collection": "home-living",
+    "title": "Freeplug Plug Coaster Set",
+    "title_key": "coasterPlug",
+    "printify_product_id": "6af11587f58df1f902079666",
+    "shipping_class": "home_standard",
+    "mockup": "coaster-plug.jpg",
+    "options": [
+      {
+        "key": "4-4",
+        "label": "4\" × 4\"",
+        "printify_variant_id": 149519,
+        "price_cents": 3699
+      }
+    ]
+  },
+  {
+    "slug": "coaster-bolt",
+    "collection": "home-living",
+    "title": "Freeplug Bolt Coaster Set",
+    "title_key": "coasterBolt",
+    "printify_product_id": "6af115893267fff9210a223f",
+    "shipping_class": "home_standard",
+    "mockup": "coaster-bolt.jpg",
+    "options": [
+      {
+        "key": "4-4",
+        "label": "4\" × 4\"",
+        "printify_variant_id": 149519,
+        "price_cents": 3699
+      }
+    ]
+  },
+  {
+    "slug": "coaster-charged",
+    "collection": "home-living",
+    "title": "Freeplug Charged Coaster Set",
+    "title_key": "coasterCharged",
+    "printify_product_id": "6af1158b680657c552078072",
+    "shipping_class": "home_standard",
+    "mockup": "coaster-charged.jpg",
+    "options": [
+      {
+        "key": "4-4",
+        "label": "4\" × 4\"",
+        "printify_variant_id": 149519,
+        "price_cents": 3699
+      }
+    ]
+  },
+  {
+    "slug": "recharge-pint",
+    "collection": "drinkware",
+    "title": "Freeplug Recharge Station Pint Glass",
+    "title_key": "rechargePint",
+    "printify_product_id": "6af1158de16bc2f47108adee",
+    "shipping_class": "desk_mat",
+    "mockup": "recharge-pint.jpg",
+    "options": [
+      {
+        "key": "16oz",
+        "label": "16oz",
+        "printify_variant_id": 72174,
+        "price_cents": 2399
+      }
+    ]
+  },
+  {
+    "slug": "cool-can-cooler",
+    "collection": "drinkware",
+    "title": "Freeplug Keep It Cool Can Cooler",
+    "title_key": "coolCanCooler",
+    "printify_product_id": "6af11591fb9024aaf308ef3e",
+    "shipping_class": "drinkware_heavy",
+    "mockup": "cool-can-cooler.jpg",
+    "options": [
+      {
+        "key": "regular-can",
+        "label": "Regular Can",
+        "printify_variant_id": 78460,
+        "price_cents": 899
+      },
+      {
+        "key": "slim-can",
+        "label": "Slim Can",
+        "printify_variant_id": 78461,
+        "price_cents": 899
+      }
+    ]
+  },
+  {
+    "slug": "unplugged-wine",
+    "collection": "drinkware",
+    "title": "Freeplug Unplugged Hours Wine Tumbler",
+    "title_key": "unpluggedWine",
+    "printify_product_id": "6af115943267fff9210a2249",
+    "shipping_class": "drinkware_heavy",
+    "mockup": "unplugged-wine.jpg",
+    "options": [
+      {
+        "key": "white-12oz",
+        "label": "White / 12oz",
+        "printify_variant_id": 72113,
+        "price_cents": 3299
+      },
+      {
+        "key": "steel-12oz",
+        "label": "Steel / 12oz",
+        "printify_variant_id": 148005,
+        "price_cents": 3299
+      }
+    ]
+  },
+  {
+    "slug": "good-boy-bandana",
+    "collection": "pets",
+    "title": "Freeplug Good Boy Fully Charged Pet Bandana",
+    "title_key": "goodBoyBandana",
+    "printify_product_id": "6af115983267fff9210a224c",
+    "shipping_class": "home_standard",
+    "mockup": "good-boy-bandana.jpg",
+    "options": [
+      {
+        "key": "20-10",
+        "label": "20\" × 10\"",
+        "printify_variant_id": 101403,
+        "price_cents": 2599
+      },
+      {
+        "key": "27-13",
+        "label": "27\" × 13\"",
+        "printify_variant_id": 101404,
+        "price_cents": 2999,
+        "shipping_class": "home_standard"
+      }
+    ]
+  },
+  {
+    "slug": "fuel-bowl",
+    "collection": "pets",
+    "title": "Freeplug Fuel Station Pet Bowl",
+    "title_key": "fuelBowl",
+    "printify_product_id": "6af1159bf58df1f902079675",
+    "shipping_class": "canvas_lg",
+    "mockup": "fuel-bowl.jpg",
+    "options": [
+      {
+        "key": "16oz",
+        "label": "16oz",
+        "printify_variant_id": 71135,
+        "price_cents": 4599
+      }
+    ]
+  },
+  {
+    "slug": "plug-parking-sign",
+    "collection": "home-living",
+    "title": "Freeplug Plug Parking Only Metal Sign",
+    "title_key": "plugParkingSign",
+    "printify_product_id": "6af115a059d5223aba0537aa",
+    "shipping_class": "canvas_lg",
+    "mockup": "plug-parking-sign.jpg",
+    "options": [
+      {
+        "key": "10-x-8-horizontal-0-12",
+        "label": "10″ x 8″ (Horizontal) / 0.12''",
+        "printify_variant_id": 91994,
+        "price_cents": 3199
+      },
+      {
+        "key": "8-x-10-vertical-0-12",
+        "label": "8″ x 10″ (Vertical) / 0.12''",
+        "printify_variant_id": 92001,
+        "price_cents": 3199
+      }
+    ]
+  },
+  {
+    "slug": "offgrid-camping-mug",
+    "collection": "drinkware",
+    "title": "Freeplug Off-Grid Plug Camping Mug",
+    "title_key": "offgridCampingMug",
+    "printify_product_id": "6af115a3621d8c64cd0119f9",
+    "shipping_class": "drinkware_heavy",
+    "mockup": "offgrid-camping-mug.jpg",
+    "options": [
+      {
+        "key": "12oz",
+        "label": "12oz",
+        "printify_variant_id": 70768,
+        "price_cents": 2099
+      }
+    ]
+  },
+  {
+    "slug": "plug-lives-flag",
+    "collection": "outdoor",
+    "title": "Freeplug A Plug Lives Here Garden Flag",
+    "title_key": "plugLivesFlag",
+    "printify_product_id": "6af115ac59d5223aba0537b9",
+    "shipping_class": "home_standard",
+    "mockup": "plug-lives-flag.jpg",
+    "options": [
+      {
+        "key": "12-18",
+        "label": "12'' × 18''",
+        "printify_variant_id": 78841,
+        "price_cents": 1899
+      },
+      {
+        "key": "24-5-32",
+        "label": "24.5'' × 32''",
+        "printify_variant_id": 78842,
+        "price_cents": 3699,
+        "shipping_class": "home_standard"
+      }
+    ]
+  },
+  {
+    "slug": "kjv-bookmark-1",
+    "collection": "home-faith",
+    "title": "Freeplug Luke 6:38 Bookmark 1",
+    "title_key": "kjvBookmark1",
+    "printify_product_id": "6af115aefb9024aaf308ef54",
+    "shipping_class": "hat",
+    "mockup": "kjv-bookmark-1.jpg",
+    "options": [
+      {
+        "key": "one-size-white",
+        "label": "One size / White",
+        "printify_variant_id": 74607,
+        "price_cents": 1099
+      }
+    ]
+  },
+  {
+    "slug": "kjv-bookmark-2",
+    "collection": "home-faith",
+    "title": "Freeplug Luke 6:38 Bookmark 2",
+    "title_key": "kjvBookmark2",
+    "printify_product_id": "6af115b1f58df1f902079683",
+    "shipping_class": "hat",
+    "mockup": "kjv-bookmark-2.jpg",
+    "options": [
+      {
+        "key": "one-size-white",
+        "label": "One size / White",
+        "printify_variant_id": 74607,
+        "price_cents": 1099
+      }
+    ]
+  },
+  {
+    "slug": "kjv-bookmark-3",
+    "collection": "home-faith",
+    "title": "Freeplug Luke 6:38 Bookmark 3",
+    "title_key": "kjvBookmark3",
+    "printify_product_id": "6af115b359d5223aba0537c1",
+    "shipping_class": "hat",
+    "mockup": "kjv-bookmark-3.jpg",
+    "options": [
+      {
+        "key": "one-size-white",
+        "label": "One size / White",
+        "printify_variant_id": 74607,
+        "price_cents": 1099
+      }
+    ]
+  },
+  {
+    "slug": "kjv-bookmark-4",
+    "collection": "home-faith",
+    "title": "Freeplug Luke 6:38 Bookmark 4",
+    "title_key": "kjvBookmark4",
+    "printify_product_id": "6af115b559d5223aba0537c2",
+    "shipping_class": "hat",
+    "mockup": "kjv-bookmark-4.jpg",
+    "options": [
+      {
+        "key": "one-size-white",
+        "label": "One size / White",
+        "printify_variant_id": 74607,
+        "price_cents": 1099
+      }
+    ]
+  },
+  {
+    "slug": "thanksgiving-tea-towel",
+    "collection": "home-faith",
+    "title": "Freeplug Thanksgiving Luke 6:38 Tea Towel",
+    "title_key": "thanksgivingTeaTowel",
+    "printify_product_id": "6af115b8fb9024aaf308ef5d",
+    "shipping_class": "home_standard",
+    "mockup": "thanksgiving-tea-towel.jpg",
+    "options": [
+      {
+        "key": "white-28-28",
+        "label": "White / 28\" × 28\"",
+        "printify_variant_id": 72764,
+        "price_cents": 3199
+      }
+    ]
+  },
+  {
+    "slug": "charged-socks",
+    "collection": "apparel",
+    "title": "Freeplug Fully Charged Feet Socks",
+    "title_key": "chargedSocks",
+    "printify_product_id": "6af115c4fb9024aaf308ef68",
+    "shipping_class": "apparel_light",
+    "mockup": "charged-socks.jpg",
+    "options": [
+      {
+        "key": "l",
+        "label": "L",
+        "printify_variant_id": 45132,
+        "price_cents": 1299
+      },
+      {
+        "key": "m",
+        "label": "M",
+        "printify_variant_id": 45133,
+        "price_cents": 1299
+      }
+    ]
+  },
+  {
+    "slug": "fp-gaiter",
+    "collection": "bags-accessories",
+    "title": "Freeplug FP Circle Neck Gaiter",
+    "title_key": "fpGaiter",
+    "printify_product_id": "6af115cb621d8c64cd011a1d",
+    "shipping_class": "hat",
+    "mockup": "fp-gaiter.jpg",
+    "options": [
+      {
+        "key": "l",
+        "label": "L",
+        "printify_variant_id": 78496,
+        "price_cents": 2299
+      },
+      {
+        "key": "m",
+        "label": "M",
+        "printify_variant_id": 78497,
+        "price_cents": 2299
+      },
+      {
+        "key": "s",
+        "label": "S",
+        "printify_variant_id": 78498,
+        "price_cents": 2299
+      }
+    ]
+  },
+  {
+    "slug": "carry-tote",
+    "collection": "bags-accessories",
+    "title": "Freeplug Carry the Connection Tote",
+    "title_key": "carryTote",
+    "printify_product_id": "6af115cf621d8c64cd011a1f",
+    "shipping_class": "home_standard",
+    "mockup": "carry-tote.jpg",
+    "options": [
+      {
+        "key": "one-size-black",
+        "label": "One size / Black",
+        "printify_variant_id": 70603,
+        "price_cents": 3699
+      },
+      {
+        "key": "one-size-cream",
+        "label": "One size / Cream",
+        "printify_variant_id": 70646,
+        "price_cents": 3699
+      },
+      {
+        "key": "one-size-coal",
+        "label": "One size / Coal",
+        "printify_variant_id": 252413,
+        "price_cents": 3699
+      },
+      {
+        "key": "one-size-khaki",
+        "label": "One size / Khaki",
+        "printify_variant_id": 252414,
+        "price_cents": 3699
+      },
+      {
+        "key": "one-size-pink",
+        "label": "One size / Pink",
+        "printify_variant_id": 252415,
+        "price_cents": 3699
+      }
+    ]
+  },
+  {
+    "slug": "gym-drawstring",
+    "collection": "bags-accessories",
+    "title": "Freeplug Gym Plug Drawstring Bag",
+    "title_key": "gymDrawstring",
+    "printify_product_id": "6af115d4fb9024aaf308ef74",
+    "shipping_class": "home_standard",
+    "mockup": "gym-drawstring.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "label": "One size",
+        "printify_variant_id": 61365,
+        "price_cents": 5599
+      }
+    ]
+  },
+  {
+    "slug": "charger-backpack",
+    "collection": "bags-accessories",
+    "title": "Freeplug Charger Not Included Backpack",
+    "title_key": "chargerBackpack",
+    "printify_product_id": "6af115d7f58df1f90207969f",
+    "shipping_class": "desk_mat",
+    "mockup": "charger-backpack.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "label": "One size",
+        "printify_variant_id": 61364,
+        "price_cents": 7999
+      }
+    ]
+  },
+  {
+    "slug": "pocket-fanny",
+    "collection": "bags-accessories",
+    "title": "Freeplug Pocket Plug Fanny Pack",
+    "title_key": "pocketFanny",
+    "printify_product_id": "6af115d9fb9024aaf308ef78",
+    "shipping_class": "home_standard",
+    "mockup": "pocket-fanny.jpg",
+    "options": [
+      {
+        "key": "one-size",
+        "label": "One size",
+        "printify_variant_id": 65045,
+        "price_cents": 4399
+      }
+    ]
+  },
+  {
+    "slug": "recharge-blanket",
+    "collection": "home-living",
+    "title": "Freeplug Recharge Mode Throw Blanket",
+    "title_key": "rechargeBlanket",
+    "printify_product_id": "6af115e1fb9024aaf308ef7b",
+    "shipping_class": "home_standard",
+    "mockup": "recharge-blanket.jpg",
+    "options": [
+      {
+        "key": "30-40",
+        "label": "30\" × 40\"",
+        "printify_variant_id": 68322,
+        "price_cents": 2699
+      },
+      {
+        "key": "50-60",
+        "label": "50\" × 60\"",
+        "printify_variant_id": 68323,
+        "price_cents": 4299,
+        "shipping_class": "desk_mat"
+      }
+    ]
+  },
+  {
+    "slug": "plug-clock",
+    "collection": "home-living",
+    "title": "Freeplug Plug Time Wall Clock",
+    "title_key": "plugClock",
+    "printify_product_id": "6af115e459d5223aba0537f4",
+    "shipping_class": "desk_mat",
+    "mockup": "plug-clock.jpg",
+    "options": [
+      {
+        "key": "black-base-black-10",
+        "label": "Black Base / Black / 10\"",
+        "printify_variant_id": 43008,
+        "price_cents": 5399
+      },
+      {
+        "key": "black-base-white-10",
+        "label": "Black Base / White / 10\"",
+        "printify_variant_id": 43009,
+        "price_cents": 5399
+      },
+      {
+        "key": "white-base-black-10",
+        "label": "White Base / Black / 10\"",
+        "printify_variant_id": 43010,
+        "price_cents": 5399
+      },
+      {
+        "key": "wooden-base-black-10",
+        "label": "Wooden Base / Black / 10\"",
+        "printify_variant_id": 43012,
+        "price_cents": 5399
+      }
+    ]
+  },
+  {
+    "slug": "plugged-cutting-board",
+    "collection": "home-living",
+    "title": "Freeplug Plugged-In Kitchen Cutting Board",
+    "title_key": "pluggedCuttingBoard",
+    "printify_product_id": "6af115e9dcdd68a40100a5e0",
+    "shipping_class": "canvas_lg",
+    "mockup": "plugged-cutting-board.jpg",
+    "options": [
+      {
+        "key": "8-x-11-rectangle",
+        "label": "8\" x 11\" / Rectangle",
+        "printify_variant_id": 77936,
+        "price_cents": 2799,
+        "shipping_class": "canvas_lg"
+      },
+      {
+        "key": "11-x-15-rectangle",
+        "label": "11\" x 15\" / Rectangle",
+        "printify_variant_id": 78183,
+        "price_cents": 3899,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "human-knows-dog-tee",
+    "collection": "pets",
+    "title": "Freeplug My Human Knows a Plug Pet Tank",
+    "title_key": "humanKnowsDogTee",
+    "printify_product_id": "6af115f23267fff9210a2284",
+    "shipping_class": "hat",
+    "mockup": "human-knows-dog-tee.jpg",
+    "options": [
+      {
+        "key": "m-heather",
+        "label": "M / Heather",
+        "printify_variant_id": 71116,
+        "price_cents": 4199
+      },
+      {
+        "key": "m-pink",
+        "label": "M / Pink",
+        "printify_variant_id": 71117,
+        "price_cents": 4199
+      },
+      {
+        "key": "m-white",
+        "label": "M / White",
+        "printify_variant_id": 71118,
+        "price_cents": 4199
+      },
+      {
+        "key": "l-black",
+        "label": "L / Black",
+        "printify_variant_id": 71119,
+        "price_cents": 4199
+      },
+      {
+        "key": "l-heather",
+        "label": "L / Heather",
+        "printify_variant_id": 71120,
+        "price_cents": 4199
+      },
+      {
+        "key": "l-pink",
+        "label": "L / Pink",
+        "printify_variant_id": 71121,
+        "price_cents": 4199
+      },
+      {
+        "key": "l-white",
+        "label": "L / White",
+        "printify_variant_id": 71122,
+        "price_cents": 4199
+      },
+      {
+        "key": "xl-black",
+        "label": "XL / Black",
+        "printify_variant_id": 71123,
+        "price_cents": 4199
+      },
+      {
+        "key": "xl-heather",
+        "label": "XL / Heather",
+        "printify_variant_id": 71124,
+        "price_cents": 4199
+      },
+      {
+        "key": "xl-pink",
+        "label": "XL / Pink",
+        "printify_variant_id": 71125,
+        "price_cents": 4199
+      },
+      {
+        "key": "xl-white",
+        "label": "XL / White",
+        "printify_variant_id": 71126,
+        "price_cents": 4199
+      }
+    ]
+  },
+  {
+    "slug": "newest-onesie",
+    "collection": "kids-baby",
+    "title": "Freeplug Newest Plug Baby Onesie",
+    "title_key": "newestOnesie",
+    "printify_product_id": "6af115fcdcdd68a40100a5e7",
+    "shipping_class": "apparel_light",
+    "mockup": "newest-onesie.jpg",
+    "options": [
+      {
+        "key": "white-12m",
+        "label": "White / 12M",
+        "printify_variant_id": 70900,
+        "price_cents": 2599
+      },
+      {
+        "key": "white-18m",
+        "label": "White / 18M",
+        "printify_variant_id": 70904,
+        "price_cents": 2599
+      },
+      {
+        "key": "white-24m",
+        "label": "White / 24M",
+        "printify_variant_id": 70908,
+        "price_cents": 2599
+      },
+      {
+        "key": "blue-3-6m",
+        "label": "Blue / 3-6M",
+        "printify_variant_id": 71073,
+        "price_cents": 2599
+      },
+      {
+        "key": "pink-3-6m",
+        "label": "Pink / 3-6M",
+        "printify_variant_id": 71075,
+        "price_cents": 2599
+      },
+      {
+        "key": "white-3-6m",
+        "label": "White / 3-6M",
+        "printify_variant_id": 71076,
+        "price_cents": 2599
+      },
+      {
+        "key": "pink-6-9m",
+        "label": "Pink / 6-9M",
+        "printify_variant_id": 71079,
+        "price_cents": 2599
+      },
+      {
+        "key": "white-6-9m",
+        "label": "White / 6-9M",
+        "printify_variant_id": 71080,
+        "price_cents": 2599
+      },
+      {
+        "key": "white-nb-0m",
+        "label": "White / NB (0M)",
+        "printify_variant_id": 71084,
+        "price_cents": 2599
+      },
+      {
+        "key": "white-preemie",
+        "label": "White / Preemie",
+        "printify_variant_id": 71088,
+        "price_cents": 2599
+      },
+      {
+        "key": "blue-nb-0-3m",
+        "label": "Blue / NB (0-3M)",
+        "printify_variant_id": 71089,
+        "price_cents": 2599
+      },
+      {
+        "key": "grey-nb-0-3m",
+        "label": "Grey / NB (0-3M)",
+        "printify_variant_id": 71090,
+        "price_cents": 2599
+      },
+      {
+        "key": "pink-nb-0-3m",
+        "label": "Pink / NB (0-3M)",
+        "printify_variant_id": 71091,
+        "price_cents": 2599
+      },
+      {
+        "key": "white-nb-0-3m",
+        "label": "White / NB (0-3M)",
+        "printify_variant_id": 71092,
+        "price_cents": 2599
+      }
+    ]
+  },
+  {
+    "slug": "mini-plug-tee",
+    "collection": "kids-baby",
+    "title": "Freeplug Mini Plug Toddler Tee",
+    "title_key": "miniPlugTee",
+    "printify_product_id": "6af11619fb9024aaf308efc1",
+    "shipping_class": "apparel_light",
+    "mockup": "mini-plug-tee.jpg",
+    "options": [
+      {
+        "key": "white-2t",
+        "label": "White / 2T",
+        "printify_variant_id": 71234,
+        "price_cents": 1999
+      },
+      {
+        "key": "white-3t",
+        "label": "White / 3T",
+        "printify_variant_id": 71235,
+        "price_cents": 1999
+      },
+      {
+        "key": "white-4t",
+        "label": "White / 4T",
+        "printify_variant_id": 71236,
+        "price_cents": 1999
+      },
+      {
+        "key": "white-5t",
+        "label": "White / 5T",
+        "printify_variant_id": 71237,
+        "price_cents": 1999
+      },
+      {
+        "key": "asphalt-2t",
+        "label": "Asphalt / 2T",
+        "printify_variant_id": 74420,
+        "price_cents": 1999
+      },
+      {
+        "key": "athletic-heather-2t",
+        "label": "Athletic Heather / 2T",
+        "printify_variant_id": 74421,
+        "price_cents": 1999
+      },
+      {
+        "key": "black-2t",
+        "label": "Black / 2T",
+        "printify_variant_id": 74422,
+        "price_cents": 1999
+      },
+      {
+        "key": "navy-2t",
+        "label": "Navy / 2T",
+        "printify_variant_id": 74424,
+        "price_cents": 1999
+      },
+      {
+        "key": "pink-2t",
+        "label": "Pink / 2T",
+        "printify_variant_id": 74425,
+        "price_cents": 1999
+      },
+      {
+        "key": "asphalt-3t",
+        "label": "Asphalt / 3T",
+        "printify_variant_id": 74426,
+        "price_cents": 1999
+      },
+      {
+        "key": "athletic-heather-3t",
+        "label": "Athletic Heather / 3T",
+        "printify_variant_id": 74427,
+        "price_cents": 1999
+      },
+      {
+        "key": "black-3t",
+        "label": "Black / 3T",
+        "printify_variant_id": 74428,
+        "price_cents": 1999
+      },
+      {
+        "key": "navy-3t",
+        "label": "Navy / 3T",
+        "printify_variant_id": 74430,
+        "price_cents": 1999
+      },
+      {
+        "key": "pink-3t",
+        "label": "Pink / 3T",
+        "printify_variant_id": 74431,
+        "price_cents": 1999
+      },
+      {
+        "key": "asphalt-4t",
+        "label": "Asphalt / 4T",
+        "printify_variant_id": 74432,
+        "price_cents": 1999
+      },
+      {
+        "key": "athletic-heather-4t",
+        "label": "Athletic Heather / 4T",
+        "printify_variant_id": 74433,
+        "price_cents": 1999
+      },
+      {
+        "key": "black-4t",
+        "label": "Black / 4T",
+        "printify_variant_id": 74434,
+        "price_cents": 1999
+      },
+      {
+        "key": "navy-4t",
+        "label": "Navy / 4T",
+        "printify_variant_id": 74436,
+        "price_cents": 1999
+      },
+      {
+        "key": "pink-4t",
+        "label": "Pink / 4T",
+        "printify_variant_id": 74437,
+        "price_cents": 1999
+      },
+      {
+        "key": "asphalt-5t",
+        "label": "Asphalt / 5T",
+        "printify_variant_id": 74438,
+        "price_cents": 1999
+      },
+      {
+        "key": "athletic-heather-5t",
+        "label": "Athletic Heather / 5T",
+        "printify_variant_id": 74439,
+        "price_cents": 1999
+      },
+      {
+        "key": "black-5t",
+        "label": "Black / 5T",
+        "printify_variant_id": 74440,
+        "price_cents": 1999
+      },
+      {
+        "key": "navy-5t",
+        "label": "Navy / 5T",
+        "printify_variant_id": 74442,
+        "price_cents": 1999
+      },
+      {
+        "key": "pink-5t",
+        "label": "Pink / 5T",
+        "printify_variant_id": 74443,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-columbia-blue-2t",
+        "label": "Heather Columbia Blue / 2T",
+        "printify_variant_id": 74655,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-columbia-blue-3t",
+        "label": "Heather Columbia Blue / 3T",
+        "printify_variant_id": 74656,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-columbia-blue-4t",
+        "label": "Heather Columbia Blue / 4T",
+        "printify_variant_id": 74657,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-columbia-blue-5t",
+        "label": "Heather Columbia Blue / 5T",
+        "printify_variant_id": 74658,
+        "price_cents": 1999
+      },
+      {
+        "key": "dark-heather-grey-2t",
+        "label": "Dark Heather Grey / 2T",
+        "printify_variant_id": 79211,
+        "price_cents": 1999
+      },
+      {
+        "key": "dark-heather-grey-3t",
+        "label": "Dark Heather Grey / 3T",
+        "printify_variant_id": 79212,
+        "price_cents": 1999
+      },
+      {
+        "key": "dark-heather-grey-4t",
+        "label": "Dark Heather Grey / 4T",
+        "printify_variant_id": 79213,
+        "price_cents": 1999
+      },
+      {
+        "key": "dark-heather-grey-5t",
+        "label": "Dark Heather Grey / 5T",
+        "printify_variant_id": 79214,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-dust-2t",
+        "label": "Heather Dust / 2T",
+        "printify_variant_id": 79215,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-dust-3t",
+        "label": "Heather Dust / 3T",
+        "printify_variant_id": 79216,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-dust-4t",
+        "label": "Heather Dust / 4T",
+        "printify_variant_id": 79217,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-dust-5t",
+        "label": "Heather Dust / 5T",
+        "printify_variant_id": 79218,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-maroon-2t",
+        "label": "Heather Maroon / 2T",
+        "printify_variant_id": 79219,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-maroon-3t",
+        "label": "Heather Maroon / 3T",
+        "printify_variant_id": 79220,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-maroon-4t",
+        "label": "Heather Maroon / 4T",
+        "printify_variant_id": 79221,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-maroon-5t",
+        "label": "Heather Maroon / 5T",
+        "printify_variant_id": 79222,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-mauve-2t",
+        "label": "Heather Mauve / 2T",
+        "printify_variant_id": 79223,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-mauve-3t",
+        "label": "Heather Mauve / 3T",
+        "printify_variant_id": 79224,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-mauve-4t",
+        "label": "Heather Mauve / 4T",
+        "printify_variant_id": 79225,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-mauve-5t",
+        "label": "Heather Mauve / 5T",
+        "printify_variant_id": 79226,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-red-2t",
+        "label": "Heather Red / 2T",
+        "printify_variant_id": 79227,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-red-3t",
+        "label": "Heather Red / 3T",
+        "printify_variant_id": 79228,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-red-4t",
+        "label": "Heather Red / 4T",
+        "printify_variant_id": 79229,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-red-5t",
+        "label": "Heather Red / 5T",
+        "printify_variant_id": 79230,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-stone-2t",
+        "label": "Heather Stone / 2T",
+        "printify_variant_id": 79231,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-stone-3t",
+        "label": "Heather Stone / 3T",
+        "printify_variant_id": 79232,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-stone-4t",
+        "label": "Heather Stone / 4T",
+        "printify_variant_id": 79233,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-stone-5t",
+        "label": "Heather Stone / 5T",
+        "printify_variant_id": 79234,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-yellow-gold-2t",
+        "label": "Heather Yellow Gold / 2T",
+        "printify_variant_id": 79235,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-yellow-gold-3t",
+        "label": "Heather Yellow Gold / 3T",
+        "printify_variant_id": 79236,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-yellow-gold-4t",
+        "label": "Heather Yellow Gold / 4T",
+        "printify_variant_id": 79237,
+        "price_cents": 1999
+      },
+      {
+        "key": "heather-yellow-gold-5t",
+        "label": "Heather Yellow Gold / 5T",
+        "printify_variant_id": 79238,
+        "price_cents": 1999
+      },
+      {
+        "key": "kelly-2t",
+        "label": "Kelly / 2T",
+        "printify_variant_id": 79239,
+        "price_cents": 1999
+      },
+      {
+        "key": "kelly-3t",
+        "label": "Kelly / 3T",
+        "printify_variant_id": 79240,
+        "price_cents": 1999
+      },
+      {
+        "key": "kelly-4t",
+        "label": "Kelly / 4T",
+        "printify_variant_id": 79241,
+        "price_cents": 1999
+      },
+      {
+        "key": "kelly-5t",
+        "label": "Kelly / 5T",
+        "printify_variant_id": 79242,
+        "price_cents": 1999
+      },
+      {
+        "key": "natural-2t",
+        "label": "Natural / 2T",
+        "printify_variant_id": 79243,
+        "price_cents": 1999
+      },
+      {
+        "key": "natural-3t",
+        "label": "Natural / 3T",
+        "printify_variant_id": 79244,
+        "price_cents": 1999
+      },
+      {
+        "key": "natural-4t",
+        "label": "Natural / 4T",
+        "printify_variant_id": 79245,
+        "price_cents": 1999
+      },
+      {
+        "key": "natural-5t",
+        "label": "Natural / 5T",
+        "printify_variant_id": 79246,
+        "price_cents": 1999
+      },
+      {
+        "key": "true-royal-2t",
+        "label": "True Royal / 2T",
+        "printify_variant_id": 79247,
+        "price_cents": 1999
+      },
+      {
+        "key": "true-royal-3t",
+        "label": "True Royal / 3T",
+        "printify_variant_id": 79248,
+        "price_cents": 1999
+      },
+      {
+        "key": "true-royal-4t",
+        "label": "True Royal / 4T",
+        "printify_variant_id": 79249,
+        "price_cents": 1999
+      },
+      {
+        "key": "true-royal-5t",
+        "label": "True Royal / 5T",
+        "printify_variant_id": 79250,
+        "price_cents": 1999
+      },
+      {
+        "key": "yellow-2t",
+        "label": "Yellow / 2T",
+        "printify_variant_id": 79251,
+        "price_cents": 1999
+      },
+      {
+        "key": "yellow-3t",
+        "label": "Yellow / 3T",
+        "printify_variant_id": 79252,
+        "price_cents": 1999
+      },
+      {
+        "key": "yellow-4t",
+        "label": "Yellow / 4T",
+        "printify_variant_id": 79253,
+        "price_cents": 1999
+      },
+      {
+        "key": "yellow-5t",
+        "label": "Yellow / 5T",
+        "printify_variant_id": 79254,
+        "price_cents": 1999
+      }
+    ]
+  },
+  {
+    "slug": "stay-charged-pullover",
+    "collection": "apparel",
+    "title": "Freeplug Stay Charged Pullover Hoodie",
+    "title_key": "stayChargedPullover",
+    "printify_product_id": "6af1163ae16bc2f47108ae6f",
+    "shipping_class": "crewneck",
+    "mockup": "stay-charged-pullover.jpg",
+    "options": [
+      {
+        "key": "black-2xl",
+        "label": "Black / 2XL",
+        "printify_variant_id": 122946,
+        "price_cents": 6499
+      },
+      {
+        "key": "heather-grey-2xl",
+        "label": "Heather Grey / 2XL",
+        "printify_variant_id": 122947,
+        "price_cents": 6499
+      },
+      {
+        "key": "navy-blue-2xl",
+        "label": "Navy Blue / 2XL",
+        "printify_variant_id": 122949,
+        "price_cents": 6499
+      },
+      {
+        "key": "storm-2xl",
+        "label": "Storm / 2XL",
+        "printify_variant_id": 122951,
+        "price_cents": 6499
+      },
+      {
+        "key": "white-2xl",
+        "label": "White / 2XL",
+        "printify_variant_id": 122952,
+        "price_cents": 6499
+      },
+      {
+        "key": "navy-blue-3xl",
+        "label": "Navy Blue / 3XL",
+        "printify_variant_id": 122956,
+        "price_cents": 6499
+      },
+      {
+        "key": "storm-3xl",
+        "label": "Storm / 3XL",
+        "printify_variant_id": 122958,
+        "price_cents": 6499
+      },
+      {
+        "key": "black-l",
+        "label": "Black / L",
+        "printify_variant_id": 122960,
+        "price_cents": 6499
+      },
+      {
+        "key": "navy-blue-l",
+        "label": "Navy Blue / L",
+        "printify_variant_id": 122963,
+        "price_cents": 6499
+      },
+      {
+        "key": "black-m",
+        "label": "Black / M",
+        "printify_variant_id": 122967,
+        "price_cents": 6499
+      },
+      {
+        "key": "heather-grey-m",
+        "label": "Heather Grey / M",
+        "printify_variant_id": 122968,
+        "price_cents": 6499
+      },
+      {
+        "key": "mushroom-m",
+        "label": "Mushroom / M",
+        "printify_variant_id": 122969,
+        "price_cents": 6499
+      },
+      {
+        "key": "navy-blue-m",
+        "label": "Navy Blue / M",
+        "printify_variant_id": 122970,
+        "price_cents": 6499
+      },
+      {
+        "key": "black-s",
+        "label": "Black / S",
+        "printify_variant_id": 122974,
+        "price_cents": 6499
+      },
+      {
+        "key": "heather-grey-s",
+        "label": "Heather Grey / S",
+        "printify_variant_id": 122975,
+        "price_cents": 6499
+      },
+      {
+        "key": "mushroom-s",
+        "label": "Mushroom / S",
+        "printify_variant_id": 122976,
+        "price_cents": 6499
+      },
+      {
+        "key": "navy-blue-s",
+        "label": "Navy Blue / S",
+        "printify_variant_id": 122977,
+        "price_cents": 6499
+      },
+      {
+        "key": "black-xl",
+        "label": "Black / XL",
+        "printify_variant_id": 122981,
+        "price_cents": 6499
+      },
+      {
+        "key": "heather-grey-xl",
+        "label": "Heather Grey / XL",
+        "printify_variant_id": 122982,
+        "price_cents": 6499
+      },
+      {
+        "key": "mushroom-xl",
+        "label": "Mushroom / XL",
+        "printify_variant_id": 122983,
+        "price_cents": 6499
+      },
+      {
+        "key": "navy-blue-xl",
+        "label": "Navy Blue / XL",
+        "printify_variant_id": 122984,
+        "price_cents": 6499
+      }
+    ]
+  },
+  {
+    "slug": "day-one-zip",
+    "collection": "apparel",
+    "title": "Freeplug Plugged In Since Day One Zip Hoodie",
+    "title_key": "dayOneZip",
+    "printify_product_id": "6af1163d59d5223aba053841",
+    "shipping_class": "crewneck",
+    "mockup": "day-one-zip.jpg",
+    "options": [
+      {
+        "key": "black-2xl",
+        "label": "Black / 2XL",
+        "printify_variant_id": 119542,
+        "price_cents": 6599
+      },
+      {
+        "key": "classic-navy-2xl",
+        "label": "Classic Navy / 2XL",
+        "printify_variant_id": 119544,
+        "price_cents": 6599
+      },
+      {
+        "key": "black-l",
+        "label": "Black / L",
+        "printify_variant_id": 119548,
+        "price_cents": 6599
+      },
+      {
+        "key": "classic-navy-l",
+        "label": "Classic Navy / L",
+        "printify_variant_id": 119550,
+        "price_cents": 6599
+      },
+      {
+        "key": "black-m",
+        "label": "Black / M",
+        "printify_variant_id": 119554,
+        "price_cents": 6599
+      },
+      {
+        "key": "classic-navy-m",
+        "label": "Classic Navy / M",
+        "printify_variant_id": 119556,
+        "price_cents": 6599
+      },
+      {
+        "key": "black-s",
+        "label": "Black / S",
+        "printify_variant_id": 119560,
+        "price_cents": 6599
+      },
+      {
+        "key": "classic-navy-s",
+        "label": "Classic Navy / S",
+        "printify_variant_id": 119562,
+        "price_cents": 6599
+      },
+      {
+        "key": "black-xl",
+        "label": "Black / XL",
+        "printify_variant_id": 119566,
+        "price_cents": 6599
+      },
+      {
+        "key": "classic-navy-xl",
+        "label": "Classic Navy / XL",
+        "printify_variant_id": 119568,
+        "price_cents": 6599
+      },
+      {
+        "key": "alpine-green-2xl",
+        "label": "Alpine Green / 2XL",
+        "printify_variant_id": 119572,
+        "price_cents": 6599
+      },
+      {
+        "key": "alpine-green-xl",
+        "label": "Alpine Green / XL",
+        "printify_variant_id": 119576,
+        "price_cents": 6599
+      },
+      {
+        "key": "charcoal-heather-2xl",
+        "label": "Charcoal Heather / 2XL",
+        "printify_variant_id": 119870,
+        "price_cents": 6599
+      },
+      {
+        "key": "charcoal-heather-l",
+        "label": "Charcoal Heather / L",
+        "printify_variant_id": 119871,
+        "price_cents": 6599
+      },
+      {
+        "key": "charcoal-heather-m",
+        "label": "Charcoal Heather / M",
+        "printify_variant_id": 119872,
+        "price_cents": 6599
+      },
+      {
+        "key": "charcoal-heather-s",
+        "label": "Charcoal Heather / S",
+        "printify_variant_id": 119873,
+        "price_cents": 6599
+      },
+      {
+        "key": "charcoal-heather-xl",
+        "label": "Charcoal Heather / XL",
+        "printify_variant_id": 119874,
+        "price_cents": 6599
+      }
+    ]
+  },
+  {
+    "slug": "good-measure-longsleeve",
+    "collection": "apparel",
+    "title": "Freeplug Good Measure Long Sleeve Tee",
+    "title_key": "goodMeasureLongsleeve",
+    "printify_product_id": "6af11657e16bc2f47108ae9c",
+    "shipping_class": "apparel_light",
+    "mockup": "good-measure-longsleeve.jpg",
+    "options": [
+      {
+        "key": "l-asphalt",
+        "label": "L / Asphalt",
+        "printify_variant_id": 24986,
+        "price_cents": 3399
+      },
+      {
+        "key": "m-asphalt",
+        "label": "M / Asphalt",
+        "printify_variant_id": 24987,
+        "price_cents": 3399
+      },
+      {
+        "key": "s-asphalt",
+        "label": "S / Asphalt",
+        "printify_variant_id": 24988,
+        "price_cents": 3399
+      },
+      {
+        "key": "xl-asphalt",
+        "label": "XL / Asphalt",
+        "printify_variant_id": 24989,
+        "price_cents": 3399
+      },
+      {
+        "key": "2xl-asphalt",
+        "label": "2XL / Asphalt",
+        "printify_variant_id": 24990,
+        "price_cents": 3399
+      },
+      {
+        "key": "l-athletic-heather",
+        "label": "L / Athletic Heather",
+        "printify_variant_id": 24991,
+        "price_cents": 3399
+      },
+      {
+        "key": "m-athletic-heather",
+        "label": "M / Athletic Heather",
+        "printify_variant_id": 24992,
+        "price_cents": 3399
+      },
+      {
+        "key": "s-athletic-heather",
+        "label": "S / Athletic Heather",
+        "printify_variant_id": 24993,
+        "price_cents": 3399
+      },
+      {
+        "key": "xl-athletic-heather",
+        "label": "XL / Athletic Heather",
+        "printify_variant_id": 24994,
+        "price_cents": 3399
+      },
+      {
+        "key": "2xl-athletic-heather",
+        "label": "2XL / Athletic Heather",
+        "printify_variant_id": 24995,
+        "price_cents": 3399
+      },
+      {
+        "key": "l-black",
+        "label": "L / Black",
+        "printify_variant_id": 24996,
+        "price_cents": 3399
+      },
+      {
+        "key": "m-black",
+        "label": "M / Black",
+        "printify_variant_id": 24997,
+        "price_cents": 3399
+      },
+      {
+        "key": "s-black",
+        "label": "S / Black",
+        "printify_variant_id": 24998,
+        "price_cents": 3399
+      },
+      {
+        "key": "xl-black",
+        "label": "XL / Black",
+        "printify_variant_id": 24999,
+        "price_cents": 3399
+      },
+      {
+        "key": "2xl-black",
+        "label": "2XL / Black",
+        "printify_variant_id": 25000,
+        "price_cents": 3399
+      },
+      {
+        "key": "s-dark-grey-heather",
+        "label": "S / Dark Grey Heather",
+        "printify_variant_id": 25018,
+        "price_cents": 3399
+      },
+      {
+        "key": "xl-dark-grey-heather",
+        "label": "XL / Dark Grey Heather",
+        "printify_variant_id": 25019,
+        "price_cents": 3399
+      },
+      {
+        "key": "2xl-dark-grey-heather",
+        "label": "2XL / Dark Grey Heather",
+        "printify_variant_id": 25020,
+        "price_cents": 3399
+      },
+      {
+        "key": "l-navy",
+        "label": "L / Navy",
+        "printify_variant_id": 25046,
+        "price_cents": 3399
+      },
+      {
+        "key": "m-navy",
+        "label": "M / Navy",
+        "printify_variant_id": 25047,
+        "price_cents": 3399
+      },
+      {
+        "key": "s-navy",
+        "label": "S / Navy",
+        "printify_variant_id": 25048,
+        "price_cents": 3399
+      },
+      {
+        "key": "xl-navy",
+        "label": "XL / Navy",
+        "printify_variant_id": 25049,
+        "price_cents": 3399
+      },
+      {
+        "key": "2xl-navy",
+        "label": "2XL / Navy",
+        "printify_variant_id": 25050,
+        "price_cents": 3399
+      },
+      {
+        "key": "l-white",
+        "label": "L / White",
+        "printify_variant_id": 25076,
+        "price_cents": 3399
+      },
+      {
+        "key": "m-white",
+        "label": "M / White",
+        "printify_variant_id": 25077,
+        "price_cents": 3399
+      },
+      {
+        "key": "s-white",
+        "label": "S / White",
+        "printify_variant_id": 25078,
+        "price_cents": 3399
+      },
+      {
+        "key": "xl-white",
+        "label": "XL / White",
+        "printify_variant_id": 25079,
+        "price_cents": 3399
+      },
+      {
+        "key": "2xl-white",
+        "label": "2XL / White",
+        "printify_variant_id": 25080,
+        "price_cents": 3399
+      },
+      {
+        "key": "s-heather-forest",
+        "label": "S / Heather Forest",
+        "printify_variant_id": 39061,
+        "price_cents": 3399
+      },
+      {
+        "key": "m-heather-forest",
+        "label": "M / Heather Forest",
+        "printify_variant_id": 39079,
+        "price_cents": 3399
+      },
+      {
+        "key": "xl-heather-forest",
+        "label": "XL / Heather Forest",
+        "printify_variant_id": 39115,
+        "price_cents": 3399
+      },
+      {
+        "key": "2xl-heather-forest",
+        "label": "2XL / Heather Forest",
+        "printify_variant_id": 39133,
+        "price_cents": 3399
+      }
+    ]
+  },
+  {
+    "slug": "hustle-joggers",
+    "collection": "apparel",
+    "title": "Freeplug Low Battery High Hustle Joggers",
+    "title_key": "hustleJoggers",
+    "printify_product_id": "6af1165b59d5223aba053865",
+    "shipping_class": "crewneck",
+    "mockup": "hustle-joggers.jpg",
+    "options": [
+      {
+        "key": "athletic-heather-s",
+        "label": "Athletic Heather / S",
+        "printify_variant_id": 119177,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-s",
+        "label": "Black / S",
+        "printify_variant_id": 119178,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-heather-s",
+        "label": "Black Heather / S",
+        "printify_variant_id": 119179,
+        "price_cents": 4799
+      },
+      {
+        "key": "j-navy-s",
+        "label": "J. Navy / S",
+        "printify_variant_id": 119180,
+        "price_cents": 4799
+      },
+      {
+        "key": "athletic-heather-m",
+        "label": "Athletic Heather / M",
+        "printify_variant_id": 119181,
+        "price_cents": 4799
+      },
+      {
+        "key": "athletic-heather-2xl",
+        "label": "Athletic Heather / 2XL",
+        "printify_variant_id": 119182,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-2xl",
+        "label": "Black / 2XL",
+        "printify_variant_id": 119183,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-heather-2xl",
+        "label": "Black Heather / 2XL",
+        "printify_variant_id": 119184,
+        "price_cents": 4799
+      },
+      {
+        "key": "j-navy-2xl",
+        "label": "J. Navy / 2XL",
+        "printify_variant_id": 119185,
+        "price_cents": 4799
+      },
+      {
+        "key": "athletic-heather-l",
+        "label": "Athletic Heather / L",
+        "printify_variant_id": 119186,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-l",
+        "label": "Black / L",
+        "printify_variant_id": 119187,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-heather-l",
+        "label": "Black Heather / L",
+        "printify_variant_id": 119188,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-m",
+        "label": "Black / M",
+        "printify_variant_id": 119190,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-heather-m",
+        "label": "Black Heather / M",
+        "printify_variant_id": 119191,
+        "price_cents": 4799
+      },
+      {
+        "key": "j-navy-m",
+        "label": "J. Navy / M",
+        "printify_variant_id": 119192,
+        "price_cents": 4799
+      },
+      {
+        "key": "athletic-heather-xl",
+        "label": "Athletic Heather / XL",
+        "printify_variant_id": 119193,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-xl",
+        "label": "Black / XL",
+        "printify_variant_id": 119194,
+        "price_cents": 4799
+      },
+      {
+        "key": "black-heather-xl",
+        "label": "Black Heather / XL",
+        "printify_variant_id": 119195,
+        "price_cents": 4799
+      }
+    ]
+  },
+  {
+    "slug": "charging-kids-hoodie",
+    "collection": "kids-baby",
+    "title": "Freeplug Charging Up Youth Hoodie",
+    "title_key": "chargingKidsHoodie",
+    "printify_product_id": "6af1166659d5223aba053870",
+    "shipping_class": "crewneck",
+    "mockup": "charging-kids-hoodie.jpg",
+    "options": [
+      {
+        "key": "carolina-blue-m",
+        "label": "Carolina Blue / M",
+        "printify_variant_id": 43884,
+        "price_cents": 3999
+      },
+      {
+        "key": "dark-heather-m",
+        "label": "Dark Heather / M",
+        "printify_variant_id": 43887,
+        "price_cents": 3999
+      },
+      {
+        "key": "light-pink-m",
+        "label": "Light Pink / M",
+        "printify_variant_id": 43890,
+        "price_cents": 3999
+      },
+      {
+        "key": "navy-m",
+        "label": "Navy / M",
+        "printify_variant_id": 43892,
+        "price_cents": 3999
+      },
+      {
+        "key": "sport-grey-m",
+        "label": "Sport Grey / M",
+        "printify_variant_id": 43897,
+        "price_cents": 3999
+      },
+      {
+        "key": "white-m",
+        "label": "White / M",
+        "printify_variant_id": 43898,
+        "price_cents": 3999
+      },
+      {
+        "key": "black-m",
+        "label": "Black / M",
+        "printify_variant_id": 43899,
+        "price_cents": 3999
+      },
+      {
+        "key": "carolina-blue-l",
+        "label": "Carolina Blue / L",
+        "printify_variant_id": 43903,
+        "price_cents": 3999
+      },
+      {
+        "key": "dark-heather-l",
+        "label": "Dark Heather / L",
+        "printify_variant_id": 43906,
+        "price_cents": 3999
+      },
+      {
+        "key": "light-pink-l",
+        "label": "Light Pink / L",
+        "printify_variant_id": 43909,
+        "price_cents": 3999
+      },
+      {
+        "key": "navy-l",
+        "label": "Navy / L",
+        "printify_variant_id": 43911,
+        "price_cents": 3999
+      },
+      {
+        "key": "royal-l",
+        "label": "Royal / L",
+        "printify_variant_id": 43915,
+        "price_cents": 3999
+      },
+      {
+        "key": "sport-grey-l",
+        "label": "Sport Grey / L",
+        "printify_variant_id": 43916,
+        "price_cents": 3999
+      },
+      {
+        "key": "black-l",
+        "label": "Black / L",
+        "printify_variant_id": 43918,
+        "price_cents": 3999
+      },
+      {
+        "key": "forest-green-l",
+        "label": "Forest Green / L",
+        "printify_variant_id": 43919,
+        "price_cents": 3999
+      },
+      {
+        "key": "carolina-blue-xl",
+        "label": "Carolina Blue / XL",
+        "printify_variant_id": 43922,
+        "price_cents": 3999
+      },
+      {
+        "key": "dark-heather-xl",
+        "label": "Dark Heather / XL",
+        "printify_variant_id": 43925,
+        "price_cents": 3999
+      },
+      {
+        "key": "navy-xl",
+        "label": "Navy / XL",
+        "printify_variant_id": 43930,
+        "price_cents": 3999
+      },
+      {
+        "key": "royal-xl",
+        "label": "Royal / XL",
+        "printify_variant_id": 43934,
+        "price_cents": 3999
+      },
+      {
+        "key": "sport-grey-xl",
+        "label": "Sport Grey / XL",
+        "printify_variant_id": 43935,
+        "price_cents": 3999
+      },
+      {
+        "key": "black-xl",
+        "label": "Black / XL",
+        "printify_variant_id": 43937,
+        "price_cents": 3999
+      },
+      {
+        "key": "forest-green-xl",
+        "label": "Forest Green / XL",
+        "printify_variant_id": 43938,
+        "price_cents": 3999
+      }
+    ]
+  },
+  {
+    "slug": "ugly-sweater-crew",
+    "collection": "apparel",
+    "title": "Freeplug Ugly Sweater Crewneck",
+    "title_key": "uglySweaterCrew",
+    "printify_product_id": "6af116a4680657c55207819e",
+    "shipping_class": "crewneck",
+    "mockup": "ugly-sweater-crew.jpg",
+    "options": [
+      {
+        "key": "s-ash",
+        "label": "S / Ash",
+        "printify_variant_id": 25377,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-dark-heather",
+        "label": "S / Dark Heather",
+        "printify_variant_id": 25381,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-light-blue",
+        "label": "S / Light Blue",
+        "printify_variant_id": 25385,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-light-pink",
+        "label": "S / Light Pink",
+        "printify_variant_id": 25386,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-maroon",
+        "label": "S / Maroon",
+        "printify_variant_id": 25387,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-navy",
+        "label": "S / Navy",
+        "printify_variant_id": 25388,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-purple",
+        "label": "S / Purple",
+        "printify_variant_id": 25390,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-sand",
+        "label": "S / Sand",
+        "printify_variant_id": 25394,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-sport-grey",
+        "label": "S / Sport Grey",
+        "printify_variant_id": 25395,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-white",
+        "label": "S / White",
+        "printify_variant_id": 25396,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-black",
+        "label": "S / Black",
+        "printify_variant_id": 25397,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-forest-green",
+        "label": "S / Forest Green",
+        "printify_variant_id": 25400,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-military-green",
+        "label": "S / Military Green",
+        "printify_variant_id": 25404,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-ash",
+        "label": "M / Ash",
+        "printify_variant_id": 25408,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-dark-heather",
+        "label": "M / Dark Heather",
+        "printify_variant_id": 25412,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-light-blue",
+        "label": "M / Light Blue",
+        "printify_variant_id": 25416,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-light-pink",
+        "label": "M / Light Pink",
+        "printify_variant_id": 25417,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-maroon",
+        "label": "M / Maroon",
+        "printify_variant_id": 25418,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-navy",
+        "label": "M / Navy",
+        "printify_variant_id": 25419,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-purple",
+        "label": "M / Purple",
+        "printify_variant_id": 25421,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-sand",
+        "label": "M / Sand",
+        "printify_variant_id": 25425,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-sport-grey",
+        "label": "M / Sport Grey",
+        "printify_variant_id": 25426,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-white",
+        "label": "M / White",
+        "printify_variant_id": 25427,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-black",
+        "label": "M / Black",
+        "printify_variant_id": 25428,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-forest-green",
+        "label": "M / Forest Green",
+        "printify_variant_id": 25431,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-military-green",
+        "label": "M / Military Green",
+        "printify_variant_id": 25435,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-ash",
+        "label": "L / Ash",
+        "printify_variant_id": 25439,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-dark-heather",
+        "label": "L / Dark Heather",
+        "printify_variant_id": 25443,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-light-blue",
+        "label": "L / Light Blue",
+        "printify_variant_id": 25447,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-light-pink",
+        "label": "L / Light Pink",
+        "printify_variant_id": 25448,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-maroon",
+        "label": "L / Maroon",
+        "printify_variant_id": 25449,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-navy",
+        "label": "L / Navy",
+        "printify_variant_id": 25450,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-purple",
+        "label": "L / Purple",
+        "printify_variant_id": 25452,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-sand",
+        "label": "L / Sand",
+        "printify_variant_id": 25456,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-sport-grey",
+        "label": "L / Sport Grey",
+        "printify_variant_id": 25457,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-white",
+        "label": "L / White",
+        "printify_variant_id": 25458,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-black",
+        "label": "L / Black",
+        "printify_variant_id": 25459,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-forest-green",
+        "label": "L / Forest Green",
+        "printify_variant_id": 25462,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-military-green",
+        "label": "L / Military Green",
+        "printify_variant_id": 25466,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-ash",
+        "label": "XL / Ash",
+        "printify_variant_id": 25470,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-dark-heather",
+        "label": "XL / Dark Heather",
+        "printify_variant_id": 25474,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-light-blue",
+        "label": "XL / Light Blue",
+        "printify_variant_id": 25478,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-light-pink",
+        "label": "XL / Light Pink",
+        "printify_variant_id": 25479,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-maroon",
+        "label": "XL / Maroon",
+        "printify_variant_id": 25480,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-navy",
+        "label": "XL / Navy",
+        "printify_variant_id": 25481,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-purple",
+        "label": "XL / Purple",
+        "printify_variant_id": 25483,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-sand",
+        "label": "XL / Sand",
+        "printify_variant_id": 25487,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-sport-grey",
+        "label": "XL / Sport Grey",
+        "printify_variant_id": 25488,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-white",
+        "label": "XL / White",
+        "printify_variant_id": 25489,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-black",
+        "label": "XL / Black",
+        "printify_variant_id": 25490,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-forest-green",
+        "label": "XL / Forest Green",
+        "printify_variant_id": 25493,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-military-green",
+        "label": "XL / Military Green",
+        "printify_variant_id": 25497,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-ash",
+        "label": "2XL / Ash",
+        "printify_variant_id": 25501,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-dark-heather",
+        "label": "2XL / Dark Heather",
+        "printify_variant_id": 25505,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-light-blue",
+        "label": "2XL / Light Blue",
+        "printify_variant_id": 25509,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-light-pink",
+        "label": "2XL / Light Pink",
+        "printify_variant_id": 25510,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-maroon",
+        "label": "2XL / Maroon",
+        "printify_variant_id": 25511,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-navy",
+        "label": "2XL / Navy",
+        "printify_variant_id": 25512,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-purple",
+        "label": "2XL / Purple",
+        "printify_variant_id": 25514,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-sand",
+        "label": "2XL / Sand",
+        "printify_variant_id": 25518,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-sport-grey",
+        "label": "2XL / Sport Grey",
+        "printify_variant_id": 25519,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-white",
+        "label": "2XL / White",
+        "printify_variant_id": 25520,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-black",
+        "label": "2XL / Black",
+        "printify_variant_id": 25521,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-forest-green",
+        "label": "2XL / Forest Green",
+        "printify_variant_id": 25524,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-military-green",
+        "label": "2XL / Military Green",
+        "printify_variant_id": 25528,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-ash",
+        "label": "3XL / Ash",
+        "printify_variant_id": 25532,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-dark-heather",
+        "label": "3XL / Dark Heather",
+        "printify_variant_id": 25536,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-light-blue",
+        "label": "3XL / Light Blue",
+        "printify_variant_id": 25540,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-light-pink",
+        "label": "3XL / Light Pink",
+        "printify_variant_id": 25541,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-maroon",
+        "label": "3XL / Maroon",
+        "printify_variant_id": 25542,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-navy",
+        "label": "3XL / Navy",
+        "printify_variant_id": 25543,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-purple",
+        "label": "3XL / Purple",
+        "printify_variant_id": 25545,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-sand",
+        "label": "3XL / Sand",
+        "printify_variant_id": 25549,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-sport-grey",
+        "label": "3XL / Sport Grey",
+        "printify_variant_id": 25550,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-white",
+        "label": "3XL / White",
+        "printify_variant_id": 25551,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-black",
+        "label": "3XL / Black",
+        "printify_variant_id": 25552,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-forest-green",
+        "label": "3XL / Forest Green",
+        "printify_variant_id": 25555,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-military-green",
+        "label": "3XL / Military Green",
+        "printify_variant_id": 25559,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-royal",
+        "label": "L / Royal",
+        "printify_variant_id": 25623,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-royal",
+        "label": "M / Royal",
+        "printify_variant_id": 25624,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-royal",
+        "label": "S / Royal",
+        "printify_variant_id": 25625,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-royal",
+        "label": "XL / Royal",
+        "printify_variant_id": 25626,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-royal",
+        "label": "2XL / Royal",
+        "printify_variant_id": 25627,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-royal",
+        "label": "3XL / Royal",
+        "printify_variant_id": 25628,
+        "price_cents": 3499
+      },
+      {
+        "key": "s-graphite-heather",
+        "label": "S / Graphite Heather",
+        "printify_variant_id": 64659,
+        "price_cents": 3499
+      },
+      {
+        "key": "m-graphite-heather",
+        "label": "M / Graphite Heather",
+        "printify_variant_id": 64662,
+        "price_cents": 3499
+      },
+      {
+        "key": "l-graphite-heather",
+        "label": "L / Graphite Heather",
+        "printify_variant_id": 64665,
+        "price_cents": 3499
+      },
+      {
+        "key": "xl-graphite-heather",
+        "label": "XL / Graphite Heather",
+        "printify_variant_id": 64668,
+        "price_cents": 3499
+      },
+      {
+        "key": "2xl-graphite-heather",
+        "label": "2XL / Graphite Heather",
+        "printify_variant_id": 64671,
+        "price_cents": 3499
+      },
+      {
+        "key": "3xl-graphite-heather",
+        "label": "3XL / Graphite Heather",
+        "printify_variant_id": 64674,
+        "price_cents": 3499
+      }
+    ]
+  },
+  {
+    "slug": "dont-hit-1-case",
+    "collection": "desk-extras",
+    "title": "Freeplug Don't Let Me Hit 1% Tough Phone Case",
+    "title_key": "dontHit1Case",
+    "printify_product_id": "6af116bc5a7173e14f0b1548",
+    "shipping_class": "home_standard",
+    "mockup": "dont-hit-1-case.jpg",
+    "options": [
+      {
+        "key": "iphone-13",
+        "label": "iPhone 13",
+        "printify_variant_id": 76611,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-13-mini",
+        "label": "iPhone 13 Mini",
+        "printify_variant_id": 76612,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-13-pro",
+        "label": "iPhone 13 Pro",
+        "printify_variant_id": 76613,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-13-pro-max",
+        "label": "iPhone 13 Pro Max",
+        "printify_variant_id": 76614,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-14",
+        "label": "iPhone 14",
+        "printify_variant_id": 93905,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-14-pro",
+        "label": "iPhone 14 Pro",
+        "printify_variant_id": 93906,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-14-pro-max",
+        "label": "iPhone 14 Pro Max",
+        "printify_variant_id": 93907,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-14-plus",
+        "label": "iPhone 14 Plus",
+        "printify_variant_id": 93908,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-15",
+        "label": "iPhone 15",
+        "printify_variant_id": 103561,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-15-pro",
+        "label": "iPhone 15 Pro",
+        "printify_variant_id": 103562,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-15-plus",
+        "label": "iPhone 15 Plus",
+        "printify_variant_id": 103563,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-15-pro-max",
+        "label": "iPhone 15 Pro Max",
+        "printify_variant_id": 103564,
+        "price_cents": 1999
+      },
+      {
+        "key": "samsung-galaxy-s24",
+        "label": "Samsung Galaxy S24",
+        "printify_variant_id": 105527,
+        "price_cents": 1999
+      },
+      {
+        "key": "samsung-galaxy-s23",
+        "label": "Samsung Galaxy S23",
+        "printify_variant_id": 105528,
+        "price_cents": 1999
+      },
+      {
+        "key": "samsung-galaxy-s22",
+        "label": "Samsung Galaxy S22",
+        "printify_variant_id": 105529,
+        "price_cents": 1999
+      },
+      {
+        "key": "samsung-galaxy-s21",
+        "label": "Samsung Galaxy S21",
+        "printify_variant_id": 105530,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-16-pro",
+        "label": "iPhone 16 Pro",
+        "printify_variant_id": 112812,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-16-pro-max",
+        "label": "iPhone 16 Pro Max",
+        "printify_variant_id": 112813,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-16",
+        "label": "iPhone 16",
+        "printify_variant_id": 112814,
+        "price_cents": 1999
+      },
+      {
+        "key": "iphone-16-plus",
+        "label": "iPhone 16 Plus",
+        "printify_variant_id": 112815,
+        "price_cents": 1999
+      },
+      {
+        "key": "samsung-galaxy-s25",
+        "label": "Samsung Galaxy S25",
+        "printify_variant_id": 125531,
+        "price_cents": 1999
+      },
+      {
+        "key": "samsung-galaxy-s26",
+        "label": "Samsung Galaxy S26",
+        "printify_variant_id": 254190,
+        "price_cents": 1999
+      }
+    ]
+  },
+  {
+    "slug": "slim-fp-case",
+    "collection": "desk-extras",
+    "title": "Freeplug Minimal FP Slim Phone Case",
+    "title_key": "slimFpCase",
+    "printify_product_id": "6af116c859d5223aba053934",
+    "shipping_class": "home_standard",
+    "mockup": "slim-fp-case.jpg",
+    "options": [
+      {
+        "key": "iphone-13",
+        "label": "iPhone 13",
+        "printify_variant_id": 75625,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-13-mini",
+        "label": "iPhone 13 Mini",
+        "printify_variant_id": 75626,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-13-pro",
+        "label": "iPhone 13 Pro",
+        "printify_variant_id": 75627,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-13-pro-max",
+        "label": "iPhone 13 Pro Max",
+        "printify_variant_id": 75628,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-14",
+        "label": "iPhone 14",
+        "printify_variant_id": 93901,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-14-pro",
+        "label": "iPhone 14 Pro",
+        "printify_variant_id": 93902,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-14-pro-max",
+        "label": "iPhone 14 Pro Max",
+        "printify_variant_id": 93903,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-14-plus",
+        "label": "iPhone 14 Plus",
+        "printify_variant_id": 93904,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-15",
+        "label": "iPhone 15",
+        "printify_variant_id": 102543,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-15-plus",
+        "label": "iPhone 15 Plus",
+        "printify_variant_id": 102544,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-15-pro",
+        "label": "iPhone 15 Pro",
+        "printify_variant_id": 102545,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-15-pro-max",
+        "label": "iPhone 15 Pro Max",
+        "printify_variant_id": 102546,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-16",
+        "label": "iPhone 16",
+        "printify_variant_id": 112816,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-16-pro",
+        "label": "iPhone 16 Pro",
+        "printify_variant_id": 112817,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-16-plus",
+        "label": "iPhone 16 Plus",
+        "printify_variant_id": 112818,
+        "price_cents": 1799
+      },
+      {
+        "key": "iphone-16-pro-max",
+        "label": "iPhone 16 Pro Max",
+        "printify_variant_id": 112819,
+        "price_cents": 1799
+      }
+    ]
+  },
+  {
+    "slug": "website-laptop-sleeve",
+    "collection": "bags-accessories",
+    "title": "Freeplug Website Was Free Laptop Sleeve",
+    "title_key": "websiteLaptopSleeve",
+    "printify_product_id": "6af116cefb9024aaf308f0e6",
+    "shipping_class": "home_standard",
+    "mockup": "website-laptop-sleeve.jpg",
+    "options": [
+      {
+        "key": "12",
+        "label": "12\"",
+        "printify_variant_id": 62037,
+        "price_cents": 3399
+      },
+      {
+        "key": "13",
+        "label": "13\"",
+        "printify_variant_id": 62038,
+        "price_cents": 3399
+      }
+    ]
+  },
+  {
+    "slug": "poster-1-plug-map",
+    "collection": "wall-art",
+    "title": "Freeplug Plug Map Poster",
+    "title_key": "poster1PlugMap",
+    "printify_product_id": "6af116d5e48e1810df0f4b28",
+    "shipping_class": "canvas_sm",
+    "mockup": "poster-1-plug-map.jpg",
+    "options": [
+      {
+        "key": "16-x-20-matte",
+        "label": "16″ x 20″ / Matte",
+        "printify_variant_id": 43141,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      },
+      {
+        "key": "18-x-24-matte",
+        "label": "18″ x 24″ / Matte",
+        "printify_variant_id": 43144,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "poster-2-hustle-hours",
+    "collection": "wall-art",
+    "title": "Freeplug Hustle Hours Poster",
+    "title_key": "poster2HustleHours",
+    "printify_product_id": "6af116dd59d5223aba053954",
+    "shipping_class": "canvas_sm",
+    "mockup": "poster-2-hustle-hours.jpg",
+    "options": [
+      {
+        "key": "16-x-20-matte",
+        "label": "16″ x 20″ / Matte",
+        "printify_variant_id": 43141,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      },
+      {
+        "key": "18-x-24-matte",
+        "label": "18″ x 24″ / Matte",
+        "printify_variant_id": 43144,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "poster-3-free-is-a-feeling",
+    "collection": "wall-art",
+    "title": "Freeplug Free Is a Feeling Poster",
+    "title_key": "poster3FreeIsAFeeling",
+    "printify_product_id": "6af116e5621d8c64cd011b62",
+    "shipping_class": "canvas_sm",
+    "mockup": "poster-3-free-is-a-feeling.jpg",
+    "options": [
+      {
+        "key": "16-x-20-matte",
+        "label": "16″ x 20″ / Matte",
+        "printify_variant_id": 43141,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      },
+      {
+        "key": "18-x-24-matte",
+        "label": "18″ x 24″ / Matte",
+        "printify_variant_id": 43144,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "poster-4-wired-different",
+    "collection": "wall-art",
+    "title": "Freeplug Wired Different Poster",
+    "title_key": "poster4WiredDifferent",
+    "printify_product_id": "6af116eddcdd68a40100a73c",
+    "shipping_class": "canvas_sm",
+    "mockup": "poster-4-wired-different.jpg",
+    "options": [
+      {
+        "key": "16-x-20-matte",
+        "label": "16″ x 20″ / Matte",
+        "printify_variant_id": 43141,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      },
+      {
+        "key": "18-x-24-matte",
+        "label": "18″ x 24″ / Matte",
+        "printify_variant_id": 43144,
+        "price_cents": 2199,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "stay-connected-framed",
+    "collection": "wall-art",
+    "title": "Freeplug Stay Connected Framed Print",
+    "title_key": "stayConnectedFramed",
+    "printify_product_id": "6af116f33267fff9210a239e",
+    "shipping_class": "canvas_lg",
+    "mockup": "stay-connected-framed.jpg",
+    "options": [
+      {
+        "key": "11-x-14-black",
+        "label": "11\" x 14\" / Black",
+        "printify_variant_id": 69663,
+        "price_cents": 7799,
+        "shipping_class": "canvas_lg"
+      },
+      {
+        "key": "16-x-20-black",
+        "label": "16″ x 20″ / Black",
+        "printify_variant_id": 69667,
+        "price_cents": 10399,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "pressed-down-framed",
+    "collection": "home-faith",
+    "title": "Freeplug Pressed Down Shaken Together Framed Print",
+    "title_key": "pressedDownFramed",
+    "printify_product_id": "6af116f93267fff9210a23aa",
+    "shipping_class": "canvas_lg",
+    "mockup": "pressed-down-framed.jpg",
+    "options": [
+      {
+        "key": "11-x-14-black",
+        "label": "11\" x 14\" / Black",
+        "printify_variant_id": 69663,
+        "price_cents": 7799,
+        "shipping_class": "canvas_lg"
+      },
+      {
+        "key": "16-x-20-black",
+        "label": "16″ x 20″ / Black",
+        "printify_variant_id": 69667,
+        "price_cents": 10399,
+        "shipping_class": "canvas_lg"
+      }
+    ]
+  },
+  {
+    "slug": "rinse-curtain",
+    "collection": "home-living",
+    "title": "Freeplug Rinse Recharge Repeat Shower Curtain",
+    "title_key": "rinseCurtain",
+    "printify_product_id": "6af1170281fb6450380f1e1d",
+    "shipping_class": "desk_mat",
+    "mockup": "rinse-curtain.jpg",
+    "options": [
+      {
+        "key": "71-74",
+        "label": "71\" × 74\"",
+        "printify_variant_id": 41653,
+        "price_cents": 7399
+      }
+    ]
+  },
+  {
+    "slug": "recharge-pet-bed",
+    "collection": "pets",
+    "title": "Freeplug Recharge Zone Pet Bed",
+    "title_key": "rechargePetBed",
+    "printify_product_id": "6af117073267fff9210a23c1",
+    "shipping_class": "pet_bed",
+    "mockup": "recharge-pet-bed.jpg",
+    "options": [
+      {
+        "key": "28-18",
+        "label": "28\" × 18\"",
+        "printify_variant_id": 61436,
+        "price_cents": 5399
+      }
+    ]
+  },
+  {
+    "slug": "solar-towel",
+    "collection": "outdoor",
+    "title": "Freeplug Solar Charging Beach Towel",
+    "title_key": "solarTowel",
+    "printify_product_id": "6af11720e48e1810df0f4b5b",
+    "shipping_class": "candle_keychain",
+    "mockup": "solar-towel.jpg",
+    "options": [
+      {
+        "key": "30-60",
+        "label": "30\" × 60\"",
+        "printify_variant_id": 44444,
+        "price_cents": 4299
+      },
+      {
+        "key": "36-72",
+        "label": "36\" × 72\"",
+        "printify_variant_id": 44445,
+        "price_cents": 5499,
+        "shipping_class": "desk_mat"
+      }
+    ]
+  },
+  {
+    "slug": "unplug-picnic",
+    "collection": "outdoor",
+    "title": "Freeplug Unplug Together Picnic Blanket",
+    "title_key": "unplugPicnic",
+    "printify_product_id": "6af11725e16bc2f47108afcc",
+    "shipping_class": "desk_mat",
+    "mockup": "unplug-picnic.jpg",
+    "options": [
+      {
+        "key": "61-51",
+        "label": "61\" × 51\"",
+        "printify_variant_id": 84107,
+        "price_cents": 7399
+      }
+    ]
+  },
+  {
+    "slug": "running-over-stocking",
+    "collection": "home-faith",
+    "title": "Freeplug Fill It Running Over Stocking",
+    "title_key": "runningOverStocking",
+    "printify_product_id": "6af11728dcdd68a40100a772",
+    "shipping_class": "desk_mat",
+    "mockup": "running-over-stocking.jpg",
+    "options": [
+      {
+        "key": "one-size-red-and-black-natural",
+        "label": "One size / Red and Black/Natural",
+        "printify_variant_id": 74056,
+        "price_cents": 3099
+      },
+      {
+        "key": "one-size-white-and-black-natural",
+        "label": "One size / White and Black/Natural",
+        "printify_variant_id": 74057,
+        "price_cents": 3099
+      }
+    ]
+  },
+  {
+    "slug": "kjv-woven-blanket",
+    "collection": "home-faith",
+    "title": "Freeplug Running Over Luke 6:38 Woven Blanket",
+    "title_key": "kjvWovenBlanket",
+    "printify_product_id": "6af1173281fb6450380f1e46",
+    "shipping_class": "desk_mat",
+    "mockup": "kjv-woven-blanket.jpg",
+    "options": [
+      {
+        "key": "artwork-52-37",
+        "label": "Artwork / 52'' × 37''",
+        "printify_variant_id": 112794,
+        "price_cents": 5299
+      },
+      {
+        "key": "artwork-60-50",
+        "label": "Artwork / 60\" × 50\"",
+        "printify_variant_id": 112795,
+        "price_cents": 7199,
+        "shipping_class": "desk_mat"
+      },
+      {
+        "key": "photo-52-37",
+        "label": "Photo / 52'' × 37''",
+        "printify_variant_id": 112797,
+        "price_cents": 5299
+      },
+      {
+        "key": "photo-60-50",
+        "label": "Photo / 60\" × 50\"",
+        "printify_variant_id": 112798,
+        "price_cents": 7199,
+        "shipping_class": "desk_mat"
+      }
+    ]
+  },
+  {
+    "slug": "kjv-serving-tray",
+    "collection": "home-faith",
+    "title": "Freeplug Running Over Luke 6:38 Serving Tray",
+    "title_key": "kjvServingTray",
+    "printify_product_id": "6af11736fb9024aaf308f12b",
+    "shipping_class": "serving_tray",
+    "mockup": "kjv-serving-tray.jpg",
+    "options": [
+      {
+        "key": "11-x-17-clear",
+        "label": "11\" x 17\" / Clear",
+        "printify_variant_id": 74725,
+        "price_cents": 13999
+      }
+    ]
+  }
+]

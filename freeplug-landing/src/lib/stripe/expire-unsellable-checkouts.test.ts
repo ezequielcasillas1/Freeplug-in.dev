@@ -121,6 +121,10 @@ describe('checkoutSessionExpiresAt', () => {
     expect(creators.map((f) => path.relative(process.cwd(), f)).sort()).toEqual([
       'src/app/api/checkout/hosting/route.ts',
       'src/app/api/checkout/maintenance/route.ts',
+      'src/app/api/checkout/merch/font-bundle/route.ts',
+      'src/app/api/checkout/merch/product/route.ts',
+      'src/app/api/checkout/merch/shirt/route.ts',
+      'src/app/api/checkout/merch/shop/route.ts',
       'src/lib/outreach/server.ts',
     ])
     for (const f of creators) {

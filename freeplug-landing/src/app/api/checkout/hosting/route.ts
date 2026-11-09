@@ -8,6 +8,7 @@ import { isPlansCheckoutAllowed } from '@/lib/dashboard/plans-eligibility'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/server'
 import { resolvePlanStep } from '@/lib/plans/ladder'
+import { checkConsultationGate } from '@/lib/consultation/gate'
 import { getAddonPriceId, getStepPriceId, getTipPriceId, PriceNotConfiguredError } from '@/lib/stripe/prices'
 import { parseTipDollars, tipLineItems } from '@/lib/plans/tips'
 import { addonCapCheck, addonConfigCents, parseAddonIds } from '@/lib/plans/addons'
@@ -29,6 +30,7 @@ import { hasOutreachPlanWaitingForPublish } from '@/lib/outreach/server'
 import { PLAN_WAITING_FOR_PUBLISH_MESSAGE } from '@/lib/outreach/copy'
 import { ladderCopy } from '@/lib/plans/ladder-copy'
 import { currentLocale } from '@/i18n/current-locale'
+import { consultationTranslator } from '@/lib/consultation/i18n'
 
 export const runtime = 'nodejs'
 
@@ -157,6 +159,16 @@ export async function POST(request: Request) {
         const ending = live.every((s) => s.cancel_at_period_end === true || s.cancel_at != null)
         return NextResponse.json(
           { error: ALREADY_HAS_PLAN_MESSAGE, code: ending ? 'plan_ending' : 'already_has_plan' },
+          { status: 409 }
+        )
+      }
+      // Consultation gate (Oct 22 r2): a NEW plan for a request that goes through the consultation
+      // step needs "Looks good" first. Runs after the one-plan check, so existing subscriptions and
+      // plan changes (lib/stripe/change-plan.ts) are never gated. Fails closed via the catch below.
+      const gate = await checkConsultationGate(supabaseAuth, user.id)
+      if (!gate.ok) {
+        return NextResponse.json(
+          { error: consultationTranslator(await currentLocale())('consultationGateMessage'), code: gate.code },
           { status: 409 }
         )
       }

@@ -7,7 +7,8 @@ import { recordBuyoutRequest, type BuyoutRequestResult } from '@/lib/buyout/buyo
 import { supabaseBuyoutStore } from '@/lib/buyout/supabase-store'
 import { currentLocale } from '@/i18n/current-locale'
 import { translatorFor } from '@/i18n/translate'
-import { buyoutTierById } from '@/lib/buyout/tiers'
+import { buyoutTierById, formatTierPrice } from '@/lib/buyout/tiers'
+import { alertOwner } from '@/lib/owner-alerts/events'
 
 /**
  * "Request my buyout" (dashboard and cancel page), with the tier the customer picked (Oct 19; informational,
@@ -37,6 +38,17 @@ export async function requestBuyoutQuote(tierId?: unknown): Promise<BuyoutReques
   } catch (e) {
     console.error('[buyout] request failed', e instanceof Error ? e.message : e)
     return { ok: false, error: t('somethingWentWrongSide') }
+  }
+  if (result.ok && !result.alreadyRequested) {
+    const tier = buyoutTierById(tierId)
+    alertOwner({
+      kind: 'buyout_quote_request',
+      dedupeKey: `buyout:${user.id}:${new Date().toISOString().slice(0, 10)}`,
+      userId: user.id,
+      email: user.email ?? null,
+      details: [['Pages wanted', tier ? `${tier.label} (${tier.cents == null ? 'custom quote' : formatTierPrice(tier.cents)})` : 'Not picked'], ['Language', locale === 'es' ? 'Spanish' : 'English']],
+      adminPath: '/admin/requests',
+    })
   }
   if (result.ok) {
     revalidatePath('/dashboard')

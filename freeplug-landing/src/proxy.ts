@@ -1,16 +1,19 @@
 import { type NextRequest } from 'next/server'
+import { adminLoginProxyResponse, esLoginRedirect } from '@/lib/auth/admin-login-proxy'
+import { DOC_LANG_HEADER } from '@/i18n/doc-lang'
 import createIntlMiddleware from 'next-intl/middleware'
 import { updateSession } from '@/lib/supabase/middleware'
 import { oversizedActionResponse } from '@/lib/outreach/body-limit'
 import { withTerminalResponseHeaders } from '@/lib/outreach/headers'
 import { routing, shouldRunIntlRouting } from '@/i18n/routing'
+import { homeLangRedirect } from '@/i18n/home-lang-redirect'
 
 const handleI18nRouting = createIntlMiddleware(routing)
 
 /**
  * Order (Spanish build, card §5 C2):
  *   1. 413 guard (unchanged, first: an oversized server-action body never reaches anything else).
- *   2. next-intl, ONLY for the public localized pages ('/', '/faq', '/signup', '/request-website'
+ *   2. next-intl, ONLY for the public localized pages ('/', '/faq', '/privacy', '/signup', '/request-website'
  *      and their /es twins; /en/... redirects to the unprefixed URL). It rewrites '/faq' to the
  *      internal '/en/faq'. App pages (/dashboard, /login, /claim, /auth, /admin, /api) never pass
  *      through it, so Supabase redirect URLs and the Auth allow-list do not change.
@@ -25,6 +28,18 @@ export async function proxy(request: NextRequest) {
   // with or without a Content-Length (Vera r2 N5: chunked bodies are counted as they stream).
   const tooLarge = await oversizedActionResponse(request)
   if (tooLarge) return withTerminalResponseHeaders(tooLarge, pathname)
+
+  // Private admin login (Oct 24): see admin-login-proxy.ts.
+  const adminLogin = adminLoginProxyResponse(request)
+  if (adminLogin) return adminLogin
+  // Document language for /login?lang=es (Oct 28): never trust a client-sent value.
+  request.headers.delete(DOC_LANG_HEADER)
+  if (pathname === '/login' && request.nextUrl.searchParams.get('lang') === 'es') request.headers.set(DOC_LANG_HEADER, 'es')
+  const esLogin = esLoginRedirect(request)
+  if (esLogin) return esLogin
+  // '/?lang=es' -> '/es' (Oct 30, Sable): see home-lang-redirect.ts.
+  const esHome = homeLangRedirect(request, routing.locales)
+  if (esHome) return withTerminalResponseHeaders(esHome, pathname)
 
   // Not on the internal pass of next-intl's own rewrite, or '/' loops 307 -> '/' (see shouldRunIntlRouting).
   const intlResponse = shouldRunIntlRouting(pathname, request.headers) ? handleI18nRouting(request) : undefined

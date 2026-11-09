@@ -57,3 +57,22 @@ export function getStripe(): Stripe {
   }
   return stripe
 }
+
+let stripeFetch: Stripe | null = null
+
+/**
+ * Stripe client on the fetch HTTP client. On the Cloudflare Worker the default Node http client hung
+ * (merch checkout, Nov 7: "Worker's code had hung"), so merch routes use this one.
+ */
+export function getStripeFetch(): Stripe {
+  if (!stripeFetch) {
+    const key = process.env.STRIPE_SECRET_KEY?.trim()
+    if (!key) throw new Error('STRIPE_SECRET_KEY is not set')
+    assertStripeSecretKey(key)
+    const mock = localStripeMockConfig(process.env)
+    stripeFetch = mock
+      ? new Stripe(key, { ...mock, maxNetworkRetries: 0 })
+      : new Stripe(key, { httpClient: Stripe.createFetchHttpClient() })
+  }
+  return stripeFetch
+}

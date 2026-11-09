@@ -15,6 +15,8 @@ import { RecentActivity } from './RecentActivity'
 import { DashboardAlerts } from './DashboardAlerts'
 import { DashboardAddonRefundNotes } from './DashboardAddonRefundNotes'
 import { SupportCard } from './SupportCard'
+import { getUserEntitlements } from '@/lib/plans/user-entitlements'
+import { hasWeekendReplies } from '@/lib/plans/response-days'
 import { syncStripeCustomerFromCheckoutSession } from '@/lib/stripe/sync-checkout-customer'
 import { dashboardAccessAlert, getWebsiteAccessForCustomer, type WebsiteAccess } from '@/lib/website-access'
 import { WebsiteAccessAlert } from './WebsiteAccessAlert'
@@ -23,7 +25,7 @@ import { requestBuyoutQuote } from './buyout-actions'
 import { YourWebsiteCard } from './YourWebsiteCard'
 import { QuickActions } from './QuickActions'
 import { getClaimedSiteForUser, getSiteDetails } from '@/lib/outreach/server'
-import { organicTracker, outreachTracker } from '@/lib/outreach/tracker'
+import { isConsultationDone, organicTracker, outreachTracker } from '@/lib/outreach/tracker'
 import { ChangeRequestsCard } from './ChangeRequestsCard'
 import { ownershipTotals, type OwnershipEntry } from '@/lib/buyout/ownership'
 import {
@@ -33,6 +35,8 @@ import {
 } from '@/lib/change-requests/customer'
 import { getTranslations } from 'next-intl/server'
 import type { Translate } from '@/i18n/translate'
+import { consultationStage, isWebsiteRequestStatus, OPEN_REQUEST_STATUSES, STATUS_LABELS } from '@/lib/consultation/status'
+import { NextConsultationCard } from './consultation/NextConsultationCard'
 
 type Props = {
   searchParams: Promise<{
@@ -48,7 +52,8 @@ function requestStatusLabel(t: Translate, status: string | undefined): string {
   if (status === 'submitted') return t('requestStatusLabel.submitted')
   if (status === 'in_review') return t('requestStatusLabel.inReview')
   if (status === 'closed') return t('requestStatusLabel.closed')
-  return '—'
+  // Consultation-step statuses: English copy from lib/consultation/copy until translated.
+  return isWebsiteRequestStatus(status) ? STATUS_LABELS[status] : '—'
 }
 
 export default async function DashboardPage({ searchParams }: Props) {
@@ -89,6 +94,16 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   const status = (p?.evaluation_status ?? 'none') as EvaluationStatus
 
+  // Support card response days (Priority $55 and up = weekends too). A failed lookup shows the
+  // business-days line rather than an error.
+  let weekendReplies = false
+  try {
+    const { entitlements } = await getUserEntitlements(supabase, user.id, p?.stripe_customer_id ?? null)
+    weekendReplies = hasWeekendReplies(entitlements)
+  } catch (e) {
+    console.error('[dashboard] plan lookup failed', e instanceof Error ? e.message : e)
+  }
+
   // Website access (hosting required): ending / offline message with one button. A failed Stripe
   // lookup shows nothing rather than a wrong status.
   let websiteAccess: WebsiteAccess | null = null
@@ -106,7 +121,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     .from('website_requests')
     .select('id, status, business_name, updated_at, is_buyout')
     .eq('user_id', user.id)
-    .in('status', ['submitted', 'in_review'])
+    .in('status', [...OPEN_REQUEST_STATUSES])
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -134,6 +149,16 @@ export default async function DashboardPage({ searchParams }: Props) {
   const outreachDetails = outreachSite ? await getSiteDetails(outreachSite.id) : null
   const hasActivePlan = (enhancedData?.subscriptions ?? []).some((s) => s.status === 'active' || s.status === 'trialing')
   const outreachLive = outreachSite?.publish_status === 'live'
+  // Consultation step (Oct 22 card): website requests (not buyout quotes) before the build.
+  let consultStage: ReturnType<typeof consultationStage> | null = null
+  if (openRequest && !openRequest.is_buyout && openRequest.status !== 'building') {
+    const { data: consult } = await supabase
+      .from('consultations')
+      .select('path, booked_at, booking_ref, ready_for_review_at, agreed_at')
+      .eq('request_id', openRequest.id)
+      .maybeSingle()
+    consultStage = consultationStage(consult)
+  }
   const trackerSteps = outreachSite
     ? outreachTracker(
         {
@@ -148,7 +173,11 @@ export default async function DashboardPage({ searchParams }: Props) {
       ? organicTracker(
           {
             hasRequest: true,
-            building: latestRequest.status === 'in_review',
+            consultationDone: isConsultationDone(
+              latestRequest.id === openRequest?.id ? consultStage : null,
+              latestRequest.status
+            ),
+            building: ['agreed', 'building'].includes(latestRequest.status),
             hostingSetUp: hasActivePlan,
             live: websiteAccess?.status === 'active',
           },
@@ -264,6 +293,8 @@ export default async function DashboardPage({ searchParams }: Props) {
         ownership={ownership}
       />
 
+      {consultStage ? <NextConsultationCard stage={consultStage} /> : null}
+
       <div className="grid gap-6 md:grid-cols-2">
         {outreachDash.showRequestCard ? (
           <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -300,7 +331,9 @@ export default async function DashboardPage({ searchParams }: Props) {
                 ? t('lastRequestClosedOpenNew')
                 : status === 'none'
                   ? t('tellUsAboutBusinessLink')
-                  : openRequest
+                  : openRequest && consultStage && consultStage !== 'agreed'
+                    ? 'Complete your consultation so we can agree your plan before we build.'
+                    : openRequest
                     ? t('updateRequestDetailsWhileStill')
                     : t('useRequestFormWhenReady')}
             </p>
@@ -352,7 +385,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             loadFailed={!enhancedData.recentActivityLoaded}
           />
         )}
-        <SupportCard />
+        <SupportCard weekendReplies={weekendReplies} />
       </div>
     </div>
   )

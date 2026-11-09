@@ -1,6 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { InDevelopmentLine } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import { CreditCard } from 'lucide-react'
 import { HostingCheckoutCard } from '@/components/plans/HostingCheckoutCard'
 import { MaintenancePlanCard } from '@/components/plans/MaintenancePlanCard'
@@ -44,6 +48,7 @@ export function HostingPlansSectionUi({
           <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
             {t('plans.landingPlansIntro')}
           </p>
+          {CTA_PAUSED_NOW ? <InDevelopmentLine className="mt-4" /> : null}
         </motion.div>
 
         {/* Lina §1: the ladder full width with the sellable steps in columns from lg; Maintenance below. */}
@@ -56,7 +61,7 @@ export function HostingPlansSectionUi({
             />
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <MaintenancePlanCard ctaHref={`/login?next=${MAINTENANCE_LOGIN_NEXT}`} />
+            <MaintenancePlanCard hideCta ctaHref={AUTH_MAINTENANCE ? CALCOM_BOOKING_URL : `/login?next=${MAINTENANCE_LOGIN_NEXT}`} />
           </motion.div>
         </div>
       </motion.div>

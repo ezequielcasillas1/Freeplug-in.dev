@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
@@ -22,6 +23,7 @@ export function BuyoutRequestButton({ alreadyRequested, onRequest, tierId }: Pro
   const t = useTranslations('buyout')
   const [done, setDone] = useState(alreadyRequested)
   const [error, setError] = useState<string | null>(null)
+  const [errorLink, setErrorLink] = useState<{ href: string; label: string } | null>(null)
   const [pending, startTransition] = useTransition()
 
   if (done) {
@@ -44,10 +46,15 @@ export function BuyoutRequestButton({ alreadyRequested, onRequest, tierId }: Pro
         onClick={() => {
           if (pending) return
           setError(null)
+          setErrorLink(null)
           startTransition(async () => {
             const res = await (tierId ? onRequest(tierId) : onRequest())
             if (res.ok) setDone(true)
-            else setError(res.error)
+            else {
+              setError(res.error)
+              // Blocked by an open website request (Oct 22): link to that request.
+              if (res.href) setErrorLink({ href: res.href, label: res.linkLabel ?? res.href })
+            }
           })
         }}
       >
@@ -56,6 +63,14 @@ export function BuyoutRequestButton({ alreadyRequested, onRequest, tierId }: Pro
       {error ? (
         <p className="mt-2 text-sm text-red-700" role="alert">
           {error}
+          {errorLink ? (
+            <>
+              {' '}
+              <Link href={errorLink.href} className="font-medium underline" data-testid="buyout-open-request-link">
+                {errorLink.label}
+              </Link>
+            </>
+          ) : null}
         </p>
       ) : null}
     </div>

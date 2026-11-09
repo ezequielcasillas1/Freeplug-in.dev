@@ -2,16 +2,17 @@ import { Text, Button, Section } from '@react-email/components'
 import * as React from 'react'
 import { emailBaseUrl } from '@/lib/site'
 import { BaseEmailLayout } from './base-layout'
+import type { WebsiteRequestStatus } from '@/lib/consultation/status'
 
 type Props = {
   userName?: string
   businessName: string
-  newStatus: 'submitted' | 'in_review' | 'closed'
+  newStatus: WebsiteRequestStatus
   message?: string
   baseUrl?: string
 }
 
-const statusConfig = {
+const statusConfig: Record<WebsiteRequestStatus, { title: string; description: string; color: string }> = {
   submitted: {
     title: 'Request Submitted',
     description: 'We have received your website request and will begin reviewing it shortly.',
@@ -22,6 +23,23 @@ const statusConfig = {
     description:
       'Great news! Our team is now actively reviewing your website request. We will reach out soon with next steps.',
     color: '#f59e0b',
+  },
+  consultation: {
+    title: 'Next: Your Consultation',
+    description:
+      'Your request is ready for a consultation. Fill in the details online, or book a quick live session by phone, FaceTime, webcam or text. Open your dashboard to choose.',
+    color: '#8b5cf6',
+  },
+  agreed: {
+    title: 'Plan Agreed',
+    description:
+      'Thanks for confirming your website summary. We have everything we need and will schedule the build.',
+    color: '#10b981',
+  },
+  building: {
+    title: 'Building Your Website',
+    description: 'We have started building your website from the summary you agreed. We will keep you posted.',
+    color: '#0ea5e9',
   },
   closed: {
     title: 'Request Closed',

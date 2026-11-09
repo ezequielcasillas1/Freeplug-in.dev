@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { MessageCircle, Mail, HelpCircle } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { responseDaysKey } from '@/lib/plans/response-days'
 
-export function SupportCard() {
+/** `weekendReplies`: hasWeekendReplies(entitlements) (Priority $55 and up). Starter or no plan: business days. */
+export function SupportCard({ weekendReplies = false }: { weekendReplies?: boolean }) {
   const t = useTranslations()
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -45,8 +47,8 @@ export function SupportCard() {
             <MessageCircle className="h-4 w-4 text-green-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900">{t('common.support.availabilityLabel')}</p>
-            <p className="text-xs text-gray-500">{t('common.support.cardLine', { supportHours: t('common.support.hours') })}</p>
+            <p className="text-sm font-medium text-gray-900">{t('common.support.respondLabel')}</p>
+            <p className="text-xs text-gray-500" data-testid="support-response-days">{t(`common.support.${responseDaysKey(weekendReplies)}`)}</p>
           </div>
         </div>
       </div>

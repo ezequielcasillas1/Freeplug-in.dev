@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import { motion } from 'framer-motion'
 import { Mail, MapPin, ArrowUpRight } from 'lucide-react'
 import { fadeIn, fadeInUp, staggerContainer } from '../animations/landing.variants'
@@ -21,19 +22,26 @@ const footerLinks = {
   ],
   legal: [
     { label: 'termsConditions', href: null },
-    { label: 'privacyPolicy', href: null },
+    { label: 'privacyPolicy', href: '/privacy' },
     { label: 'cookiePolicy', href: null },
   ],
   contact: [
-    { label: 'getStarted', href: '/signup' },
+    ...(AUTH_MAINTENANCE ? [] : [{ label: 'getStarted', href: '/request-website' } as const]),
+    { label: 'merch', href: '/merch' },
     { label: 'support', href: 'mailto:support@freeplug-in.dev' },
     { label: 'faq', href: '/faq' },
+    { label: 'compare', href: '/compare' },
   ],
 } as const
 
 const socialLinks: { label: string; href: string }[] = [
   // Real profiles TBD — omit href="#" so we don't fake destinations
 ]
+
+const OWNER_LINKS = [
+  { key: 'ownerBluesky', href: 'https://bsky.app/profile/casiezeq.bsky.social' },
+  { key: 'ownerX', href: 'https://x.com/casiezeq' },
+] as const
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -67,6 +75,8 @@ export function Footer() {
         >
           <motion.div variants={fadeInUp} className="lg:col-span-2">
             <Link href={publicHref('/', locale)} className="flex items-center gap-2 mb-6 group">
+              {/* FP mark (Oct 22 2026). Plain img: keeps /_next/image off Cloudflare Images. */}
+              <img src="/images/brand/fp-logo-64.png" alt="" width={36} height={36} className="w-9 h-9 shrink-0 rounded-full ring-1 ring-white/10" />
               <span className="text-3xl font-bold text-[#ba3d3d] group-hover:text-[#d44d4d] transition-colors">{t('freeplug')}</span>
             </Link>
             <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
@@ -119,7 +129,7 @@ export function Footer() {
                 <li key={link.label}>
                   {link.href ? (
                     <a
-                      href={link.href}
+                      href={publicHref(link.href, locale)}
                       className="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-1 group"
                     >
                       {t(`label.${link.label}`)}
@@ -184,6 +194,18 @@ export function Footer() {
             </p>
             <LanguagePicker variant="dark" />
           </div>
+          {/* Cheke, Oct 31: owner's profiles (verified: bsky did:plc:ckqhgnz5xq7fzbcgymrvktic, X id 1284510677508534272). */}
+          <p className="mt-6 text-center text-gray-500 text-sm" data-testid="footer-owner">
+            {t('ownerLine')}{' '}
+            {OWNER_LINKS.map((l, i) => (
+              <span key={l.key}>
+                {i > 0 ? <span className="text-gray-600"> · </span> : null}
+                <a href={l.href} target="_blank" rel="noopener noreferrer me" className="text-gray-400 hover:text-white transition-colors">
+                  {t(l.key)}
+                </a>
+              </span>
+            ))}
+          </p>
           {/* Aria 9:53: legal line in the footer of every Spanish page (renders nothing in English). */}
           <TranslationNotice className="mt-6 text-center text-gray-500" />
         </div>

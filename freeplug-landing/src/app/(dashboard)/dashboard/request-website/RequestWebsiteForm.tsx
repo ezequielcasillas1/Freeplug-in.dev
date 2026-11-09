@@ -74,6 +74,7 @@ export function RequestWebsiteForm({
         <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">
           {t('businessName')}
         </label>
+        {focusMaintenance ? <input type="hidden" name="focus" value="maintenance" /> : null}
         <input
           id="business_name"
           name="business_name"
@@ -136,6 +137,11 @@ export function RequestWebsiteForm({
           className={`w-full rounded-lg border border-zinc-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-[#ba3d3d] outline-none resize-y${lockedClass}`}
         />
       </div>
+
+      {/* Oct 30 (Cheke, 8:13 PM CT): notice only, not a blocking checkbox. */}
+      <p className="text-xs text-gray-600 rounded-lg bg-zinc-50 border border-zinc-200 px-3 py-2" data-testid="high-risk-pii-notice">
+        {t('highRiskPiiNotice')}
+      </p>
 
       {locked ? null : (
         <Button type="submit" className="w-full sm:w-auto" disabled={pending}>

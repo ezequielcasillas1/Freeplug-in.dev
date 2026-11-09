@@ -1,5 +1,4 @@
-import { formatAmount } from '@/lib/format/keep-together'
-import { EDIT_PACK_CENTS, editPackFor, type EditsIncluded } from './edit-allowance'
+import type { EditsIncluded } from './edit-allowance'
 import type { PlanStepId } from './ladder'
 
 /**
@@ -7,6 +6,11 @@ import type { PlanStepId } from './ladder'
  * strings are kept in EDITS_COPY_ES for when the ES catalog lands (not rendered anywhere yet).
  */
 export const MAINTENANCE_OPTION_HREF = '/dashboard/request-website?focus=maintenance'
+
+const EDIT_TIMING_EN = ' We aim to finish within 5 business days. Higher plans are usually faster.'
+const EDIT_TIMING_ES = ' Buscamos terminar en un plazo de 5 días hábiles. Los planes superiores suelen ir más rápido.'
+const CARRY_OVER_EN = " Unused edits don't carry over."
+const CARRY_OVER_ES = ' Las ediciones que no uses no pasan al mes siguiente.'
 
 export const EDITS_COPY_EN = {
   fieldHint: "Edits are small updates to what's already on your site.",
@@ -16,7 +20,7 @@ export const EDITS_COPY_EN = {
     "New pages, sections or features aren't edits. We'll send you a one-time maintenance quote ($50–$100) first, and nothing is charged unless you approve it.",
   planListNote: 'New pages or features are quoted as one-time maintenance.',
   helpSmallEditAnswer:
-    'Small changes like hours, photos or prices count as edits. If you run out, you can add the $5 edit pack. New pages or features get a one-time maintenance quote first.',
+    'Small changes like hours, photos or prices count as edits. If you use all your included edits this month, wait for your next billing period or request one-time maintenance for extra small changes. New pages or features get a one-time maintenance quote first.',
 } as const
 
 export const EDITS_COPY_ES = {
@@ -27,15 +31,15 @@ export const EDITS_COPY_ES = {
   fieldNoteLinkText: 'mantenimiento único',
   planListNote: 'Las páginas o funciones nuevas se cotizan como mantenimiento único.',
   helpSmallEditAnswer:
-    'Los cambios pequeños, como tu horario, fotos o precios, cuentan como ediciones. Si se te acaban, puedes agregar el paquete de ediciones de $5. Las páginas o funciones nuevas reciben primero una cotización de mantenimiento único.',
+    'Los cambios pequeños, como tu horario, fotos o precios, cuentan como ediciones. Si usas todas las ediciones incluidas este mes, espera al próximo periodo de facturación o solicita un mantenimiento único para cambios pequeños extra. Las páginas o funciones nuevas reciben primero una cotización de mantenimiento único.',
   planExplanation: {
-    starter: '2 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.',
-    priority: '5 ediciones al mes: cambios pequeños como tu horario, una foto o un precio. Tus solicitudes van primero en la fila.',
-    fast_lane: '10 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.',
-  } as Partial<Record<PlanStepId, string>>,
-  editPackLine: (n: number) =>
-    `Paquete de ediciones: +${n} ediciones pequeñas por $5 al mes. Un paquete al mes. Las ediciones que no uses no pasan al mes siguiente.`,
-  needMoreEdits: (n: number) => `¿Necesitas más ediciones este mes? Agrega el paquete de ediciones de $5 y obtén ${n} más.`,
+    starter: `2 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
+    priority: `5 ediciones al mes: cambios pequeños como tu horario, una foto o un precio. Tus solicitudes van primero en la fila.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
+    fast_lane: `7 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
+    leads: `12 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
+    get_found: `15 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
+    growth: `20 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
+  } as Record<PlanStepId, string>,
 } as const
 
 /** Splits the field note around its "one-time maintenance" link text. */
@@ -53,31 +57,34 @@ export const editsCopy = (locale: string) => (locale === 'es' ? EDITS_COPY_ES : 
 export const planEditExplanation = (stepId: PlanStepId, locale: string = 'en'): string | undefined =>
   locale === 'es' ? EDITS_COPY_ES.planExplanation[stepId] : PLAN_EDIT_EXPLANATIONS[stepId]
 
-/** Small gray line under a plan card's edit count ($35 / $55 / $65 only, as approved). */
-export const PLAN_EDIT_EXPLANATIONS: Partial<Record<PlanStepId, string>> = {
-  starter: '2 edits a month: small changes like hours, a photo swap or a price change.',
-  priority: '5 edits a month: small changes like hours, a photo swap or a price change. Your requests go first in line.',
-  fast_lane: '10 edits a month: small changes like hours, a photo swap or a price change.',
+/** Small gray line under a plan card's edit count. */
+export const PLAN_EDIT_EXPLANATIONS: Record<PlanStepId, string> = {
+  starter: `2 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
+  priority: `5 edits a month: small changes like hours, a photo swap or a price change. Your requests go first in line.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
+  fast_lane: `7 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
+  leads: `12 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
+  get_found: `15 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
+  growth: `20 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
 }
 
-/** Edit pack line on a plan card; null on plans without a pack. */
-export function editPackLine(stepId: PlanStepId, locale: string = 'en'): string | null {
-  const n = editPackFor(stepId)
-  if (locale === 'es') return n > 0 ? EDITS_COPY_ES.editPackLine(n) : null
-  return n > 0 ? `Edit pack: +${n} small edits for ${formatAmount(EDIT_PACK_CENTS)}/mo. One pack a month. Unused edits don't carry over.` : null
+/** Retired: edit packs are not sold to customers. */
+export function editPackLine(_stepId: PlanStepId): string | null {
+  return null
 }
 
-/** Replaces the old Starter "+1 small edit" add-on line. */
-export function needMoreEditsLine(stepId: PlanStepId, locale: string = 'en'): string | null {
-  const n = editPackFor(stepId)
-  if (locale === 'es') return n > 0 ? EDITS_COPY_ES.needMoreEdits(n) : null
-  return n > 0 ? `Need more edits this month? Add the ${formatAmount(EDIT_PACK_CENTS)} edit pack for ${n} more.` : null
+/** Retired: edit packs are not sold to customers. */
+export function needMoreEditsLine(_stepId: PlanStepId): string | null {
+  return null
 }
 
 /** Dashboard "Included" line. */
 export function editsIncludedLine(e: EditsIncluded, locale: string = 'en'): string {
-  // DRAFT es (box-translated Oct 19, for Sable): the two dashboard "Included" lines.
-  if (locale === 'es') return e.unlimited ? 'Ediciones ilimitadas' : e.remaining === 1 ? `Ediciones incluidas: te queda 1 de ${e.total} en este periodo de facturación` : `Ediciones incluidas: te quedan ${e.remaining} de ${e.total} en este periodo de facturación`
+  if (locale === 'es')
+    return e.unlimited
+      ? 'Ediciones ilimitadas'
+      : e.remaining === 1
+        ? `Ediciones incluidas: te queda 1 de ${e.total} en este periodo de facturación`
+        : `Ediciones incluidas: te quedan ${e.remaining} de ${e.total} en este periodo de facturación`
   if (e.unlimited) return 'Unlimited edits'
   return `Edits included: ${e.remaining} of ${e.total} left this billing period`
 }

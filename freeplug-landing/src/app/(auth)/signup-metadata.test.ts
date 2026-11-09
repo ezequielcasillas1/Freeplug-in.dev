@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('@/lib/auth/signups-paused', () => ({ SIGNUPS_PAUSED: false }))
 
 /**
  * Round 6: the "Confirm signup" template (SUPABASE-AUTH-CHECKLIST.md) sends claim sign-ups back to /claim

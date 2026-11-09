@@ -34,7 +34,7 @@ beforeAll(() => {
   }
 })
 
-const NAMES = ['Envato template', 'HTML & CSS', 'Bootstrap 5', 'Cloudflare', 'Cloudflare Turnstile', 'Resend']
+const NAMES = ['Professional design', 'Clean, fast code', 'Looks great on phones', 'Fast, secure hosting', 'Spam and bot protection', 'Reliable email delivery']
 
 describe('TechStackSection (local business stack, Oct 3)', () => {
   it("lists the six tiles in Lina's order with Sable's names", () => {
@@ -57,9 +57,14 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
   })
 
   it("Envato tile: Sable's shortened line (copy file freeplug-landing-tech-stack-copy-2026-10-03.md, Oct 3, 3:10 PM), no price or cost", () => {
-    const envato = techStack.find((t) => t.name === 'Envato template')!
-    expect(envato.description).toBe('Premium templates our developers can access, enhanced with your details.')
+    const envato = techStack.find((t) => t.name === 'Professional design')!
+    expect(envato.description).toBe('A polished, professional design, tailored with your details.')
     expect(envato.description).not.toMatch(/\$|\d|price|cost|free|licen[cs]/i)
+  })
+
+  it('names no tools or vendors in the visible copy (Oct 24)', () => {
+    render(<TechStackSection />)
+    expect(document.body.textContent).not.toMatch(/Envato|Bootstrap|Cloudflare|Turnstile|Resend|HTML|CSS/)
   })
 
   it('shows each tile line on desktop only', () => {
@@ -140,18 +145,18 @@ describe('TechStackSection (local business stack, Oct 3)', () => {
   it("uses Sable's heading, intro and feature cards, and keeps the Performance panel", () => {
     render(<TechStackSection />)
     const h2 = screen.getByRole('heading', { level: 2 })
-    expect(h2).toHaveTextContent('Built On Proven Tools')
-    expect(within(h2).getByText('Proven Tools').className).toMatch(/from-\[#ba3d3d\]/)
+    expect(h2).toHaveTextContent('Built to work for you')
+    expect(within(h2).getByText('work for you').className).toMatch(/from-\[#ba3d3d\]/)
     expect(
       screen.getByText(
-        /^Every local business site we build uses the same setup: lightweight pages, a layout that works on\s+phones, a quote form that filters out spam, and a secure https address\.$/,
+        /^Every site we build uses the same setup: lightweight pages, a layout that works on\s+phones, a quote form that filters out spam, and a secure https address\.$/,
       ),
     ).toBeInTheDocument()
     for (const [title, line] of [
-      ['Fast Loading', "Lightweight pages served from Cloudflare's network."],
+      ['Fast Loading', 'Lightweight pages served from a fast global network.'],
       ['Mobile First', 'A responsive layout that adjusts to phones, tablets and computers.'],
       ['SEO Basics Included', 'Clear page titles, descriptions and business details that search engines can read.'],
-      ['Secure Connection', "HTTPS on every page through Cloudflare's SSL."],
+      ['Secure Connection', 'HTTPS on every page, with the security certificate included.'],
     ]) {
       expect(screen.getByRole('heading', { level: 3, name: title })).toBeInTheDocument()
       expect(screen.getByText(line)).toBeInTheDocument()

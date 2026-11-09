@@ -21,7 +21,9 @@ export function DashboardHeader({
   return (
     <header className="border-b border-zinc-200 bg-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3 sm:gap-4">
-        <Link href="/" className="shrink-0 text-lg font-semibold text-[#ba3d3d]">
+        <Link href="/" className="shrink-0 flex items-center gap-2 text-lg font-semibold text-[#ba3d3d]">
+          {/* FP mark (Oct 22 2026). Plain img: keeps /_next/image off Cloudflare Images. */}
+          <img src="/images/brand/fp-logo-64.png" alt="" width={28} height={28} className="w-7 h-7 shrink-0 rounded-full" />
           {t('freeplug')}
         </Link>
         <nav className="flex min-w-0 items-center gap-2 sm:gap-4">

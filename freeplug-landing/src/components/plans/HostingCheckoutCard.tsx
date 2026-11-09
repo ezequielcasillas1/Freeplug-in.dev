@@ -1,6 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
+import { CALCOM_BOOKING_URL } from '@/lib/booking'
+import { PausedCta } from '@/components/cta/PausedCta'
+import { CTA_PAUSED_NOW } from '@/lib/cta-pause'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { RemovalOwedBox } from './RemovalOwedBox'
@@ -19,7 +23,7 @@ import type {
 import { TipSlider, tipTotalText } from './TipSlider'
 import { TipChangeBox } from './TipChangeBox'
 import { AddonsBlock, type ConfirmTotals } from './AddonsBlock'
-import { editsCopy, planEditExplanation, editPackLine } from '@/lib/plans/edits-copy'
+import { editsCopy, planEditExplanation } from '@/lib/plans/edits-copy'
 import { PLAN_STEPS, type AddonId, type PlanStep, type PlanStepId } from '@/lib/plans/ladder'
 import { addonConfigCents } from '@/lib/plans/addons'
 import { tipRangeFor } from '@/lib/plans/tips'
@@ -477,13 +481,8 @@ export function HostingCheckoutCard({
           ))}
         </ul>
         {planEditExplanation(step.id, ladder.LOCALE) ? (
-          <span className="mt-2 block text-xs text-gray-500" data-testid="plan-edit-explanation">
+          <span className={cn('mt-2 block text-xs', muted ? 'text-gray-600' : 'text-gray-500')} data-testid="plan-edit-explanation">
             {planEditExplanation(step.id, ladder.LOCALE)}
-          </span>
-        ) : null}
-        {planEditExplanation(step.id, ladder.LOCALE) && editPackLine(step.id, ladder.LOCALE) ? (
-          <span className="mt-1 block text-xs text-gray-500" data-testid="plan-edit-pack">
-            {editPackLine(step.id, ladder.LOCALE)}
           </span>
         ) : null}
       </>
@@ -903,9 +902,17 @@ export function HostingCheckoutCard({
       ) : canPay ? (
         payArea
       ) : !signedIn ? (
-        <Link href={LOGIN_THEN_REQUEST} className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
-          {t('plans.checkout.signRequestWebsite')}
-        </Link>
+        CTA_PAUSED_NOW ? (
+          <PausedCta className={cn(buttonVariants({ size: 'lg' }), 'w-full')} />
+        ) : AUTH_MAINTENANCE ? (
+          <a href={CALCOM_BOOKING_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
+            {t('public.landing.cTA.requestFreeWebsite')}
+          </a>
+        ) : (
+          <Link href={LOGIN_THEN_REQUEST} className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
+            {t('plans.checkout.signRequestWebsite')}
+          </Link>
+        )
       ) : (
         <Link href="/dashboard/request-website" className={cn(buttonVariants({ size: 'lg' }), 'w-full')}>
           {t('plans.checkout.submitWebsiteRequestFirst')}

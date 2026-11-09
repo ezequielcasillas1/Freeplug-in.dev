@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { AUTH_MAINTENANCE } from '@/lib/auth/signups-paused'
 import type { Metadata } from 'next'
 import { requestPasswordReset } from '../actions'
 import { Button } from '@/components/ui/button'
@@ -14,6 +16,8 @@ type Props = {
 }
 
 export default async function ForgotPasswordPage({ searchParams }: Props) {
+  // In development (Oct 28): the forgot-password flow is hidden while AUTH_MAINTENANCE is on.
+  if (AUTH_MAINTENANCE) redirect('/login')
   const q = await searchParams
 
   return (

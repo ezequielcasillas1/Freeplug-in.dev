@@ -170,7 +170,7 @@ export const MANAGE_BILLING_LABEL = 'Manage billing'
 export const DOMAIN_HELPER = 'Until you connect your own domain, your site runs on a free web address we give you.'
 export const NEED_DOMAIN_LABEL = 'I need a domain'
 export const NEED_DOMAIN_HELPER =
-  "You buy and own your domain. We'll send you step-by-step instructions and connect it for you."
+  'We register your domain in Freeplug’s name and connect it for you. After your buyout, you can move it into your name or leave it with Freeplug.'
 export const ADMIN_PUBLISH_CONFIRM = 'This starts billing for {Business}.'
 export const ADMIN_PUBLISH_BUTTON = 'Publish and start billing'
 export const ADMIN_CANCEL_BUTTON = 'Cancel'
@@ -190,6 +190,7 @@ export const TRACKER_LIVE_WAITING = 'Waiting for us to publish your site.'
 export const HAVE_DOMAIN_LABEL = 'I already have a domain'
 export const TRACKER_ORGANIC_STEPS = [
   'Request sent',
+  'Consultation',
   'Building',
   'Your review',
   'Hosting set up',

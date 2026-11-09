@@ -45,7 +45,13 @@ export function YourWebsiteCard({ steps, liveUrl, showPreview, liveNote = null }
                 }
                 aria-current={s.state === 'current' ? 'step' : undefined}
               >
-                {s.label}
+                {s.href ? (
+                  <Link href={s.href} className="text-[#ba3d3d] hover:underline" data-testid="tracker-step-link">
+                    {s.label} →
+                  </Link>
+                ) : (
+                  s.label
+                )}
               </span>
               {liveNote && i === steps.length - 1 && s.state !== 'done' ? (
                 <span className="mt-0.5 text-xs text-gray-500" data-testid="live-waiting-note">

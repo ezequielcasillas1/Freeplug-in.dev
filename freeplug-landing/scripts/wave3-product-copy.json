@@ -1,0 +1,344 @@
+{
+  "pin-fp-mark": {
+    "titleEn": "FP Mark Pin Button",
+    "detailEn": "1.25″ pin button with FP mark. Sold individually.",
+    "titleEs": "Pin FP Mark",
+    "detailEs": "Pin de 1.25″ con marca FP. Se vende por unidad."
+  },
+  "pin-plug": {
+    "titleEn": "Plug Pin Button",
+    "detailEn": "Plug Pin Button. Printed to order in the USA.",
+    "titleEs": "Pin Plug",
+    "detailEs": "Pin Plug. Impreso bajo pedido en EE. UU."
+  },
+  "pin-bolt": {
+    "titleEn": "Bolt Pin Button",
+    "detailEn": "Bolt Pin Button. Printed to order in the USA.",
+    "titleEs": "Pin Bolt",
+    "detailEs": "Pin Bolt. Impreso bajo pedido en EE. UU."
+  },
+  "coaster-fp": {
+    "titleEn": "FP Mark Coaster Set",
+    "detailEn": "Set of four hardboard coasters with cork backing, FP artwork on each.",
+    "titleEs": "Set de portavasos FP Mark",
+    "detailEs": "Set de cuatro portavasos de cartón con corcho, mismo diseño en cada uno."
+  },
+  "click-mousepad": {
+    "titleEn": "Click Connect Get Paid Mouse Pad",
+    "detailEn": "Click Connect Get Paid Mouse Pad. Printed to order in the USA.",
+    "titleEs": "Mousepad Click, Connect, Get Paid",
+    "detailEs": "Mousepad Click, Connect, Get Paid. Impreso bajo pedido en EE. UU."
+  },
+  "ideas-notebook": {
+    "titleEn": "Ideas Worth Plugging Notebook",
+    "detailEn": "Ideas Worth Plugging Notebook. Printed to order in the USA.",
+    "titleEs": "Cuaderno Ideas Worth Plugging",
+    "detailEs": "Cuaderno Ideas Worth Plugging. Impreso bajo pedido en EE. UU."
+  },
+  "plugged-ornament": {
+    "titleEn": "Plugged-In Christmas Ornament",
+    "detailEn": "Plugged-In Christmas Ornament. Printed to order in the USA.",
+    "titleEs": "Adorno Plugged-In Christmas",
+    "detailEs": "Adorno Plugged-In Christmas. Impreso bajo pedido en EE. UU."
+  },
+  "coaster-plug": {
+    "titleEn": "Plug Coaster Set",
+    "detailEn": "Plug Coaster Set. Printed to order in the USA.",
+    "titleEs": "Set de portavasos Plug",
+    "detailEs": "Set de portavasos Plug. Impreso bajo pedido en EE. UU."
+  },
+  "coaster-bolt": {
+    "titleEn": "Bolt Coaster Set",
+    "detailEn": "Bolt Coaster Set. Printed to order in the USA.",
+    "titleEs": "Set de portavasos Bolt",
+    "detailEs": "Set de portavasos Bolt. Impreso bajo pedido en EE. UU."
+  },
+  "coaster-charged": {
+    "titleEn": "Charged Coaster Set",
+    "detailEn": "Charged Coaster Set. Printed to order in the USA.",
+    "titleEs": "Set de portavasos Fully Charged",
+    "detailEs": "Set de portavasos Fully Charged. Impreso bajo pedido en EE. UU."
+  },
+  "recharge-pint": {
+    "titleEn": "Recharge Station Pint Glass",
+    "detailEn": "Recharge Station Pint Glass. Printed to order in the USA.",
+    "titleEs": "Vaso pinta Recharge Station",
+    "detailEs": "Vaso pinta Recharge Station. Impreso bajo pedido en EE. UU."
+  },
+  "cool-can-cooler": {
+    "titleEn": "Keep It Cool Can Cooler",
+    "detailEn": "Keep It Cool Can Cooler. Printed to order in the USA.",
+    "titleEs": "Porta lata Keep It Cool",
+    "detailEs": "Porta lata Keep It Cool. Impreso bajo pedido en EE. UU."
+  },
+  "unplugged-wine": {
+    "titleEn": "Unplugged Hours Wine Tumbler",
+    "detailEn": "Unplugged Hours Wine Tumbler. Printed to order in the USA.",
+    "titleEs": "Tumbler de vino Unplugged Hours",
+    "detailEs": "Tumbler de vino Unplugged Hours. Impreso bajo pedido en EE. UU."
+  },
+  "good-boy-bandana": {
+    "titleEn": "Good Boy Fully Charged Pet Bandana",
+    "detailEn": "Good Boy Fully Charged Pet Bandana. Printed to order in the USA.",
+    "titleEs": "Bandana Good Boy Fully Charged",
+    "detailEs": "Bandana Good Boy Fully Charged. Impreso bajo pedido en EE. UU."
+  },
+  "fuel-bowl": {
+    "titleEn": "Fuel Station Pet Bowl",
+    "detailEn": "Fuel Station Pet Bowl. Printed to order in the USA.",
+    "titleEs": "Bowl Fuel Station",
+    "detailEs": "Bowl Fuel Station. Impreso bajo pedido en EE. UU."
+  },
+  "plug-parking-sign": {
+    "titleEn": "Plug Parking Only Metal Sign",
+    "detailEn": "Plug Parking Only Metal Sign. Printed to order in the USA.",
+    "titleEs": "Letrero Plug Parking Only",
+    "detailEs": "Letrero Plug Parking Only. Impreso bajo pedido en EE. UU."
+  },
+  "offgrid-camping-mug": {
+    "titleEn": "Off-Grid Plug Camping Mug",
+    "detailEn": "Off-Grid Plug Camping Mug. Printed to order in the USA.",
+    "titleEs": "Taza de camping Off-Grid Plug",
+    "detailEs": "Taza de camping Off-Grid Plug. Impreso bajo pedido en EE. UU."
+  },
+  "plug-lives-flag": {
+    "titleEn": "A Plug Lives Here Garden Flag",
+    "detailEn": "A Plug Lives Here Garden Flag. Printed to order in the USA.",
+    "titleEs": "Banderín A Plug Lives Here",
+    "detailEs": "Banderín A Plug Lives Here. Impreso bajo pedido en EE. UU."
+  },
+  "kjv-bookmark-1": {
+    "titleEn": "Luke 6:38 Bookmark 1",
+    "detailEn": "Single bookmark with a Luke 6:38 clause. One of four designs.",
+    "titleEs": "Marcapáginas Lucas 6:38 (1)",
+    "detailEs": "Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños."
+  },
+  "kjv-bookmark-2": {
+    "titleEn": "Luke 6:38 Bookmark 2",
+    "detailEn": "Single bookmark with a Luke 6:38 clause. One of four designs.",
+    "titleEs": "Marcapáginas Lucas 6:38 (2)",
+    "detailEs": "Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños."
+  },
+  "kjv-bookmark-3": {
+    "titleEn": "Luke 6:38 Bookmark 3",
+    "detailEn": "Single bookmark with a Luke 6:38 clause. One of four designs.",
+    "titleEs": "Marcapáginas Lucas 6:38 (3)",
+    "detailEs": "Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños."
+  },
+  "kjv-bookmark-4": {
+    "titleEn": "Luke 6:38 Bookmark 4",
+    "detailEn": "Single bookmark with a Luke 6:38 clause. One of four designs.",
+    "titleEs": "Marcapáginas Lucas 6:38 (4)",
+    "detailEs": "Marcapáginas con una cláusula de Lucas 6:38. Uno de cuatro diseños."
+  },
+  "thanksgiving-tea-towel": {
+    "titleEn": "Thanksgiving Luke 6:38 Tea Towel",
+    "detailEn": "Thanksgiving Luke 6:38 Tea Towel. Printed to order in the USA.",
+    "titleEs": "Paño de cocina Give, and it shall be given unto you",
+    "detailEs": "Paño de cocina 28″ con la frase bíblica aprobada."
+  },
+  "charged-socks": {
+    "titleEn": "Fully Charged Feet Socks",
+    "detailEn": "Fully Charged Feet Socks. Printed to order in the USA.",
+    "titleEs": "Calcetines Fully Charged Feet",
+    "detailEs": "Calcetines Fully Charged Feet. Impreso bajo pedido en EE. UU."
+  },
+  "fp-gaiter": {
+    "titleEn": "FP Circle Neck Gaiter",
+    "detailEn": "FP Circle Neck Gaiter. Printed to order in the USA.",
+    "titleEs": "Gaiter FP circle repeat",
+    "detailEs": "Gaiter FP circle repeat. Impreso bajo pedido en EE. UU."
+  },
+  "carry-tote": {
+    "titleEn": "Carry the Connection Tote",
+    "detailEn": "Carry the Connection Tote. Printed to order in the USA.",
+    "titleEs": "Tote Carry the Connection",
+    "detailEs": "Tote Carry the Connection. Impreso bajo pedido en EE. UU."
+  },
+  "gym-drawstring": {
+    "titleEn": "Gym Plug Drawstring Bag",
+    "detailEn": "Gym Plug Drawstring Bag. Printed to order in the USA.",
+    "titleEs": "Bolsa de cuerdas Gym Plug",
+    "detailEs": "Bolsa de cuerdas Gym Plug. Impreso bajo pedido en EE. UU."
+  },
+  "charger-backpack": {
+    "titleEn": "Charger Not Included Backpack",
+    "detailEn": "Charger Not Included Backpack. Printed to order in the USA.",
+    "titleEs": "Mochila Charger Not Included",
+    "detailEs": "Mochila Charger Not Included. Impreso bajo pedido en EE. UU."
+  },
+  "pocket-fanny": {
+    "titleEn": "Pocket Plug Fanny Pack",
+    "detailEn": "Pocket Plug Fanny Pack. Printed to order in the USA.",
+    "titleEs": "Riñonera Pocket Plug",
+    "detailEs": "Riñonera Pocket Plug. Impreso bajo pedido en EE. UU."
+  },
+  "recharge-blanket": {
+    "titleEn": "Recharge Mode Throw Blanket",
+    "detailEn": "Recharge Mode Throw Blanket. Printed to order in the USA.",
+    "titleEs": "Manta Recharge Mode",
+    "detailEs": "Manta Recharge Mode. Impreso bajo pedido en EE. UU."
+  },
+  "plug-clock": {
+    "titleEn": "Plug Time Wall Clock",
+    "detailEn": "Plug Time Wall Clock. Printed to order in the USA.",
+    "titleEs": "Reloj de pared Plug Time",
+    "detailEs": "Reloj de pared Plug Time. Impreso bajo pedido en EE. UU."
+  },
+  "plugged-cutting-board": {
+    "titleEn": "Plugged-In Kitchen Cutting Board",
+    "detailEn": "Plugged-In Kitchen Cutting Board. Printed to order in the USA.",
+    "titleEs": "Tabla de cortar Plugged-In Kitchen",
+    "detailEs": "Tabla de cortar Plugged-In Kitchen. Impreso bajo pedido en EE. UU."
+  },
+  "human-knows-dog-tee": {
+    "titleEn": "My Human Knows a Plug Pet Tank",
+    "detailEn": "My Human Knows a Plug Pet Tank. Printed to order in the USA.",
+    "titleEs": "Tank My Human Knows a Plug",
+    "detailEs": "Tank My Human Knows a Plug. Impreso bajo pedido en EE. UU."
+  },
+  "newest-onesie": {
+    "titleEn": "Newest Plug Baby Onesie",
+    "detailEn": "Newest Plug Baby Onesie. Printed to order in the USA.",
+    "titleEs": "Body Newest Plug",
+    "detailEs": "Body Newest Plug. Impreso bajo pedido en EE. UU."
+  },
+  "mini-plug-tee": {
+    "titleEn": "Mini Plug Toddler Tee",
+    "detailEn": "Mini Plug Toddler Tee. Printed to order in the USA.",
+    "titleEs": "Camiseta infantil Mini Plug",
+    "detailEs": "Camiseta infantil Mini Plug. Impreso bajo pedido en EE. UU."
+  },
+  "stay-charged-pullover": {
+    "titleEn": "Stay Charged Pullover Hoodie",
+    "detailEn": "Stay Charged Pullover Hoodie. Printed to order in the USA.",
+    "titleEs": "Sudadera con capucha Stay Charged",
+    "detailEs": "Sudadera con capucha Stay Charged. Impreso bajo pedido en EE. UU."
+  },
+  "day-one-zip": {
+    "titleEn": "Plugged In Since Day One Zip Hoodie",
+    "detailEn": "Fleece zip hoodie with left-chest embroidery. Digitizing ships after your first order.",
+    "titleEs": "Sudadera con cremallera Plugged In Since Day One",
+    "detailEs": "Sudadera con cremallera y bordado en el pecho izquierdo. La digitalización del bordado sigue al primer pedido."
+  },
+  "good-measure-longsleeve": {
+    "titleEn": "Good Measure Long Sleeve Tee",
+    "detailEn": "Long sleeve tee with Luke 6:38 artwork on the front only (no sleeve print on this blank).",
+    "titleEs": "Camiseta manga larga Good Measure (Lucas 6:38)",
+    "detailEs": "Camiseta manga larga con Lucas 6:38 solo en el frente (este blank no lleva arte en manga)."
+  },
+  "hustle-joggers": {
+    "titleEn": "Low Battery High Hustle Joggers",
+    "detailEn": "Unisex joggers with thigh embroidery. Digitizing ships after your first order.",
+    "titleEs": "Joggers Low Battery, High Hustle",
+    "detailEs": "Joggers unisex con bordado en el muslo. La digitalización del bordado sigue al primer pedido."
+  },
+  "charging-kids-hoodie": {
+    "titleEn": "Charging Up Youth Hoodie",
+    "detailEn": "Charging Up Youth Hoodie. Printed to order in the USA.",
+    "titleEs": "Sudadera juvenil Charging Up",
+    "detailEs": "Sudadera juvenil Charging Up. Impreso bajo pedido en EE. UU."
+  },
+  "ugly-sweater-crew": {
+    "titleEn": "Ugly Sweater Crewneck",
+    "detailEn": "Ugly Sweater Crewneck. Printed to order in the USA.",
+    "titleEs": "Crewneck ugly sweater plugs & bolts",
+    "detailEs": "Crewneck ugly sweater plugs & bolts. Impreso bajo pedido en EE. UU."
+  },
+  "dont-hit-1-case": {
+    "titleEn": "Don't Let Me Hit 1% Tough Phone Case",
+    "detailEn": "Don't Let Me Hit 1% Tough Phone Case. Printed to order in the USA.",
+    "titleEs": "Funda tough Don't Let Me Hit 1%",
+    "detailEs": "Funda tough Don't Let Me Hit 1%. Impreso bajo pedido en EE. UU."
+  },
+  "slim-fp-case": {
+    "titleEn": "Minimal FP Slim Phone Case",
+    "detailEn": "Minimal FP Slim Phone Case. Printed to order in the USA.",
+    "titleEs": "Funda slim Minimal FP circle",
+    "detailEs": "Funda slim Minimal FP circle. Impreso bajo pedido en EE. UU."
+  },
+  "website-laptop-sleeve": {
+    "titleEn": "Website Was Free Laptop Sleeve",
+    "detailEn": "Website Was Free Laptop Sleeve. Printed to order in the USA.",
+    "titleEs": "Funda de portátil Website Was Free",
+    "detailEs": "Funda de portátil Website Was Free. Impreso bajo pedido en EE. UU."
+  },
+  "poster-1-plug-map": {
+    "titleEn": "Plug Map Poster",
+    "detailEn": "Plug Map Poster. Printed to order in the USA.",
+    "titleEs": "Póster Plug Map",
+    "detailEs": "Póster Plug Map. Impreso bajo pedido en EE. UU."
+  },
+  "poster-2-hustle-hours": {
+    "titleEn": "Hustle Hours Poster",
+    "detailEn": "Hustle Hours Poster. Printed to order in the USA.",
+    "titleEs": "Póster Hustle Hours",
+    "detailEs": "Póster Hustle Hours. Impreso bajo pedido en EE. UU."
+  },
+  "poster-3-free-is-a-feeling": {
+    "titleEn": "Free Is a Feeling Poster",
+    "detailEn": "Free Is a Feeling Poster. Printed to order in the USA.",
+    "titleEs": "Póster Free Is a Feeling",
+    "detailEs": "Póster Free Is a Feeling. Impreso bajo pedido en EE. UU."
+  },
+  "poster-4-wired-different": {
+    "titleEn": "Wired Different Poster",
+    "detailEn": "Wired Different Poster. Printed to order in the USA.",
+    "titleEs": "Póster Wired Different",
+    "detailEs": "Póster Wired Different. Impreso bajo pedido en EE. UU."
+  },
+  "stay-connected-framed": {
+    "titleEn": "Stay Connected Framed Print",
+    "detailEn": "Stay Connected Framed Print. Printed to order in the USA.",
+    "titleEs": "Lámina enmarcada Stay Connected",
+    "detailEs": "Lámina enmarcada Stay Connected. Impreso bajo pedido en EE. UU."
+  },
+  "pressed-down-framed": {
+    "titleEn": "Pressed Down Shaken Together Framed Print",
+    "detailEn": "Pressed Down Shaken Together Framed Print. Printed to order in the USA.",
+    "titleEs": "Lámina enmarcada Pressed Down, Shaken Together",
+    "detailEs": "Lámina enmarcada Pressed Down, Shaken Together. Impreso bajo pedido en EE. UU."
+  },
+  "rinse-curtain": {
+    "titleEn": "Rinse Recharge Repeat Shower Curtain",
+    "detailEn": "Rinse Recharge Repeat Shower Curtain. Printed to order in the USA.",
+    "titleEs": "Cortina de baño Rinse, Recharge, Repeat",
+    "detailEs": "Cortina de baño Rinse, Recharge, Repeat. Impreso bajo pedido en EE. UU."
+  },
+  "recharge-pet-bed": {
+    "titleEn": "Recharge Zone Pet Bed",
+    "detailEn": "Recharge Zone Pet Bed. Printed to order in the USA.",
+    "titleEs": "Cama Recharge Zone",
+    "detailEs": "Cama Recharge Zone. Impreso bajo pedido en EE. UU."
+  },
+  "solar-towel": {
+    "titleEn": "Solar Charging Beach Towel",
+    "detailEn": "Solar Charging Beach Towel. Printed to order in the USA.",
+    "titleEs": "Toalla Solar Charging",
+    "detailEs": "Toalla Solar Charging. Impreso bajo pedido en EE. UU."
+  },
+  "unplug-picnic": {
+    "titleEn": "Unplug Together Picnic Blanket",
+    "detailEn": "Unplug Together Picnic Blanket. Printed to order in the USA.",
+    "titleEs": "Manta de picnic Unplug Together",
+    "detailEs": "Manta de picnic Unplug Together. Impreso bajo pedido en EE. UU."
+  },
+  "running-over-stocking": {
+    "titleEn": "Fill It Running Over Stocking",
+    "detailEn": "Fill It Running Over Stocking. Printed to order in the USA.",
+    "titleEs": "Calcetín Fill It Running Over",
+    "detailEs": "Calcetín Fill It Running Over. Impreso bajo pedido en EE. UU."
+  },
+  "kjv-woven-blanket": {
+    "titleEn": "Running Over Luke 6:38 Woven Blanket",
+    "detailEn": "Woven throw with the KJV phrase: Give, and it shall be given unto you.",
+    "titleEs": "Manta tejida Lucas 6:38",
+    "detailEs": "Manta tejida con la frase RVR 1960: Dad, y se os dará."
+  },
+  "kjv-serving-tray": {
+    "titleEn": "Running Over Luke 6:38 Serving Tray",
+    "detailEn": "Clear acrylic serving tray with full Luke 6:38 verse artwork.",
+    "titleEs": "Bandeja de servir Lucas 6:38",
+    "detailEs": "Bandeja acrílica transparente con el texto completo de Lucas 6:38."
+  }
+}

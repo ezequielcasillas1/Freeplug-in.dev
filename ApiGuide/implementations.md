@@ -1,3 +1,18 @@
+### 2026-11-08 - Merch collections (22 Printify products preview)
+**Status:** PARTIAL
+**Files:** `src/lib/merch/collections/*`, `/merch/[collection]/[slug]`, `POST /api/checkout/merch/product`, `public/merch/{drinkware,hats,...}`, migration `20261108210000_merch_collection_orders.sql`
+**Result:** Hardcoded Printify IDs/prices, Stripe + webhook fulfillment on hold, `MERCH_COLLECTIONS_ENABLED` default off; shirts unchanged.
+
+### 2026-11-08 - Merch t-shirts (Printify + Stripe preview)
+**Status:** SUCCESS
+**Files:** `freeplug-landing/src/lib/merch/shirts/*`, t-shirt pages, checkout API, webhook fulfillment, migration `20261108180000_merch_shirt_orders.sql`, mockups `public/merch/shirts/*`
+**Result:** Six shirts catalog, local mockups, EN/ES shop UI, server-validated Stripe checkout, Printify order on webhook (idempotent), flag `MERCH_SHIRTS_ENABLED` default off.
+
+### 2026-11-07 - Merch font bundle (preview)
+**Status:** SUCCESS
+**Files:** `freeplug-landing/src/lib/merch/*`, `app/[locale]/merch/*`, checkout/webhook/download APIs, migration `20261107090000_merch_font_bundle.sql`
+**Result:** `/merch` + product page, Stripe test checkout, signed 24h download tokens, webhook revoke on refund/dispute; mock mode without keys.
+
 ### 2026-04-03 - Admin QA: override cumulative website value paid
 **Status:** SUCCESS
 **Files:** `freeplug-landing/src/app/admin/actions.ts`, `AdminCumulativePaidCell.tsx`, `AdminCustomersTable.tsx`, `admin/customers/page.tsx`, `.env.example`

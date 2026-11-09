@@ -10,7 +10,11 @@ import { ladderCopy } from '@/lib/plans/ladder-copy'
 import { currentLocale } from '@/i18n/current-locale'
 import { getTranslations } from 'next-intl/server'
 import { CloseOpenRequestButton } from './CloseOpenRequestButton'
+import { BookLiveSessionLink } from '@/components/booking/BookLiveSession'
+import { RequestCancelButton } from './RequestCancelButton'
 import { RequestWebsiteForm, type RequestWebsiteFormValues } from './RequestWebsiteForm'
+import { OPEN_REQUEST_STATUSES, STATUS_LABELS, type WebsiteRequestStatus, isIntakeStatus, isSelfClosableStatus } from '@/lib/consultation/status'
+import { consultationTranslator } from '@/lib/consultation/i18n'
 
 // Pattern title (no locked title yet); pending Sable's review. Overrides "Dashboard | Freeplug".
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,6 +31,7 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
   const { CANCEL_OPTIONS_LINK } = ladderCopy(locale)
   const t = await getTranslations('dashboard.request')
   const tp = await getTranslations('errors.plans')
+  const tb = await getTranslations('booking')
   const q = await searchParams
   const focusMaintenance = q.focus === 'maintenance'
 
@@ -36,15 +41,17 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
   } = await supabase.auth.getUser()
 
   let openRequestStatus: 'submitted' | 'in_review' | null = null
+  let consultationStatus: string | null = null
   let defaultValues: RequestWebsiteFormValues | undefined
   if (user) {
     const { data: open } = await supabase
       .from('website_requests')
       .select('status, business_name, contact_phone, google_business_url, notes')
       .eq('user_id', user.id)
-      .in('status', ['submitted', 'in_review'])
+      .in('status', [...OPEN_REQUEST_STATUSES])
       .maybeSingle()
-    if (open?.status === 'submitted' || open?.status === 'in_review') {
+    if (open && !isIntakeStatus(open.status)) consultationStatus = open.status
+    if (open && isIntakeStatus(open.status)) {
       openRequestStatus = open.status
       // Pre-fill the form with the open request so saving never blanks existing details.
       defaultValues = {
@@ -58,7 +65,7 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
 
   // Closing a request is blocked while a Stripe plan is active (also enforced in the close action).
   let plan: ActiveSubscriptionStatus = { active: false, setToEnd: false, endsAt: null }
-  if (user && openRequestStatus) {
+  if (user && (openRequestStatus || consultationStatus)) {
     const { data: prof } = await supabase
       .from('profiles')
       .select('stripe_customer_id')
@@ -78,6 +85,37 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
   }
 
   const inReview = openRequestStatus === 'in_review'
+
+  if (consultationStatus) {
+    return (
+      <div className="max-w-2xl">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Your request is in progress</h1>
+        <p className="text-gray-600 mb-6">
+          Status: {STATUS_LABELS[consultationStatus as WebsiteRequestStatus] ?? consultationStatus}. Changes now go through
+          your consultation.
+        </p>
+        <div className="mb-6 max-w-lg rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-3">
+          {consultationStatus === 'building' ? (
+            <RequestCancelButton />
+          ) : plan.active ? (
+            <p className="text-sm text-gray-700">
+              {plan.setToEnd ? closeBlockedPlanEndingMessage(plan.endsAt, locale) : tp('closeBlockedActivePlanMessage')}
+            </p>
+          ) : isSelfClosableStatus(consultationStatus) ? (
+            <CloseOpenRequestButton status={consultationStatus} />
+          ) : null}
+        </div>
+        <Link href="/dashboard/consultation" className="font-semibold text-[#ba3d3d] hover:underline">
+          {consultationTranslator(locale)('consultCardHeading')} →
+        </Link>
+        <p className="mt-8 text-sm text-gray-500">
+          <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">
+            ← Back to dashboard
+          </Link>
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -134,6 +172,14 @@ export default async function RequestWebsitePage({ searchParams }: Props) {
         defaultValues={defaultValues}
         locked={inReview}
       />
+      <p className="mt-6 text-sm text-gray-600">
+        {tb('requestLine')}{' '}
+        <BookLiveSessionLink
+          label={tb('bookLiveSession')}
+          newTabHint={tb('opensInNewTab')}
+          className="font-medium text-[#ba3d3d] underline underline-offset-2 hover:text-[#9a3232]"
+        />
+      </p>
       <p className="mt-8 text-sm text-gray-500">
         <Link href="/dashboard" className="text-[#ba3d3d] hover:underline">
           {t('backDashboard')}

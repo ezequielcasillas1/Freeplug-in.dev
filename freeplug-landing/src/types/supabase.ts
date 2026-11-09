@@ -29,7 +29,7 @@ export type WebsiteRequestRow = {
   buyout_price_cents: number | null
   /** Buyout request flag. Set only by the server (service role); customers can't change it. */
   is_buyout: boolean
-  status: 'submitted' | 'in_review' | 'closed'
+  status: import('@/lib/consultation/status').WebsiteRequestStatus
   created_at: string
   updated_at: string
 }
@@ -55,4 +55,34 @@ export type ChangeRequestRow = {
   notify_error: string | null
   created_at: string
   updated_at: string
+}
+
+export type ConsultationRow = {
+  id: string
+  request_id: string
+  user_id: string
+  path: 'form' | 'live'
+  live_method: 'phone' | 'facetime' | 'webcam' | 'text' | null
+  contact_number: string | null
+  booking_ref: string | null
+  booked_at: string | null
+  checklist: Record<string, unknown>
+  prepared_by: 'client' | 'team'
+  ready_for_review_at: string | null
+  agreed_at: string | null
+  agreed_ip: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ConsultationConsentRow = {
+  id: string
+  consultation_id: string
+  user_id: string
+  channel: 'phone' | 'text'
+  phone_number: string
+  consent_text: string
+  consented_at: string
+  ip: string | null
+  user_agent: string | null
 }

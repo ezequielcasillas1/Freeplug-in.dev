@@ -98,20 +98,18 @@ describe('HelpChat', () => {
     expect(await screen.findByRole('button', { name: 'Send request' })).toBeInTheDocument()
   })
 
-  describe('small-edit answer (Oct 18: edit pack replaces the +1 small edit add-on)', () => {
+  describe('small-edit answer (Nov 2026: no edit pack)', () => {
     const LINE = EDITS_COPY_EN.helpSmallEditAnswer
-    it('the new answer, with its "Go to Plans" link right after it', () => {
+    it('shows the help line without a Plans upsell link', () => {
       setup({ smallEditAddonNote: LINE })
       walkToReview()
       const note = screen.getByTestId('small-edit-addon-note')
-      const link = screen.getByRole('link', { name: 'Go to Plans' })
-      expect(link).toHaveAttribute('href', '/dashboard/plans')
-      expect(note).toContainElement(link)
-      expect(note).toHaveTextContent(`${LINE} Go to Plans`)
-      expect(note).not.toHaveTextContent('+1 small edit')
+      expect(note).toHaveTextContent(LINE)
+      expect(screen.queryByTestId('small-edit-addon-plans-link')).toBeNull()
+      expect(note).not.toHaveTextContent('edit pack')
     })
-    it('the Starter line is the edit pack line now', () => {
-      expect(starterSmallEditAddonLine()).toBe('Need more edits this month? Add the $5 edit pack for 3 more.')
+    it('starterSmallEditAddonLine is empty (edit packs retired)', () => {
+      expect(starterSmallEditAddonLine()).toBe('')
     })
     it('the edit field shows the hint, the examples and the maintenance note with its link', () => {
       setup()

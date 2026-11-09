@@ -1,8 +1,10 @@
 import type { AppLocale } from '@/i18n/config'
 import { translatorFor } from '@/i18n/translate'
+import { consultationTranslator } from '@/lib/consultation/i18n'
+import { isIntakeStatus } from '@/lib/consultation/status'
 import { intlLocale } from '@/i18n/format'
 import type { WebsiteAccess } from '@/lib/website-access'
-import { BUYOUT_UNLIMITED_CENTS, buyoutTierSentence, formatTierPrice, type BuyoutTier } from './tiers'
+import { buyoutTierSentence, formatTierPrice, type BuyoutTier } from './tiers'
 
 /**
  * Website buyout (Ezequiel, Sep 25, 2026): monthly payments do not count toward owning the site. A
@@ -33,7 +35,7 @@ export const BUYOUT_CANCEL_HEADING = 'Keep your website'
 export const BUYOUT_CANCEL_BODY =
   "Want to keep your website instead of hosting it with us? You can buy the website files for a one-time price based on how many pages it has. Every dollar you've paid counts toward it."
 export const BUYOUT_FAQ_QUESTION = 'Can I keep my website if I stop hosting with Freeplug?'
-export const BUYOUT_FAQ_ANSWER = `Yes. You can buy your website files for a one-time price based on how many pages your site has: ${buyoutTierSentence()}. That's the most you'd ever pay. Every dollar you've paid us counts toward it. The buyout covers your website files only. Transferring your domain is handled separately.`
+export const BUYOUT_FAQ_ANSWER = `Yes. You can buy your website files for a one-time price based on how many pages your site has: ${buyoutTierSentence()}. 26+ pages? We'll quote it for you. Every dollar you've paid us counts toward it. The buyout covers your website files only. Your domain stays registered in Freeplug’s name until your buyout is complete; after that, you can move it into your name or leave it with Freeplug. If you bought your own domain in your name, you get 20% off your buyout. Both apply to custom quotes too.`
 /** Admin labels (Sable). */
 export const ADMIN_BUYOUT_TYPE_BADGE = 'Buyout'
 export const ADMIN_BUYOUT_REQUESTED = 'Buyout requested'
@@ -50,9 +52,14 @@ export const NOTES_MAX = 5000
 
 /** Admin price limits (whole dollars). */
 export const BUYOUT_PRICE_MIN_DOLLARS = 1
-/** Oct 19 (Luma QA): the override never goes above the Unlimited tier ($2,000), the most anyone pays. */
-export const BUYOUT_PRICE_MAX_DOLLARS = BUYOUT_UNLIMITED_CENTS / 100
-export const BUYOUT_PRICE_ERROR = 'Enter a whole-dollar amount from $1 to $2,000.'
+/**
+ * Oct 30 (Cheke, 7:11 PM CT): the override cap is $20,000 (7:33 PM CT) so Custom enterprise (21-35 pages) quotes fit
+ * (was $2,000, the old Unlimited tier). DB CHECK: migration 20261030190000_buyout_price_cap_20000.sql.
+ */
+export const BUYOUT_PRICE_MAX_DOLLARS = 20_000
+export const BUYOUT_PRICE_ERROR = 'Enter a whole-dollar amount from $1 to $20,000.'
+/** Spanish (box draft for Sable). The admin UI is English-only today, so this is not shown anywhere yet. */
+export const BUYOUT_PRICE_ERROR_ES = 'Escribe una cantidad en dólares enteros de $1 a $20,000.'
 
 /**
  * Validates the admin's price input (whole dollars, "$" and thousands commas allowed) and returns
@@ -87,7 +94,7 @@ export function formatBuyoutPrice(cents: number, locale: AppLocale = 'en'): stri
 }
 
 export function buyoutNoteBlock(now: Date, tier: BuyoutTier | null = null): string {
-  const picked = tier ? `\nTier picked: ${tier.label} (${formatTierPrice(tier.cents)})` : ''
+  const picked = tier ? `\nTier picked: ${tier.label} (${tier.cents == null ? 'custom quote' : formatTierPrice(tier.cents)})` : ''
   return `${BUYOUT_NOTE_MARKER}\nRequested: ${now.toISOString()}${picked}`
 }
 
@@ -106,6 +113,8 @@ export type OpenRequestRow = {
   updated_at: string
   /** website_requests.is_buyout: the only buyout signal. */
   is_buyout: boolean
+  /** website_requests.status (picks the link shown when a buyout is blocked). */
+  status?: string | null
 }
 export type RequestDetails = {
   business_name: string | null
@@ -114,7 +123,7 @@ export type RequestDetails = {
 }
 
 export type BuyoutStore = {
-  /** The customer's open (submitted or in_review) request, if any. */
+  /** The customer's open request (any status but closed, OPEN_REQUEST_STATUSES), if any. */
   getOpenRequest(userId: string): Promise<OpenRequestRow | null>
   /** Business details of the customer's latest request (any status), to reuse on a new request. */
   getLatestDetails(userId: string): Promise<RequestDetails | null>
@@ -137,7 +146,12 @@ export type BuyoutStore = {
 
 export type BuyoutRequestResult =
   | { ok: true; alreadyRequested: boolean }
-  | { ok: false; error: string }
+  | { ok: false; error: string; /** Link to the open request that blocks the buyout. */ href?: string; linkLabel?: string }
+
+/** Where the customer manages an open request: intake form or consultation page. */
+export function openRequestHref(status: string | null | undefined): string {
+  return isIntakeStatus(status) ? '/dashboard/request-website' : '/dashboard/consultation'
+}
 
 export async function recordBuyoutRequest(
   store: BuyoutStore,
@@ -156,19 +170,16 @@ export async function recordBuyoutRequest(
     const open = await store.getOpenRequest(userId)
     if (open?.is_buyout) return { ok: true, alreadyRequested: true }
 
+    // Aria's ruling on f36a910 (Oct 22): a website request (consultation or not) is never turned
+    // into a buyout. The customer finishes or closes it first. No data changes.
     if (open) {
-      const existing = open.notes?.trim() ?? ''
-      const notes = existing ? `${existing}\n\n${block}` : block
-      if (notes.length > NOTES_MAX) {
-        return {
-          ok: false,
-          error: t('requestNotesFullEmail'),
-        }
+      const tc = consultationTranslator(locale)
+      return {
+        ok: false,
+        error: tc('buyoutBlockedOpenRequest'),
+        href: openRequestHref(open.status),
+        linkLabel: tc('buyoutBlockedOpenRequestLink'),
       }
-      if (await store.markBuyoutIfUnchanged(open, notes, now)) {
-        return { ok: true, alreadyRequested: false }
-      }
-      continue
     }
 
     const latest = await store.getLatestDetails(userId)
