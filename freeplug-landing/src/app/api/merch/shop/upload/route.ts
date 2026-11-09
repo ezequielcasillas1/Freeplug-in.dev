@@ -6,7 +6,8 @@ import { uploadShopCustomArt } from '@/lib/merch/server'
 import { getShopItem, resolveShopVariant } from '@/lib/merch/shop/catalog'
 import { printAreaSizeInches } from '@/lib/merch/shop/print-area'
 import { moderateShopUploadImage } from '@/lib/merch/shop/moderation'
-import { getShopModerationAiRunner } from '@/lib/merch/shop/workers-ai'
+import { getShopModerationAiRunner, getShopModerationImages } from '@/lib/merch/shop/workers-ai'
+import { shopModerationImageBytes } from '@/lib/merch/shop/moderation-image'
 import { signShopUploadToken } from '@/lib/merch/shop/upload-token'
 import {
   meetsMinDpi,
@@ -67,8 +68,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'upload_dpi_low', code: 'upload_dpi_low' }, { status: 400 })
   }
 
-  const ai = await getShopModerationAiRunner()
-  const moderation = await moderateShopUploadImage(bytes, file.type, ai)
+  // Moderate a downscaled copy (max 1024px side) so large images do not time out llava; the
+  // original bytes are what gets stored. No usable copy = held (fail-safe).
+  const moderationBytes = await shopModerationImageBytes(bytes, file.type, await getShopModerationImages(), dims)
+  const moderation = moderationBytes
+    ? await moderateShopUploadImage(moderationBytes, file.type, await getShopModerationAiRunner())
+    : { result: 'held' as const, detail: { reason: 'moderation_resize_failed' } }
   if (moderation.result === 'fail') {
     return NextResponse.json(
       { error: 'upload_moderation_blocked', code: 'upload_moderation_blocked', moderation: moderation.result },
