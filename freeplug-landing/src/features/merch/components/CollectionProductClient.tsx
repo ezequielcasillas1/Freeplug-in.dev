@@ -151,7 +151,7 @@ export function CollectionProductClient({
                               : 'border-gray-200 text-gray-600 bg-gray-50'
                           )}
                         >
-                          {t(`options.${opt.key}`, { default: opt.key })}
+                          {opt.label ?? t(`options.${opt.key}`, { default: opt.key })}
                         </button>
                       ))}
                     </div>

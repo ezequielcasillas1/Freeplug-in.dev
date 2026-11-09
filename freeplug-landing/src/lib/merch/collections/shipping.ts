@@ -13,6 +13,11 @@ export type MerchShippingClass =
   | 'canvas_lg'
   | 'doormat'
   | 'sticker'
+  | 'apparel_light'
+  | 'home_standard'
+  | 'drinkware_heavy'
+  | 'pet_bed'
+  | 'serving_tray'
 
 export const MERCH_SHIPPING_TABLE: Record<
   MerchShippingClass,
@@ -31,6 +36,11 @@ export const MERCH_SHIPPING_TABLE: Record<
   canvas_lg: { first_cents: 1999, additional_cents: 800 },
   doormat: { first_cents: 2149, additional_cents: 2049 },
   sticker: { first_cents: 549, additional_cents: 75 },
+  apparel_light: { first_cents: 495, additional_cents: 240 },
+  home_standard: { first_cents: 799, additional_cents: 400 },
+  drinkware_heavy: { first_cents: 749, additional_cents: 399 },
+  pet_bed: { first_cents: 2749, additional_cents: 2499 },
+  serving_tray: { first_cents: 2399, additional_cents: 499 },
 }
 
 /** Merch subtotal above this (cents) gets $0 shipping. Exactly $50.00 does not qualify. */

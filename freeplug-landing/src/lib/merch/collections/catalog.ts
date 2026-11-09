@@ -4,7 +4,19 @@ import { collectionMerchandiseShippingCents, type MerchShippingClass } from './s
 export const MERCH_COLLECTION_CHECKOUT_TYPE = 'merch_collection_product' as const
 export const MERCH_CURRENCY = 'usd' as const
 
-export const MERCH_COLLECTIONS = ['drinkware', 'hats', 'apparel', 'home-faith', 'desk-extras'] as const
+export const MERCH_COLLECTIONS = [
+  'drinkware',
+  'hats',
+  'apparel',
+  'kids-baby',
+  'bags-accessories',
+  'pets',
+  'home-living',
+  'home-faith',
+  'desk-extras',
+  'wall-art',
+  'outdoor',
+] as const
 export type MerchCollectionSlug = (typeof MERCH_COLLECTIONS)[number]
 
 export const CREWNECK_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL'] as const
@@ -14,6 +26,7 @@ export type CrewneckColor = (typeof CREWNECK_COLORS)[number]
 
 type CatalogOptionRow = {
   key: string
+  label?: string
   printify_variant_id: number
   price_cents: number
   shipping_class?: MerchShippingClass

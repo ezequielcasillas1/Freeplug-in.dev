@@ -7,8 +7,18 @@ import {
 } from './catalog'
 
 describe('merch collections catalog', () => {
-  it('lists 22 products', () => {
-    expect(listCatalogProducts()).toHaveLength(22)
+  it('lists 79 catalog products (22 wave-1 + 57 wave-3)', () => {
+    expect(listCatalogProducts()).toHaveLength(79)
+  })
+
+  it('wave-3 pin uses approved $3.99 retail', () => {
+    const pin = getCatalogProduct('pin-fp-mark')!
+    expect(pin.options[0]?.price_cents).toBe(399)
+  })
+
+  it('wave-3 stay-charged pullover uses approved $64.99', () => {
+    const h = getCatalogProduct('stay-charged-pullover')!
+    expect(h.options[0]?.price_cents).toBe(6499)
   })
 
   it('fully charged mug prices match approved retail', () => {

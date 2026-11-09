@@ -9,6 +9,25 @@ import {
 } from './shipping'
 
 describe('merch collection shipping', () => {
+  it('wave-3 classes cover Printify estimates', () => {
+    expect(merchShippingCents('apparel_light', 1)).toBe(495)
+    expect(merchShippingCents('home_standard', 1)).toBe(799)
+    expect(merchShippingCents('drinkware_heavy', 1)).toBe(749)
+    expect(merchShippingCents('pet_bed', 1)).toBe(2749)
+    expect(merchShippingCents('serving_tray', 1)).toBe(2399)
+  })
+
+  it('recharge-pet-bed maps to pet_bed class', () => {
+    const bed = getCatalogProduct('recharge-pet-bed')!
+    const line = validateCollectionCheckoutLine({
+      collection: 'pets',
+      slug: 'recharge-pet-bed',
+      option_key: bed.options[0]!.key,
+      quantity: 1,
+    })
+    expect(line.ok).toBe(true)
+    if (line.ok) expect(line.line.shippingClass).toBe('pet_bed')
+  })
   it('mug_11_12 and mug_15 per-option classes', () => {
     expect(merchShippingCents('mug_11_12', 1)).toBe(749)
     expect(merchShippingCents('mug_11_12', 2)).toBe(749 + 349)
