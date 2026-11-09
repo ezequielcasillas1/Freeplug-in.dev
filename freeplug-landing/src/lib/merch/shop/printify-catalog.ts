@@ -61,13 +61,17 @@ export function printifyProductIdForSlug(slug: string): string | null {
 }
 
 export function mockupsForShopColor(slug: string, color: string | null | undefined): string[] {
-  if (!color) return []
   const row = getPrintifySlugRow(slug)
   if (!row?.mockupsByColor) return []
-  const exact = row.mockupsByColor[color]
-  if (exact?.length) return exact
-  const key = Object.keys(row.mockupsByColor).find((k) => k.toLowerCase() === color.toLowerCase())
-  return key ? row.mockupsByColor[key] ?? [] : []
+  const byColor = row.mockupsByColor
+  if (color) {
+    const exact = byColor[color]
+    if (exact?.length) return exact
+    const key = Object.keys(byColor).find((k) => k.toLowerCase() === color.toLowerCase())
+    if (key && byColor[key]?.length) return byColor[key]
+  }
+  // Single-color products (mugs, stickers, phone cases) are stored under "default".
+  return byColor.default ?? []
 }
 
 export function pickFrontPrintifyMockup(urls: string[]): string | null {

@@ -33,4 +33,10 @@ describe('printify shop catalog', () => {
     const urls = mockupsForShopColor('natural-stone-stretch-bar-bracelet-engraving-2651', 'Brown')
     expect(urls.length).toBe(0)
   })
+
+  it('uses the default mockup for single-color products', () => {
+    expect(mockupsForShopColor('mug-11oz-68', '')[0]).toMatch(/images-api\.printify\.com/)
+    expect(mockupsForShopColor('mug-11oz-68', null)[0]).toMatch(/images-api\.printify\.com/)
+    expect(mockupsForShopColor('unisex-heavy-blend-crewneck-sweatshirt-49', 'Black')[0]).toMatch(/images-api\.printify\.com/)
+  })
 })
