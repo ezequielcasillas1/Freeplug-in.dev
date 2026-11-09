@@ -16,6 +16,7 @@ export default function MerchIndexPage() {
   const locale = toAppLocale(useLocale())
 
   const cards = [
+    { href: '/merch/all', title: t('subnav.allMerch'), blurb: t('indexCardAll') },
     { href: `/merch/${MERCH_TSHIRTS_SLUG}`, title: t('subnav.tshirts'), blurb: t('indexCardTshirts') },
     ...MERCH_COLLECTIONS.map((slug) => ({
       href: `/merch/${slug}`,

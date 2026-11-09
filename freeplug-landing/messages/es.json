@@ -964,7 +964,8 @@
           "desk-extras": "Escritorio y tecnología",
           "wall-art": "Arte mural",
           "outdoor": "Aire libre"
-        }
+        },
+        "merchHome": "Inicio de mercancía"
       },
       "indexCardTshirts": "Seis diseños — impresas bajo pedido y enviadas desde EE. UU.",
       "indexCardOfficial": "Paquete completo: 12 estilos (6 + 3 + 3) para trabajo comercial y con clientes.",
@@ -1763,6 +1764,14 @@
         "expires": "Expira: {date}",
         "mock": "Modo demo: el archivo puede ser un marcador en este entorno.",
         "back": "Volver al producto"
+      },
+      "indexCardAll": "Todos los productos en un solo lugar: la tienda de mercancía y la tienda completa.",
+      "allMerch": {
+        "heading": "Toda la mercancía",
+        "lead": "Todos los productos Freeplug en un solo lugar: {count} artículos entre la tienda de mercancía y la tienda.",
+        "categoriesAria": "Filtrar por categoría",
+        "showing": "Mostrando {shown} de {total}",
+        "showMore": "Ver más"
       }
     },
     "notFound": {
