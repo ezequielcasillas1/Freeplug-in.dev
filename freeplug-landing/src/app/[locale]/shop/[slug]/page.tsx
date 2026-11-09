@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getShopItem, listShopItems, printifyProductIdForSlug } from '@/lib/merch/shop/catalog'
+import { getShopItem, listShopItems, shopHasPrintifyFreeplug } from '@/lib/merch/shop/catalog'
 import { ShopProductClient } from '@/features/merch/components/ShopProductClient'
 import { isMerchCheckoutEnabled } from '@/lib/merch/flags'
 
@@ -14,7 +14,7 @@ export default async function ShopProductPage({ params }: { params: Promise<{ sl
   const item = getShopItem(slug)
   if (!item) notFound()
   const checkoutEnabled = isMerchCheckoutEnabled()
-  const hasPrintifyProduct = Boolean(printifyProductIdForSlug(slug))
+  const hasPrintifyProduct = shopHasPrintifyFreeplug(slug)
   return (
     <ShopProductClient item={item} checkoutEnabled={checkoutEnabled} hasPrintifyProduct={hasPrintifyProduct} />
   )

@@ -18,8 +18,9 @@ export function classifyBlankColor(colorName: string | null | undefined): BlankK
   return 'light'
 }
 
+/** Filenames: `*-dark-garment` = light ink for dark blanks; `*-light-garment` = dark ink for light blanks. */
 export function logoPathForBlank(kind: BlankKind): string {
   return kind === 'dark'
-    ? '/merch/shop/freeplug-logo-light-garment.png'
-    : '/merch/shop/freeplug-logo-dark-garment.png'
+    ? '/merch/shop/freeplug-logo-dark-garment.png'
+    : '/merch/shop/freeplug-logo-light-garment.png'
 }

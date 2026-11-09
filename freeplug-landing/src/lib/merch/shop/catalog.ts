@@ -1,5 +1,8 @@
 import shopCatalog from './shop-catalog.json'
-import printifyProducts from './printify-products.json'
+import {
+  printifyProductIdForVariant,
+  shopHasPrintifyFreeplug,
+} from './printify-catalog'
 import type { ShopCard, ShopCatalogItem, ShopTabSlug, ShopVariant } from './types'
 import { MERCH_SHOP_FREE_SHIPPING_THRESHOLD_CENTS } from './types'
 import { verifyShopUploadToken } from './upload-token'
@@ -54,11 +57,7 @@ export function shopShippingCents(item: ShopCatalogItem, quantity: number, unitA
   return item.shippingFirstCents + item.shippingAdditionalCents * (quantity - 1)
 }
 
-export function printifyProductIdForSlug(slug: string): string | null {
-  const row = (printifyProducts as { bySlug: Record<string, { printifyProductId: string | null }> }).bySlug[slug]
-  const id = row?.printifyProductId
-  return id?.trim() ? id.trim() : null
-}
+export { printifyProductIdForVariant, shopHasPrintifyFreeplug } from './printify-catalog'
 
 export type ValidatedShopLine =
   | { ok: true; line: ShopCheckoutLine }
@@ -138,7 +137,8 @@ export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: 
     }
   }
 
-  const printifyProductId = designMode === 'freeplug' ? printifyProductIdForSlug(slug) : null
+  const printifyProductId =
+    designMode === 'freeplug' ? printifyProductIdForVariant(slug, variantId) : null
   if (designMode === 'freeplug' && !printifyProductId) {
     return { ok: false, error: 'This item is not available for purchase yet.' }
   }
