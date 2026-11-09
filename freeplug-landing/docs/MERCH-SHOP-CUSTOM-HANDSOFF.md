@@ -22,10 +22,7 @@ Wrangler binding:
 "ai": { "binding": "AI" }
 ```
 
-Models:
-
-1. `@cf/huggingface/nsfw-image-detection` — sexual / NSFW signal
-2. `@cf/llava-hf/llava-1.5-7b-hf` — violence, hate, trademark heuristic (SAFE / UNSAFE / UNCERTAIN)
+Model: `@cf/llava-hf/llava-1.5-7b-hf` with a safety prompt (nudity/sexual content, violence, hate symbols, obvious trademarks). Only a clear `SAFE` passes; `UNSAFE` blocks; anything else (UNCERTAIN, odd answers, model errors) is **held**.
 
 Without the binding, uploads are treated as **held** (not pass).
 
