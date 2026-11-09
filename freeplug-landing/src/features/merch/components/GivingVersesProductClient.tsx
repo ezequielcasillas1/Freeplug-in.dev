@@ -112,7 +112,7 @@ export function GivingVersesProductClient({
     <MerchPageChrome>
       <main className={MERCH_TSHIRT_MAIN_CLASS}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="min-w-0">
+          <motion.div variants={staggerContainer} initial={false} animate="visible" className="min-w-0">
             <motion.p variants={fadeInUp} className="text-sm text-gray-500 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
               <Link href={publicHref('/merch', locale)} className="hover:text-[#ba3d3d] min-h-[44px] inline-flex items-center">
                 {t('breadcrumbMerch')}

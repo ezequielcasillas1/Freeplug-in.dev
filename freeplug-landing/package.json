@@ -19,7 +19,8 @@
     "deploy": "echo 'Refused: no direct deploy. Run npm run upload:preview or npm run cf:upload:production, then wrangler versions deploy <id> only after Ezequiel says yes.' && exit 1",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "cf:guard": "node scripts/cf-upload-guard.mjs --target=preview",
-    "merch:rebuild-giving-verses": "node scripts/build-giving-verses-assets.mjs"
+    "merch:rebuild-giving-verses": "node scripts/build-giving-verses-assets.mjs",
+    "merch:capture-giving-verses-screenshots": "node scripts/capture-giving-verses-screenshots.mjs"
   },
   "dependencies": {
     "@react-email/components": "^1.0.11",
