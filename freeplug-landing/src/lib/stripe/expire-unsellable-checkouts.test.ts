@@ -124,6 +124,7 @@ describe('checkoutSessionExpiresAt', () => {
       'src/app/api/checkout/merch/font-bundle/route.ts',
       'src/app/api/checkout/merch/product/route.ts',
       'src/app/api/checkout/merch/shirt/route.ts',
+      'src/app/api/checkout/merch/shop/route.ts',
       'src/lib/outreach/server.ts',
     ])
     for (const f of creators) {

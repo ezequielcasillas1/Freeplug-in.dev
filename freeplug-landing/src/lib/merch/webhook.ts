@@ -6,6 +6,7 @@ import { issueMerchFontBundleToken, revokeMerchTokensByChargeId, revokeMerchToke
 import { merchDownloadUrl, sendMerchDownloadEmail } from './email'
 import { handleMerchCollectionCheckoutSessionCompleted } from './collections/fulfillment'
 import { handleMerchShirtCheckoutSessionCompleted } from './shirts/fulfillment'
+import { handleMerchShopCheckoutSessionCompleted } from './shop/fulfillment'
 
 export async function handleMerchCheckoutSessionCompleted(
   admin: SupabaseClient,
@@ -15,6 +16,8 @@ export async function handleMerchCheckoutSessionCompleted(
   if (shirt === 'handled') return 'handled'
   const collection = await handleMerchCollectionCheckoutSessionCompleted(admin, session)
   if (collection === 'handled') return 'handled'
+  const shop = await handleMerchShopCheckoutSessionCompleted(admin, session)
+  if (shop === 'handled') return 'handled'
   if (!isMerchFontBundleSession(session)) return 'skipped'
   if (session.payment_status !== 'paid') {
     console.warn('[merch/webhook] checkout completed but not paid', session.id, session.payment_status)

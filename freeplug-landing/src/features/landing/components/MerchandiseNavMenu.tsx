@@ -9,6 +9,7 @@ import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
 import { MERCH_TSHIRTS_SLUG } from '@/lib/merch/product'
 import { MERCH_COLLECTIONS } from '@/lib/merch/collections/catalog'
+import { isMerchShopNavVisible } from '@/lib/merch/flags'
 import { cn } from '@/lib/utils/cn'
 
 const LINKS = [
@@ -24,6 +25,7 @@ export function MerchandiseNavMenu({ className, onNavigate }: { className?: stri
   const tMerch = useTranslations('public.merch')
   const locale = toAppLocale(useLocale())
   const [open, setOpen] = useState(false)
+  const shopNav = isMerchShopNavVisible()
 
   return (
     <div
@@ -43,6 +45,18 @@ export function MerchandiseNavMenu({ className, onNavigate }: { className?: stri
       </button>
       {open ? (
         <div className="absolute left-0 top-full z-50 min-w-[12rem] rounded-xl border border-gray-200 bg-white py-2 shadow-lg">
+          {shopNav ? (
+            <Link
+              href={publicHref('/shop', locale)}
+              className="block px-4 py-2.5 text-sm font-medium text-gray-900 hover:bg-[#ba3d3d]/5 hover:text-[#ba3d3d]"
+              onClick={() => {
+                setOpen(false)
+                onNavigate?.()
+              }}
+            >
+              {tMerch('subnav.shopAll')}
+            </Link>
+          ) : null}
           {LINKS.map((link) => (
             <Link
               key={link.slug}
