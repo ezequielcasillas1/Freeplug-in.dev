@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
@@ -16,19 +16,17 @@ import {
   sizesForColor,
   uniqueColors,
 } from '@/lib/merch/shop/variant-options'
-import { effectiveDpi, isDpiWarning, parseDataUrlDimensions } from '@/lib/merch/shop/upload-validation'
+import { PRINTIFY_PRINT_AREA_DPI } from '@/lib/merch/shop/print-area'
 import { cn } from '@/lib/utils/cn'
 
 export function ShopProductClient({
   item,
   checkoutEnabled,
   hasPrintifyProduct,
-  customFeeCents,
 }: {
   item: ShopCatalogItem
   checkoutEnabled: boolean
   hasPrintifyProduct: boolean
-  customFeeCents: number
 }) {
   const t = useTranslations('public.merch.shop')
   const locale = toAppLocale(useLocale())
@@ -45,9 +43,10 @@ export function ShopProductClient({
   const [rightsConfirmed, setRightsConfirmed] = useState(false)
   const [customPreview, setCustomPreview] = useState<string | null>(null)
   const [customPath, setCustomPath] = useState<string | null>(null)
-  const [dpiWarning, setDpiWarning] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadToken, setUploadToken] = useState<string | null>(null)
+  const [customSoldOut, setCustomSoldOut] = useState(false)
 
   const sizeOptions = useMemo(() => sizesForColor(item.variants, color || null), [item.variants, color])
 
@@ -67,37 +66,47 @@ export function ShopProductClient({
   const [placementScale, setPlacementScale] = useState(placement.scale)
   const customPlacement = { ...placement, scale: placementScale }
 
-  const unitCents = (variant?.retailCents ?? item.fromRetailCents) + (designMode === 'custom' ? customFeeCents : 0)
+  const unitCents = variant?.retailCents ?? item.fromRetailCents
   const shippingCents = shopShippingCents(item, quantity, variant?.retailCents ?? item.fromRetailCents)
 
   const logoSrc = designMode === 'freeplug' ? (variant?.logoFile ?? null) : null
   const productSrc = shopProductImageSrc(item, galleryIndex)
 
+  useEffect(() => {
+    void fetch('/api/merch/shop/cap')
+      .then((r) => r.json())
+      .then((j: { soldOut?: boolean }) => setCustomSoldOut(Boolean(j.soldOut)))
+      .catch(() => undefined)
+  }, [])
+
   async function onFile(file: File | null) {
     if (!file) return
     setUploading(true)
     setCheckoutError(null)
+  setUploadToken(null)
     try {
       const fd = new FormData()
       fd.set('file', file)
       fd.set('slug', item.slug)
+      fd.set('variant_id', String(variant?.id ?? item.variants[0]?.id ?? ''))
       const res = await fetch('/api/merch/shop/upload', { method: 'POST', body: fd })
-      const json = (await res.json().catch(() => null)) as { path?: string; previewDataUrl?: string; error?: string } | null
+      const json = (await res.json().catch(() => null)) as {
+        path?: string
+        previewDataUrl?: string
+        uploadToken?: string
+        error?: string
+        code?: string
+      } | null
       if (!res.ok || !json?.path) {
-        setCheckoutError(json?.error ?? t('checkoutError'))
+        const code = json?.code ?? json?.error
+        if (code === 'upload_dpi_low') setCheckoutError(t('uploadDpiBlocked'))
+        else if (code === 'upload_moderation_blocked') setCheckoutError(t('uploadModerationBlocked'))
+        else setCheckoutError(t('uploadErrorGeneric'))
         return
       }
       setCustomPath(json.path)
-      if (json.previewDataUrl) {
-        setCustomPreview(json.previewDataUrl)
-        const dims = parseDataUrlDimensions(json.previewDataUrl)
-        if (dims) {
-          const widthIn = printArea.width / 300
-          const heightIn = printArea.height / 300
-          const dpi = effectiveDpi(dims.width, dims.height, widthIn, heightIn)
-          setDpiWarning(isDpiWarning(dpi))
-        }
-      }
+      setUploadToken(json.uploadToken ?? null)
+      if (json.previewDataUrl) setCustomPreview(json.previewDataUrl)
     } finally {
       setUploading(false)
     }
@@ -120,6 +129,8 @@ export function ShopProductClient({
         custom_upload_path: designMode === 'custom' ? customPath : undefined,
         custom_placement: designMode === 'custom' ? customPlacement : undefined,
         rights_confirmed: designMode === 'custom' ? rightsConfirmed : undefined,
+        upload_token: designMode === 'custom' ? uploadToken : undefined,
+        rights_accepted_locale: locale,
       }),
     })
     const json = (await res.json().catch(() => null)) as { url?: string; error?: string } | null
@@ -131,7 +142,7 @@ export function ShopProductClient({
   }
 
   const canBuyFreeplug = designMode === 'freeplug' && hasPrintifyProduct
-  const canBuyCustom = designMode === 'custom' && Boolean(customPath) && rightsConfirmed
+  const canBuyCustom = designMode === 'custom' && Boolean(customPath) && Boolean(uploadToken) && rightsConfirmed && !customSoldOut
   const buyDisabled = !checkoutEnabled || (designMode === 'freeplug' ? !canBuyFreeplug : !canBuyCustom)
 
   return (
@@ -189,8 +200,10 @@ export function ShopProductClient({
                 data-testid="shop-design-custom"
                 className={pill(designMode === 'custom')}
                 onClick={() => setDesignMode('custom')}
+                disabled={customSoldOut}
+                title={customSoldOut ? t('customSoldOutToday') : undefined}
               >
-                {t('designCustom')}
+                {customSoldOut ? t('customSoldOutToday') : t('designCustom')}
               </button>
             </div>
 
@@ -272,7 +285,15 @@ export function ShopProductClient({
                   onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
                   disabled={uploading}
                 />
-                {dpiWarning ? <p className="text-sm text-amber-700">{t('uploadDpiWarning')}</p> : null}
+                <div className="rounded-lg bg-zinc-50 border border-zinc-100 p-3 text-xs text-gray-600">
+                  <p className="font-semibold text-gray-800 mb-1">{t('contentPolicyTitle')}</p>
+                  <p>{t('contentPolicyBody')}</p>
+                  <p className="mt-2 text-gray-500">
+                    Print area ~
+                    {Math.round((printArea.width / PRINTIFY_PRINT_AREA_DPI) * 10) / 10} ×{' '}
+                    {Math.round((printArea.height / PRINTIFY_PRINT_AREA_DPI) * 10) / 10} in at 150 DPI min.
+                  </p>
+                </div>
                 <label className="flex gap-2 text-sm text-gray-700">
                   <input type="checkbox" checked={rightsConfirmed} onChange={(e) => setRightsConfirmed(e.target.checked)} />
                   <span>{t('rightsLabel')}</span>
@@ -295,12 +316,6 @@ export function ShopProductClient({
               {t('shippingLine', { shipping: formatUsdFromCents(shippingCents) })}
             </p>
             <p className="text-xs text-gray-500 mb-4">{t('shippingUsOnly')}</p>
-            {customFeeCents > 0 ? (
-              <p className="text-xs text-gray-500 mb-4">{t('customFeeNote', { fee: formatUsdFromCents(customFeeCents) })}</p>
-            ) : (
-              <p className="text-xs text-gray-500 mb-4">{t('customFeeNone')}</p>
-            )}
-
             {checkoutError ? <p className="text-sm text-red-600 mb-3">{checkoutError}</p> : null}
 
             <button

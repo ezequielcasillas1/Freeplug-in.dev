@@ -36,7 +36,7 @@ export function buildMerchShopSessionParams(
 
   const description =
     line.designMode === 'custom'
-      ? `${line.optionLabel} — custom artwork (pending review)`
+      ? `${line.optionLabel} — custom artwork`
       : `${line.optionLabel} — Freeplug logo`
 
   return {
@@ -83,7 +83,10 @@ export function buildMerchShopSessionParams(
       printify_variant_id: String(line.printifyVariantId),
       custom_upload_path: line.customUploadPath ?? '',
       custom_placement: line.customPlacement ? JSON.stringify(line.customPlacement) : '',
-      custom_fee_cents: String(line.customFeeCents),
+      shop_moderation_result: line.moderationResult ?? '',
+      shop_moderation_detail: '',
+      rights_accepted_at: line.designMode === 'custom' ? new Date().toISOString() : '',
+      rights_accepted_locale: line.rightsAcceptedLocale ?? '',
     },
     payment_intent_data: {
       metadata: {
