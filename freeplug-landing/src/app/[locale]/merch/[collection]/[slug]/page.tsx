@@ -1,5 +1,10 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { CollectionProductClient } from '@/features/merch/components/CollectionProductClient'
+import { GivingVersesProductClient } from '@/features/merch/components/GivingVersesProductClient'
+import {
+  GIVING_VERSES_PRODUCT_SLUG,
+  GOOD_MEASURE_LEGACY_SLUG,
+} from '@/lib/merch/collections/giving-verses'
 import { isMerchCollectionsEnabled } from '@/lib/merch/flags'
 import {
   MERCH_COLLECTIONS,
@@ -23,13 +28,26 @@ export function generateStaticParams() {
 export default async function MerchCollectionProductPage({
   params,
 }: {
-  params: Promise<{ collection: string; slug: string }>
+  params: Promise<{ locale: string; collection: string; slug: string }>
 }) {
-  const { collection, slug } = await params
+  const { locale, collection, slug } = await params
   if (!isMerchCollection(collection)) notFound()
+
+  if (slug === GOOD_MEASURE_LEGACY_SLUG) {
+    const prefix = locale === 'es' ? '/es' : ''
+    permanentRedirect(`${prefix}/merch/${collection}/${GIVING_VERSES_PRODUCT_SLUG}`)
+  }
+
   const entry = getCatalogProduct(slug)
   if (!entry || entry.collection !== collection) notFound()
   const product = listPublicCollectionProducts(collection).find((p) => p.slug === slug)!
   const checkoutEnabled = isMerchCollectionsEnabled()
+
+  if (slug === GIVING_VERSES_PRODUCT_SLUG) {
+    return (
+      <GivingVersesProductClient collection={collection} product={product} checkoutEnabled={checkoutEnabled} />
+    )
+  }
+
   return <CollectionProductClient collection={collection} product={product} checkoutEnabled={checkoutEnabled} />
 }

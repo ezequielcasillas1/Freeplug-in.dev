@@ -1,0 +1,181 @@
+{
+  "generatedAt": "2026-11-09T17:07:49.648Z",
+  "verses": [
+    {
+      "id": "01-proverbs-19-17",
+      "number": 1,
+      "book": "Proverbs 19:17",
+      "ref": "PROVERBS 19:17 - KJV",
+      "phrase": "He that hath pity upon the poor lendeth unto the LORD.",
+      "phrase_note": "First clause."
+    },
+    {
+      "id": "02-deuteronomy-15-11",
+      "number": 2,
+      "book": "Deuteronomy 15:11",
+      "ref": "DEUTERONOMY 15:11 - KJV",
+      "phrase": "Thou shalt open thine hand wide unto thy brother, to thy poor, and to thy needy, in thy land.",
+      "phrase_note": "Command clause."
+    },
+    {
+      "id": "03-proverbs-22-9",
+      "number": 3,
+      "book": "Proverbs 22:9",
+      "ref": "PROVERBS 22:9 - KJV",
+      "phrase": "He that hath a bountiful eye shall be blessed; for he giveth of his bread to the poor.",
+      "phrase_note": "Full verse."
+    },
+    {
+      "id": "04-psalm-41-1",
+      "number": 4,
+      "book": "Psalm 41:1",
+      "ref": "PSALM 41:1 - KJV",
+      "phrase": "Blessed is he that considereth the poor: the LORD will deliver him in time of trouble.",
+      "phrase_note": "Full verse body."
+    },
+    {
+      "id": "05-isaiah-58-10",
+      "number": 5,
+      "book": "Isaiah 58:10",
+      "ref": "ISAIAH 58:10 - KJV",
+      "phrase": "And if thou draw out thy soul to the hungry... then shall thy light rise in obscurity.",
+      "phrase_note": "... omits middle; trailing clause omitted."
+    },
+    {
+      "id": "06-matthew-25-40",
+      "number": 6,
+      "book": "Matthew 25:40",
+      "ref": "MATTHEW 25:40 - KJV",
+      "phrase": "Inasmuch as ye have done it unto one of the least of these my brethren, ye have done it unto me.",
+      "phrase_note": "Key clause."
+    },
+    {
+      "id": "07-acts-20-35",
+      "number": 7,
+      "book": "Acts 20:35",
+      "ref": "ACTS 20:35 - KJV",
+      "phrase": "It is more blessed to give than to receive.",
+      "phrase_note": "Quoted words of the Lord Jesus."
+    },
+    {
+      "id": "08-hebrews-13-16",
+      "number": 8,
+      "book": "Hebrews 13:16",
+      "ref": "HEBREWS 13:16 - KJV",
+      "phrase": "But to do good and to communicate forget not.",
+      "phrase_note": "First clause."
+    },
+    {
+      "id": "09-1-john-3-18",
+      "number": 9,
+      "book": "1 John 3:18",
+      "ref": "1 JOHN 3:18 - KJV",
+      "phrase": "My little children, let us not love in word... but in deed and in truth.",
+      "phrase_note": "... omits neither in tongue."
+    },
+    {
+      "id": "10-galatians-2-10",
+      "number": 10,
+      "book": "Galatians 2:10",
+      "ref": "GALATIANS 2:10 - KJV",
+      "phrase": "remember the poor",
+      "phrase_note": "Contiguous KJV words; lead-capped on tee."
+    },
+    {
+      "id": "11-proverbs-14-31",
+      "number": 11,
+      "book": "Proverbs 14:31",
+      "ref": "PROVERBS 14:31 - KJV",
+      "phrase": "He that honoureth him hath mercy on the poor.",
+      "phrase_note": "Second clause (positive)."
+    },
+    {
+      "id": "12-proverbs-28-27",
+      "number": 12,
+      "book": "Proverbs 28:27",
+      "ref": "PROVERBS 28:27 - KJV",
+      "phrase": "He that giveth unto the poor shall not lack.",
+      "phrase_note": "First clause."
+    },
+    {
+      "id": "13-proverbs-31-9",
+      "number": 13,
+      "book": "Proverbs 31:9",
+      "ref": "PROVERBS 31:9 - KJV",
+      "phrase": "Open thy mouth, judge righteously, and plead the cause of the poor and needy.",
+      "phrase_note": "Full verse."
+    },
+    {
+      "id": "14-psalm-82-3",
+      "number": 14,
+      "book": "Psalm 82:3",
+      "ref": "PSALM 82:3 - KJV",
+      "phrase": "Defend the poor and fatherless: do justice to the afflicted and needy.",
+      "phrase_note": "Full verse."
+    },
+    {
+      "id": "15-leviticus-19-10",
+      "number": 15,
+      "book": "Leviticus 19:10",
+      "ref": "LEVITICUS 19:10 - KJV",
+      "phrase": "thou shalt leave them for the poor and stranger: I am the LORD your God.",
+      "phrase_note": "Closing command + I am the LORD. Lead-capped. Notion/BibleGateway: LORD vs Lord display only."
+    },
+    {
+      "id": "16-isaiah-58-7",
+      "number": 16,
+      "book": "Isaiah 58:7",
+      "ref": "ISAIAH 58:7 - KJV",
+      "phrase": "Is it not to deal thy bread to the hungry... and that thou bring the poor that are cast out to thy house?",
+      "phrase_note": "... is soft break only (no words omitted between those clauses); trailing clauses omitted for length."
+    },
+    {
+      "id": "17-james-1-27",
+      "number": 17,
+      "book": "James 1:27",
+      "ref": "JAMES 1:27 - KJV",
+      "phrase": "To visit the fatherless and widows in their affliction.",
+      "phrase_note": "Key clause of pure religion."
+    },
+    {
+      "id": "18-1-john-3-17",
+      "number": 18,
+      "book": "1 John 3:17",
+      "ref": "1 JOHN 3:17 - KJV",
+      "phrase": "But whoso hath this world's good, and seeth his brother have need... how dwelleth the love of God in him?",
+      "phrase_note": "... omits shutting bowels clause."
+    },
+    {
+      "id": "19-matthew-5-42",
+      "number": 19,
+      "book": "Matthew 5:42",
+      "ref": "MATTHEW 5:42 - KJV",
+      "phrase": "Give to him that asketh thee, and from him that would borrow of thee turn not thou away.",
+      "phrase_note": "Full verse."
+    },
+    {
+      "id": "20-matthew-6-3",
+      "number": 20,
+      "book": "Matthew 6:3",
+      "ref": "MATTHEW 6:3 - KJV",
+      "phrase": "But when thou doest alms, let not thy left hand know what thy right hand doeth.",
+      "phrase_note": "Full verse; terminal colon from KJV site rendered as period for tee."
+    },
+    {
+      "id": "21-2-corinthians-9-7",
+      "number": 21,
+      "book": "2 Corinthians 9:7",
+      "ref": "2 CORINTHIANS 9:7 - KJV",
+      "phrase": "God loveth a cheerful giver.",
+      "phrase_note": "Contiguous KJV climax (without leading for)."
+    },
+    {
+      "id": "22-1-timothy-6-18",
+      "number": 22,
+      "book": "1 Timothy 6:18",
+      "ref": "1 TIMOTHY 6:18 - KJV",
+      "phrase": "ready to distribute, willing to communicate.",
+      "phrase_note": "Closing pair; lead-capped. Terminal semicolon→period."
+    }
+  ]
+}
