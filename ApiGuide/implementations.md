@@ -1,3 +1,8 @@
+### 2026-11-09 - Shop catalog filter (preview)
+**Status:** SUCCESS
+**Files:** `catalog-filter-*.ts`, `CatalogFilterPanel.tsx`, `/merch/all`, `/shop`, `messages/en.json`, `messages/es.json`
+**Result:** URL-synced filter panel, build-time facets, unit tests; preview PR only (no deploy).
+
 ### 2026-11-08 - Merch collections (22 Printify products preview)
 **Status:** PARTIAL
 **Files:** `src/lib/merch/collections/*`, `/merch/[collection]/[slug]`, `POST /api/checkout/merch/product`, `public/merch/{drinkware,hats,...}`, migration `20261108210000_merch_collection_orders.sql`
