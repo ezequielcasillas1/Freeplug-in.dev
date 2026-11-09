@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getShopItem, listShopItems, shopItemCount, validateShopCheckoutLine } from './catalog'
-import printifyProducts from './printify-products.json'
+import { printifyProductIdForVariant } from './printify-catalog'
 
 describe('shop catalog', () => {
   it('loads 195 research items', () => {
@@ -26,7 +26,8 @@ describe('shop catalog', () => {
   })
 
   it('requires printify product id for freeplug checkout', () => {
-    const item = getShopItem(listFirstSlug())
+    const item = getShopItem('fanny-pack-468')
+    expect(item).not.toBeNull()
     const res = validateShopCheckoutLine(
       {
         slug: item!.slug,
@@ -59,21 +60,21 @@ describe('shop catalog', () => {
     }
   })
 
-  it('accepts freeplug line when printify product id is configured', () => {
+  it('accepts freeplug line when variant maps to a printify product', () => {
     const item = getShopItem(listFirstSlug())
-    const map = printifyProducts as { bySlug: Record<string, { printifyProductId: string | null }> }
-    map.bySlug[item!.slug] = { printifyProductId: 'test-product-id' }
+    const vid = item!.variants[0]!.id
+    expect(printifyProductIdForVariant(item!.slug, vid)).toBeTruthy()
     const res = validateShopCheckoutLine(
       {
         slug: item!.slug,
-        variant_id: item!.variants[0]?.id,
+        variant_id: vid,
         quantity: 1,
         design_mode: 'freeplug',
       },
       0
     )
     expect(res.ok).toBe(true)
-    map.bySlug[item!.slug] = { printifyProductId: null }
+    if (res.ok) expect(res.line.printifyProductId).toBeTruthy()
   })
 })
 

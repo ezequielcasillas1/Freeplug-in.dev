@@ -9,6 +9,8 @@ import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { ShopMockupPreview } from '@/features/merch/components/ShopMockupPreview'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import { shopProductImageSrc, shopShippingCents } from '@/lib/merch/shop/catalog'
+import { logoPathForBlank } from '@/lib/merch/shop/contrast'
+import { mockupsForShopColor, pickFrontPrintifyMockup } from '@/lib/merch/shop/printify-catalog'
 import type { ShopCatalogItem } from '@/lib/merch/shop/types'
 import {
   pickerMode,
@@ -70,8 +72,19 @@ export function ShopProductClient({
   const unitCents = (variant?.retailCents ?? item.fromRetailCents) + (designMode === 'custom' ? customFeeCents : 0)
   const shippingCents = shopShippingCents(item, quantity, variant?.retailCents ?? item.fromRetailCents)
 
-  const logoSrc = designMode === 'freeplug' ? (variant?.logoFile ?? null) : null
-  const productSrc = shopProductImageSrc(item, galleryIndex)
+  const colorForMockup = (variant?.color ?? color) || null
+  const printifyMockups = useMemo(
+    () => mockupsForShopColor(item.slug, colorForMockup),
+    [item.slug, colorForMockup]
+  )
+  const printifyMockupFront = useMemo(() => pickFrontPrintifyMockup(printifyMockups), [printifyMockups])
+  const usePrintifyMockup = designMode === 'freeplug' && Boolean(printifyMockupFront)
+
+  const logoSrc =
+    designMode === 'freeplug' && !usePrintifyMockup
+      ? logoPathForBlank(variant?.blankKind ?? 'light')
+      : null
+  const productSrc = usePrintifyMockup ? printifyMockupFront! : shopProductImageSrc(item, galleryIndex)
 
   async function onFile(file: File | null) {
     if (!file) return
