@@ -21,7 +21,7 @@ describe('preview overlay layout', () => {
     expect(scale).toBeCloseTo(0.25, 2)
   })
 
-  it('keeps original mockups for slogan tees with chestBadge overlay', () => {
+  it('does not add chestBadge overlay on slogan tees under storefront policy', () => {
     const r = resolvePreviewWordmark({
       source: 't-shirts',
       slug: '28-world-taste-the-charge',
@@ -30,9 +30,6 @@ describe('preview overlay layout', () => {
       catalogKey: 'tshirts/28-world-taste-the-charge',
       garmentColor: 'Black',
     })
-    expect(r?.placement.left).toBeGreaterThan(0.55)
-    expect(r?.chestBadge).toBe(true)
-    expect(r?.printSurface).toBe(true)
-    expect((r as { useBlankGarmentMockup?: boolean }).useBlankGarmentMockup).toBeUndefined()
+    expect(r).toBeNull()
   })
 })
