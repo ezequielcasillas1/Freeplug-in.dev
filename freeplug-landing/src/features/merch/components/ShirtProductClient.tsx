@@ -15,6 +15,7 @@ import {
   SHIRT_SIZES,
   formatUsdFromCents,
   getShirtBySlug,
+  shirtDefaultSelectedColor,
   shirtMockupPublicPath,
   shirtPriceCents,
   shirtShippingCents,
@@ -32,7 +33,11 @@ const SWATCH: Record<ShirtColor, string> = {
   White: '#ffffff',
 }
 
-const COLOR_DESIGN_NOTE_SLUGS = ['32-world-watch-out-rockefeller', '34-world-let-your-work-beat-fantasies'] as const
+const COLOR_DESIGN_NOTE_SLUGS = [
+  '32-world-watch-out-rockefeller',
+  '34-world-let-your-work-beat-fantasies',
+  '35-world-straight-after-the-freeplug',
+] as const
 type ColorDesignNoteSlug = (typeof COLOR_DESIGN_NOTE_SLUGS)[number]
 
 function isColorDesignNoteSlug(slug: string): slug is ColorDesignNoteSlug {
@@ -50,7 +55,7 @@ export function ShirtProductClient({
   const locale = toAppLocale(useLocale())
   const entry = getShirtBySlug(product.slug)!
 
-  const [color, setColor] = useState<ShirtColor>('Black')
+  const [color, setColor] = useState<ShirtColor>(() => shirtDefaultSelectedColor(product.slug))
   const [size, setSize] = useState<ShirtSize>('M')
   const [quantity, setQuantity] = useState(1)
   const [view, setView] = useState<'front' | 'back'>('front')

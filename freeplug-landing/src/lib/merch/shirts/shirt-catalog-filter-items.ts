@@ -1,16 +1,16 @@
 import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
-import type { PublicShirtProduct } from './catalog'
+import { shirtListCardFrontMockup, type PublicShirtProduct } from './catalog'
 
 /** Rows for wordmark / catalog filters on /merch/t-shirts. */
 export function shirtProductsToCatalogFilterItems(products: PublicShirtProduct[]): CatalogFilterItem[] {
   return products.map((p, i) => {
-    const color = p.mockups['Black-front'] ? 'Black' : 'White'
+    const { color, src } = shirtListCardFrontMockup(p)
     return {
       key: `tshirts/${p.slug}`,
       href: `/merch/t-shirts/${p.slug}`,
       title: p.slug,
       sortName: p.slug,
-      image: p.mockups['Black-front'] ?? p.mockups['White-front'] ?? '',
+      image: src,
       fromPriceCents: p.fromPriceCents,
       featuredRank: i + 1,
       category: 'apparel',

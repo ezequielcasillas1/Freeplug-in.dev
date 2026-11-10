@@ -148,6 +148,26 @@ export type PublicShirtProduct = {
   mockups: Partial<Record<`${ShirtColor}-${'front' | 'back'}`, string>>
 }
 
+/** Listing / card thumbnail color (default Black; White for tees whose lead art is on a light blank). */
+const SHIRT_LEAD_LIST_COLOR_WHITE = new Set(['35-world-straight-after-the-freeplug'])
+
+export function shirtLeadListColor(slug: string): ShirtColor {
+  return SHIRT_LEAD_LIST_COLOR_WHITE.has(slug) ? 'White' : 'Black'
+}
+
+export function shirtDefaultSelectedColor(slug: string): ShirtColor {
+  return shirtLeadListColor(slug)
+}
+
+export function shirtListCardFrontMockup(p: Pick<PublicShirtProduct, 'slug' | 'mockups'>): {
+  color: ShirtColor
+  src: string
+} {
+  const color = shirtLeadListColor(p.slug)
+  const src = p.mockups[`${color}-front`] ?? p.mockups['White-front'] ?? p.mockups['Black-front'] ?? ''
+  return { color, src }
+}
+
 const TITLE_KEYS: Record<string, string> = {
   '01-know-a-plug': 'shirt01',
   '02-circle-mark': 'shirt02',

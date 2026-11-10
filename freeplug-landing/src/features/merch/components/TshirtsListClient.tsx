@@ -15,7 +15,7 @@ import { useCatalogFilterUrl } from '@/features/merch/hooks/useCatalogFilterUrl'
 import { applyCatalogFilters, computeCatalogFacets, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
 import { computePreviewWordmarkFacets } from '@/lib/merch/preview/preview-wordmark-filter'
 import { shirtProductsToCatalogFilterItems } from '@/lib/merch/shirts/shirt-catalog-filter-items'
-import { formatUsdFromCents, type PublicShirtProduct } from '@/lib/merch/shirts/catalog'
+import { formatUsdFromCents, shirtListCardFrontMockup, type PublicShirtProduct } from '@/lib/merch/shirts/catalog'
 
 export function TshirtsListClient({ products }: { products: PublicShirtProduct[] }) {
   const t = useTranslations('public.merch.tshirts')
@@ -69,8 +69,7 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
                 {filtered.map((row) => {
                   const p = bySlug.get(row.key.replace('tshirts/', ''))
                   if (!p) return null
-                  const listColor = (p.mockups['Black-front'] ? 'Black' : 'White') as 'Black' | 'White'
-                  const img = p.mockups['Black-front'] ?? p.mockups['White-front']
+                  const { color: listColor, src: img } = shirtListCardFrontMockup(p)
                   const title = t(`products.${p.titleKey}`)
                   return (
                     <motion.li key={p.slug} variants={fadeInUp} className="min-w-0">

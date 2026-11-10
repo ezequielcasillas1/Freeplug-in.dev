@@ -1121,11 +1121,13 @@
           "32-world-watch-out-rockefeller": "Cuidado, Rockefeller",
           "patience-undefined": "Paciencia indefinida",
           "33-world-work-for-you": "Trabaja para ti",
-          "34-world-let-your-work-beat-fantasies": "Deja que tu trabajo/empleo venza las fantasías"
+          "34-world-let-your-work-beat-fantasies": "Deja que tu trabajo/empleo venza las fantasías",
+          "35-world-straight-after-the-freeplug": "Directo después del Freeplug. Después de todo."
         },
         "colorDesignNotes": {
           "32-world-watch-out-rockefeller": "El color elige el diseño: clásico en blanco/negro; bowler en natural/carbón.",
-          "34-world-let-your-work-beat-fantasies": "El color elige el texto: WORK en blanco/negro, JOB en natural/carbón."
+          "34-world-let-your-work-beat-fantasies": "El color elige el texto: WORK en blanco/negro, JOB en natural/carbón.",
+          "35-world-straight-after-the-freeplug": "El color elige la marca: Fp cursiva en blanco/negro; FP en letras en natural/carbón."
         },
         "productDescriptions": {
           "patience-undefined": "patience: undefined // Freeplug: solved."
