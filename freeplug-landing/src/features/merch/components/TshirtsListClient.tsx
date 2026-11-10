@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
-import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
+import { ShirtMockupFigure } from '@/features/merch/components/ShirtMockupFigure'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
@@ -34,6 +34,7 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
 
             <ul className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 min-w-0">
               {products.map((p) => {
+                const listColor = (p.mockups['Black-front'] ? 'Black' : 'White') as 'Black' | 'White'
                 const img = p.mockups['Black-front'] ?? p.mockups['White-front']
                 const title = t(`products.${p.titleKey}`)
                 return (
@@ -43,11 +44,13 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
                       className="block rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-[#ba3d3d]/40 transition-colors min-h-[44px]"
                     >
                       {img ? (
-                        <MerchContainedImage
+                        <ShirtMockupFigure
+                          slug={p.slug}
                           src={img}
                           alt={t('cardAlt', { title })}
                           width={1000}
                           height={1200}
+                          shirtColor={listColor}
                           className="border-0 rounded-none"
                           sizes="(max-width: 640px) 100vw, 320px"
                         />

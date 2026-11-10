@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
-import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
+import { ShirtMockupFigure } from '@/features/merch/components/ShirtMockupFigure'
 import { MerchShirtCheckoutButton } from '@/features/merch/components/MerchShirtCheckoutButton'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
@@ -87,11 +87,13 @@ export function ShirtProductClient({
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 min-w-0">
               <motion.div variants={fadeInUp} className="min-w-0 space-y-3 sm:space-y-4 order-1">
-                <MerchContainedImage
+                <ShirtMockupFigure
+                  slug={product.slug}
                   src={mockupSrc}
                   alt={t('mockupAlt', { title, color, view })}
                   width={1000}
                   height={1200}
+                  shirtColor={color}
                   priority
                   sizes="(max-width: 1024px) 100vw, 480px"
                 />
