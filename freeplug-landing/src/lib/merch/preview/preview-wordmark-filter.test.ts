@@ -28,16 +28,19 @@ describe('preview wordmark catalog filters', () => {
     expect(matchesPreviewWordmarkCatalogFilters(verse!, true, [], [])).toBe(false)
   })
 
-  it('filters by name and style facets', () => {
-    const sample = all.find((i) => previewStyleGroupForItem(i) === 'box')
+  it('filters by name and style facets on policy-approved previews', () => {
+    const sample = all.find((i) => i.key === 'shop/12-solid-cuffed-beanie-5665')
     expect(sample).toBeDefined()
-    expect(computePreviewWordmarkFacets(all).styles.box).toBeGreaterThan(0)
+    const facets = computePreviewWordmarkFacets(all)
+    const style = previewStyleGroupForItem(sample!)
+    expect(style).toBe('wide')
+    expect(facets.brandNames.freeplugin).toBe(1)
     expect(
       applyCatalogFilters(all, {
         ...EMPTY_CATALOG_FILTER,
-        brandNameKeys: ['freeplug'],
-        wordmarkStyleGroups: ['box'],
-      }).length
-    ).toBeGreaterThan(0)
+        brandNameKeys: ['freeplugin'],
+        wordmarkStyleGroups: [style!],
+      })
+    ).toContain(sample)
   })
 })

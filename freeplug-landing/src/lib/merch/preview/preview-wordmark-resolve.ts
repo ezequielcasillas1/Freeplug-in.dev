@@ -4,6 +4,7 @@ import type { ShirtColor } from '@/lib/merch/shirts/catalog'
 import { supremeWordmarkPlacement } from '@/lib/merch/shirts/supreme-preview'
 import { wordmarkScaleFromPlacement } from './preview-overlay-layout'
 import { inferProductTypeFromCatalog, placementForProductType, type PreviewPlacement } from './placement-defaults'
+import { shouldShowPreviewWordmarkOverlay } from './preview-overlay-policy'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
 
 export type PreviewWordmarkMode = 'full' | 'skip'
@@ -63,8 +64,17 @@ export type ResolvePreviewWordmarkInput = {
   garmentColor?: string | null
 }
 
+function policyAllowsPreview(input: ResolvePreviewWordmarkInput): boolean {
+  return shouldShowPreviewWordmarkOverlay({
+    source: input.source,
+    slug: input.slug,
+    catalogKey: input.catalogKey,
+  }).allow
+}
+
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
   if (isDigitalMerchHref(input.href)) return null
+  if (!policyAllowsPreview(input)) return null
   if (input.source === 't-shirts') {
     if (isVerseShirtSlug(input.slug) || isGivingCampaignShirtSlug(input.slug)) {
       return null

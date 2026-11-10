@@ -1,0 +1,3476 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T21:10:06.513Z",
+  "source": "classification.snapshot.csv",
+  "counts": {
+    "printifyGroupA": 305,
+    "printifyGroupB": 9,
+    "printifyUnknown": 118,
+    "storefrontMapped": 386,
+    "storefrontKeepOverlay": 1,
+    "storefrontDropOverlay": 385
+  },
+  "rules": {
+    "cohort": "Only Printify Group A may show a site name-box.",
+    "vibrantOverlap": "Within Group A, suppress when the baked print is a vibrant Freeplug rectangle or dominant color art unless forceKeep is set.",
+    "defaultOff": "Group B, Unknown, and unmapped catalog IDs never show the overlay."
+  },
+  "byPrintifyProductId": {
+    "6af183f492f82957dc0865d0": {
+      "group": "A",
+      "title": "Freeplug 11oz Accent Mug",
+      "siteHref": "/shop/11oz-accent-mug-583",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1827130966f8b83011b71": {
+      "group": "A",
+      "title": "Freeplug 12 Solid Cuffed Beanie",
+      "siteHref": "/shop/12-solid-cuffed-beanie-5665",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": true,
+      "rationale": "12 Solid Cuffed Beanie: cuff badge placement; name variant complements red embroidery without covering the mark."
+    },
+    "6af18255b8db3a637f0582ae": {
+      "group": "A",
+      "title": "Freeplug 5 Panel Trucker Cap",
+      "siteHref": "/shop/5-panel-trucker-cap-1734",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182473d6145b4e0010563": {
+      "group": "A",
+      "title": "Freeplug Accent Coffee Mug (11, 15oz)",
+      "siteHref": "/shop/accent-coffee-mug-11-15oz-635",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1824da014df60930159b9": {
+      "group": "A",
+      "title": "Freeplug Accent Rim & Handle Mug (11oz, 15oz)",
+      "siteHref": "/shop/accent-rim-handle-mug-11oz-15oz-2692",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1825a3d6145b4e0010587": {
+      "group": "A",
+      "title": "Freeplug Action Snapback Cap",
+      "siteHref": "/shop/action-snapback-cap-5284",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183f192f82957dc0865ce": {
+      "group": "A",
+      "title": "Freeplug Baby Short Sleeve Onesie®",
+      "siteHref": "/shop/baby-short-sleeve-onesie-568",
+      "siteProductType": "kids-&-baby",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1821ecf4314d6d60fea08": {
+      "group": "A",
+      "title": "Freeplug Backpack",
+      "siteHref": "/shop/backpack-413",
+      "siteProductType": "bags",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184273d6145b4e0010777": {
+      "group": "A",
+      "title": "Freeplug Beach Towel",
+      "siteHref": "/shop/beach-towel-5580",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1841493d4257fe1068dcd": {
+      "group": "A",
+      "title": "Freeplug Beach Towel",
+      "siteHref": "/shop/beach-towel-352",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182253d6145b4e001050b": {
+      "group": "A",
+      "title": "Freeplug Beach Wash Tote",
+      "siteHref": "/shop/beach-wash-tote-5106",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1823130966f8b83011aff": {
+      "group": "A",
+      "title": "Freeplug Black Mug (11oz, 15oz)",
+      "siteHref": "/shop/black-mug-11oz-15oz-479",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183c03d6145b4e0010727": {
+      "group": "A",
+      "title": "Freeplug Candle Set with Wick Trimmer",
+      "siteHref": "/shop/candle-set-with-wick-trimmer-5453",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1825d30966f8b83011b62": {
+      "group": "A",
+      "title": "Freeplug Canvas Mesh Back Cap",
+      "siteHref": "/shop/canvas-mesh-back-cap-4802",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1821193d4257fe1068be4": {
+      "group": "A",
+      "title": "Freeplug Canvas Tote Bag, 5-Color Straps",
+      "siteHref": "/shop/canvas-tote-bag-5-color-straps-507",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1841d93d4257fe1068dd7": {
+      "group": "A",
+      "title": "Freeplug Ceramic Decoration Ornament, (1pc)",
+      "siteHref": "/shop/ceramic-decoration-ornament-1pc-1632",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1822d3d6145b4e0010512": {
+      "group": "A",
+      "title": "Freeplug Ceramic Mug, (11oz, 15oz)",
+      "siteHref": "/shop/ceramic-mug-11oz-15oz-478",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1841192f82957dc0865eb": {
+      "group": "A",
+      "title": "Freeplug Ceramic Ornament, 4 Shapes",
+      "siteHref": "/shop/ceramic-ornament-4-shapes-531",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1858eea3a1c593a0a6c38": {
+      "group": "A",
+      "title": "Freeplug Ceramic Ornaments, 1-Side Print",
+      "siteHref": "/shop/ceramic-ornaments-1-side-print-1600",
+      "siteProductType": "wall-art",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fe1b8db3a637f057fba": {
+      "group": "A",
+      "title": "Freeplug Champion Hoodie",
+      "siteHref": "/shop/champion-hoodie-528",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1824206ad3a77e40edb89": {
+      "group": "A",
+      "title": "Freeplug Chill Wine Tumbler",
+      "siteHref": "/shop/chill-wine-tumbler-620",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183dacf4314d6d60fec31": {
+      "group": "A",
+      "title": "Freeplug Circle Necklace (Engraving)",
+      "siteHref": "/shop/circle-necklace-engraving-2341",
+      "siteProductType": "jewelry-&-pins",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182523d6145b4e001057a": {
+      "group": "A",
+      "title": "Freeplug Classic Cuffed Beanie (Embroidery)",
+      "siteHref": "/shop/classic-cuffed-beanie-embroidery-1691",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18435621d8c64cd01a659": {
+      "group": "A",
+      "title": "Freeplug Clip-on Pet Bandana",
+      "siteHref": "/shop/clip-on-pet-bandana-1672",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1823b3d6145b4e001052c": {
+      "group": "A",
+      "title": "Freeplug Coffee Mug Tumbler, 15oz",
+      "siteHref": "/shop/coffee-mug-tumbler-15oz-1511",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18486b8db3a637f0584c6": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (1 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184a2b8db3a637f0584fa": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (10 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184a5621d8c64cd01a6e8": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (11 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184a8a014df6093015c07": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (12 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184ab92f82957dc0866b3": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (13 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1855b92f82957dc0867ae": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (14 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184afea3a1c593a0a6ad5": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (14 of 18)",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Not on storefront mapping."
+    },
+    "6af1855eea3a1c593a0a6bf7": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (15 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184c392f82957dc0866bb": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (15 of 18)",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Not on storefront mapping."
+    },
+    "6af18561b8db3a637f05861d": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (16 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af185643d6145b4e0010906": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (17 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18567621d8c64cd01a7e8": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (18 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1848a3d6145b4e00107d0": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (2 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1848da014df6093015bd7": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (3 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18490a014df6093015bdc": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (4 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18493621d8c64cd01a6c2": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (5 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184973d6145b4e00107e7": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (6 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1849992f82957dc0866a7": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (7 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1849d621d8c64cd01a6d9": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (8 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1849fcf4314d6d60fed04": {
+      "group": "A",
+      "title": "Freeplug Colored Frame Posters (9 of 18)",
+      "siteHref": "/shop/colored-frame-posters-5651",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182453d6145b4e0010555": {
+      "group": "A",
+      "title": "Freeplug Colorful Mugs (11oz, 15oz)",
+      "siteHref": "/shop/colorful-mugs-11oz-15oz-1151",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183afa014df6093015b12": {
+      "group": "A",
+      "title": "Freeplug Competitor United Crew",
+      "siteHref": "/shop/competitor-united-crew-4118",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1842e93d4257fe1068df7": {
+      "group": "A",
+      "title": "Freeplug Copper Vacuum Insulated Bottle, 22oz",
+      "siteHref": "/shop/copper-vacuum-insulated-bottle-22oz-572",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17ff606ad3a77e40ed8c8": {
+      "group": "A",
+      "title": "Freeplug Core Fleece Crewneck Sweatshirt (1 of 2)",
+      "siteHref": "/shop/core-fleece-crewneck-sweatshirt-3613",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17ff9fdca3ae9590c6f0d": {
+      "group": "A",
+      "title": "Freeplug Core Fleece Crewneck Sweatshirt (2 of 2)",
+      "siteHref": "/shop/core-fleece-crewneck-sweatshirt-3613",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1821406ad3a77e40edb51": {
+      "group": "A",
+      "title": "Freeplug Cotton Canvas Tote Bag",
+      "siteHref": "/shop/cotton-canvas-tote-bag-1313",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1821993d4257fe1068bf3": {
+      "group": "A",
+      "title": "Freeplug Cotton Tote Bag",
+      "siteHref": "/shop/cotton-tote-bag-553",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182583d6145b4e0010582": {
+      "group": "A",
+      "title": "Freeplug Cuff Beanie",
+      "siteHref": "/shop/cuff-beanie-5385",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af0dd8ec85eee5c4804abb8": {
+      "group": "A",
+      "title": "Freeplug Cuffed Beanie",
+      "siteHref": "/merch/hats/cuffed-beanie",
+      "siteProductType": "hats",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1844692f82957dc086629": {
+      "group": "A",
+      "title": "Freeplug Cushioned Crew Socks",
+      "siteHref": "/shop/cushioned-crew-socks-574",
+      "siteProductType": "socks-&-shoes",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183e1a014df6093015b48": {
+      "group": "A",
+      "title": "Freeplug Cutout Heart Bar Necklace (Engraving)",
+      "siteHref": "/shop/cutout-heart-bar-necklace-engraving-2659",
+      "siteProductType": "jewelry-&-pins",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183e43d6145b4e0010748": {
+      "group": "A",
+      "title": "Freeplug Cutout Paw Bar Necklace (Engraving)",
+      "siteHref": "/shop/cutout-paw-bar-necklace-engraving-2652",
+      "siteProductType": "jewelry-&-pins",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1824f3d6145b4e0010576": {
+      "group": "A",
+      "title": "Freeplug Dad Hat with Leather Patch (Rectangle)",
+      "siteHref": "/shop/dad-hat-with-leather-patch-rectangle-1221",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18273cf4314d6d60fea98": {
+      "group": "A",
+      "title": "Freeplug Dad Hat with Leather Patch (Round)",
+      "siteHref": "/shop/dad-hat-with-leather-patch-round-1287",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1822a93d4257fe1068c11": {
+      "group": "A",
+      "title": "Freeplug Day Tote",
+      "siteHref": "/shop/day-tote-5096",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1847f93d4257fe1068e51": {
+      "group": "A",
+      "title": "Freeplug Desk Mat",
+      "siteHref": "/shop/desk-mat-488",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1848293d4257fe1068e56": {
+      "group": "A",
+      "title": "Freeplug Desk Mats",
+      "siteHref": "/shop/desk-mats-975",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1844fcf4314d6d60fec9a": {
+      "group": "A",
+      "title": "Freeplug Die-Cut Stickers",
+      "siteHref": "/shop/die-cut-stickers-600",
+      "siteProductType": "sticker",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181aa91296f7f9d0c648b": {
+      "group": "A",
+      "title": "Freeplug District ® Perfect Tri ® Tee (1 of 5)",
+      "siteHref": "/shop/district-perfect-tri-tee-2027",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181ad30966f8b83011a89": {
+      "group": "A",
+      "title": "Freeplug District ® Perfect Tri ® Tee (2 of 5)",
+      "siteHref": "/shop/district-perfect-tri-tee-2027",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181b0ba034c6e350a5a14": {
+      "group": "A",
+      "title": "Freeplug District ® Perfect Tri ® Tee (3 of 5)",
+      "siteHref": "/shop/district-perfect-tri-tee-2027",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181b391296f7f9d0c648d": {
+      "group": "A",
+      "title": "Freeplug District ® Perfect Tri ® Tee (4 of 5)",
+      "siteHref": "/shop/district-perfect-tri-tee-2027",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181b592f82957dc08636c": {
+      "group": "A",
+      "title": "Freeplug District ® Perfect Tri ® Tee (5 of 5)",
+      "siteHref": "/shop/district-perfect-tri-tee-2027",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fd092f82957dc086172": {
+      "group": "A",
+      "title": "Freeplug District® V.I.T.™ Men's Fleece Hoodie (1 of 3)",
+      "siteHref": "/shop/district-v-i-t-men-s-fleece-hoodie-1979",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fd393d4257fe1068973": {
+      "group": "A",
+      "title": "Freeplug District® V.I.T.™ Men's Fleece Hoodie (2 of 3)",
+      "siteHref": "/shop/district-v-i-t-men-s-fleece-hoodie-1979",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fd6b8db3a637f057fa8": {
+      "group": "A",
+      "title": "Freeplug District® V.I.T.™ Men's Fleece Hoodie (3 of 3)",
+      "siteHref": "/shop/district-v-i-t-men-s-fleece-hoodie-1979",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1821cb8db3a637f058263": {
+      "group": "A",
+      "title": "Freeplug Drawstring Bag",
+      "siteHref": "/shop/drawstring-bag-414",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af181c9b8db3a637f0581fc": {
+      "group": "A",
+      "title": "Freeplug Dri-Power 50/50 Cotton/Poly T-Shirt (1 of 4)",
+      "siteHref": "/shop/dri-power-50-50-cotton-poly-t-shirt-2968",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181cc93d4257fe1068b82": {
+      "group": "A",
+      "title": "Freeplug Dri-Power 50/50 Cotton/Poly T-Shirt (2 of 4)",
+      "siteHref": "/shop/dri-power-50-50-cotton-poly-t-shirt-2968",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181cf06ad3a77e40edb08": {
+      "group": "A",
+      "title": "Freeplug Dri-Power 50/50 Cotton/Poly T-Shirt (3 of 4)",
+      "siteHref": "/shop/dri-power-50-50-cotton-poly-t-shirt-2968",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181d192f82957dc086394": {
+      "group": "A",
+      "title": "Freeplug Dri-Power 50/50 Cotton/Poly T-Shirt (4 of 4)",
+      "siteHref": "/shop/dri-power-50-50-cotton-poly-t-shirt-2968",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1819c92f82957dc08634f": {
+      "group": "A",
+      "title": "Freeplug Easy Cotton Tee (1 of 5)",
+      "siteHref": "/shop/easy-cotton-tee-3127",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1819fb8db3a637f0581bd": {
+      "group": "A",
+      "title": "Freeplug Easy Cotton Tee (2 of 5)",
+      "siteHref": "/shop/easy-cotton-tee-3127",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181a292f82957dc086353": {
+      "group": "A",
+      "title": "Freeplug Easy Cotton Tee (3 of 5)",
+      "siteHref": "/shop/easy-cotton-tee-3127",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181a592f82957dc086357": {
+      "group": "A",
+      "title": "Freeplug Easy Cotton Tee (4 of 5)",
+      "siteHref": "/shop/easy-cotton-tee-3127",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181a8621d8c64cd01a3cf": {
+      "group": "A",
+      "title": "Freeplug Easy Cotton Tee (5 of 5)",
+      "siteHref": "/shop/easy-cotton-tee-3127",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af182393d6145b4e0010524": {
+      "group": "A",
+      "title": "Freeplug Enamel Camping Mug",
+      "siteHref": "/shop/enamel-camping-mug-483",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1822306ad3a77e40edb62": {
+      "group": "A",
+      "title": "Freeplug Essential Zip Tote",
+      "siteHref": "/shop/essential-zip-tote-5098",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18040621d8c64cd01a222": {
+      "group": "A",
+      "title": "Freeplug Featherweight French Terry Long Sleeve Crewneck",
+      "siteHref": "/shop/featherweight-french-terry-long-sleeve-crewneck-3472",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18429cf4314d6d60fec72": {
+      "group": "A",
+      "title": "Freeplug Flag",
+      "siteHref": "/shop/flag-1347",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1857fa014df6093015d41": {
+      "group": "A",
+      "title": "Freeplug Framed Vertical Poster",
+      "siteHref": "/shop/framed-vertical-poster-540",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18276b8db3a637f05830d": {
+      "group": "A",
+      "title": "Freeplug Full-Length Apron",
+      "siteHref": "/shop/full-length-apron-5541",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1801692f82957dc086198": {
+      "group": "A",
+      "title": "Freeplug Garment-Dyed Crewneck Sweatshirt (1 of 2)",
+      "siteHref": "/shop/garment-dyed-crewneck-sweatshirt-3607",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1801992f82957dc08619a": {
+      "group": "A",
+      "title": "Freeplug Garment-Dyed Crewneck Sweatshirt (2 of 2)",
+      "siteHref": "/shop/garment-dyed-crewneck-sweatshirt-3607",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1845792f82957dc086644": {
+      "group": "A",
+      "title": "Freeplug Greeting Cards (1, 10, 30, and 50pcs) (1 of 2)",
+      "siteHref": "/shop/greeting-cards-1-10-30-and-50pcs-1094",
+      "siteProductType": "stickers-&-paper",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1845a92f82957dc086649": {
+      "group": "A",
+      "title": "Freeplug Greeting Cards (1, 10, 30, and 50pcs) (2 of 2)",
+      "siteHref": "/shop/greeting-cards-1-10-30-and-50pcs-1094",
+      "siteProductType": "stickers-&-paper",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18043fdca3ae9590c6f50": {
+      "group": "A",
+      "title": "Freeplug Halftime Long Sleeve Hoodie",
+      "siteHref": "/shop/halftime-long-sleeve-hoodie-3155",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183a4621d8c64cd01a5c9": {
+      "group": "A",
+      "title": "Freeplug Hardboard Coasters with Cork Bottom (Set of 4)",
+      "siteHref": "/shop/hardboard-coasters-with-cork-bottom-set-of-4-2764",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1828db8db3a637f05833d": {
+      "group": "A",
+      "title": "Freeplug Hardboard Coasters with Cork Bottom (Set of 4)",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Not on storefront mapping."
+    },
+    "6af183dd3d6145b4e0010743": {
+      "group": "A",
+      "title": "Freeplug Heart Necklace (Engraving)",
+      "siteHref": "/shop/heart-necklace-engraving-2655",
+      "siteProductType": "jewelry-&-pins",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183dfa014df6093015b46": {
+      "group": "A",
+      "title": "Freeplug Horizontal Bar Necklace (Engraving)",
+      "siteHref": "/shop/horizontal-bar-necklace-engraving-2654",
+      "siteProductType": "jewelry-&-pins",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182623d6145b4e001058f": {
+      "group": "A",
+      "title": "Freeplug Impact Mesh Stretch-Tek Cap",
+      "siteHref": "/shop/impact-mesh-stretch-tek-cap-5625",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1858bea3a1c593a0a6c34": {
+      "group": "A",
+      "title": "Freeplug Indoor and Outdoor Silk Posters",
+      "siteHref": "/shop/indoor-and-outdoor-silk-posters-763",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183f993d4257fe1068dbf": {
+      "group": "A",
+      "title": "Freeplug Infant Baby Rib Bodysuit (1 of 2)",
+      "siteHref": "/shop/infant-baby-rib-bodysuit-561",
+      "siteProductType": "kids-&-baby",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183fccf4314d6d60fec40": {
+      "group": "A",
+      "title": "Freeplug Infant Baby Rib Bodysuit (2 of 2)",
+      "siteHref": "/shop/infant-baby-rib-bodysuit-561",
+      "siteProductType": "kids-&-baby",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af181f3621d8c64cd01a422": {
+      "group": "A",
+      "title": "Freeplug Infant Fine Jersey Tee",
+      "siteHref": "/shop/infant-fine-jersey-tee-34",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1822806ad3a77e40edb67": {
+      "group": "A",
+      "title": "Freeplug Insulated Lunch Tote",
+      "siteHref": "/shop/insulated-lunch-tote-5123",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18401cf4314d6d60fec44": {
+      "group": "A",
+      "title": "Freeplug Kids Heavy Cotton™ Tee (1 of 2)",
+      "siteHref": "/shop/kids-heavy-cotton-tee-157",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18403621d8c64cd01a613": {
+      "group": "A",
+      "title": "Freeplug Kids Heavy Cotton™ Tee (2 of 2)",
+      "siteHref": "/shop/kids-heavy-cotton-tee-157",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183fe92f82957dc0865d6": {
+      "group": "A",
+      "title": "Freeplug Kids Relax Hoodie",
+      "siteHref": "/shop/kids-relax-hoodie-1617",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1845593d4257fe1068e26": {
+      "group": "A",
+      "title": "Freeplug Kiss-Cut Sticker Sheet",
+      "siteHref": "/shop/kiss-cut-sticker-sheet-5372",
+      "siteProductType": "sticker",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1844b92f82957dc08662d": {
+      "group": "A",
+      "title": "Freeplug Kiss-Cut Stickers",
+      "siteHref": "/shop/kiss-cut-stickers-400",
+      "siteProductType": "sticker",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1803dba034c6e350a5894": {
+      "group": "A",
+      "title": "Freeplug Laguna Raglan Sweatshirt",
+      "siteHref": "/shop/laguna-raglan-sweatshirt-3554",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18484ea3a1c593a0a6aa8": {
+      "group": "A",
+      "title": "Freeplug Laptop Sleeve",
+      "siteHref": "/shop/laptop-sleeve-648",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18474a014df6093015bbc": {
+      "group": "A",
+      "title": "Freeplug Laptop Sleeve",
+      "siteHref": "/shop/laptop-sleeve-429",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1841893d4257fe1068dd2": {
+      "group": "A",
+      "title": "Freeplug Leatherette Ornament, 3 Shapes (Engraving)",
+      "siteHref": "/shop/leatherette-ornament-3-shapes-engraving-2756",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18049621d8c64cd01a22a": {
+      "group": "A",
+      "title": "Freeplug Long Sleeve Ultimate Performance Crew",
+      "siteHref": "/shop/long-sleeve-ultimate-performance-crew-3157",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1856aea3a1c593a0a6c06": {
+      "group": "A",
+      "title": "Freeplug Matte Canvas, Framed (Multi-color) (1 of 4)",
+      "siteHref": "/shop/matte-canvas-framed-multi-color-944",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1856dea3a1c593a0a6c0a": {
+      "group": "A",
+      "title": "Freeplug Matte Canvas, Framed (Multi-color) (2 of 4)",
+      "siteHref": "/shop/matte-canvas-framed-multi-color-944",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1856f93d4257fe1068fb4": {
+      "group": "A",
+      "title": "Freeplug Matte Canvas, Framed (Multi-color) (3 of 4)",
+      "siteHref": "/shop/matte-canvas-framed-multi-color-944",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18572cf4314d6d60fee1a": {
+      "group": "A",
+      "title": "Freeplug Matte Canvas, Framed (Multi-color) (4 of 4)",
+      "siteHref": "/shop/matte-canvas-framed-multi-color-944",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1857592f82957dc0867d9": {
+      "group": "A",
+      "title": "Freeplug Matte Horizontal Posters",
+      "siteHref": "/shop/matte-horizontal-posters-284",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1857a3d6145b4e0010939": {
+      "group": "A",
+      "title": "Freeplug Matte Vertical Posters",
+      "siteHref": "/shop/matte-vertical-posters-282",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fe4b8db3a637f057fbe": {
+      "group": "A",
+      "title": "Freeplug Men's Cotton Polyester Hoodie (1 of 2)",
+      "siteHref": "/shop/men-s-cotton-polyester-hoodie-5485",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fe791296f7f9d0c6273": {
+      "group": "A",
+      "title": "Freeplug Men's Cotton Polyester Hoodie (2 of 2)",
+      "siteHref": "/shop/men-s-cotton-polyester-hoodie-5485",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1841b621d8c64cd01a62c": {
+      "group": "A",
+      "title": "Freeplug Metal Ornaments",
+      "siteHref": "/shop/metal-ornaments-1182",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182653d6145b4e0010594": {
+      "group": "A",
+      "title": "Freeplug Mid Profile Baseball Cap with Leather Patch (Rectangle)",
+      "siteHref": "/shop/mid-profile-baseball-cap-with-leather-patch-rect-2707",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1846f621d8c64cd01a693": {
+      "group": "A",
+      "title": "Freeplug Mouse Pad (Rectangle)",
+      "siteHref": "/shop/mouse-pad-rectangle-608",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1822f3d6145b4e0010517": {
+      "group": "A",
+      "title": "Freeplug Mug 11oz",
+      "siteHref": "/shop/mug-11oz-68",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1823492f82957dc0863f9": {
+      "group": "A",
+      "title": "Freeplug Mug 15oz",
+      "siteHref": "/shop/mug-15oz-425",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1847c92f82957dc08667b": {
+      "group": "A",
+      "title": "Freeplug PU Leather Phone Cases (Engraving)",
+      "siteHref": "/shop/pu-leather-phone-cases-engraving-5369",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183c5a014df6093015b2b": {
+      "group": "A",
+      "title": "Freeplug Paper Gift Bag",
+      "siteHref": "/shop/paper-gift-bag-2729",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1842c93d4257fe1068df4": {
+      "group": "A",
+      "title": "Freeplug Pet Bandana",
+      "siteHref": "/shop/pet-bandana-562",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18433b8db3a637f058463": {
+      "group": "A",
+      "title": "Freeplug Pet Bed",
+      "siteHref": "/shop/pet-bed-419",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18430cf4314d6d60fec7a": {
+      "group": "A",
+      "title": "Freeplug Pet Bowl",
+      "siteHref": "/shop/pet-bowl-570",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af184383d6145b4e0010787": {
+      "group": "A",
+      "title": "Freeplug Pet Bowl, 18oz (Engraving)",
+      "siteHref": "/shop/pet-bowl-18oz-engraving-1520",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1843a92f82957dc086619": {
+      "group": "A",
+      "title": "Freeplug Pet Feeding Mats",
+      "siteHref": "/shop/pet-feeding-mats-623",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1805c93d4257fe10689de": {
+      "group": "A",
+      "title": "Freeplug Pet Tank Top",
+      "siteHref": "/shop/pet-tank-top-571",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af184763d6145b4e00107c2": {
+      "group": "A",
+      "title": "Freeplug Phone Case With Card Holder (1 of 2)",
+      "siteHref": "/shop/phone-case-with-card-holder-1022",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18479621d8c64cd01a6a2": {
+      "group": "A",
+      "title": "Freeplug Phone Case With Card Holder (2 of 2)",
+      "siteHref": "/shop/phone-case-with-card-holder-1022",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1841692f82957dc0865f0": {
+      "group": "A",
+      "title": "Freeplug Picnic Blanket",
+      "siteHref": "/shop/picnic-blanket-1124",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1823e30966f8b83011b1d": {
+      "group": "A",
+      "title": "Freeplug Pint Glass, 16oz",
+      "siteHref": "/shop/pint-glass-16oz-633",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183ac92f82957dc086592": {
+      "group": "A",
+      "title": "Freeplug PosiCharge Competitor 2-Button Henley",
+      "siteHref": "/shop/posicharge-competitor-2-button-henley-4129",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183b8a014df6093015b1c": {
+      "group": "A",
+      "title": "Freeplug PosiCharge Competitor 7' Pocketed Short",
+      "siteHref": "/shop/posicharge-competitor-7-pocketed-short-4616",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183be621d8c64cd01a5db": {
+      "group": "A",
+      "title": "Freeplug PosiCharge Competitor Short",
+      "siteHref": "/shop/posicharge-competitor-short-4127",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1805ecf4314d6d60fe80d": {
+      "group": "A",
+      "title": "Freeplug PosiCharge Reversible Mesh Tank (1 of 2)",
+      "siteHref": "/shop/posicharge-reversible-mesh-tank-4135",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1806006ad3a77e40ed94f": {
+      "group": "A",
+      "title": "Freeplug PosiCharge Reversible Mesh Tank (2 of 2)",
+      "siteHref": "/shop/posicharge-reversible-mesh-tank-4135",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1846192f82957dc086655": {
+      "group": "A",
+      "title": "Freeplug Postcard Bundles (envelopes included)",
+      "siteHref": "/shop/postcard-bundles-envelopes-included-1101",
+      "siteProductType": "stickers-&-paper",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1845db8db3a637f058494": {
+      "group": "A",
+      "title": "Freeplug Postcard Bundles (envelopes not included)",
+      "siteHref": "/shop/postcard-bundles-envelopes-not-included-1073",
+      "siteProductType": "stickers-&-paper",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183c3621d8c64cd01a5e3": {
+      "group": "A",
+      "title": "Freeplug Rally Towel",
+      "siteHref": "/shop/rally-towel-5577",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18448621d8c64cd01a66c": {
+      "group": "A",
+      "title": "Freeplug Recycled Poly Socks",
+      "siteHref": "/shop/recycled-poly-socks-452",
+      "siteProductType": "socks-&-shoes",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1804c06ad3a77e40ed934": {
+      "group": "A",
+      "title": "Freeplug Repeat 1/2-Zip Long Sleeve Hooded Jacket",
+      "siteHref": "/shop/repeat-1-2-zip-long-sleeve-hooded-jacket-4397",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1858593d4257fe1068fce": {
+      "group": "A",
+      "title": "Freeplug Rolled Posters",
+      "siteHref": "/shop/rolled-posters-1220",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18465b8db3a637f0584aa": {
+      "group": "A",
+      "title": "Freeplug Round Vinyl Stickers",
+      "siteHref": "/shop/round-vinyl-stickers-564",
+      "siteProductType": "sticker",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18578621d8c64cd01a810": {
+      "group": "A",
+      "title": "Freeplug Satin Posters (210gsm)",
+      "siteHref": "/shop/satin-posters-210gsm-97",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18582621d8c64cd01a81b": {
+      "group": "A",
+      "title": "Freeplug Satin and Archival Matte Posters",
+      "siteHref": "/shop/satin-and-archival-matte-posters-1309",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183b5a014df6093015b16": {
+      "group": "A",
+      "title": "Freeplug Scented Candles, Coconut Apricot Wax (4oz, 9oz)",
+      "siteHref": "/shop/scented-candles-coconut-apricot-wax-4oz-9oz-1488",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183ceb8db3a637f058415": {
+      "group": "A",
+      "title": "Freeplug Scented Soy Candle (Multi-Size, Amber Jar)",
+      "siteHref": "/shop/scented-soy-candle-multi-size-amber-jar-1468",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183b292f82957dc08659b": {
+      "group": "A",
+      "title": "Freeplug Scented Soy Candles with Black Lid, (4 and 9oz)",
+      "siteHref": "/shop/scented-soy-candles-with-black-lid-4-and-9oz-1943",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183d5cf4314d6d60fec30": {
+      "group": "A",
+      "title": "Freeplug Scented Soy Candles with White Lid, 9oz",
+      "siteHref": "/shop/scented-soy-candles-with-white-lid-9oz-755",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183a9621d8c64cd01a5ce": {
+      "group": "A",
+      "title": "Freeplug Shower Curtains",
+      "siteHref": "/shop/shower-curtains-235",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1846da014df6093015bb3": {
+      "group": "A",
+      "title": "Freeplug Slim Phone Cases",
+      "siteHref": "/shop/slim-phone-cases-268",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1826eb8db3a637f0582cc": {
+      "group": "A",
+      "title": "Freeplug Snapback Trucker Cap",
+      "siteHref": "/shop/snapback-trucker-cap-1446",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1825fa014df60930159cd": {
+      "group": "A",
+      "title": "Freeplug Snapback Trucker Cap",
+      "siteHref": "/shop/snapback-trucker-cap-1743",
+      "siteProductType": "hat",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1847192f82957dc086668": {
+      "group": "A",
+      "title": "Freeplug Spiral Notebook - Ruled Line",
+      "siteHref": "/shop/spiral-notebook-ruled-line-74",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1844db8db3a637f058480": {
+      "group": "A",
+      "title": "Freeplug Square Stickers",
+      "siteHref": "/shop/square-stickers-384",
+      "siteProductType": "sticker",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1845292f82957dc086639": {
+      "group": "A",
+      "title": "Freeplug Sticker Sheets",
+      "siteHref": "/shop/sticker-sheets-661",
+      "siteProductType": "sticker",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1843fb8db3a637f058473": {
+      "group": "A",
+      "title": "Freeplug Sublimation Crew Socks",
+      "siteHref": "/shop/sublimation-crew-socks-1433",
+      "siteProductType": "socks-&-shoes",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1843cb8db3a637f058471": {
+      "group": "A",
+      "title": "Freeplug Sublimation Socks",
+      "siteHref": "/shop/sublimation-socks-376",
+      "siteProductType": "socks-&-shoes",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18279b8db3a637f058311": {
+      "group": "A",
+      "title": "Freeplug Tea Towel",
+      "siteHref": "/shop/tea-towel-677",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1806693d4257fe10689e4": {
+      "group": "A",
+      "title": "Freeplug The Concert Tank",
+      "siteHref": "/shop/the-concert-tank-3076",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181f630966f8b83011acf": {
+      "group": "A",
+      "title": "Freeplug The Concert Tee (1 of 3)",
+      "siteHref": "/shop/the-concert-tee-2835",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181f9621d8c64cd01a42b": {
+      "group": "A",
+      "title": "Freeplug The Concert Tee (2 of 3)",
+      "siteHref": "/shop/the-concert-tee-2835",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181fc30966f8b83011ad8": {
+      "group": "A",
+      "title": "Freeplug The Concert Tee (3 of 3)",
+      "siteHref": "/shop/the-concert-tee-2835",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fd9b8db3a637f057fac": {
+      "group": "A",
+      "title": "Freeplug Three-Panel Fleece Hoodie",
+      "siteHref": "/shop/three-panel-fleece-hoodie-439",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af181f006ad3a77e40edb2d": {
+      "group": "A",
+      "title": "Freeplug Tie-Dye Tee, Crystal",
+      "siteHref": "/shop/tie-dye-tee-crystal-630",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181ee30966f8b83011ac6": {
+      "group": "A",
+      "title": "Freeplug Tie-Dye Tee, Cyclone",
+      "siteHref": "/shop/tie-dye-tee-cyclone-631",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183bbcf4314d6d60fec1a": {
+      "group": "A",
+      "title": "Freeplug Tin Candles",
+      "siteHref": "/shop/tin-candles-1379",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183f6ea3a1c593a0a6a3d": {
+      "group": "A",
+      "title": "Freeplug Toddler Full-Zip Fleece Hoodie",
+      "siteHref": "/shop/toddler-full-zip-fleece-hoodie-2728",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183efb8db3a637f058432": {
+      "group": "A",
+      "title": "Freeplug Toddler Short Sleeve Tee",
+      "siteHref": "/shop/toddler-short-sleeve-tee-580",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181fe93d4257fe1068bc4": {
+      "group": "A",
+      "title": "Freeplug Toddler's Fine Jersey Tee",
+      "siteHref": "/shop/toddler-s-fine-jersey-tee-32",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1822193d4257fe1068c07": {
+      "group": "A",
+      "title": "Freeplug Tote Bag (AOP)",
+      "siteHref": "/shop/tote-bag-aop-1389",
+      "siteProductType": "bag",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1846acf4314d6d60fecb4": {
+      "group": "A",
+      "title": "Freeplug Tough Phone Cases",
+      "siteHref": "/shop/tough-phone-cases-269",
+      "siteProductType": "tech-&-desk",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af184673d6145b4e00107b1": {
+      "group": "A",
+      "title": "Freeplug Transparent Outdoor Stickers, Square, 1pc",
+      "siteHref": "/shop/transparent-outdoor-stickers-square-1pc-794",
+      "siteProductType": "sticker",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1824a93d4257fe1068c61": {
+      "group": "A",
+      "title": "Freeplug Two-Tone Accent Mug (11oz, 15oz)",
+      "siteHref": "/shop/two-tone-accent-mug-11oz-15oz-2693",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1858892f82957dc0867f3": {
+      "group": "A",
+      "title": "Freeplug Uncoated Posters",
+      "siteHref": "/shop/uncoated-posters-1068",
+      "siteProductType": "poster",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af181ddb8db3a637f058217": {
+      "group": "A",
+      "title": "Freeplug Unisex CVC Jersey T-shirt (1 of 3)",
+      "siteHref": "/shop/unisex-cvc-jersey-t-shirt-1317",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181e0b8db3a637f05821b": {
+      "group": "A",
+      "title": "Freeplug Unisex CVC Jersey T-shirt (2 of 3)",
+      "siteHref": "/shop/unisex-cvc-jersey-t-shirt-1317",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181e230966f8b83011abb": {
+      "group": "A",
+      "title": "Freeplug Unisex CVC Jersey T-shirt (3 of 3)",
+      "siteHref": "/shop/unisex-cvc-jersey-t-shirt-1317",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fde621d8c64cd01a1d8": {
+      "group": "A",
+      "title": "Freeplug Unisex College Hoodie",
+      "siteHref": "/shop/unisex-college-hoodie-92",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18196ba034c6e350a59f4": {
+      "group": "A",
+      "title": "Freeplug Unisex Cotton Crew Tee (1 of 2)",
+      "siteHref": "/shop/unisex-cotton-crew-tee-5",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18199621d8c64cd01a3b7": {
+      "group": "A",
+      "title": "Freeplug Unisex Cotton Crew Tee (2 of 2)",
+      "siteHref": "/shop/unisex-cotton-crew-tee-5",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181be92f82957dc08637a": {
+      "group": "A",
+      "title": "Freeplug Unisex Cotton T-Shirt (1 of 4)",
+      "siteHref": "/shop/unisex-cotton-t-shirt-2979",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181c1b8db3a637f0581ef": {
+      "group": "A",
+      "title": "Freeplug Unisex Cotton T-Shirt (2 of 4)",
+      "siteHref": "/shop/unisex-cotton-t-shirt-2979",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181c393d4257fe1068b7c": {
+      "group": "A",
+      "title": "Freeplug Unisex Cotton T-Shirt (3 of 4)",
+      "siteHref": "/shop/unisex-cotton-t-shirt-2979",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181c6b8db3a637f0581f9": {
+      "group": "A",
+      "title": "Freeplug Unisex Cotton T-Shirt (4 of 4)",
+      "siteHref": "/shop/unisex-cotton-t-shirt-2979",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181d406ad3a77e40edb0f": {
+      "group": "A",
+      "title": "Freeplug Unisex Creator 2.0 Tee (1 of 3)",
+      "siteHref": "/shop/unisex-creator-2-0-tee-3169",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181d693d4257fe1068b89": {
+      "group": "A",
+      "title": "Freeplug Unisex Creator 2.0 Tee (2 of 3)",
+      "siteHref": "/shop/unisex-creator-2-0-tee-3169",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181d992f82957dc0863a3": {
+      "group": "A",
+      "title": "Freeplug Unisex Creator 2.0 Tee (3 of 3)",
+      "siteHref": "/shop/unisex-creator-2-0-tee-3169",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1801b621d8c64cd01a1fc": {
+      "group": "A",
+      "title": "Freeplug Unisex Crew Neck Sweatshirt (1 of 2)",
+      "siteHref": "/shop/unisex-crew-neck-sweatshirt-723",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1801eba034c6e350a5858": {
+      "group": "A",
+      "title": "Freeplug Unisex Crew Neck Sweatshirt (2 of 2)",
+      "siteHref": "/shop/unisex-crew-neck-sweatshirt-723",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18005ba034c6e350a5843": {
+      "group": "A",
+      "title": "Freeplug Unisex EcoSmart® Pullover Hoodie Sweatshirt (1 of 2)",
+      "siteHref": "/shop/unisex-ecosmart-pullover-hoodie-sweatshirt-536",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18008fdca3ae9590c6f17": {
+      "group": "A",
+      "title": "Freeplug Unisex EcoSmart® Pullover Hoodie Sweatshirt (2 of 2)",
+      "siteHref": "/shop/unisex-ecosmart-pullover-hoodie-sweatshirt-536",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17ffcfdca3ae9590c6f11": {
+      "group": "A",
+      "title": "Freeplug Unisex Fleece Zip Up Hoodie",
+      "siteHref": "/shop/unisex-fleece-zip-up-hoodie-1925",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183c8cf4314d6d60fec23": {
+      "group": "A",
+      "title": "Freeplug Unisex Flyer Jogger",
+      "siteHref": "/shop/unisex-flyer-jogger-4628",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1804606ad3a77e40ed92c": {
+      "group": "A",
+      "title": "Freeplug Unisex French Terry Raglan Crewneck",
+      "siteHref": "/shop/unisex-french-terry-raglan-crewneck-1708",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1817c30966f8b83011a61": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-Dyed T-shirt (1 of 4)",
+      "siteHref": "/shop/unisex-garment-dyed-t-shirt-706",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1817f93d4257fe1068b31": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-Dyed T-shirt (2 of 4)",
+      "siteHref": "/shop/unisex-garment-dyed-t-shirt-706",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18183b8db3a637f058198": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-Dyed T-shirt (3 of 4)",
+      "siteHref": "/shop/unisex-garment-dyed-t-shirt-706",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18186b8db3a637f05819b": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-Dyed T-shirt (4 of 4)",
+      "siteHref": "/shop/unisex-garment-dyed-t-shirt-706",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1805630966f8b8301190f": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-Dyed Tank Top (1 of 2)",
+      "siteHref": "/shop/unisex-garment-dyed-tank-top-1459",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1805806ad3a77e40ed94a": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-Dyed Tank Top (2 of 2)",
+      "siteHref": "/shop/unisex-garment-dyed-tank-top-1459",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1820906ad3a77e40edb47": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-dyed Long Sleeve T-Shirt (1 of 3)",
+      "siteHref": "/shop/unisex-garment-dyed-long-sleeve-t-shirt-710",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1820cb8db3a637f058257": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-dyed Long Sleeve T-Shirt (2 of 3)",
+      "siteHref": "/shop/unisex-garment-dyed-long-sleeve-t-shirt-710",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1820f93d4257fe1068bde": {
+      "group": "A",
+      "title": "Freeplug Unisex Garment-dyed Long Sleeve T-Shirt (3 of 3)",
+      "siteHref": "/shop/unisex-garment-dyed-long-sleeve-t-shirt-710",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181e6b8db3a637f058223": {
+      "group": "A",
+      "title": "Freeplug Unisex HD Cotton™ T-shirt (1 of 3)",
+      "siteHref": "/shop/unisex-hd-cotton-t-shirt-1439",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181e892f82957dc0863b6": {
+      "group": "A",
+      "title": "Freeplug Unisex HD Cotton™ T-shirt (2 of 3)",
+      "siteHref": "/shop/unisex-hd-cotton-t-shirt-1439",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181ebb8db3a637f058227": {
+      "group": "A",
+      "title": "Freeplug Unisex HD Cotton™ T-shirt (3 of 3)",
+      "siteHref": "/shop/unisex-hd-cotton-t-shirt-1439",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180c591296f7f9d0c6346": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (1 of 7)",
+      "siteHref": "/shop/unisex-heather-cvc-short-sleeve-tee-3013",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180c806ad3a77e40ed99b": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (2 of 7)",
+      "siteHref": "/shop/unisex-heather-cvc-short-sleeve-tee-3013",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180cc91296f7f9d0c634f": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (3 of 7)",
+      "siteHref": "/shop/unisex-heather-cvc-short-sleeve-tee-3013",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180cf621d8c64cd01a297": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (4 of 7)",
+      "siteHref": "/shop/unisex-heather-cvc-short-sleeve-tee-3013",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18172fdca3ae9590c7089": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (5 of 7)",
+      "siteHref": "/shop/unisex-heather-cvc-short-sleeve-tee-3013",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180d2621d8c64cd01a29b": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (5 of 7)",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Not on storefront mapping."
+    },
+    "6af18175fdca3ae9590c708e": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (6 of 7)",
+      "siteHref": "/shop/unisex-heather-cvc-short-sleeve-tee-3013",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180f4fdca3ae9590c6fb2": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (6 of 7)",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Not on storefront mapping."
+    },
+    "6af1817893d4257fe1068b2f": {
+      "group": "A",
+      "title": "Freeplug Unisex Heather CVC Short Sleeve Tee (7 of 7)",
+      "siteHref": "/shop/unisex-heather-cvc-short-sleeve-tee-3013",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fb2621d8c64cd01a1ba": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Blend™ Crewneck Sweatshirt (1 of 3)",
+      "siteHref": "/shop/unisex-heavy-blend-crewneck-sweatshirt-49",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fb591296f7f9d0c624a": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Blend™ Crewneck Sweatshirt (2 of 3)",
+      "siteHref": "/shop/unisex-heavy-blend-crewneck-sweatshirt-49",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fb906ad3a77e40ed8a1": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Blend™ Crewneck Sweatshirt (3 of 3)",
+      "siteHref": "/shop/unisex-heavy-blend-crewneck-sweatshirt-49",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18021ba034c6e350a585e": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Blend™ Hooded Sweatshirt (1 of 4)",
+      "siteHref": "/shop/unisex-heavy-blend-hooded-sweatshirt-77",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18024ba034c6e350a5860": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Blend™ Hooded Sweatshirt (2 of 4)",
+      "siteHref": "/shop/unisex-heavy-blend-hooded-sweatshirt-77",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1802792f82957dc0861a3": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Blend™ Hooded Sweatshirt (3 of 4)",
+      "siteHref": "/shop/unisex-heavy-blend-hooded-sweatshirt-77",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1802bba034c6e350a5866": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Blend™ Hooded Sweatshirt (4 of 4)",
+      "siteHref": "/shop/unisex-heavy-blend-hooded-sweatshirt-77",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af180a091296f7f9d0c631d": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Cotton Tee (1 of 6)",
+      "siteHref": "/shop/unisex-heavy-cotton-tee-6",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180a3621d8c64cd01a273": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Cotton Tee (2 of 6)",
+      "siteHref": "/shop/unisex-heavy-cotton-tee-6",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180a606ad3a77e40ed97f": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Cotton Tee (3 of 6)",
+      "siteHref": "/shop/unisex-heavy-cotton-tee-6",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180a9ba034c6e350a58eb": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Cotton Tee (4 of 6)",
+      "siteHref": "/shop/unisex-heavy-cotton-tee-6",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180ad93d4257fe1068a21": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Cotton Tee (5 of 6)",
+      "siteHref": "/shop/unisex-heavy-cotton-tee-6",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180b0b8db3a637f058078": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavy Cotton Tee (6 of 6)",
+      "siteHref": "/shop/unisex-heavy-cotton-tee-6",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fedb8db3a637f057fc3": {
+      "group": "A",
+      "title": "Freeplug Unisex Heavyweight Pullover Hoodie",
+      "siteHref": "/shop/unisex-heavyweight-pullover-hoodie-2001",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1800b91296f7f9d0c628e": {
+      "group": "A",
+      "title": "Freeplug Unisex Hooded Sweatshirt (1 of 2)",
+      "siteHref": "/shop/unisex-hooded-sweatshirt-696",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1800d06ad3a77e40ed8e0": {
+      "group": "A",
+      "title": "Freeplug Unisex Hooded Sweatshirt (2 of 2)",
+      "siteHref": "/shop/unisex-hooded-sweatshirt-696",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1802eba034c6e350a5871": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Long Sleeve Tee",
+      "siteHref": "/shop/unisex-jersey-long-sleeve-tee-41",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1806d30966f8b83011913": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (1 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18091b8db3a637f05805a": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (10 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18094fdca3ae9590c6f73": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (11 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18098621d8c64cd01a268": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (12 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1809c621d8c64cd01a26d": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (13 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18071b8db3a637f05803a": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (2 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1807593d4257fe10689ef": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (3 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18079621d8c64cd01a23d": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (4 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1807d30966f8b83011920": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (5 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1808092f82957dc0861e7": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (6 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18085ba034c6e350a58d1": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (7 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18089fdca3ae9590c6f6c": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (8 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1808d30966f8b83011937": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Short Sleeve Tee (9 of 13)",
+      "siteHref": "/shop/unisex-jersey-short-sleeve-tee-12",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1804f30966f8b83011907": {
+      "group": "A",
+      "title": "Freeplug Unisex Jersey Tank",
+      "siteHref": "/shop/unisex-jersey-tank-39",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1844392f82957dc086627": {
+      "group": "A",
+      "title": "Freeplug Unisex Joggers (Embroidery)",
+      "siteHref": "/shop/unisex-joggers-embroidery-1903",
+      "siteProductType": "socks-&-shoes",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17ff0b8db3a637f057fca": {
+      "group": "A",
+      "title": "Freeplug Unisex Midweight Softstyle Fleece Hoodie (1 of 2)",
+      "siteHref": "/shop/unisex-midweight-softstyle-fleece-hoodie-1525",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17ff391296f7f9d0c627e": {
+      "group": "A",
+      "title": "Freeplug Unisex Midweight Softstyle Fleece Hoodie (2 of 2)",
+      "siteHref": "/shop/unisex-midweight-softstyle-fleece-hoodie-1525",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1820193d4257fe1068bc9": {
+      "group": "A",
+      "title": "Freeplug Unisex Moisture Wicking Tee (1 of 3)",
+      "siteHref": "/shop/unisex-moisture-wicking-tee-1121",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1820493d4257fe1068bcf": {
+      "group": "A",
+      "title": "Freeplug Unisex Moisture Wicking Tee (2 of 3)",
+      "siteHref": "/shop/unisex-moisture-wicking-tee-1121",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1820706ad3a77e40edb46": {
+      "group": "A",
+      "title": "Freeplug Unisex Moisture Wicking Tee (3 of 3)",
+      "siteHref": "/shop/unisex-moisture-wicking-tee-1121",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1844193d4257fe1068e12": {
+      "group": "A",
+      "title": "Freeplug Unisex Padded Crew Socks (DTG)",
+      "siteHref": "/shop/unisex-padded-crew-socks-dtg-2941",
+      "siteProductType": "socks-&-shoes",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183cb92f82957dc0865b0": {
+      "group": "A",
+      "title": "Freeplug Unisex Pique Gym Shorts",
+      "siteHref": "/shop/unisex-pique-gym-shorts-6173",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af180b3ba034c6e350a58f3": {
+      "group": "A",
+      "title": "Freeplug Unisex Softstyle T-Shirt (1 of 6)",
+      "siteHref": "/shop/unisex-softstyle-t-shirt-145",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180b7fdca3ae9590c6f8f": {
+      "group": "A",
+      "title": "Freeplug Unisex Softstyle T-Shirt (2 of 6)",
+      "siteHref": "/shop/unisex-softstyle-t-shirt-145",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180bab8db3a637f05807f": {
+      "group": "A",
+      "title": "Freeplug Unisex Softstyle T-Shirt (3 of 6)",
+      "siteHref": "/shop/unisex-softstyle-t-shirt-145",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180bdcf4314d6d60fe853": {
+      "group": "A",
+      "title": "Freeplug Unisex Softstyle T-Shirt (4 of 6)",
+      "siteHref": "/shop/unisex-softstyle-t-shirt-145",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180c0b8db3a637f05808a": {
+      "group": "A",
+      "title": "Freeplug Unisex Softstyle T-Shirt (5 of 6)",
+      "siteHref": "/shop/unisex-softstyle-t-shirt-145",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af180c3cf4314d6d60fe85c": {
+      "group": "A",
+      "title": "Freeplug Unisex Softstyle T-Shirt (6 of 6)",
+      "siteHref": "/shop/unisex-softstyle-t-shirt-145",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fc4621d8c64cd01a1c7": {
+      "group": "A",
+      "title": "Freeplug Unisex Sponge Fleece Pullover Hoodie (1 of 4)",
+      "siteHref": "/shop/unisex-sponge-fleece-pullover-hoodie-175",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fc706ad3a77e40ed8ad": {
+      "group": "A",
+      "title": "Freeplug Unisex Sponge Fleece Pullover Hoodie (2 of 4)",
+      "siteHref": "/shop/unisex-sponge-fleece-pullover-hoodie-175",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fcafdca3ae9590c6ef3": {
+      "group": "A",
+      "title": "Freeplug Unisex Sponge Fleece Pullover Hoodie (3 of 4)",
+      "siteHref": "/shop/unisex-sponge-fleece-pullover-hoodie-175",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af17fcd06ad3a77e40ed8b1": {
+      "group": "A",
+      "title": "Freeplug Unisex Sponge Fleece Pullover Hoodie (4 of 4)",
+      "siteHref": "/shop/unisex-sponge-fleece-pullover-hoodie-175",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1801091296f7f9d0c6293": {
+      "group": "A",
+      "title": "Freeplug Unisex Sweatshirt (1 of 2)",
+      "siteHref": "/shop/unisex-sweatshirt-95",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18013ba034c6e350a584e": {
+      "group": "A",
+      "title": "Freeplug Unisex Sweatshirt (2 of 2)",
+      "siteHref": "/shop/unisex-sweatshirt-95",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1803193d4257fe10689b8": {
+      "group": "A",
+      "title": "Freeplug Unisex Tri-Blend Long Sleeve Colorblock Raglan",
+      "siteHref": "/shop/unisex-tri-blend-long-sleeve-colorblock-raglan-3004",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18189621d8c64cd01a3a2": {
+      "group": "A",
+      "title": "Freeplug Unisex Ultra Cotton Tee (1 of 4)",
+      "siteHref": "/shop/unisex-ultra-cotton-tee-36",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1818cb8db3a637f0581a4": {
+      "group": "A",
+      "title": "Freeplug Unisex Ultra Cotton Tee (2 of 4)",
+      "siteHref": "/shop/unisex-ultra-cotton-tee-36",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1818fb8db3a637f0581aa": {
+      "group": "A",
+      "title": "Freeplug Unisex Ultra Cotton Tee (3 of 4)",
+      "siteHref": "/shop/unisex-ultra-cotton-tee-36",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1819230966f8b83011a6b": {
+      "group": "A",
+      "title": "Freeplug Unisex Ultra Cotton Tee (4 of 4)",
+      "siteHref": "/shop/unisex-ultra-cotton-tee-36",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fff91296f7f9d0c6281": {
+      "group": "A",
+      "title": "Freeplug V.I.T. Heavyweight Fleece Hoodie (1 of 2)",
+      "siteHref": "/shop/v-i-t-heavyweight-fleece-hoodie-3483",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1800106ad3a77e40ed8cd": {
+      "group": "A",
+      "title": "Freeplug V.I.T. Heavyweight Fleece Hoodie (2 of 2)",
+      "siteHref": "/shop/v-i-t-heavyweight-fleece-hoodie-3483",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af182403d6145b4e001053c": {
+      "group": "A",
+      "title": "Freeplug Vacuum Insulated Tumbler, 11oz",
+      "siteHref": "/shop/vacuum-insulated-tumbler-11oz-604",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18422621d8c64cd01a638": {
+      "group": "A",
+      "title": "Freeplug Value Beach Towel",
+      "siteHref": "/shop/value-beach-towel-5582",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1842492f82957dc086601": {
+      "group": "A",
+      "title": "Freeplug Value Cabana Stripe Beach Towel",
+      "siteHref": "/shop/value-cabana-stripe-beach-towel-5583",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af183a7cf4314d6d60fec0c": {
+      "group": "A",
+      "title": "Freeplug Velveteen Plush Blanket",
+      "siteHref": "/shop/velveteen-plush-blanket-522",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af182363d6145b4e001051f": {
+      "group": "A",
+      "title": "Freeplug White Ceramic Mug, 11oz",
+      "siteHref": "/shop/white-ceramic-mug-11oz-503",
+      "siteProductType": "mug",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1806a30966f8b83011911": {
+      "group": "A",
+      "title": "Freeplug Women's Cotton Tank Top",
+      "siteHref": "/shop/women-s-cotton-tank-top-5478",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1805206ad3a77e40ed941": {
+      "group": "A",
+      "title": "Freeplug Women's Cotton Tee",
+      "siteHref": "/shop/women-s-cotton-tee-472",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183d3b8db3a637f058417": {
+      "group": "A",
+      "title": "Freeplug Women's Dare Shorts",
+      "siteHref": "/shop/women-s-dare-shorts-5786",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af181b892f82957dc086372": {
+      "group": "A",
+      "title": "Freeplug Women's Favorite Tee (1 of 2)",
+      "siteHref": "/shop/women-s-favorite-tee-9",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af181bb06ad3a77e40edafa": {
+      "group": "A",
+      "title": "Freeplug Women's Favorite Tee (2 of 2)",
+      "siteHref": "/shop/women-s-favorite-tee-9",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1806306ad3a77e40ed951": {
+      "group": "A",
+      "title": "Freeplug Women's Ideal Racerback Tank",
+      "siteHref": "/shop/women-s-ideal-racerback-tank-18",
+      "siteProductType": "tank",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1803491296f7f9d0c62be": {
+      "group": "A",
+      "title": "Freeplug Women's Perfect Tri Long Sleeve Hoodie",
+      "siteHref": "/shop/women-s-perfect-tri-long-sleeve-hoodie-2831",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1803a93d4257fe10689ca": {
+      "group": "A",
+      "title": "Freeplug Women's Perfect Tri Midi Long Sleeve Hoodie",
+      "siteHref": "/shop/women-s-perfect-tri-midi-long-sleeve-hoodie-3809",
+      "siteProductType": "hoodie",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18037fdca3ae9590c6f46": {
+      "group": "A",
+      "title": "Freeplug Women's Posi-UV Pro Long Sleeve",
+      "siteHref": "/shop/women-s-posi-uv-pro-long-sleeve-2865",
+      "siteProductType": "long-sleeve",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183d0a014df6093015b3d": {
+      "group": "A",
+      "title": "Freeplug Women's Ultimate Performance V-Neck",
+      "siteHref": "/shop/women-s-ultimate-performance-v-neck-3151",
+      "siteProductType": "home-&-decor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18420621d8c64cd01a633": {
+      "group": "A",
+      "title": "Freeplug Wooden Ornaments",
+      "siteHref": "/shop/wooden-ornaments-697",
+      "siteProductType": "outdoor-&-seasonal",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af1840b92f82957dc0865e3": {
+      "group": "A",
+      "title": "Freeplug Youth Competitor Tee (1 of 2)",
+      "siteHref": "/shop/youth-competitor-tee-1142",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1840ecf4314d6d60fec4c": {
+      "group": "A",
+      "title": "Freeplug Youth Competitor Tee (2 of 2)",
+      "siteHref": "/shop/youth-competitor-tee-1142",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183e692f82957dc0865c8": {
+      "group": "A",
+      "title": "Freeplug Youth Easy Cotton Tee (1 of 3)",
+      "siteHref": "/shop/youth-easy-cotton-tee-3125",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183e9cf4314d6d60fec3b": {
+      "group": "A",
+      "title": "Freeplug Youth Easy Cotton Tee (2 of 3)",
+      "siteHref": "/shop/youth-easy-cotton-tee-3125",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af183ecb8db3a637f05842f": {
+      "group": "A",
+      "title": "Freeplug Youth Easy Cotton Tee (3 of 3)",
+      "siteHref": "/shop/youth-easy-cotton-tee-3125",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af17fea91296f7f9d0c6274": {
+      "group": "A",
+      "title": "Freeplug Youth Heavy Blend Hooded Sweatshirt",
+      "siteHref": "/shop/youth-heavy-blend-hooded-sweatshirt-314",
+      "siteProductType": "sweatshirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af18406621d8c64cd01a616": {
+      "group": "A",
+      "title": "Freeplug Youth Midweight Tee (1 of 2)",
+      "siteHref": "/shop/youth-midweight-tee-750",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af18408621d8c64cd01a618": {
+      "group": "A",
+      "title": "Freeplug Youth Midweight Tee (2 of 2)",
+      "siteHref": "/shop/youth-midweight-tee-750",
+      "siteProductType": "tee",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Default clean preview: no site name-box unless explicitly approved."
+    },
+    "6af1821693d4257fe1068bea": {
+      "group": "A",
+      "title": "Freeplug Zippered Canvas Tote",
+      "siteHref": "/shop/zippered-canvas-tote-1990",
+      "siteProductType": "canvas",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Colorful / dominant placement print; site name-box would crowd the mockup."
+    },
+    "6af0dd96c85eee5c4804abd5": {
+      "group": "B",
+      "title": "Freeplug FP Circle Acrylic Keychain",
+      "siteHref": "/merch/desk-extras/fp-circle-keychain",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af0dc47bc999340580ab877": {
+      "group": "B",
+      "title": "Freeplug FP Circle Die-Cut Sticker",
+      "siteHref": "/merch/desk-extras/sticker-fp-circle",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af115cb621d8c64cd011a1d": {
+      "group": "B",
+      "title": "Freeplug FP Circle Neck Gaiter",
+      "siteHref": "/merch/bags-accessories/fp-gaiter",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af0dd85bc999340580aba5e": {
+      "group": "B",
+      "title": "Freeplug FP Circle Trucker Patch Cap",
+      "siteHref": "/merch/hats/fp-circle-trucker-cap",
+      "siteProductType": "hats",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af0dd88bc999340580aba6b": {
+      "group": "B",
+      "title": "Freeplug FP Dad Hat",
+      "siteHref": "/merch/hats/fp-dad-hat",
+      "siteProductType": "hats",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af11578e16bc2f47108adde": {
+      "group": "B",
+      "title": "Freeplug FP Mark Coaster Set",
+      "siteHref": "/merch/home-living/coaster-fp",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af11570e16bc2f47108add8": {
+      "group": "B",
+      "title": "Freeplug FP Mark Pin Button",
+      "siteHref": "/merch/bags-accessories/pin-fp-mark",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af116c859d5223aba053934": {
+      "group": "B",
+      "title": "Freeplug Minimal FP Slim Phone Case",
+      "siteHref": "/merch/desk-extras/slim-fp-case",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af0d0f95dc84ade530368cd": {
+      "group": "B",
+      "title": "Freeplug Tee: Circle Logo",
+      "siteHref": "/merch/t-shirts/02-circle-mark",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "FP-mark / non-rectangle art (Group B); site name-box removed."
+    },
+    "6af115ac59d5223aba0537b9": {
+      "group": "Unknown",
+      "title": "Freeplug A Plug Lives Here Garden Flag",
+      "siteHref": "/merch/outdoor/plug-lives-flag",
+      "siteProductType": "outdoor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115893267fff9210a223f": {
+      "group": "Unknown",
+      "title": "Freeplug Bolt Coaster Set",
+      "siteHref": "/merch/home-living/coaster-bolt",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1157559d5223aba05378a": {
+      "group": "Unknown",
+      "title": "Freeplug Bolt Pin Button",
+      "siteHref": "/merch/bags-accessories/pin-bolt",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dd93f2139253b306e22a": {
+      "group": "Unknown",
+      "title": "Freeplug Build Plug In Repeat Journal",
+      "siteHref": "/merch/desk-extras/build-plug-in-repeat-journal",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115cf621d8c64cd011a1f": {
+      "group": "Unknown",
+      "title": "Freeplug Carry the Connection Tote",
+      "siteHref": "/merch/bags-accessories/carry-tote",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1158b680657c552078072": {
+      "group": "Unknown",
+      "title": "Freeplug Charged Coaster Set",
+      "siteHref": "/merch/home-living/coaster-charged",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115d7f58df1f90207969f": {
+      "group": "Unknown",
+      "title": "Freeplug Charger Not Included Backpack",
+      "siteHref": "/merch/bags-accessories/charger-backpack",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1166659d5223aba053870": {
+      "group": "Unknown",
+      "title": "Freeplug Charging Up Youth Hoodie",
+      "siteHref": "/merch/kids-baby/charging-kids-hoodie",
+      "siteProductType": "kids-baby",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1157bfb9024aaf308ef2d": {
+      "group": "Unknown",
+      "title": "Freeplug Click Connect Get Paid Mouse Pad",
+      "siteHref": "/merch/desk-extras/click-mousepad",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dd9ce696fed2aa02d5ce": {
+      "group": "Unknown",
+      "title": "Freeplug Come On In Outdoor Coir Doormat",
+      "siteHref": "/merch/home-faith/come-on-in-doormat",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116bc5a7173e14f0b1548": {
+      "group": "Unknown",
+      "title": "Freeplug Don't Let Me Hit 1% Tough Phone Case",
+      "siteHref": "/merch/desk-extras/dont-hit-1-case",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11728dcdd68a40100a772": {
+      "group": "Unknown",
+      "title": "Freeplug Fill It Running Over Stocking",
+      "siteHref": "/merch/home-faith/running-over-stocking",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116e5621d8c64cd011b62": {
+      "group": "Unknown",
+      "title": "Freeplug Free Is a Feeling Poster",
+      "siteHref": "/merch/wall-art/poster-3-free-is-a-feeling",
+      "siteProductType": "wall-art",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc2c5a7173e14f0ae0f4": {
+      "group": "Unknown",
+      "title": "Freeplug Free Refills Travel Mug",
+      "siteHref": "/merch/drinkware/free-refills-travel-mug",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1159bf58df1f902079675": {
+      "group": "Unknown",
+      "title": "Freeplug Fuel Station Pet Bowl",
+      "siteHref": "/merch/pets/fuel-bowl",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115c4fb9024aaf308ef68": {
+      "group": "Unknown",
+      "title": "Freeplug Fully Charged Feet Socks",
+      "siteHref": "/merch/apparel/charged-socks",
+      "siteProductType": "apparel",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc189219dad501083c14": {
+      "group": "Unknown",
+      "title": "Freeplug Fully Charged Mug",
+      "siteHref": "/merch/drinkware/fully-charged-mug",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115983267fff9210a224c": {
+      "group": "Unknown",
+      "title": "Freeplug Good Boy Fully Charged Pet Bandana",
+      "siteHref": "/merch/pets/good-boy-bandana",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11657e16bc2f47108ae9c": {
+      "group": "Unknown",
+      "title": "Freeplug Good Measure Long Sleeve Tee",
+      "siteHref": "/merch/apparel/good-measure-longsleeve",
+      "siteProductType": "apparel",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115d4fb9024aaf308ef74": {
+      "group": "Unknown",
+      "title": "Freeplug Gym Plug Drawstring Bag",
+      "siteHref": "/merch/bags-accessories/gym-drawstring",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc44fb9024aaf308bd94": {
+      "group": "Unknown",
+      "title": "Freeplug Hero Crewneck Sweatshirt",
+      "siteHref": "/merch/apparel/hero-crewneck",
+      "siteProductType": "apparel",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116dd59d5223aba053954": {
+      "group": "Unknown",
+      "title": "Freeplug Hustle Hours Poster",
+      "siteHref": "/merch/wall-art/poster-2-hustle-hours",
+      "siteProductType": "wall-art",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc49e696fed2aa02d3cb": {
+      "group": "Unknown",
+      "title": "Freeplug I Know a Plug Die-Cut Sticker",
+      "siteHref": "/merch/desk-extras/sticker-know-a-plug",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc2f5a7173e14f0ae104": {
+      "group": "Unknown",
+      "title": "Freeplug I Know a Plug Mug",
+      "siteHref": "/merch/drinkware/know-a-plug-mug",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1157efb9024aaf308ef2e": {
+      "group": "Unknown",
+      "title": "Freeplug Ideas Worth Plugging Notebook",
+      "siteHref": "/merch/desk-extras/ideas-notebook",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc26e696fed2aa02d36b": {
+      "group": "Unknown",
+      "title": "Freeplug It's So Cheap It's Free Latte Mug",
+      "siteHref": "/merch/drinkware/cheap-free-latte-mug",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11591fb9024aaf308ef3e": {
+      "group": "Unknown",
+      "title": "Freeplug Keep It Cool Can Cooler",
+      "siteHref": "/merch/drinkware/cool-can-cooler",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1165b59d5223aba053865": {
+      "group": "Unknown",
+      "title": "Freeplug Low Battery High Hustle Joggers",
+      "siteHref": "/merch/apparel/hustle-joggers",
+      "siteProductType": "apparel",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115aefb9024aaf308ef54": {
+      "group": "Unknown",
+      "title": "Freeplug Luke 6:38 Bookmark 1",
+      "siteHref": "/merch/home-faith/kjv-bookmark-1",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115b1f58df1f902079683": {
+      "group": "Unknown",
+      "title": "Freeplug Luke 6:38 Bookmark 2",
+      "siteHref": "/merch/home-faith/kjv-bookmark-2",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115b359d5223aba0537c1": {
+      "group": "Unknown",
+      "title": "Freeplug Luke 6:38 Bookmark 3",
+      "siteHref": "/merch/home-faith/kjv-bookmark-3",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115b559d5223aba0537c2": {
+      "group": "Unknown",
+      "title": "Freeplug Luke 6:38 Bookmark 4",
+      "siteHref": "/merch/home-faith/kjv-bookmark-4",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1faabdbbd8cf3320775ea": {
+      "group": "Unknown",
+      "title": "Freeplug Luke 6:38 Glass Cutting Board",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11619fb9024aaf308efc1": {
+      "group": "Unknown",
+      "title": "Freeplug Mini Plug Toddler Tee",
+      "siteHref": "/merch/kids-baby/mini-plug-tee",
+      "siteProductType": "kids-baby",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115f23267fff9210a2284": {
+      "group": "Unknown",
+      "title": "Freeplug My Human Knows a Plug Pet Tank",
+      "siteHref": "/merch/pets/human-knows-dog-tee",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af183d8621d8c64cd01a5f1": {
+      "group": "Unknown",
+      "title": "Freeplug Natural Stone Stretch Bar Bracelet (Engraving)",
+      "siteHref": "/shop/natural-stone-stretch-bar-bracelet-engraving-2651",
+      "siteProductType": "jewelry-&-pins",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115fcdcdd68a40100a5e7": {
+      "group": "Unknown",
+      "title": "Freeplug Newest Plug Baby Onesie",
+      "siteHref": "/merch/kids-baby/newest-onesie",
+      "siteProductType": "kids-baby",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115a3621d8c64cd0119f9": {
+      "group": "Unknown",
+      "title": "Freeplug Off-Grid Plug Camping Mug",
+      "siteHref": "/merch/drinkware/offgrid-camping-mug",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11587f58df1f902079666": {
+      "group": "Unknown",
+      "title": "Freeplug Plug Coaster Set",
+      "siteHref": "/merch/home-living/coaster-plug",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc4ee696fed2aa02d3d1": {
+      "group": "Unknown",
+      "title": "Freeplug Plug Heart Die-Cut Sticker",
+      "siteHref": "/merch/desk-extras/sticker-plug-heart",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116d5e48e1810df0f4b28": {
+      "group": "Unknown",
+      "title": "Freeplug Plug Map Poster",
+      "siteHref": "/merch/wall-art/poster-1-plug-map",
+      "siteProductType": "wall-art",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115a059d5223aba0537aa": {
+      "group": "Unknown",
+      "title": "Freeplug Plug Parking Only Metal Sign",
+      "siteHref": "/merch/home-living/plug-parking-sign",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1157259d5223aba053784": {
+      "group": "Unknown",
+      "title": "Freeplug Plug Pin Button",
+      "siteHref": "/merch/bags-accessories/pin-plug",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115e459d5223aba0537f4": {
+      "group": "Unknown",
+      "title": "Freeplug Plug Time Wall Clock",
+      "siteHref": "/merch/home-living/plug-clock",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc31e696fed2aa02d392": {
+      "group": "Unknown",
+      "title": "Freeplug Plug-In Station Desk Mat",
+      "siteHref": "/merch/desk-extras/plug-in-station-desk-mat",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dd8bc85eee5c4804aba2": {
+      "group": "Unknown",
+      "title": "Freeplug Plugged In Low-Profile Cap",
+      "siteHref": "/merch/hats/plugged-in-low-profile-cap",
+      "siteProductType": "hats",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc297a7a4ea34b0b1d11": {
+      "group": "Unknown",
+      "title": "Freeplug Plugged In Since Day One Tumbler",
+      "siteHref": "/merch/drinkware/day-one-tumbler",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1163d59d5223aba053841": {
+      "group": "Unknown",
+      "title": "Freeplug Plugged In Since Day One Zip Hoodie",
+      "siteHref": "/merch/apparel/day-one-zip",
+      "siteProductType": "apparel",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11580621d8c64cd0119de": {
+      "group": "Unknown",
+      "title": "Freeplug Plugged-In Christmas Ornament",
+      "siteHref": "/merch/home-faith/plugged-ornament",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115e9dcdd68a40100a5e0": {
+      "group": "Unknown",
+      "title": "Freeplug Plugged-In Kitchen Cutting Board",
+      "siteHref": "/merch/home-living/plugged-cutting-board",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115d9fb9024aaf308ef78": {
+      "group": "Unknown",
+      "title": "Freeplug Pocket Plug Fanny Pack",
+      "siteHref": "/merch/bags-accessories/pocket-fanny",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116f93267fff9210a23aa": {
+      "group": "Unknown",
+      "title": "Freeplug Pressed Down Shaken Together Framed Print",
+      "siteHref": "/merch/home-faith/pressed-down-framed",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115e1fb9024aaf308ef7b": {
+      "group": "Unknown",
+      "title": "Freeplug Recharge Mode Throw Blanket",
+      "siteHref": "/merch/home-living/recharge-blanket",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1158de16bc2f47108adee": {
+      "group": "Unknown",
+      "title": "Freeplug Recharge Station Pint Glass",
+      "siteHref": "/merch/drinkware/recharge-pint",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af117073267fff9210a23c1": {
+      "group": "Unknown",
+      "title": "Freeplug Recharge Zone Pet Bed",
+      "siteHref": "/merch/pets/recharge-pet-bed",
+      "siteProductType": "pets",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1170281fb6450380f1e1d": {
+      "group": "Unknown",
+      "title": "Freeplug Rinse Recharge Repeat Shower Curtain",
+      "siteHref": "/merch/home-living/rinse-curtain",
+      "siteProductType": "home-living",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc377a7a4ea34b0b1d36": {
+      "group": "Unknown",
+      "title": "Freeplug Running Over Luke 6:38 Candle",
+      "siteHref": "/merch/home-faith/running-over-candle",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dd82e696fed2aa02d577": {
+      "group": "Unknown",
+      "title": "Freeplug Running Over Luke 6:38 Canvas",
+      "siteHref": "/merch/home-faith/running-over-canvas",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dd995dc84ade530375ea": {
+      "group": "Unknown",
+      "title": "Freeplug Running Over Luke 6:38 Pillow",
+      "siteHref": "/merch/home-faith/running-over-pillow",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11736fb9024aaf308f12b": {
+      "group": "Unknown",
+      "title": "Freeplug Running Over Luke 6:38 Serving Tray",
+      "siteHref": "/merch/home-faith/kjv-serving-tray",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1173281fb6450380f1e46": {
+      "group": "Unknown",
+      "title": "Freeplug Running Over Luke 6:38 Woven Blanket",
+      "siteHref": "/merch/home-faith/kjv-woven-blanket",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1fbdafa2e2c9c62013b1c": {
+      "group": "Unknown",
+      "title": "Freeplug Running Over Matte Canvas 1.25\"",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1fce241cb545504055367": {
+      "group": "Unknown",
+      "title": "Freeplug San Marcos Plug Matte Canvas 0.75\"",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11720e48e1810df0f4b5b": {
+      "group": "Unknown",
+      "title": "Freeplug Solar Charging Beach Towel",
+      "siteHref": "/merch/outdoor/solar-towel",
+      "siteProductType": "outdoor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1fa9d8f2824f6ff06c9a8": {
+      "group": "Unknown",
+      "title": "Freeplug Stay Charged Fanny Pack",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1163ae16bc2f47108ae6f": {
+      "group": "Unknown",
+      "title": "Freeplug Stay Charged Pullover Hoodie",
+      "siteHref": "/merch/apparel/stay-charged-pullover",
+      "siteProductType": "apparel",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116f33267fff9210a239e": {
+      "group": "Unknown",
+      "title": "Freeplug Stay Connected Framed Print",
+      "siteHref": "/merch/wall-art/stay-connected-framed",
+      "siteProductType": "wall-art",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc34c85eee5c4804a972": {
+      "group": "Unknown",
+      "title": "Freeplug Stay Plugged In Water Bottle",
+      "siteHref": "/merch/drinkware/stay-plugged-in-water-bottle",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254831765d750e60cfaee": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: 1 Timothy 6:18",
+      "siteHref": "/merch/t-shirts/10-verse-1-timothy-6-18",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af25451e5af62c4000d272f": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: 2 Corinthians 9:7",
+      "siteHref": "/merch/t-shirts/03-verse-2-corinthians-9-7",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af2544a6060004898045eed": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Acts 20:35",
+      "siteHref": "/merch/t-shirts/02-verse-acts-20-35",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af25490d54c0aed2a07e7e3": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Bridge the Gap",
+      "siteHref": "/merch/t-shirts/12-init-bridge-the-gap",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254b9dbbd8cf33207cf9b": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Charge Forward Care",
+      "siteHref": "/merch/t-shirts/18-init-charge-forward-care",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af25496ab5149d0fe004e09": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Daily Bread Share",
+      "siteHref": "/merch/t-shirts/13-init-daily-bread-share",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254e3963ef19c0a0c352c": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Day One",
+      "siteHref": "/merch/t-shirts/24-world-day-one",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254c83ed2916be40d1797": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: FP Shield Care",
+      "siteHref": "/merch/t-shirts/20-init-fp-shield-care",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0d1029219dad5010831c9": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Free Game",
+      "siteHref": "/merch/t-shirts/04-free-game",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254ebe5af62c4000d27a6": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Free Refills",
+      "siteHref": "/merch/t-shirts/25-world-free-refills",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254d6a851a92a74017dae": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Fully Charged",
+      "siteHref": "/merch/t-shirts/22-world-fully-charged",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0d0fe5dc84ade530368cf": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Get Plugged In",
+      "siteHref": "/merch/t-shirts/03-get-plugged-in",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af2550c3ed2916be40d17c8": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Good Trouble Fun",
+      "siteHref": "/merch/t-shirts/30-world-good-trouble-fun",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254741765d750e60cfadf": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Hebrews 13:16",
+      "siteHref": "/merch/t-shirts/08-verse-hebrews-13-16",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254c0963ef19c0a0c350d": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: House of Help",
+      "siteHref": "/merch/t-shirts/19-init-house-of-help",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0d0f27a7a4ea34b0b118b": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: I Know a Plug",
+      "siteHref": "/merch/t-shirts/01-know-a-plug",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af2547c65e5e501d503aca4": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: James 1:27",
+      "siteHref": "/merch/t-shirts/09-verse-james-1-27",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254dddbbd8cf33207cfbc": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Know a Plug",
+      "siteHref": "/merch/t-shirts/23-world-know-a-plug",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af384595f2fe44d6b084594": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Let Your Work/Job Beat Fantasies",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254a3d54c0aed2a07e7fe": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Lift Together",
+      "siteHref": "/merch/t-shirts/15-init-lift-together",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af25460ab5149d0fe004dc5": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Matthew 25:40",
+      "siteHref": "/merch/t-shirts/05-verse-matthew-25-40",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0d107e696fed2aa02c8ac": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: My Website Was Free. This Shirt Wasn't.",
+      "siteHref": "/merch/t-shirts/05-website-was-free",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254b23ed2916be40d177d": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Neighbor Net",
+      "siteHref": "/merch/t-shirts/17-init-neighbor-net",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254891765d750e60cfaf1": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Open Hand",
+      "siteHref": "/merch/t-shirts/11-init-open-hand-give",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af37b863fb498bd1209b6c1": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Patience Undefined",
+      "siteHref": "/merch/t-shirts/patience-undefined",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af2549dd54c0aed2a07e7fa": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Plug In Kindness",
+      "siteHref": "/merch/t-shirts/14-init-plug-in-kindness",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0d10bc85eee5c48049e0b": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Plugged In Since Day One",
+      "siteHref": "/merch/t-shirts/06-day-one",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af37b686bc401c89f089069": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Plugs Don't Work Unless You Do",
+      "siteHref": "/merch/t-shirts/31-world-plugs-dont-work",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254f7dfb4b5578a0e18ae": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Pride Pulse",
+      "siteHref": "/merch/t-shirts/27-world-pride-pulse",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254436060004898045ee4": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Proverbs 19:17",
+      "siteHref": "/merch/t-shirts/01-verse-proverbs-19-17",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af25458963ef19c0a0c34bf": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Proverbs 22:9",
+      "siteHref": "/merch/t-shirts/04-verse-proverbs-22-9",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af25467ab5149d0fe004dd2": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Proverbs 28:27",
+      "siteHref": "/merch/t-shirts/06-verse-proverbs-28-27",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af2546dd54c0aed2a07e7c5": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Psalm 82:3",
+      "siteHref": "/merch/t-shirts/07-verse-psalm-82-3",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254aaab5149d0fe004e24": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Running Over",
+      "siteHref": "/merch/t-shirts/16-init-running-over",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254f1d54c0aed2a07e838": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Senses Alive",
+      "siteHref": "/merch/t-shirts/26-world-senses-alive",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af25505963ef19c0a0c3554": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Sound On",
+      "siteHref": "/merch/t-shirts/29-world-sound-on",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254cfdfb4b5578a0e1890": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Stay Charged",
+      "siteHref": "/merch/t-shirts/21-world-stay-charged",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af254fedbbd8cf33207cfd7": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Taste the Charge",
+      "siteHref": "/merch/t-shirts/28-world-taste-the-charge",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af37b73098c75a292011104": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Watch Out Rockefeller",
+      "siteHref": "/merch/t-shirts/32-world-watch-out-rockefeller",
+      "siteProductType": "t-shirt",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af37b7d84c3e9e3630d90c0": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Watch Out Rockefeller (Bowler)",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af384435f2fe44d6b084581": {
+      "group": "Unknown",
+      "title": "Freeplug Tee: Work For You",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115b8fb9024aaf308ef5d": {
+      "group": "Unknown",
+      "title": "Freeplug Thanksgiving Luke 6:38 Tea Towel",
+      "siteHref": "/merch/home-faith/thanksgiving-tea-towel",
+      "siteProductType": "home-faith",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116a4680657c55207819e": {
+      "group": "Unknown",
+      "title": "Freeplug Ugly Sweater Crewneck",
+      "siteHref": "/merch/apparel/ugly-sweater-crew",
+      "siteProductType": "apparel",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af11725e16bc2f47108afcc": {
+      "group": "Unknown",
+      "title": "Freeplug Unplug Together Picnic Blanket",
+      "siteHref": "/merch/outdoor/unplug-picnic",
+      "siteProductType": "outdoor",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af115943267fff9210a2249": {
+      "group": "Unknown",
+      "title": "Freeplug Unplugged Hours Wine Tumbler",
+      "siteHref": "/merch/drinkware/unplugged-wine",
+      "siteProductType": "drinkware",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116cefb9024aaf308f0e6": {
+      "group": "Unknown",
+      "title": "Freeplug Website Was Free Laptop Sleeve",
+      "siteHref": "/merch/bags-accessories/website-laptop-sleeve",
+      "siteProductType": "bags-accessories",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1fab72cc8ec45d00d9de5": {
+      "group": "Unknown",
+      "title": "Freeplug Welcome Home Garden Banner",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af116eddcdd68a40100a73c": {
+      "group": "Unknown",
+      "title": "Freeplug Wired Different Poster",
+      "siteHref": "/merch/wall-art/poster-4-wired-different",
+      "siteProductType": "wall-art",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af1fae9aa2444f8860b39e2": {
+      "group": "Unknown",
+      "title": "Freeplug You Know a Plug Metal Sign",
+      "siteHref": null,
+      "siteProductType": "unmapped",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    },
+    "6af0dc4c9219dad501083c71": {
+      "group": "Unknown",
+      "title": "Freeplug Zero Price Tag Die-Cut Sticker",
+      "siteHref": "/merch/desk-extras/sticker-zero-price-tag",
+      "siteProductType": "desk-extras",
+      "showPreviewWordmarkOverlay": false,
+      "rationale": "Slogan or mixed art (Unknown); site name-box removed."
+    }
+  }
+}

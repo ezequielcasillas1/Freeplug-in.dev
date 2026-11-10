@@ -4,6 +4,7 @@ import {
   isVerseShirtSlug,
   resolvePreviewWordmark,
 } from './preview-wordmark-resolve'
+import { shouldShowPreviewWordmarkOverlay } from './preview-overlay-policy'
 import { WORDMARK_VARIATIONS } from './wordmark-variations'
 
 describe('resolvePreviewWordmark', () => {
@@ -28,33 +29,51 @@ describe('resolvePreviewWordmark', () => {
     ).toBeNull()
   })
 
-  it('assigns supreme tee variation from specs', () => {
-    const r = resolvePreviewWordmark({
-      source: 't-shirts',
-      slug: '11-init-open-hand-give',
-      href: '/merch/t-shirts/11-init-open-hand-give',
-      productType: 't-shirt',
-      catalogKey: 'tshirts/11-init-open-hand-give',
-      garmentColor: 'Black',
-    })
-    expect(r?.variationId).toBe('v01-fpid-code-panel')
-    expect(r?.placement.left).toBeGreaterThan(0.55)
-    expect(r?.chestBadge).toBe(true)
+  it('does not overlay slogan supreme tees (Unknown cohort)', () => {
+    expect(
+      shouldShowPreviewWordmarkOverlay({
+        source: 't-shirts',
+        slug: '11-init-open-hand-give',
+        catalogKey: 'tshirts/11-init-open-hand-give',
+      }).allow
+    ).toBe(false)
+    expect(
+      resolvePreviewWordmark({
+        source: 't-shirts',
+        slug: '11-init-open-hand-give',
+        href: '/merch/t-shirts/11-init-open-hand-give',
+        productType: 't-shirt',
+        catalogKey: 'tshirts/11-init-open-hand-give',
+        garmentColor: 'Black',
+      })
+    ).toBeNull()
   })
 
-  it('covers shop physical items with stable variation ids', () => {
+  it('covers approved shop physical items with stable variation ids', () => {
     const r = resolvePreviewWordmark({
       source: 'buyer-shop',
-      slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
-      href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
-      productType: 'sweatshirt',
-      catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      slug: '12-solid-cuffed-beanie-5665',
+      href: '/shop/12-solid-cuffed-beanie-5665',
+      productType: 'hat',
+      catalogKey: 'shop/12-solid-cuffed-beanie-5665',
     })
     expect(r).not.toBeNull()
     expect(WORDMARK_VARIATIONS.some((v) => v.id === r!.variationId)).toBe(true)
   })
 
-  it('covers merch-store collection items', () => {
+  it('drops overlay on shop items with vibrant baked rectangle art', () => {
+    expect(
+      resolvePreviewWordmark({
+        source: 'buyer-shop',
+        slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
+        href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+        productType: 'sweatshirt',
+        catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      })
+    ).toBeNull()
+  })
+
+  it('drops overlay on merch-store collection items without policy keep', () => {
     const r = resolvePreviewWordmark({
       source: 'merch-store',
       slug: 'hero-crewneck',
@@ -62,6 +81,6 @@ describe('resolvePreviewWordmark', () => {
       productType: 'apparel',
       catalogKey: 'apparel/hero-crewneck',
     })
-    expect(r?.placement.top).toBeLessThan(0.6)
+    expect(r).toBeNull()
   })
 })
