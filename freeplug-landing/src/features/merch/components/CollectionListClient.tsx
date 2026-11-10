@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
-import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
+import { MerchPreviewFigure } from '@/features/merch/components/MerchPreviewFigure'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
@@ -51,13 +51,20 @@ export function CollectionListClient({
                       href={publicHref(`/merch/${collection}/${p.slug}`, locale)}
                       className="block rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-[#ba3d3d]/40 transition-colors min-h-[44px]"
                     >
-                      <MerchContainedImage
+                      <MerchPreviewFigure
                         src={p.mockupSrc}
                         alt={t('cardAlt', { title })}
                         width={1000}
                         height={1200}
                         className="border-0 rounded-none"
                         sizes="(max-width: 640px) 100vw, 320px"
+                        preview={{
+                          source: 'merch-store',
+                          slug: p.slug,
+                          href: `/merch/${collection}/${p.slug}`,
+                          productType: collection,
+                          catalogKey: `${collection}/${p.slug}`,
+                        }}
                       />
                       <div className="p-3.5 sm:p-4 min-w-0">
                         <h2 className="font-semibold text-gray-900 text-[0.95rem] min-[360px]:text-base leading-snug break-words">

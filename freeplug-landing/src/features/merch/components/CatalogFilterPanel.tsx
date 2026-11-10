@@ -8,6 +8,8 @@ import { CATALOG_SIZE_FACET_ONE_SIZE } from '@/lib/merch/catalog-size-facet'
 import { catalogFilterIsActive, facetKeysSorted } from '@/lib/merch/catalog-filter-logic'
 import type { CatalogFacets, CatalogFilterState, CatalogSource } from '@/lib/merch/catalog-filter-types'
 import type { CatalogAvailability, CatalogDesign } from '@/lib/merch/catalog-filter-types'
+import { BRAND_NAME_KEYS, type BrandNameKey } from '@/lib/merch/preview/brand-names'
+import type { PreviewWordmarkFacets } from '@/lib/merch/preview/preview-wordmark-filter'
 
 const SOURCE_ORDER: CatalogSource[] = ['merch-store', 't-shirts', 'buyer-shop']
 const AVAIL_ORDER: CatalogAvailability[] = ['buyable', 'coming-soon', 'missing-mockup']
@@ -16,12 +18,13 @@ const DESIGN_ORDER: CatalogDesign[] = ['freeplug', 'custom']
 type Props = {
   scope: 'all-merch' | 'shop'
   panelFacets: CatalogFacets
+  previewWordmarkFacets?: PreviewWordmarkFacets
   state: CatalogFilterState
   onChange: (next: CatalogFilterState) => void
   onClear: () => void
 }
 
-export function CatalogFilterPanel({ scope, panelFacets, state, onChange, onClear }: Props) {
+export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, state, onChange, onClear }: Props) {
   const t = useTranslations('public.merch.catalogFilter')
   const drawerTitleId = useId()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -181,6 +184,52 @@ export function CatalogFilterPanel({ scope, panelFacets, state, onChange, onClea
           selected={state.designs}
           onToggle={(id) => toggleInList(state.designs, id as CatalogDesign, (designs) => onChange({ ...state, designs }))}
         />
+      </FilterSection>
+
+      <FilterSection title={t('previewWordmark.title')} defaultOpen>
+        <label className="flex items-start gap-2 cursor-pointer min-h-9 mb-3">
+          <input
+            type="checkbox"
+            className="mt-1 shrink-0"
+            checked={state.previewOverlays}
+            onChange={() => onChange({ ...state, previewOverlays: !state.previewOverlays })}
+          />
+          <span className="leading-snug break-words min-w-0">
+            {state.previewOverlays ? t('previewWordmark.showOnPhotos') : t('previewWordmark.hideOnPhotos')}
+          </span>
+        </label>
+        {previewWordmarkFacets ? (
+          <>
+            <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.rectangularStyleTitle')}</p>
+            <label className="flex items-start gap-2 cursor-pointer min-h-9 mb-3">
+              <input
+                type="checkbox"
+                className="mt-1 shrink-0"
+                checked={state.rectangularStyleOnly}
+                onChange={() => onChange({ ...state, rectangularStyleOnly: !state.rectangularStyleOnly })}
+              />
+              <span className="leading-snug break-words min-w-0">
+                {t('previewWordmark.rectangularStyle')}{' '}
+                <span className="text-gray-400 text-xs">({previewWordmarkFacets.rectangularStyle})</span>
+              </span>
+            </label>
+            <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.brandNameTitle')}</p>
+            <MultiCheck
+              t={t}
+              options={BRAND_NAME_KEYS.map((id) => ({
+                id,
+                label: t(`previewWordmark.brandNames.${id}`),
+                count: previewWordmarkFacets.brandNames[id],
+              })).filter((o) => o.count > 0)}
+              selected={state.brandNameKeys}
+              onToggle={(id) =>
+                toggleInList(state.brandNameKeys, id as BrandNameKey, (brandNameKeys) =>
+                  onChange({ ...state, brandNameKeys })
+                )
+              }
+            />
+          </>
+        ) : null}
       </FilterSection>
 
       <FilterSection title={t('sortLabel')}>

@@ -1,8 +1,5 @@
-import Image from 'next/image'
-import { SupremeShirtWordmarkOverlay } from '@/features/merch/components/SupremeShirtWordmarkOverlay'
-import { isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
+import { MerchPreviewFigure } from '@/features/merch/components/MerchPreviewFigure'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
-import { cn } from '@/lib/utils/cn'
 
 type ShirtMockupFigureProps = {
   slug: string
@@ -14,6 +11,7 @@ type ShirtMockupFigureProps = {
   className?: string
   priority?: boolean
   sizes?: string
+  showOverlay?: boolean
 }
 
 export function ShirtMockupFigure({
@@ -26,24 +24,26 @@ export function ShirtMockupFigure({
   className,
   priority,
   sizes = '(max-width: 1024px) 100vw, 480px',
+  showOverlay = true,
 }: ShirtMockupFigureProps) {
-  const supreme = isSupremeStyleShirtSlug(slug)
-
   return (
-    <figure
-      className={cn('relative rounded-2xl border border-gray-200 bg-white overflow-hidden', className)}
-    >
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        unoptimized
-        priority={priority}
-        sizes={sizes}
-        className="block w-full h-auto max-w-full object-contain"
-      />
-      {supreme ? <SupremeShirtWordmarkOverlay slug={slug} shirtColor={shirtColor} /> : null}
-    </figure>
+    <MerchPreviewFigure
+      showOverlay={showOverlay}
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      priority={priority}
+      sizes={sizes}
+      preview={{
+        source: 't-shirts',
+        slug,
+        href: `/merch/t-shirts/${slug}`,
+        productType: 't-shirt',
+        catalogKey: `tshirts/${slug}`,
+        garmentColor: shirtColor,
+      }}
+    />
   )
 }

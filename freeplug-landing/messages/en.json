@@ -1796,6 +1796,12 @@
         "back": "Back to the product page"
       },
       "indexCardAll": "Every product in one place: the merch store and the full shop.",
+      "wordmarkVariations": {
+        "heading": "Brand wordmark variations",
+        "lead": "{count} Freeplug rectangular-style preview treatments across six capital-F names (same spelling on EN and ES routes).",
+        "darkGarments": "On dark garments",
+        "lightGarments": "On light garments"
+      },
       "allMerch": {
         "heading": "All merch",
         "lead": "Every Freeplug product in one place: {count} items across the merch store and the shop.",
@@ -1843,6 +1849,22 @@
           "priceAsc": "Price: low to high",
           "priceDesc": "Price: high to low",
           "nameAsc": "Name: A–Z"
+        },
+        "previewWordmark": {
+          "title": "Name preview",
+          "showOnPhotos": "Show name preview on product photos",
+          "hideOnPhotos": "Hide name preview on product photos",
+          "rectangularStyleTitle": "T-shirt style",
+          "rectangularStyle": "Freeplug rectangular style",
+          "brandNameTitle": "Name on preview",
+          "brandNames": {
+            "freeplug-in-dev": "Freeplug-in.dev",
+            "freeplug": "Freeplug",
+            "freeplugin": "Freeplugin",
+            "freeplug-dev": "Freeplug.dev",
+            "freeplug-in": "Freeplug.in",
+            "fplgn": "FPLGN"
+          }
         },
         "categoryTab": {
           "apparel": "Apparel",

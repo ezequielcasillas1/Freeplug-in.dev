@@ -3,7 +3,7 @@ import type { ShirtColor } from './catalog'
 
 export type SupremePreviewSpec = {
   slug: string
-  lines: string[]
+  variationId: string
   style: 'boxed' | 'plain'
   ink: 'white-on-black-box' | 'white-on-charcoal-box'
   placement: { top: number; left: number; width: number; lineHeight: number }
@@ -17,6 +17,19 @@ export function getSupremePreviewSpec(slug: string): SupremePreviewSpec | null {
 
 export function isSupremeStyleShirtSlug(slug: string): boolean {
   return bySlug.has(slug)
+}
+
+export function getSupremeVariationId(slug: string): string | null {
+  return bySlug.get(slug)?.variationId ?? null
+}
+
+/** @deprecated use getSupremeVariationId */
+export function getSupremeWordmarkId(slug: string): string | null {
+  return getSupremeVariationId(slug)
+}
+
+export function listSupremePreviewSpecs(): SupremePreviewSpec[] {
+  return specs as SupremePreviewSpec[]
 }
 
 export type SupremeWordmarkVisual = {

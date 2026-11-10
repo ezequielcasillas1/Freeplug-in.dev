@@ -27,6 +27,21 @@ describe('catalog filter logic', () => {
     expect(back.get('sort')).toBe('price-asc')
   })
 
+  it('parses preview wordmark URL facets without supreme param names', () => {
+    const state = parseCatalogFilterSearchParams(
+      new URLSearchParams('preview=0&style=rectangular&name=freeplug,fplgn'),
+      'shop'
+    )
+    expect(state.previewOverlays).toBe(false)
+    expect(state.rectangularStyleOnly).toBe(true)
+    expect(state.brandNameKeys).toEqual(['freeplug', 'fplgn'])
+    const back = catalogFilterToSearchParams(state, 'shop')
+    expect(back.get('preview')).toBe('0')
+    expect(back.get('style')).toBe('rectangular')
+    expect(back.get('name')).toBe('freeplug,fplgn')
+    expect(back.has('supreme')).toBe(false)
+  })
+
   it('filters hats that are buyable now on the full catalog', () => {
     const state = parseCatalogFilterSearchParams(new URLSearchParams('cat=hats&avail=buyable'), 'all-merch')
     const out = applyCatalogFilters(all, state)

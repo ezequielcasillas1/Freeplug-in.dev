@@ -1,11 +1,13 @@
 'use client'
 
 import Image from 'next/image'
+import { CatalogPreviewWordmarkOverlay } from '@/features/merch/components/CatalogPreviewWordmarkOverlay'
 import {
   garmentLogoVariant,
   isShopGarmentLogoPath,
   ShopGarmentWordmark,
 } from '@/features/merch/components/ShopGarmentWordmark'
+import type { ResolvedPreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
 import type { ShopPrintArea } from '@/lib/merch/shop/types'
 import { cn } from '@/lib/utils/cn'
 
@@ -17,6 +19,8 @@ export function ShopMockupPreview({
   placement = { x: 0.5, y: 0.42, scale: 0.38 },
   alt,
   className,
+  previewWordmark,
+  garmentVariationId,
 }: {
   productSrc: string
   logoSrc?: string | null
@@ -25,8 +29,11 @@ export function ShopMockupPreview({
   placement?: { x: number; y: number; scale: number }
   alt: string
   className?: string
+  previewWordmark?: ResolvedPreviewWordmark | null
+  garmentVariationId?: string
 }) {
-  const vectorGarmentLogo = isShopGarmentLogoPath(logoSrc) && !customSrc
+  const useVectorOverlay = Boolean(previewWordmark)
+  const vectorGarmentLogo = isShopGarmentLogoPath(logoSrc) && !customSrc && !useVectorOverlay
   const overlaySrc = customSrc || (vectorGarmentLogo ? null : logoSrc)
   const aspect = printArea && printArea.height > 0 ? printArea.width / printArea.height : 1
   const widthPct = `${placement.scale * 55 * Math.min(1.25, Math.max(0.75, aspect))}%`
@@ -47,7 +54,8 @@ export function ShopMockupPreview({
           sizes="(max-width: 768px) 100vw, 480px"
         />
       )}
-      {vectorGarmentLogo && logoSrc ? (
+      {previewWordmark ? <CatalogPreviewWordmarkOverlay config={previewWordmark} /> : null}
+      {vectorGarmentLogo && logoSrc && garmentVariationId ? (
         <div
           className="pointer-events-none absolute"
           style={{
@@ -59,6 +67,7 @@ export function ShopMockupPreview({
         >
           <ShopGarmentWordmark
             variant={garmentLogoVariant(logoSrc)}
+            variationId={garmentVariationId}
             className="block h-auto w-full [image-rendering:-webkit-optimize-contrast]"
           />
         </div>

@@ -21,6 +21,8 @@ import {
 } from '@/lib/merch/shop/variant-options'
 import { PRINTIFY_PRINT_AREA_DPI } from '@/lib/merch/shop/print-area'
 import { cn } from '@/lib/utils/cn'
+import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
+import { garmentWordmarkForShopSlug } from '@/lib/merch/shirts/garment-wordmark-for-shop'
 
 export function ShopProductClient({
   item,
@@ -172,6 +174,21 @@ export function ShopProductClient({
   const canBuyCustom = designMode === 'custom' && Boolean(customPath) && Boolean(uploadToken) && rightsConfirmed && !customSoldOut
   const buyDisabled = !checkoutEnabled || (designMode === 'freeplug' ? !canBuyFreeplug : !canBuyCustom)
 
+  const previewWordmark = useMemo(
+    () =>
+      designMode === 'freeplug'
+        ? resolvePreviewWordmark({
+            source: 'buyer-shop',
+            slug: item.slug,
+            href: `/shop/${item.slug}`,
+            productType: item.productType,
+            catalogKey: `shop/${item.slug}`,
+            garmentColor: color || null,
+          })
+        : null,
+    [color, designMode, item.productType, item.slug]
+  )
+
   return (
     <MerchPageChrome>
       <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 pt-6 pb-16">
@@ -184,6 +201,8 @@ export function ShopProductClient({
               printArea={printArea}
               placement={designMode === 'custom' ? customPlacement : placement}
               alt={t('mockupAlt', { title: item.title })}
+              previewWordmark={previewWordmark}
+              garmentVariationId={garmentWordmarkForShopSlug(item.slug)}
             />
             {gallerySlides.length > 1 ? (
               <div className="flex gap-2 mt-3 flex-wrap">

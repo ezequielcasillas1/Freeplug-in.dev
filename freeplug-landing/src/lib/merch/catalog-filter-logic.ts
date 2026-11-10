@@ -10,6 +10,8 @@ import {
   type CatalogSort,
   type CatalogSource,
 } from './catalog-filter-types'
+import type { BrandNameKey } from '@/lib/merch/preview/brand-names'
+import { isBrandNameKey, matchesPreviewWordmarkCatalogFilters } from '@/lib/merch/preview/preview-wordmark-filter'
 
 const ALL_SOURCES: CatalogSource[] = ['merch-store', 't-shirts', 'buyer-shop']
 const ALL_AVAIL: CatalogAvailability[] = ['buyable', 'coming-soon', 'missing-mockup']
@@ -34,6 +36,11 @@ export function matchesCatalogFilter(item: CatalogFilterItem, state: CatalogFilt
   }
   if (state.sizes.length && !sizeFacetFilterMatches(item.sizes, state.sizes)) return false
   if (state.designs.length && !state.designs.some((d) => item.designs.includes(d))) return false
+  if (
+    !matchesPreviewWordmarkCatalogFilters(item, state.rectangularStyleOnly, state.brandNameKeys)
+  ) {
+    return false
+  }
   return true
 }
 
@@ -127,7 +134,10 @@ export function catalogFilterIsActive(state: CatalogFilterState, scope: 'all-mer
     base.designs.length > 0 ||
     base.minPriceCents != null ||
     base.maxPriceCents != null ||
-    base.sort !== 'featured'
+    base.sort !== 'featured' ||
+    !base.previewOverlays ||
+    base.rectangularStyleOnly ||
+    base.brandNameKeys.length > 0
   )
 }
 
@@ -157,6 +167,14 @@ export function parseCatalogFilterSearchParams(
   if (Number.isFinite(min) && min >= 0) state.minPriceCents = min
   if (Number.isFinite(max) && max >= 0) state.maxPriceCents = max
 
+  const preview = params.get('preview')
+  if (preview === '0' || preview === 'false') state.previewOverlays = false
+  if (preview === '1' || preview === 'true') state.previewOverlays = true
+
+  if (params.get('style') === 'rectangular') state.rectangularStyleOnly = true
+
+  state.brandNameKeys = splitCsv(params.get('name')).filter(isBrandNameKey)
+
   return state
 }
 
@@ -172,6 +190,9 @@ export function catalogFilterToSearchParams(state: CatalogFilterState, scope: 'a
   if (state.designs.length) q.set('design', state.designs.join(','))
   if (state.minPriceCents != null) q.set('min', String(state.minPriceCents))
   if (state.maxPriceCents != null) q.set('max', String(state.maxPriceCents))
+  if (!state.previewOverlays) q.set('preview', '0')
+  if (state.rectangularStyleOnly) q.set('style', 'rectangular')
+  if (state.brandNameKeys.length) q.set('name', state.brandNameKeys.join(','))
   return q
 }
 

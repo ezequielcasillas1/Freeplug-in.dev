@@ -1796,6 +1796,12 @@
         "back": "Volver al producto"
       },
       "indexCardAll": "Todos los productos en un solo lugar: la tienda de mercancía y la tienda completa.",
+      "wordmarkVariations": {
+        "heading": "Variaciones de wordmark",
+        "lead": "{count} tratamientos de vista previa en estilo rectangular Freeplug con seis nombres con F mayúscula (misma ortografía en rutas EN y ES).",
+        "darkGarments": "En prendas oscuras",
+        "lightGarments": "En prendas claras"
+      },
       "allMerch": {
         "heading": "Toda la mercancía",
         "lead": "Todos los productos Freeplug en un solo lugar: {count} artículos entre la tienda de mercancía y la tienda.",
@@ -1843,6 +1849,22 @@
           "priceAsc": "Precio: menor a mayor",
           "priceDesc": "Precio: mayor a menor",
           "nameAsc": "Nombre: A–Z"
+        },
+        "previewWordmark": {
+          "title": "Vista previa del nombre",
+          "showOnPhotos": "Mostrar vista previa del nombre en las fotos del producto",
+          "hideOnPhotos": "Ocultar vista previa del nombre en las fotos del producto",
+          "rectangularStyleTitle": "Estilo de playera",
+          "rectangularStyle": "Estilo rectangular Freeplug",
+          "brandNameTitle": "Nombre en la vista previa",
+          "brandNames": {
+            "freeplug-in-dev": "Freeplug-in.dev",
+            "freeplug": "Freeplug",
+            "freeplugin": "Freeplugin",
+            "freeplug-dev": "Freeplug.dev",
+            "freeplug-in": "Freeplug.in",
+            "fplgn": "FPLGN"
+          }
         },
         "categoryTab": {
           "apparel": "Ropa",
