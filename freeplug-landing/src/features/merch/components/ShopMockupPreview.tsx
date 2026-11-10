@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { CatalogPreviewWordmarkOverlay } from '@/features/merch/components/CatalogPreviewWordmarkOverlay'
+import { MerchMockupArtboard } from '@/features/merch/components/MerchMockupArtboard'
 import {
   garmentLogoVariant,
   isShopGarmentLogoPath,
@@ -39,22 +40,27 @@ export function ShopMockupPreview({
   const widthPct = `${placement.scale * 55 * Math.min(1.25, Math.max(0.75, aspect))}%`
   const remoteProduct = /^https?:\/\//i.test(productSrc)
 
+  const productImage = remoteProduct ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={productSrc} alt={alt} className="h-full w-full object-contain" />
+  ) : (
+    <Image
+      src={productSrc}
+      alt={alt}
+      fill
+      unoptimized
+      className="object-contain"
+      sizes="(max-width: 768px) 100vw, 480px"
+    />
+  )
+
   return (
-    <div className={cn('relative w-full aspect-square rounded-2xl bg-zinc-100 overflow-hidden', className)}>
-      {remoteProduct ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={productSrc} alt={alt} className="absolute inset-0 w-full h-full object-contain" />
-      ) : (
-        <Image
-          src={productSrc}
-          alt={alt}
-          fill
-          unoptimized
-          className="object-contain"
-          sizes="(max-width: 768px) 100vw, 480px"
-        />
-      )}
-      {previewWordmark ? <CatalogPreviewWordmarkOverlay config={previewWordmark} /> : null}
+    <div className={cn('relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-100', className)}>
+      <MerchMockupArtboard
+        className="absolute inset-0"
+        image={remoteProduct ? productImage : <div className="relative h-full w-full">{productImage}</div>}
+        overlay={previewWordmark ? <CatalogPreviewWordmarkOverlay config={previewWordmark} /> : undefined}
+      />
       {vectorGarmentLogo && logoSrc && garmentVariationId ? (
         <div
           className="pointer-events-none absolute"

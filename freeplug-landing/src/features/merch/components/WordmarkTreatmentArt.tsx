@@ -163,8 +163,16 @@ export function WordmarkTreatmentArt({
     case 'wide-stretched':
       return (
         <g>
-          <Cover ink={ink} w={48} h={11} />
-          <text x={0} y={2} fill={c.fg} fontFamily={EXTENDED} fontSize={9.5} textAnchor="middle" letterSpacing="0.28em">
+          <Cover ink={ink} w={compact ? 42 : 48} h={11} />
+          <text
+            x={0}
+            y={2}
+            fill={c.fg}
+            fontFamily={EXTENDED}
+            fontSize={compact ? 7.5 : 9.5}
+            textAnchor="middle"
+            letterSpacing={compact ? '0.16em' : '0.28em'}
+          >
             {label.toUpperCase()}
           </text>
         </g>
@@ -184,8 +192,16 @@ export function WordmarkTreatmentArt({
     case 'double-strike':
       return (
         <g>
-          <Cover ink={ink} w={44} h={11} />
-          <text x={0} y={2} fill={c.fg} fontFamily={EXTENDED} fontSize={8} textAnchor="middle" letterSpacing="0.14em">
+          <Cover ink={ink} w={compact ? 40 : 44} h={11} />
+          <text
+            x={0}
+            y={2}
+            fill={c.fg}
+            fontFamily={EXTENDED}
+            fontSize={compact ? 6.5 : 8}
+            textAnchor="middle"
+            letterSpacing={compact ? '0.08em' : '0.14em'}
+          >
             {label.toUpperCase()}
           </text>
           <line x1={-20} y1={0} x2={20} y2={0} stroke={c.red} strokeWidth={0.5} opacity={0.85} />

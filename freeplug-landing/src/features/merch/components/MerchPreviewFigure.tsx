@@ -39,18 +39,27 @@ export function MerchPreviewFigure({
     : null
 
   return (
-    <figure className={cn('relative rounded-2xl border border-gray-200 bg-white overflow-hidden', className)}>
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        unoptimized
-        priority={priority}
-        sizes={sizes}
-        className="block w-full h-auto max-w-full object-contain"
-      />
-      {overlay ? <CatalogPreviewWordmarkOverlay config={overlay} /> : null}
+    <figure
+      data-testid="merch-shirt-mockup"
+      className={cn('overflow-hidden rounded-2xl border border-gray-200 bg-white', className)}
+    >
+      <div className="relative w-full">
+        <Image
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          unoptimized
+          priority={priority}
+          sizes={sizes}
+          className="block h-auto w-full max-w-full object-contain"
+        />
+        {overlay ? (
+          <div className="pointer-events-none absolute inset-0 z-[2]" aria-hidden>
+            <CatalogPreviewWordmarkOverlay config={overlay} />
+          </div>
+        ) : null}
+      </div>
     </figure>
   )
 }

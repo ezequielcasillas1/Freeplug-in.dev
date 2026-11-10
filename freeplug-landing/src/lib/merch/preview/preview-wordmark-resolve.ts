@@ -1,8 +1,10 @@
 import type { CatalogSource } from '@/lib/merch/catalog-filter-types'
 import { getSupremePreviewSpec, isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
+import { supremeBakedPrintMask, wordmarkScaleFromPlacement } from './preview-overlay-layout'
 import { inferProductTypeFromCatalog, placementForProductType, type PreviewPlacement } from './placement-defaults'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
+import type { BakedPrintMask } from './preview-overlay-layout'
 
 export type PreviewWordmarkMode = 'full' | 'skip'
 
@@ -11,6 +13,8 @@ export type ResolvedPreviewWordmark = {
   placement: PreviewPlacement
   blankKind: 'light' | 'dark'
   mode: PreviewWordmarkMode
+  /** Masks baked Printify chest type so overlays replace — not stack on — legacy art. */
+  bakedPrintMask?: BakedPrintMask
 }
 
 const DIGITAL_HREFS = new Set(['/merch/freeplug-font-bundle', '/merch/fonts-personal-use'])
@@ -67,16 +71,18 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
       const spec = getSupremePreviewSpec(input.slug)!
       const blank =
         input.garmentColor != null ? blankKindFromColor(input.garmentColor) : 'dark'
+      const placement: PreviewPlacement = {
+        top: spec.placement.top,
+        left: spec.placement.left,
+        width: spec.placement.width,
+        scale: wordmarkScaleFromPlacement(spec.placement),
+      }
       return {
         variationId: spec.variationId,
-        placement: {
-          top: spec.placement.top,
-          left: 0.5,
-          width: spec.placement.width,
-          scale: spec.placement.width * 2.65,
-        },
+        placement,
         blankKind: blank,
         mode: 'full',
+        bakedPrintMask: supremeBakedPrintMask(spec, blank),
       }
     }
     const idx = stableCatalogIndex(input.catalogKey)

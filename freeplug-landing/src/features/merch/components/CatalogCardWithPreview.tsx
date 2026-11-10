@@ -2,6 +2,7 @@
 
 import { CatalogCardImage } from '@/features/merch/components/CatalogCardImage'
 import { CatalogPreviewWordmarkOverlay } from '@/features/merch/components/CatalogPreviewWordmarkOverlay'
+import { MerchMockupArtboard } from '@/features/merch/components/MerchMockupArtboard'
 import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
 
@@ -29,9 +30,11 @@ export function CatalogCardWithPreview({
   })
 
   return (
-    <>
-      <CatalogCardImage src={item.image} sizes={sizes} />
-      {showOverlay && overlay ? <CatalogPreviewWordmarkOverlay config={overlay} /> : null}
-    </>
+    <MerchMockupArtboard
+      className="absolute inset-0"
+      contentInset="p-2"
+      image={<CatalogCardImage src={item.image} sizes={sizes} className="object-contain" />}
+      overlay={showOverlay && overlay ? <CatalogPreviewWordmarkOverlay config={overlay} /> : undefined}
+    />
   )
 }

@@ -38,6 +38,8 @@ describe('resolvePreviewWordmark', () => {
       garmentColor: 'Black',
     })
     expect(r?.variationId).toBe('v01-fpid-code-panel')
+    expect(r?.placement.left).toBe(0.31)
+    expect(r?.bakedPrintMask).toBeDefined()
   })
 
   it('covers shop physical items with stable variation ids', () => {

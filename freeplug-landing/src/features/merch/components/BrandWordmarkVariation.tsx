@@ -12,15 +12,24 @@ export function wordmarkInkForShirt(shirtColor: ShirtColor) {
 export function BrandWordmarkGraphic({
   variationId,
   shirtColor,
+  compact,
 }: {
   variationId: string
   shirtColor: ShirtColor
+  compact?: boolean
 }) {
   const def = getWordmarkVariation(variationId)
   if (!def) return null
   const blank = shirtColor === 'White' || shirtColor === 'Natural' ? 'light' : 'dark'
   const ink = wordmarkInkForBlank(blank)
-  return <WordmarkTreatmentArt treatment={def.treatment} nameKey={def.nameKey} ink={ink} />
+  return (
+    <WordmarkTreatmentArt
+      treatment={def.treatment}
+      nameKey={def.nameKey}
+      ink={ink}
+      compact={compact}
+    />
+  )
 }
 
 export function BrandWordmarkVariation({
