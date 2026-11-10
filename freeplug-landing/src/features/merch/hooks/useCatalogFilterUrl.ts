@@ -7,10 +7,10 @@ import {
   mergeCatalogFilterState,
   parseCatalogFilterSearchParams,
 } from '@/lib/merch/catalog-filter-logic'
-import type { CatalogFilterState } from '@/lib/merch/catalog-filter-types'
+import type { CatalogFilterScope, CatalogFilterState } from '@/lib/merch/catalog-filter-types'
 import { EMPTY_CATALOG_FILTER } from '@/lib/merch/catalog-filter-types'
 
-export function useCatalogFilterUrl(scope: 'all-merch' | 'shop') {
+export function useCatalogFilterUrl(scope: CatalogFilterScope) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()

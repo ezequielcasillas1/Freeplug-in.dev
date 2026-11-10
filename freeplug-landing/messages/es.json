@@ -1854,9 +1854,20 @@
           "title": "Vista previa del nombre",
           "showOnPhotos": "Mostrar vista previa del nombre en las fotos del producto",
           "hideOnPhotos": "Ocultar vista previa del nombre en las fotos del producto",
-          "rectangularStyleTitle": "Estilo de playera",
-          "rectangularStyle": "Estilo rectangular Freeplug",
-          "brandNameTitle": "Nombre en la vista previa",
+          "supremeLookTitle": "Estilo de logo",
+          "supremeLook": "Estilo Supreme",
+          "brandNameTitle": "Nombre",
+          "styleTitle": "Estilo",
+          "styles": {
+            "box": "Caja",
+            "outline": "Contorno",
+            "stacked": "Apilado",
+            "slanted": "Inclinado",
+            "stamp": "Sello",
+            "script": "Cursiva",
+            "wide": "Ancho",
+            "accent": "Acento"
+          },
           "brandNames": {
             "freeplug-in-dev": "Freeplug-in.dev",
             "freeplug": "Freeplug",

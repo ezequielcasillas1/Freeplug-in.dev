@@ -6,6 +6,8 @@ import { setTestLocale } from '../../../../test/intl-mock'
 import { CatalogFilterPanel } from './CatalogFilterPanel'
 import { EMPTY_CATALOG_FILTER, type CatalogFacets } from '@/lib/merch/catalog-filter-types'
 import { listCatalogProductTypeSlugs } from '@/lib/merch/catalog-product-types'
+import { BRAND_NAME_KEYS } from '@/lib/merch/preview/brand-names'
+import { WORDMARK_STYLE_GROUPS } from '@/lib/merch/preview/wordmark-style-groups'
 
 const baseFacets: CatalogFacets = {
   sources: { 'merch-store': 79, 't-shirts': 6, 'buyer-shop': 195 },
@@ -75,6 +77,36 @@ describe('CatalogFilterPanel i18n', () => {
     expect(screen.getByText('Tienda de mercancía')).toBeTruthy()
     expect(screen.getByText('Comprar ahora')).toBeTruthy()
     assertNoRawI18nKeys(container)
+  })
+
+  it('shows Supreme look and style facets when wordmark counts are provided', () => {
+    const brandNames = Object.fromEntries(BRAND_NAME_KEYS.map((k) => [k, 4])) as Record<(typeof BRAND_NAME_KEYS)[number], number>
+    const styles = Object.fromEntries(WORDMARK_STYLE_GROUPS.map((k) => [k, 10])) as Record<(typeof WORDMARK_STYLE_GROUPS)[number], number>
+  const { container } = render(
+      <CatalogFilterPanel
+        scope="shop"
+        panelFacets={baseFacets}
+        previewWordmarkFacets={{ brandNames, supremeLook: 120, styles }}
+        state={EMPTY_CATALOG_FILTER}
+        onChange={() => {}}
+        onClear={() => {}}
+      />
+    )
+    expect(screen.getByText('Supreme look')).toBeTruthy()
+    expect(screen.getByText('Box')).toBeTruthy()
+    assertNoRawI18nKeys(container)
+    setTestLocale('es')
+    render(
+      <CatalogFilterPanel
+        scope="shop"
+        panelFacets={baseFacets}
+        previewWordmarkFacets={{ brandNames, supremeLook: 120, styles }}
+        state={EMPTY_CATALOG_FILTER}
+        onChange={() => {}}
+        onClear={() => {}}
+      />
+    )
+    expect(screen.getByText('Estilo Supreme')).toBeTruthy()
   })
 
   it('has a human label in EN and ES for every catalog product type slug', () => {

@@ -1854,9 +1854,20 @@
           "title": "Name preview",
           "showOnPhotos": "Show name preview on product photos",
           "hideOnPhotos": "Hide name preview on product photos",
-          "rectangularStyleTitle": "T-shirt style",
-          "rectangularStyle": "Freeplug rectangular style",
-          "brandNameTitle": "Name on preview",
+          "supremeLookTitle": "Logo style",
+          "supremeLook": "Supreme look",
+          "brandNameTitle": "Name",
+          "styleTitle": "Style",
+          "styles": {
+            "box": "Box",
+            "outline": "Outline",
+            "stacked": "Stacked",
+            "slanted": "Slanted",
+            "stamp": "Stamp",
+            "script": "Script",
+            "wide": "Wide",
+            "accent": "Accent"
+          },
           "brandNames": {
             "freeplug-in-dev": "Freeplug-in.dev",
             "freeplug": "Freeplug",

@@ -8,15 +8,17 @@ import { CATALOG_SIZE_FACET_ONE_SIZE } from '@/lib/merch/catalog-size-facet'
 import { catalogFilterIsActive, facetKeysSorted } from '@/lib/merch/catalog-filter-logic'
 import type { CatalogFacets, CatalogFilterState, CatalogSource } from '@/lib/merch/catalog-filter-types'
 import type { CatalogAvailability, CatalogDesign } from '@/lib/merch/catalog-filter-types'
+import type { CatalogFilterScope } from '@/lib/merch/catalog-filter-types'
 import { BRAND_NAME_KEYS, type BrandNameKey } from '@/lib/merch/preview/brand-names'
 import type { PreviewWordmarkFacets } from '@/lib/merch/preview/preview-wordmark-filter'
+import { WORDMARK_STYLE_GROUPS, type WordmarkStyleGroup } from '@/lib/merch/preview/wordmark-style-groups'
 
 const SOURCE_ORDER: CatalogSource[] = ['merch-store', 't-shirts', 'buyer-shop']
 const AVAIL_ORDER: CatalogAvailability[] = ['buyable', 'coming-soon', 'missing-mockup']
 const DESIGN_ORDER: CatalogDesign[] = ['freeplug', 'custom']
 
 type Props = {
-  scope: 'all-merch' | 'shop'
+  scope: CatalogFilterScope
   panelFacets: CatalogFacets
   previewWordmarkFacets?: PreviewWordmarkFacets
   state: CatalogFilterState
@@ -39,6 +41,7 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
   }, [mobileOpen])
 
   const active = catalogFilterIsActive(state, scope)
+  const showCatalogFacets = scope === 'all-merch' || scope === 'shop'
 
   const productTypeKeys = facetKeysSorted(panelFacets.productTypes, 40)
   const colorKeys = facetKeysSorted(panelFacets.colors, 60).filter((k) => (panelFacets.colors[k] ?? 0) > 0)
@@ -46,7 +49,7 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
 
   const panel = (
     <div className="space-y-5 text-sm text-gray-700">
-      {scope === 'all-merch' ? (
+      {showCatalogFacets && scope === 'all-merch' ? (
         <FilterSection title={t('sourceTitle')}>
           <MultiCheck
             t={t}
@@ -61,6 +64,7 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
         </FilterSection>
       ) : null}
 
+      {showCatalogFacets ? (
       <FilterSection title={t('category')}>
         <MultiCheck
           t={t}
@@ -73,8 +77,9 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
           onToggle={(id) => toggleInList(state.categories, id as ShopTabSlug, (categories) => onChange({ ...state, categories }))}
         />
       </FilterSection>
+      ) : null}
 
-      {productTypeKeys.length > 0 ? (
+      {showCatalogFacets && productTypeKeys.length > 0 ? (
         <FilterSection title={t('productType')}>
           <MultiCheck
             t={t}
@@ -89,6 +94,7 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
         </FilterSection>
       ) : null}
 
+      {showCatalogFacets ? (
       <FilterSection title={t('availabilityTitle')}>
         <MultiCheck
           t={t}
@@ -103,7 +109,9 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
           }
         />
       </FilterSection>
+      ) : null}
 
+      {showCatalogFacets ? (
       <FilterSection title={t('price')}>
         <div className="grid grid-cols-2 gap-2">
           <label className="block">
@@ -144,8 +152,9 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
           </label>
         </div>
       </FilterSection>
+      ) : null}
 
-      {colorKeys.length > 0 ? (
+      {showCatalogFacets && colorKeys.length > 0 ? (
         <FilterSection title={t('colors')} defaultOpen>
           <MultiCheck
             t={t}
@@ -157,7 +166,7 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
         </FilterSection>
       ) : null}
 
-      {sizeKeys.length > 0 ? (
+      {showCatalogFacets && sizeKeys.length > 0 ? (
         <FilterSection title={t('sizes')} defaultOpen>
           <MultiCheck
             t={t}
@@ -173,6 +182,7 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
         </FilterSection>
       ) : null}
 
+      {showCatalogFacets ? (
       <FilterSection title={t('designTitle')}>
         <MultiCheck
           t={t}
@@ -185,6 +195,7 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
           onToggle={(id) => toggleInList(state.designs, id as CatalogDesign, (designs) => onChange({ ...state, designs }))}
         />
       </FilterSection>
+      ) : null}
 
       <FilterSection title={t('previewWordmark.title')} defaultOpen>
         <label className="flex items-start gap-2 cursor-pointer min-h-9 mb-3">
@@ -200,17 +211,17 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
         </label>
         {previewWordmarkFacets ? (
           <>
-            <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.rectangularStyleTitle')}</p>
+            <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.supremeLookTitle')}</p>
             <label className="flex items-start gap-2 cursor-pointer min-h-9 mb-3">
               <input
                 type="checkbox"
                 className="mt-1 shrink-0"
-                checked={state.rectangularStyleOnly}
-                onChange={() => onChange({ ...state, rectangularStyleOnly: !state.rectangularStyleOnly })}
+                checked={state.supremeLookOnly}
+                onChange={() => onChange({ ...state, supremeLookOnly: !state.supremeLookOnly })}
               />
               <span className="leading-snug break-words min-w-0">
-                {t('previewWordmark.rectangularStyle')}{' '}
-                <span className="text-gray-400 text-xs">({previewWordmarkFacets.rectangularStyle})</span>
+                {t('previewWordmark.supremeLook')}{' '}
+                <span className="text-gray-400 text-xs">({previewWordmarkFacets.supremeLook})</span>
               </span>
             </label>
             <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.brandNameTitle')}</p>
@@ -225,6 +236,21 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
               onToggle={(id) =>
                 toggleInList(state.brandNameKeys, id as BrandNameKey, (brandNameKeys) =>
                   onChange({ ...state, brandNameKeys })
+                )
+              }
+            />
+            <p className="text-xs font-semibold text-gray-800 mb-2 mt-3">{t('previewWordmark.styleTitle')}</p>
+            <MultiCheck
+              t={t}
+              options={WORDMARK_STYLE_GROUPS.map((id) => ({
+                id,
+                label: t(`previewWordmark.styles.${id}`),
+                count: previewWordmarkFacets.styles[id],
+              })).filter((o) => o.count > 0)}
+              selected={state.wordmarkStyleGroups}
+              onToggle={(id) =>
+                toggleInList(state.wordmarkStyleGroups, id as WordmarkStyleGroup, (wordmarkStyleGroups) =>
+                  onChange({ ...state, wordmarkStyleGroups })
                 )
               }
             />
