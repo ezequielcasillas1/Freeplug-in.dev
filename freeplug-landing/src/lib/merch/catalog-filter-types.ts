@@ -47,8 +47,8 @@ export type CatalogFilterState = {
   sort: CatalogSort
   /** When false, mockup name previews are hidden (`preview=0` in URL). */
   previewOverlays: boolean
-  /** Only items showing a Supreme-style name preview (`supreme=1` or legacy `style=rectangular`). */
-  supremeLookOnly: boolean
+  /** Only slogan tees 11–30 with rectangular-style name preview (`style=rectangular`). */
+  rectangularStyleOnly: boolean
   /** Filter by capital-F brand name on the preview (`name=` CSV). */
   brandNameKeys: BrandNameKey[]
   /** Treatment style groups (`wstyle=` CSV): box, outline, stacked, … */
@@ -67,7 +67,7 @@ export const EMPTY_CATALOG_FILTER: CatalogFilterState = {
   designs: [],
   sort: 'featured',
   previewOverlays: true,
-  supremeLookOnly: false,
+  rectangularStyleOnly: false,
   brandNameKeys: [],
   wordmarkStyleGroups: [],
 }

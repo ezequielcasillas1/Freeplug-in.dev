@@ -27,25 +27,26 @@ describe('catalog filter logic', () => {
     expect(back.get('sort')).toBe('price-asc')
   })
 
-  it('parses Supreme look, name, and style URL facets for sharing', () => {
+  it('parses rectangular style, name, and style URL facets for sharing', () => {
     const state = parseCatalogFilterSearchParams(
-      new URLSearchParams('preview=0&supreme=1&name=freeplug,fplgn&wstyle=box,stamp'),
+      new URLSearchParams('preview=0&style=rectangular&name=freeplug,fplgn&wstyle=box,stamp'),
       'shop'
     )
     expect(state.previewOverlays).toBe(false)
-    expect(state.supremeLookOnly).toBe(true)
+    expect(state.rectangularStyleOnly).toBe(true)
     expect(state.brandNameKeys).toEqual(['freeplug', 'fplgn'])
     expect(state.wordmarkStyleGroups).toEqual(['box', 'stamp'])
     const back = catalogFilterToSearchParams(state, 'shop')
     expect(back.get('preview')).toBe('0')
-    expect(back.get('supreme')).toBe('1')
+    expect(back.get('style')).toBe('rectangular')
+    expect(back.has('supreme')).toBe(false)
     expect(back.get('name')).toBe('freeplug,fplgn')
     expect(back.get('wstyle')).toBe('box,stamp')
   })
 
-  it('accepts legacy style=rectangular as supreme look', () => {
-    const state = parseCatalogFilterSearchParams(new URLSearchParams('style=rectangular'), 'all-merch')
-    expect(state.supremeLookOnly).toBe(true)
+  it('accepts legacy supreme=1 as rectangular style', () => {
+    const state = parseCatalogFilterSearchParams(new URLSearchParams('supreme=1'), 'all-merch')
+    expect(state.rectangularStyleOnly).toBe(true)
   })
 
   it('filters hats that are buyable now on the full catalog', () => {

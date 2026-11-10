@@ -1854,8 +1854,8 @@
           "title": "Vista previa del nombre",
           "showOnPhotos": "Mostrar vista previa del nombre en las fotos del producto",
           "hideOnPhotos": "Ocultar vista previa del nombre en las fotos del producto",
-          "supremeLookTitle": "Estilo de logo",
-          "supremeLook": "Estilo Supreme",
+          "rectangularStyleTitle": "Estilo de playera",
+          "rectangularStyle": "Estilo rectangular Freeplug",
           "brandNameTitle": "Nombre",
           "styleTitle": "Estilo",
           "styles": {

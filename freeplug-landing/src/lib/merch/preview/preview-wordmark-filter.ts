@@ -26,10 +26,6 @@ export function resolveInputFromCatalogItem(item: CatalogFilterItem): ResolvePre
   }
 }
 
-export function hasSupremeLookWordmark(item: CatalogFilterItem): boolean {
-  return resolvePreviewWordmark(resolveInputFromCatalogItem(item)) !== null
-}
-
 export function isRectangularStyleCatalogItem(item: CatalogFilterItem): boolean {
   if (item.source !== 't-shirts') return false
   return isSupremeStyleShirtSlug(catalogKeyToSlug(item.key))
@@ -52,11 +48,11 @@ export function previewStyleGroupForItem(item: CatalogFilterItem): WordmarkStyle
 
 export function matchesPreviewWordmarkCatalogFilters(
   item: CatalogFilterItem,
-  supremeLookOnly: boolean,
+  rectangularStyleOnly: boolean,
   brandNameKeys: BrandNameKey[],
   wordmarkStyleGroups: WordmarkStyleGroup[]
 ): boolean {
-  if (supremeLookOnly && !hasSupremeLookWordmark(item)) return false
+  if (rectangularStyleOnly && !isRectangularStyleCatalogItem(item)) return false
   if (brandNameKeys.length) {
     const key = previewBrandNameKeyForItem(item)
     if (!key || !brandNameKeys.includes(key)) return false
@@ -70,22 +66,22 @@ export function matchesPreviewWordmarkCatalogFilters(
 
 export type PreviewWordmarkFacets = {
   brandNames: Record<BrandNameKey, number>
-  supremeLook: number
+  rectangularStyle: number
   styles: Record<WordmarkStyleGroup, number>
 }
 
 export function computePreviewWordmarkFacets(items: CatalogFilterItem[]): PreviewWordmarkFacets {
   const brandNames = Object.fromEntries(BRAND_NAME_KEYS.map((k) => [k, 0])) as Record<BrandNameKey, number>
   const styles = Object.fromEntries(WORDMARK_STYLE_GROUPS.map((k) => [k, 0])) as Record<WordmarkStyleGroup, number>
-  let supremeLook = 0
+  let rectangularStyle = 0
   for (const item of items) {
-    if (hasSupremeLookWordmark(item)) supremeLook += 1
+    if (isRectangularStyleCatalogItem(item)) rectangularStyle += 1
     const nk = previewBrandNameKeyForItem(item)
     if (nk) brandNames[nk] += 1
     const sg = previewStyleGroupForItem(item)
     if (sg) styles[sg] += 1
   }
-  return { brandNames, supremeLook, styles }
+  return { brandNames, rectangularStyle, styles }
 }
 
 export function isBrandNameKey(v: string): v is BrandNameKey {

@@ -43,7 +43,7 @@ export function matchesCatalogFilter(item: CatalogFilterItem, state: CatalogFilt
   if (
     !matchesPreviewWordmarkCatalogFilters(
       item,
-      state.supremeLookOnly,
+      state.rectangularStyleOnly,
       state.brandNameKeys,
       state.wordmarkStyleGroups
     )
@@ -155,7 +155,7 @@ export function catalogFilterIsActive(state: CatalogFilterState, scope: CatalogF
     base.maxPriceCents != null ||
     base.sort !== 'featured' ||
     !base.previewOverlays ||
-    base.supremeLookOnly ||
+    base.rectangularStyleOnly ||
     base.brandNameKeys.length > 0 ||
     base.wordmarkStyleGroups.length > 0
   )
@@ -191,7 +191,9 @@ export function parseCatalogFilterSearchParams(
   if (preview === '0' || preview === 'false') state.previewOverlays = false
   if (preview === '1' || preview === 'true') state.previewOverlays = true
 
-  if (params.get('supreme') === '1' || params.get('style') === 'rectangular') state.supremeLookOnly = true
+  if (params.get('style') === 'rectangular' || params.get('supreme') === '1') {
+    state.rectangularStyleOnly = true
+  }
 
   state.brandNameKeys = splitCsv(params.get('name')).filter(isBrandNameKey)
   state.wordmarkStyleGroups = splitCsv(params.get('wstyle')).filter(isWordmarkStyleGroup)
@@ -212,7 +214,7 @@ export function catalogFilterToSearchParams(state: CatalogFilterState, scope: Ca
   if (state.minPriceCents != null) q.set('min', String(state.minPriceCents))
   if (state.maxPriceCents != null) q.set('max', String(state.maxPriceCents))
   if (!state.previewOverlays) q.set('preview', '0')
-  if (state.supremeLookOnly) q.set('supreme', '1')
+  if (state.rectangularStyleOnly) q.set('style', 'rectangular')
   if (state.brandNameKeys.length) q.set('name', state.brandNameKeys.join(','))
   if (state.wordmarkStyleGroups.length) q.set('wstyle', state.wordmarkStyleGroups.join(','))
   return q

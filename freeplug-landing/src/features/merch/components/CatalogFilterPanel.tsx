@@ -211,17 +211,17 @@ export function CatalogFilterPanel({ scope, panelFacets, previewWordmarkFacets, 
         </label>
         {previewWordmarkFacets ? (
           <>
-            <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.supremeLookTitle')}</p>
+            <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.rectangularStyleTitle')}</p>
             <label className="flex items-start gap-2 cursor-pointer min-h-9 mb-3">
               <input
                 type="checkbox"
                 className="mt-1 shrink-0"
-                checked={state.supremeLookOnly}
-                onChange={() => onChange({ ...state, supremeLookOnly: !state.supremeLookOnly })}
+                checked={state.rectangularStyleOnly}
+                onChange={() => onChange({ ...state, rectangularStyleOnly: !state.rectangularStyleOnly })}
               />
               <span className="leading-snug break-words min-w-0">
-                {t('previewWordmark.supremeLook')}{' '}
-                <span className="text-gray-400 text-xs">({previewWordmarkFacets.supremeLook})</span>
+                {t('previewWordmark.rectangularStyle')}{' '}
+                <span className="text-gray-400 text-xs">({previewWordmarkFacets.rectangularStyle})</span>
               </span>
             </label>
             <p className="text-xs font-semibold text-gray-800 mb-2">{t('previewWordmark.brandNameTitle')}</p>

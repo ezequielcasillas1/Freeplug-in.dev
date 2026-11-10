@@ -19,7 +19,7 @@ describe('preview wordmark catalog filters', () => {
   })
 
   it('filters supreme look only to items with a preview wordmark', () => {
-    const state = { ...EMPTY_CATALOG_FILTER, supremeLookOnly: true }
+    const state = { ...EMPTY_CATALOG_FILTER, rectangularStyleOnly: true }
     const out = applyCatalogFilters(all, state)
     expect(out.length).toBeGreaterThan(0)
     expect(out.every((item) => matchesPreviewWordmarkCatalogFilters(item, true, [], []))).toBe(true)

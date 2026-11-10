@@ -79,20 +79,20 @@ describe('CatalogFilterPanel i18n', () => {
     assertNoRawI18nKeys(container)
   })
 
-  it('shows Supreme look and style facets when wordmark counts are provided', () => {
+  it('shows rectangular style and style facets when wordmark counts are provided', () => {
     const brandNames = Object.fromEntries(BRAND_NAME_KEYS.map((k) => [k, 4])) as Record<(typeof BRAND_NAME_KEYS)[number], number>
     const styles = Object.fromEntries(WORDMARK_STYLE_GROUPS.map((k) => [k, 10])) as Record<(typeof WORDMARK_STYLE_GROUPS)[number], number>
   const { container } = render(
       <CatalogFilterPanel
         scope="shop"
         panelFacets={baseFacets}
-        previewWordmarkFacets={{ brandNames, supremeLook: 120, styles }}
+        previewWordmarkFacets={{ brandNames, rectangularStyle: 120, styles }}
         state={EMPTY_CATALOG_FILTER}
         onChange={() => {}}
         onClear={() => {}}
       />
     )
-    expect(screen.getByText('Supreme look')).toBeTruthy()
+    expect(screen.getByText('Freeplug rectangular style')).toBeTruthy()
     expect(screen.getByText('Box')).toBeTruthy()
     assertNoRawI18nKeys(container)
     setTestLocale('es')
@@ -100,13 +100,13 @@ describe('CatalogFilterPanel i18n', () => {
       <CatalogFilterPanel
         scope="shop"
         panelFacets={baseFacets}
-        previewWordmarkFacets={{ brandNames, supremeLook: 120, styles }}
+        previewWordmarkFacets={{ brandNames, rectangularStyle: 120, styles }}
         state={EMPTY_CATALOG_FILTER}
         onChange={() => {}}
         onClear={() => {}}
       />
     )
-    expect(screen.getByText('Estilo Supreme')).toBeTruthy()
+    expect(screen.getByText('Estilo rectangular Freeplug')).toBeTruthy()
   })
 
   it('has a human label in EN and ES for every catalog product type slug', () => {

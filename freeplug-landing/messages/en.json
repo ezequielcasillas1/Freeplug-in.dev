@@ -1854,8 +1854,8 @@
           "title": "Name preview",
           "showOnPhotos": "Show name preview on product photos",
           "hideOnPhotos": "Hide name preview on product photos",
-          "supremeLookTitle": "Logo style",
-          "supremeLook": "Supreme look",
+          "rectangularStyleTitle": "T-shirt style",
+          "rectangularStyle": "Freeplug rectangular style",
           "brandNameTitle": "Name",
           "styleTitle": "Style",
           "styles": {
