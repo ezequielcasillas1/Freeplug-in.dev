@@ -1,4 +1,6 @@
 import { normalizeSizeFacetKey, sizeFacetFilterMatches, uniqueSizeFacetKeys } from '@/lib/merch/catalog-size-facet'
+import { MERCH_LAYERS, type MerchLayer } from '@/lib/merch/layers/layers'
+import { sortFeaturedLayerRoundRobin } from '@/lib/merch/layers/layer-sort'
 import { SHOP_TABS, type ShopTabSlug } from '@/lib/merch/shop/types'
 import {
   EMPTY_CATALOG_FILTER,
@@ -34,6 +36,7 @@ export function matchesCatalogFilter(item: CatalogFilterItem, state: CatalogFilt
   }
   if (state.sizes.length && !sizeFacetFilterMatches(item.sizes, state.sizes)) return false
   if (state.designs.length && !state.designs.some((d) => item.designs.includes(d))) return false
+  if (state.layers.length && !state.layers.includes(item.layer)) return false
   return true
 }
 
@@ -46,7 +49,7 @@ export function sortCatalogItems(items: CatalogFilterItem[], sort: CatalogSort):
   } else if (sort === 'name-asc') {
     copy.sort((a, b) => a.sortName.localeCompare(b.sortName))
   } else {
-    copy.sort((a, b) => a.featuredRank - b.featuredRank || a.sortName.localeCompare(b.sortName))
+    return sortFeaturedLayerRoundRobin(copy)
   }
   return copy
 }
@@ -58,6 +61,7 @@ export function computePanelFacets(items: CatalogFilterItem[], state: CatalogFil
 }
 
 export function computeCatalogFacets(items: CatalogFilterItem[]): CatalogFacets {
+  const layers = Object.fromEntries(MERCH_LAYERS.map((l) => [l, 0])) as Record<MerchLayer, number>
   const sources = Object.fromEntries(ALL_SOURCES.map((s) => [s, 0])) as Record<CatalogSource, number>
   const categories = Object.fromEntries(SHOP_TABS.map((c) => [c, 0])) as Record<ShopTabSlug, number>
   const productTypes: Record<string, number> = {}
@@ -69,6 +73,7 @@ export function computeCatalogFacets(items: CatalogFilterItem[]): CatalogFacets 
   let priceMaxCents = 0
 
   for (const item of items) {
+    layers[item.layer] += 1
     if (item.source) sources[item.source] += 1
     categories[item.category] += 1
     if (item.productType) productTypes[item.productType] = (productTypes[item.productType] ?? 0) + 1
@@ -91,6 +96,7 @@ export function computeCatalogFacets(items: CatalogFilterItem[]): CatalogFacets 
   }
 
   return {
+    layers,
     sources,
     categories,
     productTypes,
@@ -125,6 +131,7 @@ export function catalogFilterIsActive(state: CatalogFilterState, scope: 'all-mer
     base.colors.length > 0 ||
     base.sizes.length > 0 ||
     base.designs.length > 0 ||
+    base.layers.length > 0 ||
     base.minPriceCents != null ||
     base.maxPriceCents != null ||
     base.sort !== 'featured'
@@ -151,6 +158,7 @@ export function parseCatalogFilterSearchParams(
   state.colors = splitCsv(params.get('col'))
   state.sizes = splitCsv(params.get('sz')).map(normalizeSizeFacetKey).filter(Boolean)
   state.designs = splitCsv(params.get('design')).filter(isDesign)
+  state.layers = splitCsv(params.get('layer')).filter(isLayer)
 
   const min = parseInt(params.get('min') ?? '', 10)
   const max = parseInt(params.get('max') ?? '', 10)
@@ -170,6 +178,7 @@ export function catalogFilterToSearchParams(state: CatalogFilterState, scope: 'a
   if (state.colors.length) q.set('col', state.colors.join(','))
   if (state.sizes.length) q.set('sz', state.sizes.join(','))
   if (state.designs.length) q.set('design', state.designs.join(','))
+  if (state.layers.length) q.set('layer', state.layers.join(','))
   if (state.minPriceCents != null) q.set('min', String(state.minPriceCents))
   if (state.maxPriceCents != null) q.set('max', String(state.maxPriceCents))
   return q
@@ -201,4 +210,8 @@ function isAvailability(v: string): v is CatalogAvailability {
 
 function isDesign(v: string): v is CatalogDesign {
   return (ALL_DESIGNS as readonly string[]).includes(v)
+}
+
+function isLayer(v: string): v is MerchLayer {
+  return (MERCH_LAYERS as readonly string[]).includes(v)
 }

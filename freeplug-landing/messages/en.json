@@ -936,8 +936,8 @@
     },
     "merch": {
       "meta": {
-        "indexTitle": "Merch & Fonts | Freeplug",
-        "indexDescription": "Shop Freeplug digital goods. Script, cursive logo, and bold display fonts for brands, websites, and shirts.",
+        "indexTitle": "Freeplug merch | Tees, collections & shop",
+        "indexDescription": "Shop Freeplug tees, merch collections, and print-on-demand blanks with the Freeplug logo or your art. Printed to order in the USA.",
         "productTitle": "Freeplug Font Bundle — Script, Cursive & Display Fonts | Freeplug",
         "productDescription": "12 styles: FP Extended (6), Freeplug Dispatch (3), and FP Cursive v2 (3). Cursive logo font, news-style display, extended type. $49.99 USD. Personal and client use.",
         "tshirtsTitle": "T-shirts | Freeplug Merch",
@@ -951,6 +951,11 @@
         "officialFonts": "Official fonts",
         "personalUse": "Free for personal use",
         "allMerch": "All merch",
+        "layers": {
+          "everyday": "Everyday",
+          "give": "Give",
+          "mind": "Mind"
+        },
         "shopAll": "Shop all",
         "collections": {
           "drinkware": "Drinkware",
@@ -1736,8 +1741,8 @@
         "aiDisclosure": "These typefaces were designed with the help of AI tools and refined by Freeplug."
       },
       "eyebrow": "Merch",
-      "heading": "Freeplug fonts",
-      "lead": "Own the typefaces behind the brand — script, cursive logo, and bold display styles for web and print.",
+      "heading": "Freeplug merch",
+      "lead": "Tees, collections, and 195+ shop blanks with the Freeplug logo or your artwork — plus official fonts. Printed to order in the USA.",
       "ctaProduct": "View the font bundle",
       "previewAlt": "FP Cursive compared to the Freeplug logo",
       "breadcrumbMerch": "Merch",
@@ -1796,6 +1801,33 @@
         "back": "Back to the product page"
       },
       "indexCardAll": "Every product in one place: the merch store and the full shop.",
+      "layers": {
+        "names": {
+          "everyday": "Everyday",
+          "give": "Give",
+          "mind": "Mind"
+        },
+        "everydayBlurb": "Worldly, fun, and everyday appeal — plug puns, Texas pride, Stay Charged.",
+        "giveBlurb": "Scripture about giving to the poor and needy, tied to Freeplug's mission.",
+        "mindBlurb": "Designs that engage the mind — illusions, puzzles, and double-read type.",
+        "otherLayersHeading": "More from the other layers",
+        "comingSoonTitle": "More designs coming soon",
+        "comingSoonBody": "We are adding more pieces to this layer. Browse all merch or explore the other layers in the meantime.",
+        "landing": {
+          "everyday": {
+            "title": "Everyday",
+            "lead": "Worldly, fun, and pride-of-place designs for daily wear — plug puns, San Marcos and Texas pride, Stay Charged, and the Freeplug mark."
+          },
+          "give": {
+            "title": "Give",
+            "lead": "KJV verses and artwork about giving to the poor and needy — aligned with Freeplug's mission to give to those in need."
+          },
+          "mind": {
+            "title": "Mind",
+            "lead": "Designs that draw you in — illusions, puzzles, double-read type, and focus cues."
+          }
+        }
+      },
       "allMerch": {
         "heading": "All merch",
         "lead": "Every Freeplug product in one place: {count} items across the merch store and the shop.",
@@ -1809,6 +1841,12 @@
         "closeFilters": "Close filters",
         "done": "Done",
         "clearAll": "Clear all",
+        "layerTitle": "Layer",
+        "layer": {
+          "everyday": "Everyday",
+          "give": "Give",
+          "mind": "Mind"
+        },
         "showingOf": "Showing {shown} of {total} ({all} total)",
         "showMoreOptions": "Show {count} more",
         "showLessOptions": "Show less",

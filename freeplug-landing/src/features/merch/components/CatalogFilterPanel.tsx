@@ -8,8 +8,10 @@ import { CATALOG_SIZE_FACET_ONE_SIZE } from '@/lib/merch/catalog-size-facet'
 import { catalogFilterIsActive, facetKeysSorted } from '@/lib/merch/catalog-filter-logic'
 import type { CatalogFacets, CatalogFilterState, CatalogSource } from '@/lib/merch/catalog-filter-types'
 import type { CatalogAvailability, CatalogDesign } from '@/lib/merch/catalog-filter-types'
+import { MERCH_LAYERS, type MerchLayer } from '@/lib/merch/layers/layers'
 
 const SOURCE_ORDER: CatalogSource[] = ['merch-store', 't-shirts', 'buyer-shop']
+const LAYER_ORDER: MerchLayer[] = [...MERCH_LAYERS]
 const AVAIL_ORDER: CatalogAvailability[] = ['buyable', 'coming-soon', 'missing-mockup']
 const DESIGN_ORDER: CatalogDesign[] = ['freeplug', 'custom']
 
@@ -19,9 +21,10 @@ type Props = {
   state: CatalogFilterState
   onChange: (next: CatalogFilterState) => void
   onClear: () => void
+  hideLayers?: boolean
 }
 
-export function CatalogFilterPanel({ scope, panelFacets, state, onChange, onClear }: Props) {
+export function CatalogFilterPanel({ scope, panelFacets, state, onChange, onClear, hideLayers }: Props) {
   const t = useTranslations('public.merch.catalogFilter')
   const drawerTitleId = useId()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -43,6 +46,21 @@ export function CatalogFilterPanel({ scope, panelFacets, state, onChange, onClea
 
   const panel = (
     <div className="space-y-5 text-sm text-gray-700">
+      {!hideLayers ? (
+        <FilterSection title={t('layerTitle')}>
+          <MultiCheck
+            t={t}
+            options={LAYER_ORDER.map((id) => ({
+              id,
+              label: t(`layer.${id}`),
+              count: panelFacets.layers[id],
+            })).filter((o) => o.count > 0)}
+            selected={state.layers}
+            onToggle={(id) => toggleInList(state.layers, id as MerchLayer, (layers) => onChange({ ...state, layers }))}
+          />
+        </FilterSection>
+      ) : null}
+
       {scope === 'all-merch' ? (
         <FilterSection title={t('sourceTitle')}>
           <MultiCheck

@@ -936,8 +936,8 @@
     },
     "merch": {
       "meta": {
-        "indexTitle": "Merch y fuentes | Freeplug",
-        "indexDescription": "Productos digitales Freeplug. Fuentes script, cursiva para logos y display en negrita para marcas, sitios y camisetas.",
+        "indexTitle": "Merch Freeplug | Camisetas, colecciones y tienda",
+        "indexDescription": "Camisetas, colecciones y más de 195 blanks con el logo Freeplug o tu arte. Impreso bajo pedido en EE. UU.",
         "productTitle": "Paquete de fuentes Freeplug — script, cursiva y display | Freeplug",
         "productDescription": "12 estilos: FP Extended (6), Freeplug Dispatch (3) y FP Cursive v2 (3). Fuente cursiva para logos, display estilo editorial y tipografía extendida. $49.99 USD. Uso personal y con clientes.",
         "tshirtsTitle": "Camisetas | Merch Freeplug",
@@ -951,6 +951,11 @@
         "officialFonts": "Fuentes oficiales",
         "personalUse": "Gratis para uso personal",
         "allMerch": "Toda la mercancía",
+        "layers": {
+          "everyday": "Día a día",
+          "give": "Dar",
+          "mind": "Mente"
+        },
         "shopAll": "Ver todo",
         "collections": {
           "drinkware": "Bebidas",
@@ -1736,8 +1741,8 @@
         "aiDisclosure": "Estas tipografías se diseñaron con ayuda de herramientas de IA y Freeplug las refinó."
       },
       "eyebrow": "Merch",
-      "heading": "Fuentes Freeplug",
-      "lead": "Las tipografías de la marca — script, cursiva de logo y display en negrita para web e impresión.",
+      "heading": "Merch Freeplug",
+      "lead": "Camisetas, colecciones y más de 195 blanks en la tienda con el logo Freeplug o tu arte — y fuentes oficiales. Impreso bajo pedido en EE. UU.",
       "ctaProduct": "Ver el paquete de fuentes",
       "previewAlt": "FP Cursive comparada con el logo Freeplug",
       "breadcrumbMerch": "Merch",
@@ -1796,6 +1801,33 @@
         "back": "Volver al producto"
       },
       "indexCardAll": "Todos los productos en un solo lugar: la tienda de mercancía y la tienda completa.",
+      "layers": {
+        "names": {
+          "everyday": "Día a día",
+          "give": "Dar",
+          "mind": "Mente"
+        },
+        "everydayBlurb": "Cercano, divertido y para el día a día: juegos de palabras con «plug», orgullo texano y Stay Charged.",
+        "giveBlurb": "Escritura sobre dar a los pobres y necesitados, ligada a la misión de Freeplug.",
+        "mindBlurb": "Diseños que activan la mente: ilusiones, rompecabezas y tipografía de doble lectura.",
+        "otherLayersHeading": "Más de las otras capas",
+        "comingSoonTitle": "Pronto habrá más diseños",
+        "comingSoonBody": "Estamos añadiendo más piezas a esta capa. Mientras tanto, explora toda la mercancía u otras capas.",
+        "landing": {
+          "everyday": {
+            "title": "Día a día",
+            "lead": "Diseños mundanos, divertidos y con orgullo local para el día a día: juegos de palabras, San Marcos y Texas, Stay Charged y la marca Freeplug."
+          },
+          "give": {
+            "title": "Dar",
+            "lead": "Versículos en KJV y arte sobre dar a los pobres y necesitados, alineado con la misión de Freeplug de ayudar a quienes lo necesitan."
+          },
+          "mind": {
+            "title": "Mente",
+            "lead": "Diseños que invitan a mirar dos veces: ilusiones, rompecabezas, tipografía de doble lectura y señales de enfoque."
+          }
+        }
+      },
       "allMerch": {
         "heading": "Toda la mercancía",
         "lead": "Todos los productos Freeplug en un solo lugar: {count} artículos entre la tienda de mercancía y la tienda.",
@@ -1809,6 +1841,12 @@
         "closeFilters": "Cerrar filtros",
         "done": "Listo",
         "clearAll": "Borrar todo",
+        "layerTitle": "Capa",
+        "layer": {
+          "everyday": "Día a día",
+          "give": "Dar",
+          "mind": "Mente"
+        },
         "showingOf": "Mostrando {shown} de {total} ({all} en total)",
         "showMoreOptions": "Ver {count} más",
         "showLessOptions": "Ver menos",

@@ -2,6 +2,7 @@ import { MERCH_COLLECTIONS, listPublicCollectionProducts, type MerchCollectionSl
 import { listPublicShirtProducts } from '@/lib/merch/shirts/catalog'
 import type { CatalogAvailability, CatalogDesign } from '@/lib/merch/catalog-filter-types'
 import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
+import { attachMerchLayer } from '@/lib/merch/layers/attach-layer'
 import { listShopFilterItems } from '@/lib/merch/shop/shop-filter-items'
 import type { ShopTabSlug } from '@/lib/merch/shop/types'
 
@@ -62,6 +63,7 @@ export function listAllMerchItems(): AllMerchItem[] {
     designs: MERCH_DESIGNS,
     comingSoonLabel: false,
     comingSoon: false,
+    layer: attachMerchLayer(`tshirts/${p.slug}`),
   }))
 
   const collections: AllMerchItem[] = MERCH_COLLECTIONS.flatMap((collection, ci) =>
@@ -86,6 +88,7 @@ export function listAllMerchItems(): AllMerchItem[] {
         designs: MERCH_DESIGNS,
         comingSoonLabel: false,
         comingSoon: false,
+        layer: attachMerchLayer(`${collection}/${p.slug}`),
       }
     })
   )

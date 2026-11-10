@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { getShopItem, listShopItems, shopHasPrintifyFreeplug } from '@/lib/merch/shop/catalog'
 import { ShopProductClient } from '@/features/merch/components/ShopProductClient'
 import { isMerchCheckoutEnabled } from '@/lib/merch/flags'
+import { attachMerchLayer } from '@/lib/merch/layers/attach-layer'
+import { pickOtherLayerMerchItems } from '@/lib/merch/layers/other-layer-picks'
 
 export const dynamic = 'force-static'
 
@@ -15,7 +17,15 @@ export default async function ShopProductPage({ params }: { params: Promise<{ sl
   if (!item) notFound()
   const checkoutEnabled = isMerchCheckoutEnabled()
   const hasPrintifyProduct = shopHasPrintifyFreeplug(slug)
+  const catalogKey = `shop/${slug}`
+  const layer = attachMerchLayer(catalogKey)
+  const otherLayerItems = pickOtherLayerMerchItems(catalogKey, layer)
   return (
-    <ShopProductClient item={item} checkoutEnabled={checkoutEnabled} hasPrintifyProduct={hasPrintifyProduct} />
+    <ShopProductClient
+      item={item}
+      checkoutEnabled={checkoutEnabled}
+      hasPrintifyProduct={hasPrintifyProduct}
+      otherLayerItems={otherLayerItems}
+    />
   )
 }

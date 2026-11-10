@@ -1,4 +1,5 @@
 /** Client-safe catalog filter types (no JSON catalog imports). */
+import type { MerchLayer } from '@/lib/merch/layers/layers'
 import type { ShopTabSlug } from '@/lib/merch/shop/types'
 
 export type CatalogSource = 'merch-store' | 't-shirts' | 'buyer-shop'
@@ -28,6 +29,7 @@ export type CatalogFilterItem = {
   availability: readonly CatalogAvailability[]
   designs: readonly CatalogDesign[]
   comingSoonLabel: boolean
+  layer: MerchLayer
 }
 
 export type CatalogFilterState = {
@@ -40,6 +42,7 @@ export type CatalogFilterState = {
   colors: string[]
   sizes: string[]
   designs: CatalogDesign[]
+  layers: MerchLayer[]
   sort: CatalogSort
 }
 
@@ -53,10 +56,12 @@ export const EMPTY_CATALOG_FILTER: CatalogFilterState = {
   colors: [],
   sizes: [],
   designs: [],
+  layers: [],
   sort: 'featured',
 }
 
 export type CatalogFacets = {
+  layers: Record<MerchLayer, number>
   sources: Record<CatalogSource, number>
   categories: Record<ShopTabSlug, number>
   productTypes: Record<string, number>

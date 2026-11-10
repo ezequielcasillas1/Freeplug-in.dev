@@ -21,15 +21,19 @@ import {
 } from '@/lib/merch/shop/variant-options'
 import { PRINTIFY_PRINT_AREA_DPI } from '@/lib/merch/shop/print-area'
 import { cn } from '@/lib/utils/cn'
+import { OtherLayersRow } from '@/features/merch/components/OtherLayersRow'
+import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
 
 export function ShopProductClient({
   item,
   checkoutEnabled,
   hasPrintifyProduct,
+  otherLayerItems = [],
 }: {
   item: ShopCatalogItem
   checkoutEnabled: boolean
   hasPrintifyProduct: boolean
+  otherLayerItems?: AllMerchItem[]
 }) {
   const t = useTranslations('public.merch.shop')
   const locale = toAppLocale(useLocale())
@@ -376,6 +380,7 @@ export function ShopProductClient({
               {designMode === 'freeplug' && !hasPrintifyProduct ? t('comingSoon') : t('buyCta')}
             </button>
           </div>
+          <OtherLayersRow items={otherLayerItems} />
         </div>
       </main>
     </MerchPageChrome>

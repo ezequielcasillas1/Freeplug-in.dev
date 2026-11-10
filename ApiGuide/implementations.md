@@ -1,3 +1,8 @@
+### 2026-11-09 - Merch layers Everyday / Give / Mind (preview)
+**Status:** SUCCESS
+**Files:** `src/lib/merch/layers/*`, layer landings, catalog filter `layer` param, `/merch` tiles, `OtherLayersRow`, `docs/MERCH-LAYER-ASSIGNMENTS.md`
+**Result:** Typed layer map on 280 SKUs, filter + featured round-robin, balance script; preview PR only (no deploy).
+
 ### 2026-11-09 - Shop catalog filter (preview)
 **Status:** SUCCESS
 **Files:** `catalog-filter-*.ts`, `CatalogFilterPanel.tsx`, `/merch/all`, `/shop`, `messages/en.json`, `messages/es.json`

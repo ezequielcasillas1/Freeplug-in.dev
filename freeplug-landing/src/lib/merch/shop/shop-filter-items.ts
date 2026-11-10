@@ -6,6 +6,7 @@ import {
 } from './printify-catalog'
 import { shopListingImageSrc } from './shop-listing-image'
 import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
+import { attachMerchLayer } from '@/lib/merch/layers/attach-layer'
 
 /** Build-time rows for /shop and /merch/all shop segment (195 items). */
 export function listShopFilterItems(): CatalogFilterItem[] {
@@ -37,6 +38,7 @@ export function listShopFilterItems(): CatalogFilterItem[] {
       availability,
       designs,
       comingSoonLabel: comingSoon,
+      layer: attachMerchLayer(`shop/${item.slug}`),
     }
   })
 }
