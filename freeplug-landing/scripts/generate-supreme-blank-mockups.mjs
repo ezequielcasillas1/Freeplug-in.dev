@@ -26,7 +26,7 @@ function bakedBoxPixels(spec, size) {
   const p = spec.placement
   const lines = spec.bakedLineCount ?? 2
   const w = Math.round(p.width * size * 1.06)
-  const h = Math.round(p.width * size * (0.34 * lines + 0.08))
+  const h = Math.round(p.width * size * (0.28 * lines + 0.04))
   const x = Math.round(p.left * size) - 4
   const y = Math.round(p.top * size - h / 2) - 4
   return { x: Math.max(0, x), y: Math.max(0, y), w: Math.min(size - x, w), h: Math.min(size - y, h) }
