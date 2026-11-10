@@ -1119,10 +1119,13 @@
           "30-world-good-trouble-fun": "Good Trouble Fun",
           "31-world-plugs-dont-work": "Plugs Don't Work Unless You Do",
           "32-world-watch-out-rockefeller": "Watch Out Rockefeller",
-          "patience-undefined": "Patience Undefined"
+          "patience-undefined": "Patience Undefined",
+          "33-world-work-for-you": "Work For You",
+          "34-world-let-your-work-beat-fantasies": "Let Your Work/Job Beat Fantasies"
         },
         "colorDesignNotes": {
-          "32-world-watch-out-rockefeller": "Color picks the design: Classic on White/Black, Bowler on Natural/Charcoal."
+          "32-world-watch-out-rockefeller": "Color picks the design: Classic on White/Black, Bowler on Natural/Charcoal.",
+          "34-world-let-your-work-beat-fantasies": "Color picks the wording: WORK on White/Black, JOB on Natural/Charcoal."
         },
         "productDescriptions": {
           "patience-undefined": "patience: undefined // Freeplug: solved."

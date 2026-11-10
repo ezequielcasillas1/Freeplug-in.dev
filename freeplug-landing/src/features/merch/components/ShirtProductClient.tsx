@@ -32,6 +32,13 @@ const SWATCH: Record<ShirtColor, string> = {
   White: '#ffffff',
 }
 
+const COLOR_DESIGN_NOTE_SLUGS = ['32-world-watch-out-rockefeller', '34-world-let-your-work-beat-fantasies'] as const
+type ColorDesignNoteSlug = (typeof COLOR_DESIGN_NOTE_SLUGS)[number]
+
+function isColorDesignNoteSlug(slug: string): slug is ColorDesignNoteSlug {
+  return (COLOR_DESIGN_NOTE_SLUGS as readonly string[]).includes(slug)
+}
+
 export function ShirtProductClient({
   product,
   checkoutEnabled,
@@ -57,8 +64,7 @@ export function ShirtProductClient({
   const unitCents = shirtPriceCents(entry, size)
   const shippingCents = shirtShippingCents(quantity)
   const title = t(`products.${product.titleKey}`)
-  const colorDesignNote =
-    product.slug === '32-world-watch-out-rockefeller' ? t('colorDesignNotes.32-world-watch-out-rockefeller') : null
+  const colorDesignNote = isColorDesignNoteSlug(product.slug) ? t(`colorDesignNotes.${product.slug}`) : null
   const productDescription = product.slug === 'patience-undefined' ? t('productDescriptions.patience-undefined') : null
 
   return (
