@@ -15,8 +15,8 @@ export type ResolvedPreviewWordmark = {
   mode: PreviewWordmarkMode
   /** SVG wordmark only — no large Cover panels (print-like on mockup). */
   printSurface?: boolean
-  /** Use JPEG with baked slogan painted out under public/merch/shirts. */
-  useBlankGarmentMockup?: boolean
+  /** Small chest badge on slogan tees — always render compact. */
+  chestBadge?: boolean
 }
 
 const DIGITAL_HREFS = new Set(['/merch/freeplug-font-bundle', '/merch/fonts-personal-use'])
@@ -83,7 +83,7 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
         blankKind: blank,
         mode: 'full',
         printSurface: true,
-        useBlankGarmentMockup: true,
+        chestBadge: true,
       }
     }
     const idx = stableCatalogIndex(input.catalogKey)

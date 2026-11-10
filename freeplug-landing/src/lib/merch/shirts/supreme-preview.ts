@@ -36,24 +36,41 @@ export function listSupremePreviewSpecs(): SupremePreviewSpec[] {
   return specs as SupremePreviewSpec[]
 }
 
-const WORDMARK_TOP_BY_SLUG: Partial<Record<string, number>> = {
-  '11-init-open-hand-give': 0.448,
-  '12-init-bridge-the-gap': 0.442,
-  '16-init-running-over': 0.446,
-  '18-init-charge-forward-care': 0.444,
-  '25-world-free-refills': 0.446,
-  '21-world-stay-charged': 0.45,
-  '28-world-taste-the-charge': 0.448,
+/** Normalized coords on 1200×1200 mockup; left = center x of badge (0–1). */
+const SLOGAN_TEE_CHEST_LEFT_DEFAULT: PreviewPlacement = {
+  left: 0.61,
+  top: 0.305,
+  width: 0.12,
 }
 
-/** Centered chest brand preview — separate from the baked slogan box coordinates. */
+/** Per-tee nudge (higher / more toward collar) when main art sits high on the chest. */
+const SLOGAN_TEE_CHEST_LEFT_BY_SLUG: Partial<Record<string, Partial<PreviewPlacement>>> = {
+  '11-init-open-hand-give': { top: 0.285, left: 0.6 },
+  '12-init-bridge-the-gap': { top: 0.288, left: 0.59 },
+  '14-init-plug-in-kindness': { top: 0.292, left: 0.61 },
+  '16-init-running-over': { top: 0.29, left: 0.605 },
+  '18-init-charge-forward-care': { top: 0.288, left: 0.608 },
+  '19-init-house-of-help': { top: 0.3, left: 0.615, width: 0.11 },
+  '21-world-stay-charged': { top: 0.282, left: 0.598 },
+  '24-world-day-one': { top: 0.286, left: 0.595, width: 0.11 },
+  '25-world-free-refills': { top: 0.284, left: 0.602 },
+  '26-world-senses-alive': { top: 0.278, left: 0.585, width: 0.11 },
+  '28-world-taste-the-charge': { top: 0.286, left: 0.608 },
+  '29-world-sound-on': { top: 0.284, width: 0.11 },
+}
+
+/**
+ * Slogan tees (11–30): small assigned treatment on the wearer's left chest — original artwork unchanged.
+ * `spec.placement` remains the baked slogan box (documentation only).
+ */
 export function supremeWordmarkPlacement(spec: SupremePreviewSpec): PreviewPlacement {
+  const patch = SLOGAN_TEE_CHEST_LEFT_BY_SLUG[spec.slug] ?? {}
   const def = getWordmarkVariation(spec.variationId)
-  const chestLeft = def?.treatment === 'chest-left-mini-box'
+  const compact = def?.treatment === 'wide-stretched' || def?.treatment === 'wide-tracking-caps'
   return {
-    left: chestLeft ? 0.44 : 0.5,
-    top: WORDMARK_TOP_BY_SLUG[spec.slug] ?? 0.452,
-    width: chestLeft ? 0.22 : 0.27,
+    ...SLOGAN_TEE_CHEST_LEFT_DEFAULT,
+    ...patch,
+    width: patch.width ?? (compact ? 0.11 : SLOGAN_TEE_CHEST_LEFT_DEFAULT.width),
   }
 }
 

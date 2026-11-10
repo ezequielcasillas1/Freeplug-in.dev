@@ -27,7 +27,7 @@ export function CatalogPreviewWordmarkOverlay({
   const scale = wordmarkScaleFromPlacement(placement)
   const def = getWordmarkVariation(config.variationId)
   const labelLen = def ? getBrandNameLabel(def.nameKey).length : 12
-  const compact = wordmarkUsesCompactLayout(placement.width, labelLen)
+  const compact = config.chestBadge === true || wordmarkUsesCompactLayout(placement.width, labelLen)
 
   const printSurface = config.printSurface === true
 

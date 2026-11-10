@@ -1,28 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { getSupremePreviewSpec } from '@/lib/merch/shirts/supreme-preview'
-import { supremeWordmarkPlacement } from '@/lib/merch/shirts/supreme-preview'
-import {
-  placementToSvgPoint,
-  wordmarkScaleFromPlacement,
-} from './preview-overlay-layout'
+import { getSupremePreviewSpec, supremeWordmarkPlacement } from '@/lib/merch/shirts/supreme-preview'
+import { placementToSvgPoint, wordmarkScaleFromPlacement } from './preview-overlay-layout'
 import { resolvePreviewWordmark } from './preview-wordmark-resolve'
 
 describe('preview overlay layout', () => {
-  it('centers supreme wordmarks on the chest', () => {
+  it('places slogan tee badges on wearers left upper chest', () => {
     const spec = getSupremePreviewSpec('11-init-open-hand-give')!
     const wp = supremeWordmarkPlacement(spec)
-    expect(wp.left).toBe(0.5)
-    const { cx } = placementToSvgPoint(wp)
-    expect(cx).toBe(50)
+    expect(wp.left).toBeGreaterThan(0.55)
+    expect(wp.top).toBeLessThan(0.33)
+    expect(wp.width).toBeGreaterThanOrEqual(0.1)
+    expect(wp.width).toBeLessThanOrEqual(0.13)
+    const { cx, cy } = placementToSvgPoint(wp)
+    expect(cx).toBeGreaterThan(55)
+    expect(cy).toBeLessThan(33)
   })
 
-  it('scales wordmarks to placement width without overshoot', () => {
-    const scale = wordmarkScaleFromPlacement({ width: 0.27 })
-    expect(scale).toBeLessThan(0.6)
-    expect(scale).toBeCloseTo(0.5625, 2)
+  it('scales small chest badges to ~12% shirt width', () => {
+    const scale = wordmarkScaleFromPlacement({ width: 0.12 })
+    expect(scale).toBeCloseTo(0.25, 2)
   })
 
-  it('uses blank garment mockup flag for init supreme tees', () => {
+  it('keeps original mockups for slogan tees with chestBadge overlay', () => {
     const r = resolvePreviewWordmark({
       source: 't-shirts',
       slug: '28-world-taste-the-charge',
@@ -31,8 +30,9 @@ describe('preview overlay layout', () => {
       catalogKey: 'tshirts/28-world-taste-the-charge',
       garmentColor: 'Black',
     })
-    expect(r?.placement.left).toBe(0.5)
+    expect(r?.placement.left).toBeGreaterThan(0.55)
+    expect(r?.chestBadge).toBe(true)
     expect(r?.printSurface).toBe(true)
-    expect(r?.useBlankGarmentMockup).toBe(true)
+    expect((r as { useBlankGarmentMockup?: boolean }).useBlankGarmentMockup).toBeUndefined()
   })
 })
