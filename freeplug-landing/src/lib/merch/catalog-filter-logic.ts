@@ -6,10 +6,16 @@ import {
   type CatalogDesign,
   type CatalogFacets,
   type CatalogFilterItem,
+  type CatalogFilterScope,
   type CatalogFilterState,
   type CatalogSort,
   type CatalogSource,
 } from './catalog-filter-types'
+import {
+  isBrandNameKey,
+  isWordmarkStyleGroup,
+  matchesPreviewWordmarkCatalogFilters,
+} from '@/lib/merch/preview/preview-wordmark-filter'
 
 const ALL_SOURCES: CatalogSource[] = ['merch-store', 't-shirts', 'buyer-shop']
 const ALL_AVAIL: CatalogAvailability[] = ['buyable', 'coming-soon', 'missing-mockup']
@@ -34,6 +40,16 @@ export function matchesCatalogFilter(item: CatalogFilterItem, state: CatalogFilt
   }
   if (state.sizes.length && !sizeFacetFilterMatches(item.sizes, state.sizes)) return false
   if (state.designs.length && !state.designs.some((d) => item.designs.includes(d))) return false
+  if (
+    !matchesPreviewWordmarkCatalogFilters(
+      item,
+      state.rectangularStyleOnly,
+      state.brandNameKeys,
+      state.wordmarkStyleGroups
+    )
+  ) {
+    return false
+  }
   return true
 }
 
@@ -112,10 +128,20 @@ export function facetKeysSorted(counts: Record<string, number>, limit = 80): str
     .map(([k]) => k)
 }
 
-export function catalogFilterIsActive(state: CatalogFilterState, scope: 'all-merch' | 'shop'): boolean {
+export function catalogFilterIsActive(state: CatalogFilterState, scope: CatalogFilterScope): boolean {
   const base = { ...state }
-  if (scope === 'shop') {
+  if (scope === 'shop' || scope === 't-shirts' || scope === 'collection') {
     base.sources = []
+  }
+  if (scope === 't-shirts' || scope === 'collection') {
+    base.categories = []
+    base.productTypes = []
+    base.availability = []
+    base.colors = []
+    base.sizes = []
+    base.designs = []
+    base.minPriceCents = null
+    base.maxPriceCents = null
   }
   return (
     base.sources.length > 0 ||
@@ -127,13 +153,17 @@ export function catalogFilterIsActive(state: CatalogFilterState, scope: 'all-mer
     base.designs.length > 0 ||
     base.minPriceCents != null ||
     base.maxPriceCents != null ||
-    base.sort !== 'featured'
+    base.sort !== 'featured' ||
+    !base.previewOverlays ||
+    base.rectangularStyleOnly ||
+    base.brandNameKeys.length > 0 ||
+    base.wordmarkStyleGroups.length > 0
   )
 }
 
 export function parseCatalogFilterSearchParams(
   params: URLSearchParams,
-  scope: 'all-merch' | 'shop'
+  scope: CatalogFilterScope
 ): CatalogFilterState {
   const state: CatalogFilterState = { ...EMPTY_CATALOG_FILTER, sort: 'featured' }
 
@@ -157,10 +187,21 @@ export function parseCatalogFilterSearchParams(
   if (Number.isFinite(min) && min >= 0) state.minPriceCents = min
   if (Number.isFinite(max) && max >= 0) state.maxPriceCents = max
 
+  const preview = params.get('preview')
+  if (preview === '0' || preview === 'false') state.previewOverlays = false
+  if (preview === '1' || preview === 'true') state.previewOverlays = true
+
+  if (params.get('style') === 'rectangular' || params.get('supreme') === '1') {
+    state.rectangularStyleOnly = true
+  }
+
+  state.brandNameKeys = splitCsv(params.get('name')).filter(isBrandNameKey)
+  state.wordmarkStyleGroups = splitCsv(params.get('wstyle')).filter(isWordmarkStyleGroup)
+
   return state
 }
 
-export function catalogFilterToSearchParams(state: CatalogFilterState, scope: 'all-merch' | 'shop'): URLSearchParams {
+export function catalogFilterToSearchParams(state: CatalogFilterState, scope: CatalogFilterScope): URLSearchParams {
   const q = new URLSearchParams()
   if (state.sort !== 'featured') q.set('sort', state.sort)
   if (scope === 'all-merch' && state.sources.length) q.set('src', state.sources.join(','))
@@ -172,6 +213,10 @@ export function catalogFilterToSearchParams(state: CatalogFilterState, scope: 'a
   if (state.designs.length) q.set('design', state.designs.join(','))
   if (state.minPriceCents != null) q.set('min', String(state.minPriceCents))
   if (state.maxPriceCents != null) q.set('max', String(state.maxPriceCents))
+  if (!state.previewOverlays) q.set('preview', '0')
+  if (state.rectangularStyleOnly) q.set('style', 'rectangular')
+  if (state.brandNameKeys.length) q.set('name', state.brandNameKeys.join(','))
+  if (state.wordmarkStyleGroups.length) q.set('wstyle', state.wordmarkStyleGroups.join(','))
   return q
 }
 

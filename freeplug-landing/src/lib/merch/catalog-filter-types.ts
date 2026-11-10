@@ -1,5 +1,9 @@
 /** Client-safe catalog filter types (no JSON catalog imports). */
+import type { BrandNameKey } from '@/lib/merch/preview/brand-names'
+import type { WordmarkStyleGroup } from '@/lib/merch/preview/wordmark-style-groups'
 import type { ShopTabSlug } from '@/lib/merch/shop/types'
+
+export type CatalogFilterScope = 'all-merch' | 'shop' | 't-shirts' | 'collection'
 
 export type CatalogSource = 'merch-store' | 't-shirts' | 'buyer-shop'
 
@@ -41,6 +45,14 @@ export type CatalogFilterState = {
   sizes: string[]
   designs: CatalogDesign[]
   sort: CatalogSort
+  /** When false, mockup name previews are hidden (`preview=0` in URL). */
+  previewOverlays: boolean
+  /** Only slogan tees 11–30 with rectangular-style name preview (`style=rectangular`). */
+  rectangularStyleOnly: boolean
+  /** Filter by capital-F brand name on the preview (`name=` CSV). */
+  brandNameKeys: BrandNameKey[]
+  /** Treatment style groups (`wstyle=` CSV): box, outline, stacked, … */
+  wordmarkStyleGroups: WordmarkStyleGroup[]
 }
 
 export const EMPTY_CATALOG_FILTER: CatalogFilterState = {
@@ -54,6 +66,10 @@ export const EMPTY_CATALOG_FILTER: CatalogFilterState = {
   sizes: [],
   designs: [],
   sort: 'featured',
+  previewOverlays: true,
+  rectangularStyleOnly: false,
+  brandNameKeys: [],
+  wordmarkStyleGroups: [],
 }
 
 export type CatalogFacets = {

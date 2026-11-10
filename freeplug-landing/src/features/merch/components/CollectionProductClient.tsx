@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
-import { MerchContainedImage } from '@/features/merch/components/MerchContainedImage'
+import { MerchPreviewFigure } from '@/features/merch/components/MerchPreviewFigure'
 import { MerchCollectionCheckoutButton } from '@/features/merch/components/MerchCollectionCheckoutButton'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
@@ -164,13 +164,21 @@ export function CollectionProductClient({
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 min-w-0">
               <motion.div variants={fadeInUp} className="min-w-0 order-1">
-                <MerchContainedImage
+                <MerchPreviewFigure
                   src={mockupSrc}
                   alt={t('mockupAlt', { title })}
                   width={1000}
                   height={1200}
                   priority
                   sizes="(max-width: 1024px) 100vw, 480px"
+                  preview={{
+                    source: 'merch-store',
+                    slug: product.slug,
+                    href: `/merch/${collection}/${product.slug}`,
+                    productType: collection,
+                    catalogKey: `${collection}/${product.slug}`,
+                    garmentColor: product.isCrewneck ? color : null,
+                  }}
                 />
               </motion.div>
 

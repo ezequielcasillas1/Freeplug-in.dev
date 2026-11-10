@@ -1,6 +1,6 @@
 'use client'
 
-import { CatalogCardImage } from '@/features/merch/components/CatalogCardImage'
+import { CatalogCardWithPreview } from '@/features/merch/components/CatalogCardWithPreview'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -10,6 +10,7 @@ import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { CatalogFilterPanel } from '@/features/merch/components/CatalogFilterPanel'
 import { useCatalogFilterUrl } from '@/features/merch/hooks/useCatalogFilterUrl'
 import { applyCatalogFilters, computePanelFacets, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
+import { computePreviewWordmarkFacets } from '@/lib/merch/preview/preview-wordmark-filter'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
 
@@ -28,6 +29,7 @@ export function AllMerchListClient({ items }: { items: AllMerchItem[] }) {
   const visible = filtered.slice(0, shown)
 
   const panelFacets = useMemo(() => computePanelFacets(items, state), [items, state])
+  const previewWordmarkFacets = useMemo(() => computePreviewWordmarkFacets(items), [items])
 
   return (
     <MerchPageChrome>
@@ -45,6 +47,7 @@ export function AllMerchListClient({ items }: { items: AllMerchItem[] }) {
             <CatalogFilterPanel
               scope="all-merch"
               panelFacets={panelFacets}
+              previewWordmarkFacets={previewWordmarkFacets}
               state={state}
               onChange={(next) => {
                 setState(next)
@@ -72,7 +75,11 @@ export function AllMerchListClient({ items }: { items: AllMerchItem[] }) {
                       >
                         <div className="aspect-square rounded-lg bg-zinc-100 mb-3 overflow-hidden relative">
                           {item.image ? (
-                            <CatalogCardImage src={item.image} sizes="(max-width: 1024px) 50vw, 260px" />
+                            <CatalogCardWithPreview
+                              item={item}
+                              sizes="(max-width: 1024px) 50vw, 260px"
+                              showOverlay={state.previewOverlays}
+                            />
                           ) : null}
                           {item.comingSoonLabel ? (
                             <span className="absolute top-2 left-2 rounded-full bg-gray-900/80 px-2.5 py-1 text-xs font-medium text-white">
