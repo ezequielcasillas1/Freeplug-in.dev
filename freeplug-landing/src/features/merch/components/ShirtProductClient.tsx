@@ -57,6 +57,9 @@ export function ShirtProductClient({
   const unitCents = shirtPriceCents(entry, size)
   const shippingCents = shirtShippingCents(quantity)
   const title = t(`products.${product.titleKey}`)
+  const colorDesignNote =
+    product.slug === '32-world-watch-out-rockefeller' ? t('colorDesignNotes.32-world-watch-out-rockefeller') : null
+  const productDescription = product.slug === 'patience-undefined' ? t('productDescriptions.patience-undefined') : null
 
   return (
     <MerchPageChrome>
@@ -75,6 +78,9 @@ export function ShirtProductClient({
 
             <motion.header variants={fadeInUp} className={`${MERCH_PAGE_TITLE_SCROLL_MT} mb-6 lg:mb-8 min-w-0`}>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{title}</h1>
+              {productDescription ? (
+                <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed break-words">{productDescription}</p>
+              ) : null}
               <p className="text-xl sm:text-2xl font-semibold text-[#ba3d3d] mt-2" aria-live="polite">
                 {formatUsdFromCents(unitCents)}
                 {quantity > 1 ? (
@@ -140,6 +146,9 @@ export function ShirtProductClient({
                       </button>
                     ))}
                   </div>
+                  {colorDesignNote ? (
+                    <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">{colorDesignNote}</p>
+                  ) : null}
                 </fieldset>
 
                 <fieldset className="min-w-0 border-0 p-0 m-0 w-full">

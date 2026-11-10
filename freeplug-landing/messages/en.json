@@ -1116,7 +1116,16 @@
           "27-world-pride-pulse": "Pride Pulse",
           "28-world-taste-the-charge": "Taste the Charge",
           "29-world-sound-on": "Sound On",
-          "30-world-good-trouble-fun": "Good Trouble Fun"
+          "30-world-good-trouble-fun": "Good Trouble Fun",
+          "31-world-plugs-dont-work": "Plugs Don't Work Unless You Do",
+          "32-world-watch-out-rockefeller": "Watch Out Rockefeller",
+          "patience-undefined": "Patience Undefined"
+        },
+        "colorDesignNotes": {
+          "32-world-watch-out-rockefeller": "Color picks the design: Classic on White/Black, Bowler on Natural/Charcoal."
+        },
+        "productDescriptions": {
+          "patience-undefined": "patience: undefined // Freeplug: solved."
         }
       },
       "collections": {
