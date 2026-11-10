@@ -1,6 +1,11 @@
 'use client'
 
 import Image from 'next/image'
+import {
+  garmentLogoVariant,
+  isShopGarmentLogoPath,
+  ShopGarmentWordmark,
+} from '@/features/merch/components/ShopGarmentWordmark'
 import type { ShopPrintArea } from '@/lib/merch/shop/types'
 import { cn } from '@/lib/utils/cn'
 
@@ -21,7 +26,8 @@ export function ShopMockupPreview({
   alt: string
   className?: string
 }) {
-  const overlaySrc = customSrc || logoSrc
+  const vectorGarmentLogo = isShopGarmentLogoPath(logoSrc) && !customSrc
+  const overlaySrc = customSrc || (vectorGarmentLogo ? null : logoSrc)
   const aspect = printArea && printArea.height > 0 ? printArea.width / printArea.height : 1
   const widthPct = `${placement.scale * 55 * Math.min(1.25, Math.max(0.75, aspect))}%`
   const remoteProduct = /^https?:\/\//i.test(productSrc)
@@ -41,6 +47,22 @@ export function ShopMockupPreview({
           sizes="(max-width: 768px) 100vw, 480px"
         />
       )}
+      {vectorGarmentLogo && logoSrc ? (
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            left: `${placement.x * 100}%`,
+            top: `${placement.y * 100}%`,
+            width: widthPct,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <ShopGarmentWordmark
+            variant={garmentLogoVariant(logoSrc)}
+            className="block h-auto w-full [image-rendering:-webkit-optimize-contrast]"
+          />
+        </div>
+      ) : null}
       {overlaySrc ? (
         <div
           className="pointer-events-none absolute"
@@ -52,7 +74,12 @@ export function ShopMockupPreview({
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={overlaySrc} alt="" className="w-full h-auto drop-shadow-sm" />
+          <img
+            src={overlaySrc}
+            alt=""
+            className="h-auto w-full"
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
+          />
         </div>
       ) : null}
     </div>
