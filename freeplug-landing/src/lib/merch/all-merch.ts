@@ -1,5 +1,5 @@
 import { MERCH_COLLECTIONS, listPublicCollectionProducts, type MerchCollectionSlug } from '@/lib/merch/collections/catalog'
-import { listPublicShirtProducts } from '@/lib/merch/shirts/catalog'
+import { listPublicShirtProducts, shirtListCardFrontMockup } from '@/lib/merch/shirts/catalog'
 import type { CatalogAvailability, CatalogDesign } from '@/lib/merch/catalog-filter-types'
 import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
 import { listShopFilterItems } from '@/lib/merch/shop/shop-filter-items'
@@ -51,7 +51,7 @@ export function listAllMerchItems(): AllMerchItem[] {
     titleKey: `tshirts.products.${p.titleKey}`,
     title: p.slug,
     sortName: p.slug,
-    image: p.mockups['Black-front'] ?? p.mockups['White-front'] ?? '',
+    image: shirtListCardFrontMockup(p).src,
     fromPriceCents: p.fromPriceCents,
     featuredRank: i + 1,
     productType: 't-shirt',

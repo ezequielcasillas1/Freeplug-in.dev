@@ -1121,11 +1121,13 @@
           "32-world-watch-out-rockefeller": "Watch Out Rockefeller",
           "patience-undefined": "Patience Undefined",
           "33-world-work-for-you": "Work For You",
-          "34-world-let-your-work-beat-fantasies": "Let Your Work/Job Beat Fantasies"
+          "34-world-let-your-work-beat-fantasies": "Let Your Work/Job Beat Fantasies",
+          "35-world-straight-after-the-freeplug": "Straight After The Freeplug. After All."
         },
         "colorDesignNotes": {
           "32-world-watch-out-rockefeller": "Color picks the design: Classic on White/Black, Bowler on Natural/Charcoal.",
-          "34-world-let-your-work-beat-fantasies": "Color picks the wording: WORK on White/Black, JOB on Natural/Charcoal."
+          "34-world-let-your-work-beat-fantasies": "Color picks the wording: WORK on White/Black, JOB on Natural/Charcoal.",
+          "35-world-straight-after-the-freeplug": "Color picks the mark: curly Fp on White/Black, letter FP on Natural/Charcoal."
         },
         "productDescriptions": {
           "patience-undefined": "patience: undefined // Freeplug: solved."

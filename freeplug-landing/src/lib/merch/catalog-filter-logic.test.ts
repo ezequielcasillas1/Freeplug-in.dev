@@ -75,10 +75,10 @@ describe('catalog filter logic', () => {
     const facets = computeCatalogFacets(all)
     expect(facets.total).toBe(all.length)
     expect(facets.sources['buyer-shop']).toBe(195)
-    expect(facets.sources['t-shirts']).toBe(41)
+    expect(facets.sources['t-shirts']).toBe(42)
     expect(facets.sources['merch-store']).toBe(79)
     expect(facets.availability['coming-soon']).toBe(6)
-    expect(facets.availability['buyable']).toBe(309)
+    expect(facets.availability['buyable']).toBe(310)
   })
 
   it('does not tag coming-soon shop items as buyable', () => {
