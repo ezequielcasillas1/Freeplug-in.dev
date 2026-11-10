@@ -29,7 +29,7 @@ export function CatalogPreviewWordmarkOverlay({
   const labelLen = def ? getBrandNameLabel(def.nameKey).length : 12
   const compact = wordmarkUsesCompactLayout(placement.width, labelLen)
 
-  const mask = config.bakedPrintMask
+  const printSurface = config.printSurface === true
 
   return (
     <svg
@@ -38,18 +38,13 @@ export function CatalogPreviewWordmarkOverlay({
       preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >
-      {mask ? (
-        <rect
-          x={(mask.left - mask.width / 2) * MOCKUP_NORMALIZED_SIZE}
-          y={(mask.top - mask.height / 2) * MOCKUP_NORMALIZED_SIZE}
-          width={mask.width * MOCKUP_NORMALIZED_SIZE}
-          height={mask.height * MOCKUP_NORMALIZED_SIZE}
-          fill={mask.fill}
-          rx={mask.width * MOCKUP_NORMALIZED_SIZE * 0.04}
-        />
-      ) : null}
       <g transform={`translate(${cx} ${cy}) scale(${scale})`}>
-        <BrandWordmarkGraphic variationId={config.variationId} shirtColor={shirtColor} compact={compact} />
+        <BrandWordmarkGraphic
+          variationId={config.variationId}
+          shirtColor={shirtColor}
+          compact={compact}
+          surface={printSurface ? 'print' : 'contact'}
+        />
       </g>
     </svg>
   )

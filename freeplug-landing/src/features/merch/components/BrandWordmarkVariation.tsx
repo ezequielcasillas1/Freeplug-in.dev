@@ -13,10 +13,12 @@ export function BrandWordmarkGraphic({
   variationId,
   shirtColor,
   compact,
+  surface = 'contact',
 }: {
   variationId: string
   shirtColor: ShirtColor
   compact?: boolean
+  surface?: 'contact' | 'print'
 }) {
   const def = getWordmarkVariation(variationId)
   if (!def) return null
@@ -28,6 +30,7 @@ export function BrandWordmarkGraphic({
       nameKey={def.nameKey}
       ink={ink}
       compact={compact}
+      surface={surface}
     />
   )
 }

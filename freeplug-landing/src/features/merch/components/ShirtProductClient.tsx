@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { ShirtMockupFigure } from '@/features/merch/components/ShirtMockupFigure'
@@ -87,16 +87,18 @@ export function ShirtProductClient({
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 min-w-0">
               <motion.div variants={fadeInUp} className="min-w-0 space-y-3 sm:space-y-4 order-1">
-                <ShirtMockupFigure
-                  slug={product.slug}
-                  src={mockupSrc}
-                  alt={t('mockupAlt', { title, color, view })}
-                  width={1000}
-                  height={1200}
-                  shirtColor={color}
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 480px"
-                />
+                <Suspense fallback={<div className="aspect-[5/6] w-full rounded-2xl border border-gray-200 bg-zinc-50" />}>
+                  <ShirtMockupFigure
+                    slug={product.slug}
+                    src={mockupSrc}
+                    alt={t('mockupAlt', { title, color, view })}
+                    width={1000}
+                    height={1200}
+                    shirtColor={color}
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 480px"
+                  />
+                </Suspense>
                 {canToggleBack ? (
                   <div className="flex w-full min-w-0 gap-2" role="group" aria-label={t('viewToggleAria')}>
                     {(['front', 'back'] as const).map((side) => (

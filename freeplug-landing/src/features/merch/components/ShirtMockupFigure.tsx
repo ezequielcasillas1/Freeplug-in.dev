@@ -1,5 +1,8 @@
 import { MerchPreviewFigure } from '@/features/merch/components/MerchPreviewFigure'
+import { usePreviewOverlaysEnabled } from '@/features/merch/hooks/usePreviewOverlaysEnabled'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
+import { isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
+import { shirtFrontMockupForPreview } from '@/lib/merch/shirts/supreme-blank-mockup'
 
 type ShirtMockupFigureProps = {
   slug: string
@@ -26,10 +29,15 @@ export function ShirtMockupFigure({
   sizes = '(max-width: 1024px) 100vw, 480px',
   showOverlay = true,
 }: ShirtMockupFigureProps) {
+  const previewOn = usePreviewOverlaysEnabled() && showOverlay
+  const useBlank = previewOn && isSupremeStyleShirtSlug(slug)
+  const resolvedSrc = useBlank
+    ? shirtFrontMockupForPreview(slug, shirtColor, { useBlankSupreme: true })
+    : src
   return (
     <MerchPreviewFigure
-      showOverlay={showOverlay}
-      src={src}
+      showOverlay={previewOn}
+      src={resolvedSrc}
       alt={alt}
       width={width}
       height={height}

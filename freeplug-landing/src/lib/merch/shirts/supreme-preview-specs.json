@@ -16,6 +16,7 @@
     "variationId": "v06-fp-red-cursive",
     "style": "boxed",
     "ink": "white-on-charcoal-box",
+    "bakedLineCount": 3,
     "placement": {
       "top": 0.532,
       "left": 0.345,

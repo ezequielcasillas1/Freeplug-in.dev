@@ -1,10 +1,10 @@
 import type { CatalogSource } from '@/lib/merch/catalog-filter-types'
 import { getSupremePreviewSpec, isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
-import { supremeBakedPrintMask, wordmarkScaleFromPlacement } from './preview-overlay-layout'
+import { supremeWordmarkPlacement } from '@/lib/merch/shirts/supreme-preview'
+import { wordmarkScaleFromPlacement } from './preview-overlay-layout'
 import { inferProductTypeFromCatalog, placementForProductType, type PreviewPlacement } from './placement-defaults'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
-import type { BakedPrintMask } from './preview-overlay-layout'
 
 export type PreviewWordmarkMode = 'full' | 'skip'
 
@@ -13,8 +13,10 @@ export type ResolvedPreviewWordmark = {
   placement: PreviewPlacement
   blankKind: 'light' | 'dark'
   mode: PreviewWordmarkMode
-  /** Masks baked Printify chest type so overlays replace — not stack on — legacy art. */
-  bakedPrintMask?: BakedPrintMask
+  /** SVG wordmark only — no large Cover panels (print-like on mockup). */
+  printSurface?: boolean
+  /** Use JPEG with baked slogan painted out under public/merch/shirts. */
+  useBlankGarmentMockup?: boolean
 }
 
 const DIGITAL_HREFS = new Set(['/merch/freeplug-font-bundle', '/merch/fonts-personal-use'])
@@ -71,18 +73,17 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
       const spec = getSupremePreviewSpec(input.slug)!
       const blank =
         input.garmentColor != null ? blankKindFromColor(input.garmentColor) : 'dark'
-      const placement: PreviewPlacement = {
-        top: spec.placement.top,
-        left: spec.placement.left,
-        width: spec.placement.width,
-        scale: wordmarkScaleFromPlacement(spec.placement),
-      }
+      const placement = supremeWordmarkPlacement(spec)
       return {
         variationId: spec.variationId,
-        placement,
+        placement: {
+          ...placement,
+          scale: wordmarkScaleFromPlacement(placement),
+        },
         blankKind: blank,
         mode: 'full',
-        bakedPrintMask: supremeBakedPrintMask(spec, blank),
+        printSurface: true,
+        useBlankGarmentMockup: true,
       }
     }
     const idx = stableCatalogIndex(input.catalogKey)
