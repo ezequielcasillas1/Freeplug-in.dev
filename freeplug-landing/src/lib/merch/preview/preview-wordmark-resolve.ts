@@ -2,6 +2,12 @@ import type { CatalogSource } from '@/lib/merch/catalog-filter-types'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
 import { catalogShirtSkipsPreviewWordmarkOverlay, isPlainCatalogGarment } from './preview-overlay-eligibility'
 import { inferProductTypeFromCatalog, placementForProductType, type PreviewPlacement } from './placement-defaults'
+import {
+  DEFAULT_BUYER_WORDMARK_BRAND,
+  parseBuyerWordmarkBrand,
+  type BuyerWordmarkBrandKey,
+} from './buyer-wordmark-brand'
+import { variationIdForBuyerWordmarkBrand } from './buyer-wordmark-variation'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
 
 export type PreviewWordmarkMode = 'full' | 'skip'
@@ -59,6 +65,8 @@ export type ResolvePreviewWordmarkInput = {
   /** Stable list key (`tshirts/foo`, `shop/bar`, `drinkware/baz`) */
   catalogKey: string
   garmentColor?: string | null
+  /** When set, preview uses the buyer-selected brand (four plain-garment options). */
+  buyerWordmarkBrand?: BuyerWordmarkBrandKey | null
 }
 
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
@@ -68,13 +76,18 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
   }
 
   if (isPlainCatalogGarment(input.source)) {
-    const idx = stableCatalogIndex(input.catalogKey)
     const productType = inferProductTypeFromCatalog(input.slug, input.productType, input.catalogKey)
+    const buyerBrand = input.buyerWordmarkBrand ?? DEFAULT_BUYER_WORDMARK_BRAND
+    const variationId =
+      input.buyerWordmarkBrand != null
+        ? variationIdForBuyerWordmarkBrand(parseBuyerWordmarkBrand(buyerBrand))
+        : variationIdForStableIndex(stableCatalogIndex(input.catalogKey) + 7)
     return {
-      variationId: variationIdForStableIndex(idx + 7),
+      variationId,
       placement: placementForProductType(productType),
       blankKind: input.garmentColor ? blankKindFromColor(input.garmentColor) : 'dark',
       mode: 'full',
+      printSurface: input.buyerWordmarkBrand != null,
     }
   }
 

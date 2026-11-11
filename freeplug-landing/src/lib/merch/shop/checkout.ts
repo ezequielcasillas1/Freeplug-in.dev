@@ -87,6 +87,7 @@ export function buildMerchShopSessionParams(
       shop_moderation_detail: '',
       rights_accepted_at: line.designMode === 'custom' ? new Date().toISOString() : '',
       rights_accepted_locale: line.rightsAcceptedLocale ?? '',
+      merch_wordmark_brand: line.buyerWordmarkBrand ?? '',
     },
     payment_intent_data: {
       metadata: {

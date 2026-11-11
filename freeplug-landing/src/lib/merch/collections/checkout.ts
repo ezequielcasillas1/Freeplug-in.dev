@@ -75,6 +75,7 @@ export function buildMerchCollectionSessionParams(
       merch_quantity: String(line.quantity),
       printify_product_id: line.printifyProductId,
       printify_variant_id: String(line.printifyVariantId),
+      merch_wordmark_brand: line.buyerWordmarkBrand,
     },
     payment_intent_data: {
       metadata: {

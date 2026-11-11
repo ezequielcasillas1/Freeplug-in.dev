@@ -6,6 +6,7 @@ import { MERCH_SHOP_FREE_SHIPPING_THRESHOLD_CENTS } from './types'
 import { verifyShopUploadToken } from './upload-token'
 import { customOrdersCapReached } from './daily-cap'
 import { isMerchCustomAutosendEnabled } from './flags-custom'
+import { parseBuyerWordmarkBrand, type BuyerWordmarkBrandKey } from '@/lib/merch/preview/buyer-wordmark-brand'
 
 type RawCatalog = { items: ShopCatalogItem[] }
 
@@ -80,6 +81,7 @@ export type ShopCheckoutLine = {
   uploadToken?: string
   moderationResult?: 'pass' | 'held'
   rightsAcceptedLocale?: string
+  buyerWordmarkBrand?: BuyerWordmarkBrandKey
 }
 
 type ValidateBody = {
@@ -92,6 +94,7 @@ type ValidateBody = {
   rights_confirmed?: unknown
   upload_token?: unknown
   rights_accepted_locale?: unknown
+  wordmark_brand?: unknown
 }
 
 export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: number): ValidatedShopLine {
@@ -155,6 +158,9 @@ export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: 
     }
   }
 
+  const buyerWordmarkBrand =
+    designMode === 'freeplug' ? parseBuyerWordmarkBrand(body.wordmark_brand) : undefined
+
   return {
     ok: true,
     line: {
@@ -163,6 +169,7 @@ export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: 
       quantity,
       unitAmountCents,
       designMode,
+      buyerWordmarkBrand,
       customUploadPath:
         designMode === 'custom' && typeof body.custom_upload_path === 'string'
           ? body.custom_upload_path.trim()

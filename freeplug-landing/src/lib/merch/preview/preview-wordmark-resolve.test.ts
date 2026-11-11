@@ -60,6 +60,19 @@ describe('resolvePreviewWordmark', () => {
     expect(WORDMARK_VARIATIONS.some((v) => v.id === r!.variationId)).toBe(true)
   })
 
+  it('uses buyer wordmark brand with print-surface preview', () => {
+    const r = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
+      href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      productType: 'sweatshirt',
+      catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      buyerWordmarkBrand: 'fplgn',
+    })
+    expect(r?.variationId).toBe('v25-fplgn-stamp')
+    expect(r?.printSurface).toBe(true)
+  })
+
   it('covers merch-store collection items', () => {
     const r = resolvePreviewWordmark({
       source: 'merch-store',

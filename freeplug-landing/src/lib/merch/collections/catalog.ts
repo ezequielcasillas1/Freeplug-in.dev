@@ -1,4 +1,5 @@
 import rawCatalog from './collections-catalog.json'
+import { parseBuyerWordmarkBrand, type BuyerWordmarkBrandKey } from '@/lib/merch/preview/buyer-wordmark-brand'
 import { collectionMerchandiseShippingCents, type MerchShippingClass } from './shipping'
 
 export const MERCH_COLLECTION_CHECKOUT_TYPE = 'merch_collection_product' as const
@@ -135,6 +136,7 @@ export type ValidatedCollectionLine = {
   shippingClass: MerchShippingClass
   printifyProductId: string
   printifyVariantId: number
+  buyerWordmarkBrand: BuyerWordmarkBrandKey
 }
 
 export function parseCrewneckSize(v: unknown): CrewneckSize | null {
@@ -152,6 +154,7 @@ export function validateCollectionCheckoutLine(input: {
   size?: unknown
   color?: unknown
   quantity: unknown
+  wordmark_brand?: unknown
 }): { ok: true; line: ValidatedCollectionLine } | { ok: false; error: string } {
   const collection =
     typeof input.collection === 'string' && (MERCH_COLLECTIONS as readonly string[]).includes(input.collection)
@@ -190,6 +193,8 @@ export function validateCollectionCheckoutLine(input: {
 
   const shippingClass = optionShippingClass(entry, option)
 
+  const buyerWordmarkBrand = parseBuyerWordmarkBrand(input.wordmark_brand)
+
   return {
     ok: true,
     line: {
@@ -197,6 +202,7 @@ export function validateCollectionCheckoutLine(input: {
       slug: entry.slug,
       title: entry.title,
       optionKey: option.key,
+      buyerWordmarkBrand,
       optionLabel: option.key,
       quantity,
       unitAmountCents: option.price_cents,

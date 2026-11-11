@@ -1042,7 +1042,9 @@
         "placementTitle": "Placement preview",
         "successHeading": "Order received",
         "successLead": "Thank you. Custom orders are reviewed by our team before production. We will email you when your order is approved.",
-        "successBack": "Back to this product"
+        "successBack": "Back to this product",
+        "wordmarkHeading": "Wordmark on print",
+        "wordmarkBakedNote": "This Printify product already includes a fixed Freeplug mark in the print file; your choice updates the site preview and order record."
       },
       "tshirts": {
         "heading": "T-shirts",
@@ -1159,6 +1161,8 @@
         "successHeading": "Order received",
         "successLead": "Thank you. We will send a confirmation email and tracking when your order ships.",
         "successBack": "Back to this product",
+        "wordmarkHeading": "Wordmark on print",
+        "wordmarkBakedNote": "This Printify product already includes a fixed Freeplug mark in the print file; your choice updates the site preview and order record.",
         "collectionTitles": {
           "drinkware": "Drinkware",
           "hats": "Hats",
