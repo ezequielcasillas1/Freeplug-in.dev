@@ -18,30 +18,32 @@ describe('preview wordmark catalog filters', () => {
     expect(styleGroupForTreatment('stacked-two-line')).toBe('stacked')
   })
 
-  it('filters rectangular style to plain garments that show a preview wordmark', () => {
+  it('rectangular style filter matches no items when designed products skip overlays', () => {
+    const facets = computePreviewWordmarkFacets(all)
+    expect(facets.rectangularStyle).toBe(0)
     const state = { ...EMPTY_CATALOG_FILTER, rectangularStyleOnly: true }
     const out = applyCatalogFilters(all, state)
-    expect(out.length).toBeGreaterThan(0)
-    expect(out.every((item) => matchesPreviewWordmarkCatalogFilters(item, true, [], []))).toBe(true)
-    expect(out.every((item) => item.source === 'buyer-shop' || item.source === 'merch-store')).toBe(true)
+    expect(out.length).toBe(0)
     const verse = all.find((i) => i.key === 'tshirts/07-verse-psalm-82-3')
     expect(verse).toBeDefined()
     expect(matchesPreviewWordmarkCatalogFilters(verse!, true, [], [])).toBe(false)
-    const slogan = all.find((i) => i.key === 'tshirts/11-init-open-hand-give')
-    expect(slogan).toBeDefined()
-    expect(matchesPreviewWordmarkCatalogFilters(slogan!, true, [], [])).toBe(false)
+    const shop = all.find((i) => i.source === 'buyer-shop')
+    expect(shop).toBeDefined()
+    expect(matchesPreviewWordmarkCatalogFilters(shop!, true, [], [])).toBe(false)
   })
 
-  it('filters by name and style facets', () => {
-    const sample = all.find((i) => previewStyleGroupForItem(i) === 'box')
-    expect(sample).toBeDefined()
-    expect(computePreviewWordmarkFacets(all).styles.box).toBeGreaterThan(0)
+  it('preview wordmark name and style facets are zero without plain-garment overlays', () => {
+    const facets = computePreviewWordmarkFacets(all)
+    expect(facets.rectangularStyle).toBe(0)
+    expect(Object.values(facets.brandNames).every((n) => n === 0)).toBe(true)
+    expect(Object.values(facets.styles).every((n) => n === 0)).toBe(true)
+    expect(previewStyleGroupForItem(all[0]!)).toBeNull()
     expect(
       applyCatalogFilters(all, {
         ...EMPTY_CATALOG_FILTER,
         brandNameKeys: ['freeplug'],
         wordmarkStyleGroups: ['box'],
       }).length
-    ).toBeGreaterThan(0)
+    ).toBe(0)
   })
 })
