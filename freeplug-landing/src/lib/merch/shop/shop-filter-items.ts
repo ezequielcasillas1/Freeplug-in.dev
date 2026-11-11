@@ -36,6 +36,8 @@ export function listShopFilterItems(): CatalogFilterItem[] {
       availability,
       designs,
       comingSoonLabel: comingSoon,
+      gallery: item.gallery,
+      galleryBlankKinds: item.galleryBlankKinds,
     }
   })
 }

@@ -1,33 +1,37 @@
 import { describe, expect, it } from 'vitest'
 import {
-  assumedShopGalleryLengthFromSrc,
-  blankKindForShopBlankSrc,
+  blankKindForGallerySlide,
   resolveShopPreviewBlankKind,
-  shopGalleryIndexForBlankKind,
+  shopGalleryIndexForColor,
 } from './shop-gallery-blank-kind'
+import type { ShopCatalogItem } from './types'
+
+const HOODIE_1979: Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'> = {
+  gallery: ['/merch/shop/blanks/1979-0.webp', '/merch/shop/blanks/1979-1.webp'],
+  galleryBlankKinds: ['dark', 'light'],
+}
 
 describe('shop gallery blank kind', () => {
-  it('maps two-slide blanks: index 0 light, index 1 dark', () => {
-    expect(blankKindForShopBlankSrc('/merch/shop/blanks/49-0.webp', 2)).toBe('light')
-    expect(blankKindForShopBlankSrc('/merch/shop/blanks/49-1.webp', 2)).toBe('dark')
+  it('maps per-product slide kinds from catalog analysis', () => {
+    expect(blankKindForGallerySlide(HOODIE_1979, 0)).toBe('dark')
+    expect(blankKindForGallerySlide(HOODIE_1979, 1)).toBe('light')
   })
 
-  it('syncs gallery index to blank kind', () => {
-    expect(shopGalleryIndexForBlankKind('light', 2)).toBe(0)
-    expect(shopGalleryIndexForBlankKind('dark', 2)).toBe(1)
+  it('selects dark slide for Black on hoodie 1979', () => {
+    const idx = shopGalleryIndexForColor(
+      { gallery: HOODIE_1979.gallery, galleryBlankKinds: HOODIE_1979.galleryBlankKinds } as ShopCatalogItem,
+      'Black'
+    )
+    expect(idx).toBe(0)
   })
 
-  it('prefers visible mockup over mismatched color label', () => {
+  it('inks from displayed slide, not color label alone', () => {
     const kind = resolveShopPreviewBlankKind({
-      garmentColor: 'Antique Cherry Red',
-      variantBlankKind: 'light',
-      displayImageSrc: '/merch/shop/blanks/49-0.webp',
-      galleryLength: 2,
+      item: HOODIE_1979,
+      garmentColor: 'Black',
+      displayImageSrc: '/merch/shop/blanks/1979-0.webp',
+      galleryIndex: 0,
     })
-    expect(kind).toBe('light')
-  })
-
-  it('infers multi-slide catalogs from grid image filename', () => {
-    expect(assumedShopGalleryLengthFromSrc('/merch/shop/blanks/175-1.webp')).toBe(2)
+    expect(kind).toBe('dark')
   })
 })

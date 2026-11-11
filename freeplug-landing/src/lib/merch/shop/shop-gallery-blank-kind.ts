@@ -9,39 +9,58 @@ export function shopBlankGalleryIndexFromSrc(src: string): number | null {
   return Number.isFinite(idx) ? idx : null
 }
 
-/**
- * Two-slide shop blanks are ingested as a light garment (index 0) and dark (index 1).
- * Single-slide products fall back to variant / color classification.
- */
-export function blankKindForShopGalleryIndex(galleryIndex: number, galleryLength: number): BlankKind | null {
-  if (galleryLength < 2) return null
-  if (galleryIndex <= 0) return 'light'
-  return 'dark'
+export function galleryIndexForSrc(
+  item: Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'>,
+  src: string | null | undefined
+): number {
+  if (!src) return 0
+  const idx = item.gallery.indexOf(src)
+  if (idx >= 0) return idx
+  const parsed = shopBlankGalleryIndexFromSrc(src)
+  return parsed ?? 0
 }
 
-export function blankKindForShopBlankSrc(src: string, galleryLength: number): BlankKind | null {
-  const idx = shopBlankGalleryIndexFromSrc(src)
-  if (idx == null) return null
-  return blankKindForShopGalleryIndex(idx, galleryLength)
+/** Blank garment kind for one gallery slide (from build-time image analysis). */
+export function blankKindForGallerySlide(
+  item: Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'>,
+  galleryIndex: number
+): BlankKind | null {
+  const kinds = item.galleryBlankKinds
+  if (!kinds?.length || galleryIndex < 0 || galleryIndex >= kinds.length) return null
+  return kinds[galleryIndex] ?? null
 }
 
-export function shopGalleryIndexForBlankKind(blankKind: BlankKind, galleryLength: number): number {
-  if (galleryLength < 2) return 0
-  return blankKind === 'dark' ? 1 : 0
+export function blankKindForShopBlankSrc(
+  item: Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'>,
+  src: string
+): BlankKind | null {
+  const idx = galleryIndexForSrc({ gallery: item.gallery, galleryBlankKinds: item.galleryBlankKinds }, src)
+  return blankKindForGallerySlide(item, idx)
 }
 
-/** Grid cards only ship one blank URL; infer slide count from the filename index. */
-export function assumedShopGalleryLengthFromSrc(src: string): number {
-  const idx = shopBlankGalleryIndexFromSrc(src)
-  if (idx == null) return 1
-  return Math.max(2, idx + 1)
+/** Pick the slide whose analyzed blank kind matches the target color (e.g. Black → dark hoodie photo). */
+export function shopGalleryIndexForColor(item: ShopCatalogItem, garmentColor: string | null | undefined): number {
+  const target = classifyBlankColor(garmentColor)
+  const kinds = item.galleryBlankKinds
+  if (kinds?.length) {
+    const exact = kinds.findIndex((k) => k === target)
+    if (exact >= 0) return exact
+    return 0
+  }
+  if (item.gallery.length < 2) return 0
+  return target === 'dark' ? 1 : 0
+}
+
+export function shopGalleryIndexForBlankKind(item: ShopCatalogItem, blankKind: BlankKind): number {
+  return shopGalleryIndexForColor(item, blankKind === 'dark' ? 'Black' : 'White')
 }
 
 const HERO_COLOR_PRIORITY = ['sand', 'natural', 'arctic white', 'white', 'ash', 'athletic heather']
 
-/** Prefer the garment shown in the hero blank; else first catalog color. */
+/** Prefer a catalog color that matches the hero slide's blank kind. */
 export function shopDefaultPreviewColor(item: ShopCatalogItem): string | null {
-  const heroKind = blankKindForShopBlankSrc(item.gridImage, item.gallery.length)
+  const heroIdx = galleryIndexForSrc(item, item.gridImage)
+  const heroKind = blankKindForGallerySlide(item, heroIdx) ?? blankKindForShopBlankSrc(item, item.gridImage)
   if (heroKind && item.colors.length) {
     for (const hint of HERO_COLOR_PRIORITY) {
       const hit = item.colors.find((c) => c.toLowerCase().includes(hint))
@@ -49,21 +68,34 @@ export function shopDefaultPreviewColor(item: ShopCatalogItem): string | null {
     }
     const match = item.variants.find((v) => v.color && v.blankKind === heroKind)
     if (match?.color) return match.color
+    const byClassify = item.colors.find((c) => classifyBlankColor(c) === heroKind)
+    if (byClassify) return byClassify
   }
   return item.colors[0] ?? item.variants[0]?.color ?? null
 }
 
 export function resolveShopPreviewBlankKind(opts: {
+  item?: Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'> | null
   garmentColor?: string | null
   variantBlankKind?: BlankKind | null
   displayImageSrc?: string | null
-  galleryLength?: number
+  galleryIndex?: number
 }): BlankKind {
-  const fromImage =
-    opts.displayImageSrc && (opts.galleryLength ?? 0) > 0
-      ? blankKindForShopBlankSrc(opts.displayImageSrc, opts.galleryLength!)
-      : null
-  if (fromImage) return fromImage
+  if (opts.item) {
+    if (opts.displayImageSrc) {
+      const fromSrc = blankKindForShopBlankSrc(opts.item, opts.displayImageSrc)
+      if (fromSrc) return fromSrc
+    }
+    if (opts.galleryIndex != null) {
+      const fromIdx = blankKindForGallerySlide(opts.item, opts.galleryIndex)
+      if (fromIdx) return fromIdx
+    }
+  }
   if (opts.variantBlankKind) return opts.variantBlankKind
   return classifyBlankColor(opts.garmentColor)
+}
+
+/** @deprecated Use `blankKindForShopBlankSrc(item, src)` */
+export function assumedShopGalleryLengthFromSrc(_src: string): number {
+  return 2
 }
