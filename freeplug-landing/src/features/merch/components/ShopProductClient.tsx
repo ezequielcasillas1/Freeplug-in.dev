@@ -21,7 +21,13 @@ import {
 } from '@/lib/merch/shop/variant-options'
 import { PRINTIFY_PRINT_AREA_DPI } from '@/lib/merch/shop/print-area'
 import { cn } from '@/lib/utils/cn'
+import { BuyerWordmarkPicker } from '@/features/merch/components/BuyerWordmarkPicker'
+import {
+  DEFAULT_BUYER_WORDMARK_BRAND,
+  type BuyerWordmarkBrandKey,
+} from '@/lib/merch/preview/buyer-wordmark-brand'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
+import { isWordmarkBakedInPrintify } from '@/lib/merch/preview/wordmark-baked-fulfillment'
 import { garmentWordmarkForShopSlug } from '@/lib/merch/shirts/garment-wordmark-for-shop'
 
 export function ShopProductClient({
@@ -45,6 +51,7 @@ export function ShopProductClient({
   const [galleryIndex, setGalleryIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [designMode, setDesignMode] = useState<'freeplug' | 'custom'>('freeplug')
+  const [wordmarkBrand, setWordmarkBrand] = useState<BuyerWordmarkBrandKey>(DEFAULT_BUYER_WORDMARK_BRAND)
   const [rightsConfirmed, setRightsConfirmed] = useState(false)
   const [customPreview, setCustomPreview] = useState<string | null>(null)
   const [customPath, setCustomPath] = useState<string | null>(null)
@@ -160,6 +167,7 @@ export function ShopProductClient({
         rights_confirmed: designMode === 'custom' ? rightsConfirmed : undefined,
         upload_token: designMode === 'custom' ? uploadToken : undefined,
         rights_accepted_locale: locale,
+        wordmark_brand: designMode === 'freeplug' ? wordmarkBrand : undefined,
       }),
     })
     const json = (await res.json().catch(() => null)) as { url?: string; error?: string } | null
@@ -184,9 +192,19 @@ export function ShopProductClient({
             productType: item.productType,
             catalogKey: `shop/${item.slug}`,
             garmentColor: color || null,
+            buyerWordmarkBrand: wordmarkBrand,
           })
         : null,
-    [color, designMode, item.productType, item.slug]
+    [color, designMode, item.productType, item.slug, wordmarkBrand]
+  )
+
+  const wordmarkBaked = useMemo(
+    () =>
+      isWordmarkBakedInPrintify({
+        catalogSource: 'buyer-shop',
+        slug: item.slug,
+      }),
+    [item.slug]
   )
 
   return (
@@ -268,6 +286,20 @@ export function ShopProductClient({
                 {customSoldOut ? t('customSoldOutToday') : t('designCustom')}
               </button>
             </div>
+
+            {designMode === 'freeplug' ? (
+              <div className="mb-6">
+                <BuyerWordmarkPicker
+                  value={wordmarkBrand}
+                  onChange={setWordmarkBrand}
+                  bakedInPrintify={wordmarkBaked}
+                  labels={{
+                    heading: t('wordmarkHeading'),
+                    bakedNote: t('wordmarkBakedNote'),
+                  }}
+                />
+              </div>
+            ) : null}
 
             {mode === 'color-size' || mode === 'color-only' ? (
               <label className="block text-sm text-gray-600 mb-3">

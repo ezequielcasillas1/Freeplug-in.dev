@@ -27,6 +27,11 @@ import {
 import { defaultSplitSelection, planSplitOptions, resolveSplitOptionKey } from '@/lib/merch/collections/option-groups'
 import { qualifiesForFreeCollectionShipping } from '@/lib/merch/collections/shipping'
 import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
+import { BuyerWordmarkPicker } from '@/features/merch/components/BuyerWordmarkPicker'
+import {
+  DEFAULT_BUYER_WORDMARK_BRAND,
+  type BuyerWordmarkBrandKey,
+} from '@/lib/merch/preview/buyer-wordmark-brand'
 import { cn } from '@/lib/utils/cn'
 
 const SWATCH: Record<CrewneckColor, string> = {
@@ -63,6 +68,7 @@ export function CollectionProductClient({
   const [color, setColor] = useState<CrewneckColor>('Black')
   const [size, setSize] = useState<CrewneckSize>('M')
   const [quantity, setQuantity] = useState(1)
+  const [wordmarkBrand, setWordmarkBrand] = useState<BuyerWordmarkBrandKey>(DEFAULT_BUYER_WORDMARK_BRAND)
 
   const splitDim2Values = useMemo(() => {
     if (!splitPlan) return []
@@ -178,6 +184,7 @@ export function CollectionProductClient({
                     productType: collection,
                     catalogKey: `${collection}/${product.slug}`,
                     garmentColor: product.isCrewneck ? color : null,
+                    buyerWordmarkBrand: wordmarkBrand,
                   }}
                 />
               </motion.div>
@@ -326,6 +333,16 @@ export function CollectionProductClient({
                   </div>
                 </fieldset>
 
+                <BuyerWordmarkPicker
+                  value={wordmarkBrand}
+                  onChange={setWordmarkBrand}
+                  bakedInPrintify
+                  labels={{
+                    heading: t('wordmarkHeading'),
+                    bakedNote: t('wordmarkBakedNote'),
+                  }}
+                />
+
                 <MerchCollectionCheckoutButton
                   collection={collection}
                   slug={product.slug}
@@ -333,6 +350,7 @@ export function CollectionProductClient({
                   size={product.isCrewneck ? size : undefined}
                   color={product.isCrewneck ? color : undefined}
                   quantity={quantity}
+                  wordmarkBrand={wordmarkBrand}
                   enabled={checkoutEnabled && Boolean(option)}
                   buyLabel={t('buyCta')}
                   comingSoonLabel={t('comingSoon')}

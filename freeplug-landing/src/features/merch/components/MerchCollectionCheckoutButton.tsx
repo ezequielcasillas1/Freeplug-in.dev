@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils/cn'
 import type { CrewneckColor, CrewneckSize, MerchCollectionSlug } from '@/lib/merch/collections/catalog'
+import type { BuyerWordmarkBrandKey } from '@/lib/merch/preview/buyer-wordmark-brand'
 
 type Props = {
   collection: MerchCollectionSlug
@@ -11,6 +12,7 @@ type Props = {
   size?: CrewneckSize
   color?: CrewneckColor
   quantity: number
+  wordmarkBrand: BuyerWordmarkBrandKey
   enabled: boolean
   buyLabel: string
   comingSoonLabel: string
@@ -25,6 +27,7 @@ export function MerchCollectionCheckoutButton({
   size,
   color,
   quantity,
+  wordmarkBrand,
   enabled,
   buyLabel,
   comingSoonLabel,
@@ -49,6 +52,7 @@ export function MerchCollectionCheckoutButton({
           size,
           color,
           quantity,
+          wordmark_brand: wordmarkBrand,
         }),
       })
       const data = (await res.json().catch(() => null)) as { url?: string; error?: string } | null

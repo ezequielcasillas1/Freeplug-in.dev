@@ -1042,7 +1042,9 @@
         "placementTitle": "Vista previa de colocación",
         "successHeading": "Pedido recibido",
         "successLead": "Gracias. Los pedidos personalizados los revisa nuestro equipo antes de producir. Te avisaremos por correo cuando se apruebe.",
-        "successBack": "Volver a este producto"
+        "successBack": "Volver a este producto",
+        "wordmarkHeading": "Marca en la impresión",
+        "wordmarkBakedNote": "Este producto de Printify ya incluye una marca Freeplug fija en el archivo de impresión; tu elección actualiza la vista previa del sitio y el registro del pedido."
       },
       "tshirts": {
         "heading": "Camisetas",
@@ -1159,6 +1161,8 @@
         "successHeading": "Pedido recibido",
         "successLead": "Gracias. Enviaremos un correo de confirmación y el rastreo cuando tu pedido salga.",
         "successBack": "Volver a este producto",
+        "wordmarkHeading": "Marca en la impresión",
+        "wordmarkBakedNote": "Este producto de Printify ya incluye una marca Freeplug fija en el archivo de impresión; tu elección actualiza la vista previa del sitio y el registro del pedido.",
         "collectionTitles": {
           "drinkware": "Bebidas",
           "hats": "Gorras",
