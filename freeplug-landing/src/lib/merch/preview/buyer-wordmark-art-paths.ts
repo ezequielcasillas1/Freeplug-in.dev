@@ -20,7 +20,9 @@ export const BUYER_WORDMARK_ART_LABEL: Record<BuyerWordmarkBrandKey, string> = {
 }
 
 /**
- * Ink rule: dark garments → light art (`on-dark`); light garments → dark art (`on-light`).
+ * Garment ink suffix on ingested PNGs:
+ * `on-light` = dark ink art (kit `*-dark.png`) on light garments;
+ * `on-dark`  = light ink art (kit `*-light.png`) on dark garments.
  */
 export function buyerWordmarkInkSuffix(blankKind: 'light' | 'dark'): 'on-light' | 'on-dark' {
   return blankKind === 'light' ? 'on-light' : 'on-dark'

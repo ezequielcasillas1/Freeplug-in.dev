@@ -14,4 +14,7 @@ node scripts/ingest-buyer-wordmark-kits.mjs
 
 Output: `public/merch/buyer-wordmark-art/{style}/{Brand}-{on-dark|on-light}.png`
 
-Ink rule: **on-dark** = light art on dark garments; **on-on-light** = dark art on light garments.
+Kit PNG names: `{brand}-dark.png` (dark ink → light garments → `on-light` in public tree),
+`{brand}-light.png` (light ink → dark garments → `on-dark`).
+
+Chest crops prefer `bar/` then top-level; `before/` folders are ignored at ingest.
