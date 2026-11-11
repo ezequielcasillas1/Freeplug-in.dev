@@ -9,7 +9,8 @@ import { publicHref } from '@/i18n/routing'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { CatalogFilterPanel } from '@/features/merch/components/CatalogFilterPanel'
 import { useCatalogFilterUrl } from '@/features/merch/hooks/useCatalogFilterUrl'
-import { applyCatalogFilters, computePanelFacets, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
+import { applyCatalogFilters, computePanelFacets } from '@/lib/merch/catalog-filter-logic'
+import { filterItemsForPublicGrid, orderShopPublicGridItems } from '@/lib/merch/shop/shop-public-grid'
 import { computePreviewWordmarkFacets } from '@/lib/merch/preview/preview-wordmark-filter'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import type { AllMerchItem } from '@/lib/merch/all-merch-shared'
@@ -22,10 +23,10 @@ export function AllMerchListClient({ items }: { items: AllMerchItem[] }) {
   const { state, setState, clearAll } = useCatalogFilterUrl('all-merch')
   const [shown, setShown] = useState(ALL_MERCH_PAGE_SIZE)
 
-  const filtered = useMemo(
-    () => sortCatalogItems(applyCatalogFilters(items, state), state.sort) as AllMerchItem[],
-    [items, state]
-  )
+  const filtered = useMemo(() => {
+    const pool = filterItemsForPublicGrid(items, state)
+    return orderShopPublicGridItems(applyCatalogFilters(pool, state), state.sort) as AllMerchItem[]
+  }, [items, state])
   const visible = filtered.slice(0, shown)
 
   const panelFacets = useMemo(() => computePanelFacets(items, state), [items, state])

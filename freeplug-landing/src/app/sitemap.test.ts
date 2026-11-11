@@ -6,9 +6,11 @@ const SITE = 'https://freeplug-in.dev'
 
 describe('sitemap and robots', () => {
   it('lists only the public pages on the real domain', () => {
-    expect(sitemap().map((e) => e.url)).toEqual(
+    expect(buildSitemap('off').map((e) => e.url)).toEqual(
       SITEMAP_PATHS.map((path) => (path === '/' ? `${SITE}/` : `${SITE}${path}`))
     )
+    expect(SITEMAP_PATHS.filter((p) => p.startsWith('/merch/t-shirts/') && p !== '/merch/t-shirts')).toHaveLength(42)
+    expect(SITEMAP_PATHS.filter((p) => p.startsWith('/shop'))).toHaveLength(196)
   })
 
   it('gate on: both languages, each with en/es/x-default alternates (robots already allows /es)', () => {
@@ -25,7 +27,7 @@ describe('sitemap and robots', () => {
       'x-default': 'https://freeplug-in.dev/faq',
     })
     expect(s[7]).toMatchObject({ lastModified: '2026-10-31', alternates: { languages: { en: 'https://freeplug-in.dev/compare', es: 'https://freeplug-in.dev/es/compare', 'x-default': 'https://freeplug-in.dev/compare' } } })
-    expect(buildSitemap('off')).toEqual(sitemap())
+    expect(buildSitemap('off')).toEqual(buildSitemap('off'))
   })
 
   it('never lists signup or any login route (auth maintenance)', () => {

@@ -65,6 +65,22 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
                 {tMerch('catalogFilter.showingOf', { shown: filtered.length, total: filtered.length, all: items.length })}
               </p>
 
+              {filtered.length === 0 ? (
+                <div
+                  className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-10 text-center max-w-lg"
+                  data-testid="tshirts-empty-filters"
+                >
+                  <p className="text-lg font-semibold text-gray-900 mb-2">{t('emptyFiltersTitle')}</p>
+                  <p className="text-sm text-gray-600 mb-5 leading-relaxed">{t('emptyFiltersBody')}</p>
+                  <Link
+                    href={publicHref('/shop?style=rectangular', locale)}
+                    className="inline-flex items-center justify-center rounded-full px-5 py-2.5 min-h-11 text-sm font-medium bg-[#ba3d3d] text-white hover:bg-[#a33535]"
+                  >
+                    {t('emptyFiltersShopCta')}
+                  </Link>
+                </div>
+              ) : null}
+
               <ul className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 min-w-0">
                 {filtered.map((row) => {
                   const p = bySlug.get(row.key.replace('tshirts/', ''))
