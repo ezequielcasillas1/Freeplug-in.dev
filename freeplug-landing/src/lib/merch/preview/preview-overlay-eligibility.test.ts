@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { catalogShirtSkipsPreviewWordmarkOverlay, isPlainCatalogGarment } from './preview-overlay-eligibility'
+import {
+  buyerShopUsesPreviewWordmarkOverlay,
+  catalogShirtSkipsPreviewWordmarkOverlay,
+  isPlainCatalogGarment,
+} from './preview-overlay-eligibility'
 
 describe('preview overlay eligibility', () => {
   it('treats the t-shirts catalog as designed (no overlay)', () => {
@@ -7,7 +11,9 @@ describe('preview overlay eligibility', () => {
     expect(catalogShirtSkipsPreviewWordmarkOverlay('buyer-shop')).toBe(false)
   })
 
-  it('does not treat shop or merch-store items as plain garments (designed product art)', () => {
+  it('enables buyer-shop SVG overlays while merch-store stays off (PR #62)', () => {
+    expect(buyerShopUsesPreviewWordmarkOverlay('buyer-shop')).toBe(true)
+    expect(buyerShopUsesPreviewWordmarkOverlay('merch-store')).toBe(false)
     expect(isPlainCatalogGarment('buyer-shop')).toBe(false)
     expect(isPlainCatalogGarment('merch-store')).toBe(false)
     expect(isPlainCatalogGarment('t-shirts')).toBe(false)

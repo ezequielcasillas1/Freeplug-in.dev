@@ -1,4 +1,5 @@
 import type { BrandNameKey } from './brand-names'
+import { getBuyerWordmarkVariationDef } from './buyer-wordmark-variation-registry'
 
 /** Visual treatment archetypes (Supreme-inspired). */
 export type WordmarkTreatment =
@@ -28,6 +29,10 @@ export type WordmarkTreatment =
   | 'accent-bar-left'
   | 'condensed-red-fill'
   | 'pill-outline'
+  | 'buyer-cursive'
+  | 'buyer-cursive-plate'
+  | 'buyer-pop-v2'
+  | 'buyer-pop-plate-v2'
 
 export type WordmarkVariationDef = {
   id: string
@@ -77,7 +82,7 @@ export function isWordmarkVariationId(id: string): boolean {
 }
 
 export function getWordmarkVariation(id: string): WordmarkVariationDef | null {
-  return variationById.get(id) ?? null
+  return variationById.get(id) ?? getBuyerWordmarkVariationDef(id)
 }
 
 export function variationIdForStableIndex(index: number): string {

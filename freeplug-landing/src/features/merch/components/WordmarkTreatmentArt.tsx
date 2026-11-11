@@ -349,6 +349,79 @@ export function WordmarkTreatmentArt({
           </text>
         </g>
       )
+    case 'buyer-cursive':
+      return (
+        <g>
+          <text
+            x={0}
+            y={3}
+            fill={c.red}
+            fontFamily={CURSIVE}
+            fontSize={compact ? 9 : 10.5}
+            fontWeight={700}
+            textAnchor="middle"
+          >
+            {label}
+          </text>
+        </g>
+      )
+    case 'buyer-cursive-plate':
+      return (
+        <g>
+          <rect
+            x={-18}
+            y={-7}
+            width={36}
+            height={14}
+            rx={2}
+            fill={ink === 'light-on-dark' ? '#141414' : '#f4f4f5'}
+            stroke={c.fg}
+            strokeWidth={0.35}
+          />
+          <text x={0} y={2.8} fill={c.red} fontFamily={CURSIVE} fontSize={9} fontWeight={700} textAnchor="middle">
+            {label}
+          </text>
+        </g>
+      )
+    case 'buyer-pop-v2': {
+      const popLabel = nameKey === 'fplgn' ? label : label.toUpperCase()
+      return (
+        <g>
+          <text
+            x={0}
+            y={2.5}
+            fill={c.fg}
+            fontFamily={EXTENDED}
+            fontSize={compact ? 7.5 : 8.5}
+            fontWeight={800}
+            textAnchor="middle"
+            letterSpacing={nameKey === 'fplgn' ? '0.22em' : '0.08em'}
+          >
+            {popLabel}
+          </text>
+        </g>
+      )
+    }
+    case 'buyer-pop-plate-v2': {
+      const popLabel = nameKey === 'fplgn' ? label : label.toUpperCase()
+      return (
+        <g>
+          <rect x={-20} y={-7} width={40} height={14} rx={1.5} fill={c.boxFill} stroke={c.fg} strokeWidth={0.45} />
+          <text
+            x={0}
+            y={2.5}
+            fill={c.fg}
+            fontFamily={EXTENDED}
+            fontSize={7.8}
+            fontWeight={800}
+            textAnchor="middle"
+            letterSpacing={nameKey === 'fplgn' ? '0.2em' : '0.06em'}
+          >
+            {popLabel}
+          </text>
+        </g>
+      )
+    }
     default:
       return (
         <g>
