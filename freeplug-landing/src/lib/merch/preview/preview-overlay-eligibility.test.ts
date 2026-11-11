@@ -7,9 +7,9 @@ describe('preview overlay eligibility', () => {
     expect(catalogShirtSkipsPreviewWordmarkOverlay('buyer-shop')).toBe(false)
   })
 
-  it('allows overlays only on plain shop and merch-store garments', () => {
-    expect(isPlainCatalogGarment('buyer-shop')).toBe(true)
-    expect(isPlainCatalogGarment('merch-store')).toBe(true)
+  it('does not treat shop or merch-store items as plain garments (designed product art)', () => {
+    expect(isPlainCatalogGarment('buyer-shop')).toBe(false)
+    expect(isPlainCatalogGarment('merch-store')).toBe(false)
     expect(isPlainCatalogGarment('t-shirts')).toBe(false)
     expect(isPlainCatalogGarment(null)).toBe(false)
   })

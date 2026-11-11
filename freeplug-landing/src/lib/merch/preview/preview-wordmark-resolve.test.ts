@@ -4,7 +4,6 @@ import {
   isVerseShirtSlug,
   resolvePreviewWordmark,
 } from './preview-wordmark-resolve'
-import { WORDMARK_VARIATIONS } from './wordmark-variations'
 
 describe('resolvePreviewWordmark', () => {
   it('skips verse and giving campaign tees', () => {
@@ -48,26 +47,48 @@ describe('resolvePreviewWordmark', () => {
     }
   })
 
-  it('covers shop physical items with stable variation ids', () => {
-    const r = resolvePreviewWordmark({
-      source: 'buyer-shop',
-      slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
-      href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
-      productType: 'sweatshirt',
-      catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
-    })
-    expect(r).not.toBeNull()
-    expect(WORDMARK_VARIATIONS.some((v) => v.id === r!.variationId)).toBe(true)
+  it('skips preview overlays on buyer-shop items with their own artwork', () => {
+    expect(
+      resolvePreviewWordmark({
+        source: 'buyer-shop',
+        slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
+        href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+        productType: 'sweatshirt',
+        catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      })
+    ).toBeNull()
   })
 
-  it('covers merch-store collection items', () => {
-    const r = resolvePreviewWordmark({
-      source: 'merch-store',
-      slug: 'hero-crewneck',
-      href: '/merch/apparel/hero-crewneck',
-      productType: 'apparel',
-      catalogKey: 'apparel/hero-crewneck',
-    })
-    expect(r?.placement.top).toBeLessThan(0.6)
+  it('skips preview overlays on merch-store collection items', () => {
+    expect(
+      resolvePreviewWordmark({
+        source: 'merch-store',
+        slug: 'hero-crewneck',
+        href: '/merch/apparel/hero-crewneck',
+        productType: 'apparel',
+        catalogKey: 'apparel/hero-crewneck',
+      })
+    ).toBeNull()
+  })
+
+  it('skips designed shop products such as candles, doormats, and pillows', () => {
+    for (const input of [
+      {
+        source: 'buyer-shop' as const,
+        slug: 'running-over-luke-6-38-candle',
+        href: '/shop/running-over-luke-6-38-candle',
+        productType: 'candle',
+        catalogKey: 'shop/running-over-luke-6-38-candle',
+      },
+      {
+        source: 'buyer-shop' as const,
+        slug: 'come-on-in-youre-plugged-in-doormat',
+        href: '/shop/come-on-in-youre-plugged-in-doormat',
+        productType: 'doormat',
+        catalogKey: 'shop/come-on-in-youre-plugged-in-doormat',
+      },
+    ]) {
+      expect(resolvePreviewWordmark(input)).toBeNull()
+    }
   })
 })
