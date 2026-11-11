@@ -18,14 +18,18 @@ describe('preview wordmark catalog filters', () => {
     expect(styleGroupForTreatment('stacked-two-line')).toBe('stacked')
   })
 
-  it('filters supreme look only to items with a preview wordmark', () => {
+  it('filters rectangular style to plain garments that show a preview wordmark', () => {
     const state = { ...EMPTY_CATALOG_FILTER, rectangularStyleOnly: true }
     const out = applyCatalogFilters(all, state)
     expect(out.length).toBeGreaterThan(0)
     expect(out.every((item) => matchesPreviewWordmarkCatalogFilters(item, true, [], []))).toBe(true)
+    expect(out.every((item) => item.source === 'buyer-shop' || item.source === 'merch-store')).toBe(true)
     const verse = all.find((i) => i.key === 'tshirts/07-verse-psalm-82-3')
     expect(verse).toBeDefined()
     expect(matchesPreviewWordmarkCatalogFilters(verse!, true, [], [])).toBe(false)
+    const slogan = all.find((i) => i.key === 'tshirts/11-init-open-hand-give')
+    expect(slogan).toBeDefined()
+    expect(matchesPreviewWordmarkCatalogFilters(slogan!, true, [], [])).toBe(false)
   })
 
   it('filters by name and style facets', () => {

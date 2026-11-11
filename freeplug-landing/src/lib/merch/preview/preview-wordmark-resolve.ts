@@ -1,8 +1,6 @@
 import type { CatalogSource } from '@/lib/merch/catalog-filter-types'
-import { getSupremePreviewSpec, isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
-import { supremeWordmarkPlacement } from '@/lib/merch/shirts/supreme-preview'
-import { wordmarkScaleFromPlacement } from './preview-overlay-layout'
+import { catalogShirtSkipsPreviewWordmarkOverlay, isPlainCatalogGarment } from './preview-overlay-eligibility'
 import { inferProductTypeFromCatalog, placementForProductType, type PreviewPlacement } from './placement-defaults'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
 
@@ -15,7 +13,7 @@ export type ResolvedPreviewWordmark = {
   mode: PreviewWordmarkMode
   /** SVG wordmark only — no large Cover panels (print-like on mockup). */
   printSurface?: boolean
-  /** Small chest badge on slogan tees — always render compact. */
+  /** Compact overlay layout (e.g. small badge treatment on plain garments). */
   chestBadge?: boolean
 }
 
@@ -65,37 +63,11 @@ export type ResolvePreviewWordmarkInput = {
 
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
   if (isDigitalMerchHref(input.href)) return null
-  if (input.source === 't-shirts') {
-    if (isVerseShirtSlug(input.slug) || isGivingCampaignShirtSlug(input.slug)) {
-      return null
-    }
-    if (isSupremeStyleShirtSlug(input.slug)) {
-      const spec = getSupremePreviewSpec(input.slug)!
-      const blank =
-        input.garmentColor != null ? blankKindFromColor(input.garmentColor) : 'dark'
-      const placement = supremeWordmarkPlacement(spec)
-      return {
-        variationId: spec.variationId,
-        placement: {
-          ...placement,
-          scale: wordmarkScaleFromPlacement(placement),
-        },
-        blankKind: blank,
-        mode: 'full',
-        printSurface: true,
-        chestBadge: true,
-      }
-    }
-    const idx = stableCatalogIndex(input.catalogKey)
-    return {
-      variationId: variationIdForStableIndex(idx),
-      placement: placementForProductType('t-shirt'),
-      blankKind: input.garmentColor ? blankKindFromColor(input.garmentColor) : 'dark',
-      mode: 'full',
-    }
+  if (catalogShirtSkipsPreviewWordmarkOverlay(input.source)) {
+    return null
   }
 
-  if (input.source === 'buyer-shop' || input.source === 'merch-store') {
+  if (isPlainCatalogGarment(input.source)) {
     const idx = stableCatalogIndex(input.catalogKey)
     const productType = inferProductTypeFromCatalog(input.slug, input.productType, input.catalogKey)
     return {
