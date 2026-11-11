@@ -16,8 +16,7 @@ describe('preview wordmark catalog filters', () => {
     expect(styleGroupForTreatment('red-box-script')).toBe('script')
     expect(styleGroupForTreatment('stamp-badge')).toBe('stamp')
     expect(styleGroupForTreatment('stacked-two-line')).toBe('stacked')
-    expect(styleGroupForTreatment('buyer-cursive')).toBe('script')
-    expect(styleGroupForTreatment('buyer-pop-v2')).toBe('wide')
+    expect(styleGroupForTreatment('buyer-raster')).toBe('script')
   })
 
   it('rectangular style filter includes buyer-shop preview wordmarks only', () => {

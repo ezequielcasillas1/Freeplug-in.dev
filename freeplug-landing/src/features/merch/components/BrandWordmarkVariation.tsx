@@ -1,6 +1,10 @@
 'use client'
 
 import { WordmarkTreatmentArt, wordmarkInkForBlank } from '@/features/merch/components/WordmarkTreatmentArt'
+import {
+  buyerWordmarkArtPublicPath,
+  parseBuyerWordmarkVariationId,
+} from '@/lib/merch/preview/buyer-wordmark-art-paths'
 import { getWordmarkVariation } from '@/lib/merch/preview/wordmark-variations'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
 
@@ -23,6 +27,23 @@ export function BrandWordmarkGraphic({
   const def = getWordmarkVariation(variationId)
   if (!def) return null
   const blank = shirtColor === 'White' || shirtColor === 'Natural' ? 'light' : 'dark'
+  if (def.treatment === 'buyer-raster') {
+    const parsed = parseBuyerWordmarkVariationId(variationId)
+    if (!parsed) return null
+    const src = buyerWordmarkArtPublicPath(parsed.style, parsed.brand, blank)
+    const w = compact ? 56 : 76
+    const h = compact ? 15 : 20
+    return (
+      <image
+        href={src}
+        x={-w / 2}
+        y={-h / 2}
+        width={w}
+        height={h}
+        preserveAspectRatio="xMidYMid meet"
+      />
+    )
+  }
   const ink = wordmarkInkForBlank(blank)
   return (
     <WordmarkTreatmentArt

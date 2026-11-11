@@ -29,10 +29,7 @@ export type WordmarkTreatment =
   | 'accent-bar-left'
   | 'condensed-red-fill'
   | 'pill-outline'
-  | 'buyer-cursive'
-  | 'buyer-cursive-plate'
-  | 'buyer-pop-v2'
-  | 'buyer-pop-plate-v2'
+  | 'buyer-raster'
 
 export type WordmarkVariationDef = {
   id: string

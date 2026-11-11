@@ -40,10 +40,7 @@ const GROUP_BY_TREATMENT: Record<WordmarkTreatment, WordmarkStyleGroup> = {
   'accent-bar-left': 'accent',
   'condensed-red-fill': 'box',
   'pill-outline': 'outline',
-  'buyer-cursive': 'script',
-  'buyer-cursive-plate': 'script',
-  'buyer-pop-v2': 'wide',
-  'buyer-pop-plate-v2': 'box',
+  'buyer-raster': 'script',
 }
 
 export function styleGroupForTreatment(treatment: WordmarkTreatment): WordmarkStyleGroup {

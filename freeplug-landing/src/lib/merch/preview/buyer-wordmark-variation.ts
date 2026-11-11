@@ -10,11 +10,12 @@ export const BUYER_BRAND_NAME_KEY: Record<BuyerWordmarkBrandKey, BrandNameKey> =
   'freeplug-in': 'freeplug-in',
 }
 
+/** Raster PNG art in public/merch/buyer-wordmark-art/ (not font/SVG stand-ins). */
 export const BUYER_STYLE_TREATMENT: Record<BuyerWordmarkStyleKey, WordmarkTreatment> = {
-  cursive: 'buyer-cursive',
-  'cursive-plate': 'buyer-cursive-plate',
-  'pop-v2': 'buyer-pop-v2',
-  'pop-plate-v2': 'buyer-pop-plate-v2',
+  cursive: 'buyer-raster',
+  'cursive-plate': 'buyer-raster',
+  'pop-v2': 'buyer-raster',
+  'pop-plate-v2': 'buyer-raster',
 }
 
 export function variationIdForBuyerWordmark(
