@@ -40,8 +40,10 @@ export function CatalogPreviewWordmarkOverlay({
     >
       <g transform={`translate(${cx} ${cy}) scale(${scale})`}>
         <BrandWordmarkGraphic
+          key={`${config.variationId}-${config.blankKind}`}
           variationId={config.variationId}
           shirtColor={shirtColor}
+          garmentBlankKind={config.blankKind}
           compact={compact}
           surface={printSurface ? 'print' : 'contact'}
         />

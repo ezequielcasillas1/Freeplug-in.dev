@@ -14,6 +14,7 @@ import {
 } from './buyer-wordmark-style'
 import { variationIdForBuyerWordmark } from './buyer-wordmark-variation'
 import { buyerShopUsesPreviewWordmarkOverlay } from './preview-overlay-eligibility'
+import { classifyBlankColor } from '@/lib/merch/shop/contrast'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
 
 export type PreviewWordmarkMode = 'full' | 'skip'
@@ -52,11 +53,9 @@ export function isGivingCampaignShirtSlug(slug: string): boolean {
   return GIVING_CAMPAIGN_SHIRT_SLUGS.has(slug)
 }
 
+/** @deprecated Prefer `classifyBlankColor` or `resolveShopPreviewBlankKind` for shop mockups. */
 export function blankKindFromColor(color: string | undefined): 'light' | 'dark' {
-  if (!color) return 'dark'
-  const c = color.toLowerCase()
-  if (c === 'white' || c === 'natural' || c.includes('light') || c === 'sand') return 'light'
-  return 'dark'
+  return classifyBlankColor(color ?? null)
 }
 
 export function shirtColorFromBlank(blank: 'light' | 'dark'): ShirtColor {
@@ -74,6 +73,8 @@ export type ResolvePreviewWordmarkInput = {
   /** Buyer-shop: brand + style for the single preview overlay. */
   buyerWordmarkBrand?: BuyerWordmarkBrandKey | null
   buyerWordmarkStyle?: BuyerWordmarkStyleKey | null
+  /** When set (buyer-shop), ink follows the visible mockup, not only the color label. */
+  garmentBlankKind?: 'light' | 'dark' | null
 }
 
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
@@ -87,10 +88,13 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
     const brand = parseBuyerWordmarkBrand(input.buyerWordmarkBrand ?? DEFAULT_BUYER_WORDMARK_BRAND)
     const style = parseBuyerWordmarkStyle(input.buyerWordmarkStyle ?? DEFAULT_BUYER_WORDMARK_STYLE)
     const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
+  const blankKind =
+      input.garmentBlankKind ??
+      (input.garmentColor ? classifyBlankColor(input.garmentColor) : 'light')
     return {
       variationId: variationIdForBuyerWordmark(brand, style),
       placement: placementForProductType(productType),
-      blankKind: input.garmentColor ? blankKindFromColor(input.garmentColor) : 'dark',
+      blankKind,
       mode: 'full',
       printSurface: !plateStyle,
     }

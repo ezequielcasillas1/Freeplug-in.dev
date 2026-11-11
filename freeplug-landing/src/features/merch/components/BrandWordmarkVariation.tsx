@@ -16,17 +16,21 @@ export function wordmarkInkForShirt(shirtColor: ShirtColor) {
 export function BrandWordmarkGraphic({
   variationId,
   shirtColor,
+  garmentBlankKind,
   compact,
   surface = 'contact',
 }: {
   variationId: string
   shirtColor: ShirtColor
+  /** Buyer raster ink must follow catalog/mockup blank kind, not shirtColor shorthand. */
+  garmentBlankKind?: 'light' | 'dark'
   compact?: boolean
   surface?: 'contact' | 'print'
 }) {
   const def = getWordmarkVariation(variationId)
   if (!def) return null
-  const blank = shirtColor === 'White' || shirtColor === 'Natural' ? 'light' : 'dark'
+  const fromShirt = shirtColor === 'White' || shirtColor === 'Natural' ? 'light' : 'dark'
+  const blank = garmentBlankKind ?? fromShirt
   if (def.treatment === 'buyer-raster') {
     const parsed = parseBuyerWordmarkVariationId(variationId)
     if (!parsed) return null

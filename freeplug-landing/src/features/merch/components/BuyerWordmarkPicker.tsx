@@ -34,13 +34,16 @@ export function BuyerWordmarkPicker({
   }
 }) {
   return (
-    <fieldset className="space-y-3" disabled={disabled}>
-      <legend className="text-sm font-medium text-zinc-900">{labels.heading}</legend>
+    <div className="space-y-3" role="group" aria-labelledby="buyer-wordmark-picker-heading">
+      <p id="buyer-wordmark-picker-heading" className="text-sm font-medium text-zinc-900">
+        {labels.heading}
+      </p>
       <div className="flex flex-wrap gap-2">
         {BUYER_WORDMARK_BRAND_KEYS.map((key) => (
           <button
             key={key}
             type="button"
+            data-testid={`buyer-wordmark-brand-${key}`}
             className={cn(
               'rounded-full border px-3 py-1.5 text-sm transition',
               value === key
@@ -60,6 +63,7 @@ export function BuyerWordmarkPicker({
           <button
             key={key}
             type="button"
+            data-testid={`buyer-wordmark-style-${key}`}
             className={cn(
               'rounded-full border px-3 py-1.5 text-sm transition',
               styleValue === key
@@ -78,6 +82,6 @@ export function BuyerWordmarkPicker({
           {labels.bakedNote}
         </p>
       ) : null}
-    </fieldset>
+    </div>
   )
 }

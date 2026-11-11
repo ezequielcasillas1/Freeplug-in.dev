@@ -30,30 +30,50 @@ import {
   DEFAULT_BUYER_WORDMARK_STYLE,
   type BuyerWordmarkStyleKey,
 } from '@/lib/merch/preview/buyer-wordmark-style'
+import { classifyBlankColor } from '@/lib/merch/shop/contrast'
+import {
+  resolveShopPreviewBlankKind,
+  shopDefaultPreviewColor,
+  shopGalleryIndexForBlankKind,
+} from '@/lib/merch/shop/shop-gallery-blank-kind'
 
 export function ShopProductClient({
   item,
   checkoutEnabled,
   hasPrintifyProduct,
+  initialWordmarkBrand = DEFAULT_BUYER_WORDMARK_BRAND,
+  initialWordmarkStyle = DEFAULT_BUYER_WORDMARK_STYLE,
+  initialColor = null,
 }: {
   item: ShopCatalogItem
   checkoutEnabled: boolean
   hasPrintifyProduct: boolean
+  initialWordmarkBrand?: BuyerWordmarkBrandKey
+  initialWordmarkStyle?: BuyerWordmarkStyleKey
+  /** Optional deep-link color (must match item.colors). */
+  initialColor?: string | null
 }) {
   const t = useTranslations('public.merch.shop')
   const locale = toAppLocale(useLocale())
 
   const colorOptions = useMemo(() => uniqueColors(item.variants), [item.variants])
   const mode = useMemo(() => pickerMode(item.variants), [item.variants])
+  const defaultColor = useMemo(() => {
+    const hero = shopDefaultPreviewColor(item) ?? colorOptions[0] ?? ''
+    if (initialColor && colorOptions.includes(initialColor)) return initialColor
+    return hero
+  }, [colorOptions, initialColor, item])
 
-  const [color, setColor] = useState(colorOptions[0] ?? '')
-  const [size, setSize] = useState(() => sizesForColor(item.variants, colorOptions[0] ?? null)[0] ?? '')
+  const [color, setColor] = useState(defaultColor)
+  const [size, setSize] = useState(() => sizesForColor(item.variants, defaultColor || null)[0] ?? '')
   const [titleVariantId, setTitleVariantId] = useState(item.variants[0]?.id ?? 0)
-  const [galleryIndex, setGalleryIndex] = useState(0)
+  const [galleryIndex, setGalleryIndex] = useState(() =>
+    shopGalleryIndexForBlankKind(classifyBlankColor(defaultColor), item.gallery.length)
+  )
   const [quantity, setQuantity] = useState(1)
   const [designMode, setDesignMode] = useState<'freeplug' | 'custom'>('freeplug')
-  const [wordmarkBrand, setWordmarkBrand] = useState<BuyerWordmarkBrandKey>(DEFAULT_BUYER_WORDMARK_BRAND)
-  const [wordmarkStyle, setWordmarkStyle] = useState<BuyerWordmarkStyleKey>(DEFAULT_BUYER_WORDMARK_STYLE)
+  const [wordmarkBrand, setWordmarkBrand] = useState<BuyerWordmarkBrandKey>(initialWordmarkBrand)
+  const [wordmarkStyle, setWordmarkStyle] = useState<BuyerWordmarkStyleKey>(initialWordmarkStyle)
   const [rightsConfirmed, setRightsConfirmed] = useState(false)
   const [customPreview, setCustomPreview] = useState<string | null>(null)
   const [customPath, setCustomPath] = useState<string | null>(null)
@@ -168,6 +188,17 @@ export function ShopProductClient({
   const canBuyCustom = designMode === 'custom' && Boolean(customPath) && Boolean(uploadToken) && rightsConfirmed && !customSoldOut
   const buyDisabled = !checkoutEnabled || (designMode === 'freeplug' ? !canBuyFreeplug : !canBuyCustom)
 
+  const previewGarmentBlankKind = useMemo(
+    () =>
+      resolveShopPreviewBlankKind({
+        garmentColor: color || null,
+        variantBlankKind: variant?.blankKind,
+        displayImageSrc: productSrc,
+        galleryLength: item.gallery.length,
+      }),
+    [color, item.gallery.length, productSrc, variant?.blankKind]
+  )
+
   const previewWordmark = useMemo(
     () =>
       designMode === 'freeplug'
@@ -178,11 +209,20 @@ export function ShopProductClient({
             productType: item.productType,
             catalogKey: `shop/${item.slug}`,
             garmentColor: color || null,
+            garmentBlankKind: previewGarmentBlankKind,
             buyerWordmarkBrand: wordmarkBrand,
             buyerWordmarkStyle: wordmarkStyle,
           })
         : null,
-    [color, designMode, item.productType, item.slug, wordmarkBrand, wordmarkStyle]
+    [
+      color,
+      designMode,
+      item.productType,
+      item.slug,
+      previewGarmentBlankKind,
+      wordmarkBrand,
+      wordmarkStyle,
+    ]
   )
 
   const wordmarkBaked = useMemo(
@@ -253,7 +293,9 @@ export function ShopProductClient({
                 className={pill(designMode === 'freeplug')}
                 onClick={() => {
                   setDesignMode('freeplug')
-                  setGalleryIndex(0)
+                  setGalleryIndex(
+                    shopGalleryIndexForBlankKind(classifyBlankColor(color), item.gallery.length)
+                  )
                 }}
               >
                 {t('designFreeplug')}
@@ -301,7 +343,9 @@ export function ShopProductClient({
                     setColor(nextColor)
                     const nextSizes = sizesForColor(item.variants, nextColor)
                     setSize(nextSizes[0] ?? '')
-                    setGalleryIndex(0)
+                    setGalleryIndex(
+                      shopGalleryIndexForBlankKind(classifyBlankColor(nextColor), item.gallery.length)
+                    )
                   }}
                 >
                   {colorOptions.map((c) => (

@@ -61,6 +61,19 @@ describe('resolvePreviewWordmark', () => {
     expect(r?.printSurface).toBe(true)
   })
 
+  it('uses garment blank kind for buyer-shop ink', () => {
+    const r = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
+      href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      productType: 'sweatshirt',
+      catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      garmentColor: 'Ash',
+      garmentBlankKind: 'light',
+    })
+    expect(r?.blankKind).toBe('light')
+  })
+
   it('uses buyer brand and style for buyer-shop', () => {
     const r = resolvePreviewWordmark({
       source: 'buyer-shop',
