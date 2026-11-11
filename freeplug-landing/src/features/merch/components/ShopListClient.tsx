@@ -1,8 +1,9 @@
 'use client'
 
 import { CatalogCardWithPreview } from '@/features/merch/components/CatalogCardWithPreview'
+import { ShopGridCardFrame } from '@/features/merch/components/ShopGridCardFrame'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
@@ -16,7 +17,14 @@ import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import { ALL_MERCH_PAGE_SIZE } from '@/features/merch/components/AllMerchListClient'
 
-export function ShopListClient({ items }: { items: CatalogFilterItem[] }) {
+export function ShopListClient({
+  items,
+  gridMockups,
+}: {
+  items: CatalogFilterItem[]
+  /** Server-rendered garment + wordmark per `item.key` (shop index). */
+  gridMockups?: Record<string, ReactNode>
+}) {
   const t = useTranslations('public.merch.shop')
   const tMerch = useTranslations('public.merch')
   const locale = toAppLocale(useLocale())
@@ -69,11 +77,15 @@ export function ShopListClient({ items }: { items: CatalogFilterItem[] }) {
                       className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-[#ba3d3d]/40 transition-colors min-h-full"
                     >
                       <div className="aspect-square rounded-lg bg-zinc-100 mb-3 overflow-hidden relative">
-                        <CatalogCardWithPreview
-                          item={item}
-                          sizes="(max-width: 768px) 50vw, 240px"
-                          showOverlay={state.previewOverlays}
-                        />
+                        {gridMockups?.[item.key] ? (
+                          <ShopGridCardFrame mockup={gridMockups[item.key]} showOverlay={state.previewOverlays} />
+                        ) : (
+                          <CatalogCardWithPreview
+                            item={item}
+                            sizes="(max-width: 768px) 50vw, 240px"
+                            showOverlay={state.previewOverlays}
+                          />
+                        )}
                         {item.comingSoonLabel ? (
                           <span className="absolute top-2 left-2 rounded-full bg-gray-900/80 px-2.5 py-1 text-xs font-medium text-white">
                             {t('comingSoon')}
