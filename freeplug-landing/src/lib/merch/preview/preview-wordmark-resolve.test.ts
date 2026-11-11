@@ -28,18 +28,24 @@ describe('resolvePreviewWordmark', () => {
     ).toBeNull()
   })
 
-  it('assigns supreme tee variation from specs', () => {
-    const r = resolvePreviewWordmark({
-      source: 't-shirts',
-      slug: '11-init-open-hand-give',
-      href: '/merch/t-shirts/11-init-open-hand-give',
-      productType: 't-shirt',
-      catalogKey: 'tshirts/11-init-open-hand-give',
-      garmentColor: 'Black',
-    })
-    expect(r?.variationId).toBe('v01-fpid-code-panel')
-    expect(r?.placement.left).toBeGreaterThan(0.55)
-    expect(r?.chestBadge).toBe(true)
+  it('skips preview overlays on all catalog t-shirts (designed front art)', () => {
+    for (const slug of [
+      '11-init-open-hand-give',
+      '31-world-plugs-dont-work',
+      '35-world-straight-after-the-freeplug',
+      'patience-undefined',
+    ]) {
+      expect(
+        resolvePreviewWordmark({
+          source: 't-shirts',
+          slug,
+          href: `/merch/t-shirts/${slug}`,
+          productType: 't-shirt',
+          catalogKey: `tshirts/${slug}`,
+          garmentColor: 'Black',
+        })
+      ).toBeNull()
+    }
   })
 
   it('covers shop physical items with stable variation ids', () => {

@@ -2,7 +2,7 @@ import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { BRAND_NAME_KEYS, type BrandNameKey } from './brand-names'
 import { getWordmarkVariation } from './wordmark-variations'
 import { resolvePreviewWordmark, type ResolvePreviewWordmarkInput } from './preview-wordmark-resolve'
-import { isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
+import { isPlainCatalogGarment } from './preview-overlay-eligibility'
 import {
   isWordmarkStyleGroup,
   styleGroupForTreatment,
@@ -27,8 +27,8 @@ export function resolveInputFromCatalogItem(item: CatalogFilterItem): ResolvePre
 }
 
 export function isRectangularStyleCatalogItem(item: CatalogFilterItem): boolean {
-  if (item.source !== 't-shirts') return false
-  return isSupremeStyleShirtSlug(catalogKeyToSlug(item.key))
+  if (!isPlainCatalogGarment(item.source)) return false
+  return resolvePreviewWordmark(resolveInputFromCatalogItem(item)) !== null
 }
 
 export function previewBrandNameKeyForItem(item: CatalogFilterItem): BrandNameKey | null {
