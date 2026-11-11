@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "arkitect-freeplug": {
+      "command": "bash",
+      "args": ["${workspaceFolder}/.cursor/run-arkitect-freeplug-mcp.sh"],
+      "env": {
+        "ARKITECT_SKIP_DESKTOP_BRIDGE": "1",
+        "ARKITECT_AUDIT_FAIL_THRESHOLD": "high",
+        "NEXT_PUBLIC_SUPABASE_URL": "https://YOUR_PROJECT.supabase.co",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ARKITECT_BUILD_PLACEHOLDER_ANON_KEY",
+        "NEXT_PUBLIC_APP_URL": "http://127.0.0.1:3000"
+      }
+    }
+  }
+}

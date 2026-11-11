@@ -14,4 +14,5 @@
 !**/.env.example
 **/.owen-backup-*/
 **/.arkitect/
+**/.arkitect/vendor/
 *.tsbuildinfo
