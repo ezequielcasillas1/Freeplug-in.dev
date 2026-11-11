@@ -1,0 +1,325 @@
+{
+  "generatedAt": "2026-11-11T22:27:24.947Z",
+  "mappings": [
+    {
+      "style": "cursive",
+      "brand": "fplgn",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/FPLGN-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "fplgn-dark.png"
+    },
+    {
+      "style": "cursive",
+      "brand": "fplgn",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/FPLGN-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "fplgn-light.png"
+    },
+    {
+      "style": "cursive",
+      "brand": "freeplug-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/Freeplug.dev-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "freeplug-dev-dark.png"
+    },
+    {
+      "style": "cursive",
+      "brand": "freeplug-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/Freeplug.dev-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "freeplug-dev-light.png"
+    },
+    {
+      "style": "cursive",
+      "brand": "freeplug-in-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/Freeplug-in.dev-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "freeplug-in-dev-dark.png"
+    },
+    {
+      "style": "cursive",
+      "brand": "freeplug-in-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/Freeplug-in.dev-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "freeplug-in-dev-light.png"
+    },
+    {
+      "style": "cursive",
+      "brand": "freeplug-in",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/Freeplug.in-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "freeplug-in-dark.png"
+    },
+    {
+      "style": "cursive",
+      "brand": "freeplug-in",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive/Freeplug.in-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants",
+      "sourceFile": "freeplug-in-light.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "fplgn",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/FPLGN-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "fplgn-dark.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "fplgn",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/FPLGN-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "fplgn-light.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "freeplug-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/Freeplug.dev-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "freeplug-dev-dark.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "freeplug-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/Freeplug.dev-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "freeplug-dev-light.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "freeplug-in-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/Freeplug-in.dev-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "freeplug-in-dev-dark.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "freeplug-in-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/Freeplug-in.dev-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "freeplug-in-dev-light.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "freeplug-in",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/Freeplug.in-on-light.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "freeplug-in-dark.png"
+    },
+    {
+      "style": "cursive-plate",
+      "brand": "freeplug-in",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/cursive-plate/Freeplug.in-on-dark.png",
+      "sourceKit": "kit-cursive",
+      "sourceDir": "wordmark-variants-plate",
+      "sourceFile": "freeplug-in-light.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "fplgn",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/FPLGN-on-light.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "fplgn-dark.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "fplgn",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/FPLGN-on-dark.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "fplgn-light.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "freeplug-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/Freeplug.dev-on-light.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "freeplug-dev-dark.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "freeplug-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/Freeplug.dev-on-dark.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "freeplug-dev-light.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "freeplug-in-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/Freeplug-in.dev-on-light.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "freeplug-in-dev-dark.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "freeplug-in-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/Freeplug-in.dev-on-dark.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "freeplug-in-dev-light.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "freeplug-in",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/Freeplug.in-on-light.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "freeplug-in-dark.png"
+    },
+    {
+      "style": "pop-v2",
+      "brand": "freeplug-in",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-v2/Freeplug.in-on-dark.png",
+      "sourceKit": "kit-pop",
+      "sourceDir": "wordmark-variants-pop",
+      "sourceFile": "freeplug-in-light.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "fplgn",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/FPLGN-on-light.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "fplgn-dark.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "fplgn",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/FPLGN-on-dark.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "fplgn-light.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "freeplug-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/Freeplug.dev-on-light.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "freeplug-dev-dark.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "freeplug-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/Freeplug.dev-on-dark.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "freeplug-dev-light.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "freeplug-in-dev",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/Freeplug-in.dev-on-light.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "freeplug-in-dev-dark.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "freeplug-in-dev",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/Freeplug-in.dev-on-dark.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "freeplug-in-dev-light.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "freeplug-in",
+      "kitInk": "dark",
+      "garmentInk": "on-light",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/Freeplug.in-on-light.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "freeplug-in-dark.png"
+    },
+    {
+      "style": "pop-plate-v2",
+      "brand": "freeplug-in",
+      "kitInk": "light",
+      "garmentInk": "on-dark",
+      "publicPath": "/merch/buyer-wordmark-art/pop-plate-v2/Freeplug.in-on-dark.png",
+      "sourceKit": "kit-popplate",
+      "sourceDir": "wordmark-variants-pop-plate",
+      "sourceFile": "freeplug-in-light.png"
+    }
+  ]
+}

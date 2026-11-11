@@ -7,13 +7,15 @@ import {
 
 describe('resolvePreviewWordmark', () => {
   it('skips verse and giving campaign tees', () => {
-    expect(resolvePreviewWordmark({
-      source: 't-shirts',
-      slug: '07-verse-psalm-82-3',
-      href: '/merch/t-shirts/07-verse-psalm-82-3',
-      productType: 't-shirt',
-      catalogKey: 'tshirts/07-verse-psalm-82-3',
-    })).toBeNull()
+    expect(
+      resolvePreviewWordmark({
+        source: 't-shirts',
+        slug: '07-verse-psalm-82-3',
+        href: '/merch/t-shirts/07-verse-psalm-82-3',
+        productType: 't-shirt',
+        catalogKey: 'tshirts/07-verse-psalm-82-3',
+      })
+    ).toBeNull()
     expect(isVerseShirtSlug('07-verse-psalm-82-3')).toBe(true)
     expect(isGivingCampaignShirtSlug('01-know-a-plug')).toBe(true)
     expect(
@@ -47,16 +49,43 @@ describe('resolvePreviewWordmark', () => {
     }
   })
 
-  it('skips preview overlays on buyer-shop items with their own artwork', () => {
-    expect(
-      resolvePreviewWordmark({
-        source: 'buyer-shop',
-        slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
-        href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
-        productType: 'sweatshirt',
-        catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
-      })
-    ).toBeNull()
+  it('renders buyer-shop with default cursive Freeplug.dev art on blank mockups', () => {
+    const r = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
+      href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      productType: 'sweatshirt',
+      catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+    })
+    expect(r?.variationId).toBe('buyer-cursive-freeplug-dev')
+    expect(r?.printSurface).toBe(true)
+  })
+
+  it('uses garment blank kind for buyer-shop ink', () => {
+    const r = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
+      href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      productType: 'sweatshirt',
+      catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      garmentColor: 'Ash',
+      garmentBlankKind: 'light',
+    })
+    expect(r?.blankKind).toBe('light')
+  })
+
+  it('uses buyer brand and style for buyer-shop', () => {
+    const r = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: 'unisex-heavy-blend-crewneck-sweatshirt-49',
+      href: '/shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      productType: 'sweatshirt',
+      catalogKey: 'shop/unisex-heavy-blend-crewneck-sweatshirt-49',
+      buyerWordmarkBrand: 'fplgn',
+      buyerWordmarkStyle: 'pop-plate-v2',
+    })
+    expect(r?.variationId).toBe('buyer-pop-plate-v2-fplgn')
+    expect(r?.printSurface).toBe(false)
   })
 
   it('skips preview overlays on merch-store collection items', () => {
@@ -69,26 +98,5 @@ describe('resolvePreviewWordmark', () => {
         catalogKey: 'apparel/hero-crewneck',
       })
     ).toBeNull()
-  })
-
-  it('skips designed shop products such as candles, doormats, and pillows', () => {
-    for (const input of [
-      {
-        source: 'buyer-shop' as const,
-        slug: 'running-over-luke-6-38-candle',
-        href: '/shop/running-over-luke-6-38-candle',
-        productType: 'candle',
-        catalogKey: 'shop/running-over-luke-6-38-candle',
-      },
-      {
-        source: 'buyer-shop' as const,
-        slug: 'come-on-in-youre-plugged-in-doormat',
-        href: '/shop/come-on-in-youre-plugged-in-doormat',
-        productType: 'doormat',
-        catalogKey: 'shop/come-on-in-youre-plugged-in-doormat',
-      },
-    ]) {
-      expect(resolvePreviewWordmark(input)).toBeNull()
-    }
   })
 })

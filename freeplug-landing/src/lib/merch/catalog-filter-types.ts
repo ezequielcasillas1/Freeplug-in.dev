@@ -32,6 +32,9 @@ export type CatalogFilterItem = {
   availability: readonly CatalogAvailability[]
   designs: readonly CatalogDesign[]
   comingSoonLabel: boolean
+  /** Buyer-shop grid overlay + mockup blank kind alignment. */
+  gallery?: readonly string[]
+  galleryBlankKinds?: readonly ('light' | 'dark')[]
 }
 
 export type CatalogFilterState = {

@@ -52,6 +52,8 @@ export type ShopCatalogItem = {
   sizes: string[]
   variants: ShopVariant[]
   gallery: string[]
+  /** Per-slide garment blank kind (from `scripts/infer-shop-gallery-blank-kinds.mjs`). */
+  galleryBlankKinds?: ('light' | 'dark')[]
   gridImage: string
   placeholder: boolean
   printArea: ShopPrintArea

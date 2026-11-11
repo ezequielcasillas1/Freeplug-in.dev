@@ -1,6 +1,10 @@
 'use client'
 
 import { WordmarkTreatmentArt, wordmarkInkForBlank } from '@/features/merch/components/WordmarkTreatmentArt'
+import {
+  buyerWordmarkArtPublicPath,
+  parseBuyerWordmarkVariationId,
+} from '@/lib/merch/preview/buyer-wordmark-art-paths'
 import { getWordmarkVariation } from '@/lib/merch/preview/wordmark-variations'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
 
@@ -12,17 +16,38 @@ export function wordmarkInkForShirt(shirtColor: ShirtColor) {
 export function BrandWordmarkGraphic({
   variationId,
   shirtColor,
+  garmentBlankKind,
   compact,
   surface = 'contact',
 }: {
   variationId: string
   shirtColor: ShirtColor
+  /** Buyer raster ink must follow catalog/mockup blank kind, not shirtColor shorthand. */
+  garmentBlankKind?: 'light' | 'dark'
   compact?: boolean
   surface?: 'contact' | 'print'
 }) {
   const def = getWordmarkVariation(variationId)
   if (!def) return null
-  const blank = shirtColor === 'White' || shirtColor === 'Natural' ? 'light' : 'dark'
+  const fromShirt = shirtColor === 'White' || shirtColor === 'Natural' ? 'light' : 'dark'
+  const blank = garmentBlankKind ?? fromShirt
+  if (def.treatment === 'buyer-raster') {
+    const parsed = parseBuyerWordmarkVariationId(variationId)
+    if (!parsed) return null
+    const src = buyerWordmarkArtPublicPath(parsed.style, parsed.brand, blank)
+    const w = compact ? 56 : 76
+    const h = compact ? 15 : 20
+    return (
+      <image
+        href={src}
+        x={-w / 2}
+        y={-h / 2}
+        width={w}
+        height={h}
+        preserveAspectRatio="xMidYMid meet"
+      />
+    )
+  }
   const ink = wordmarkInkForBlank(blank)
   return (
     <WordmarkTreatmentArt

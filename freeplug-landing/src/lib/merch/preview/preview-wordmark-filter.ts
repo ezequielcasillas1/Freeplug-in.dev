@@ -2,7 +2,7 @@ import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { BRAND_NAME_KEYS, type BrandNameKey } from './brand-names'
 import { getWordmarkVariation } from './wordmark-variations'
 import { resolvePreviewWordmark, type ResolvePreviewWordmarkInput } from './preview-wordmark-resolve'
-import { isPlainCatalogGarment } from './preview-overlay-eligibility'
+import { buyerShopUsesPreviewWordmarkOverlay, isPlainCatalogGarment } from './preview-overlay-eligibility'
 import {
   isWordmarkStyleGroup,
   styleGroupForTreatment,
@@ -27,7 +27,7 @@ export function resolveInputFromCatalogItem(item: CatalogFilterItem): ResolvePre
 }
 
 export function isRectangularStyleCatalogItem(item: CatalogFilterItem): boolean {
-  if (!isPlainCatalogGarment(item.source)) return false
+  if (!isPlainCatalogGarment(item.source) && !buyerShopUsesPreviewWordmarkOverlay(item.source)) return false
   return resolvePreviewWordmark(resolveInputFromCatalogItem(item)) !== null
 }
 

@@ -8,9 +8,7 @@ import { publicHref } from '@/i18n/routing'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { ShopMockupPreview } from '@/features/merch/components/ShopMockupPreview'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
-import { shopProductImageSrc, shopShippingCents } from '@/lib/merch/shop/catalog'
-import { logoPathForBlank } from '@/lib/merch/shop/contrast'
-import { mockupsForShopColor } from '@/lib/merch/shop/printify-catalog'
+import { shopProductImageSrc, shopShippingCents } from '@/lib/merch/shop/shop-product-client-utils'
 import { isRemoteShopImage } from '@/lib/merch/shop/shop-listing-image'
 import type { ShopCatalogItem } from '@/lib/merch/shop/types'
 import {
@@ -21,30 +19,61 @@ import {
 } from '@/lib/merch/shop/variant-options'
 import { PRINTIFY_PRINT_AREA_DPI } from '@/lib/merch/shop/print-area'
 import { cn } from '@/lib/utils/cn'
+import { BuyerWordmarkPicker } from '@/features/merch/components/BuyerWordmarkPicker'
+import {
+  DEFAULT_BUYER_WORDMARK_BRAND,
+  type BuyerWordmarkBrandKey,
+} from '@/lib/merch/preview/buyer-wordmark-brand'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
-import { garmentWordmarkForShopSlug } from '@/lib/merch/shirts/garment-wordmark-for-shop'
+import {
+  DEFAULT_BUYER_WORDMARK_STYLE,
+  type BuyerWordmarkStyleKey,
+} from '@/lib/merch/preview/buyer-wordmark-style'
+import {
+  resolveShopPreviewBlankKind,
+  shopDefaultPreviewColor,
+  shopGalleryIndexForColor,
+} from '@/lib/merch/shop/shop-gallery-blank-kind'
+import { useRouter } from 'next/navigation'
 
 export function ShopProductClient({
   item,
   checkoutEnabled,
   hasPrintifyProduct,
+  wordmarkBaked = false,
+  initialWordmarkBrand = DEFAULT_BUYER_WORDMARK_BRAND,
+  initialWordmarkStyle = DEFAULT_BUYER_WORDMARK_STYLE,
+  initialColor = null,
 }: {
   item: ShopCatalogItem
   checkoutEnabled: boolean
   hasPrintifyProduct: boolean
+  wordmarkBaked?: boolean
+  initialWordmarkBrand?: BuyerWordmarkBrandKey
+  initialWordmarkStyle?: BuyerWordmarkStyleKey
+  /** Optional deep-link color (must match item.colors). */
+  initialColor?: string | null
 }) {
   const t = useTranslations('public.merch.shop')
   const locale = toAppLocale(useLocale())
+  const router = useRouter()
 
   const colorOptions = useMemo(() => uniqueColors(item.variants), [item.variants])
   const mode = useMemo(() => pickerMode(item.variants), [item.variants])
+  const defaultColor = useMemo(() => {
+    const hero = shopDefaultPreviewColor(item) ?? colorOptions[0] ?? ''
+    if (initialColor && colorOptions.includes(initialColor)) return initialColor
+    return hero
+  }, [colorOptions, initialColor, item])
 
-  const [color, setColor] = useState(colorOptions[0] ?? '')
-  const [size, setSize] = useState(() => sizesForColor(item.variants, colorOptions[0] ?? null)[0] ?? '')
+  const [color, setColor] = useState(defaultColor)
+  const [size, setSize] = useState(() => sizesForColor(item.variants, defaultColor || null)[0] ?? '')
   const [titleVariantId, setTitleVariantId] = useState(item.variants[0]?.id ?? 0)
-  const [galleryIndex, setGalleryIndex] = useState(0)
+  const [galleryIndex, setGalleryIndex] = useState(() => shopGalleryIndexForColor(item, defaultColor))
   const [quantity, setQuantity] = useState(1)
   const [designMode, setDesignMode] = useState<'freeplug' | 'custom'>('freeplug')
+  const [wordmarkBrand, setWordmarkBrand] = useState<BuyerWordmarkBrandKey>(initialWordmarkBrand)
+  const [wordmarkStyle, setWordmarkStyle] = useState<BuyerWordmarkStyleKey>(initialWordmarkStyle)
   const [rightsConfirmed, setRightsConfirmed] = useState(false)
   const [customPreview, setCustomPreview] = useState<string | null>(null)
   const [customPath, setCustomPath] = useState<string | null>(null)
@@ -74,28 +103,13 @@ export function ShopProductClient({
   const unitCents = variant?.retailCents ?? item.fromRetailCents
   const shippingCents = shopShippingCents(item, quantity, variant?.retailCents ?? item.fromRetailCents)
 
-  const colorForMockup = (variant?.color ?? color) || null
-  const printifyMockups = useMemo(
-    () => mockupsForShopColor(item.slug, colorForMockup),
-    [item.slug, colorForMockup]
-  )
-
   const gallerySlides = useMemo(() => {
-    if (designMode === 'custom') {
-      return item.gallery.map((src) => ({ kind: 'blank' as const, src }))
-    }
-    const branded = printifyMockups.map((src) => ({ kind: 'branded' as const, src }))
-    const blanks = item.gallery.map((src) => ({ kind: 'blank' as const, src }))
-    return [...branded, ...blanks]
-  }, [designMode, printifyMockups, item.gallery])
+    return item.gallery.map((src) => ({ kind: 'blank' as const, src }))
+  }, [item.gallery])
 
   const activeSlide = gallerySlides[galleryIndex] ?? gallerySlides[0]
-  const usePrintifyMockup = designMode === 'freeplug' && activeSlide?.kind === 'branded'
 
-  const logoSrc =
-    designMode === 'freeplug' && !usePrintifyMockup
-      ? logoPathForBlank(variant?.blankKind ?? 'light')
-      : null
+  const logoSrc = null
   const productSrc =
     designMode === 'custom'
       ? shopProductImageSrc(item, galleryIndex)
@@ -174,6 +188,26 @@ export function ShopProductClient({
   const canBuyCustom = designMode === 'custom' && Boolean(customPath) && Boolean(uploadToken) && rightsConfirmed && !customSoldOut
   const buyDisabled = !checkoutEnabled || (designMode === 'freeplug' ? !canBuyFreeplug : !canBuyCustom)
 
+  const previewGarmentBlankKind = useMemo(
+    () =>
+      resolveShopPreviewBlankKind({
+        item,
+        garmentColor: color || null,
+        variantBlankKind: variant?.blankKind,
+        displayImageSrc: productSrc,
+        galleryIndex,
+      }),
+    [color, galleryIndex, item, productSrc, variant?.blankKind]
+  )
+
+  function syncWordmarkQuery(brand: BuyerWordmarkBrandKey, style: BuyerWordmarkStyleKey) {
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+    params.set('wordmark_brand', brand)
+    params.set('wordmark_style', style)
+    if (color) params.set('color', color)
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
+
   const previewWordmark = useMemo(
     () =>
       designMode === 'freeplug'
@@ -184,9 +218,20 @@ export function ShopProductClient({
             productType: item.productType,
             catalogKey: `shop/${item.slug}`,
             garmentColor: color || null,
+            garmentBlankKind: previewGarmentBlankKind,
+            buyerWordmarkBrand: wordmarkBrand,
+            buyerWordmarkStyle: wordmarkStyle,
           })
         : null,
-    [color, designMode, item.productType, item.slug]
+    [
+      color,
+      designMode,
+      item.productType,
+      item.slug,
+      previewGarmentBlankKind,
+      wordmarkBrand,
+      wordmarkStyle,
+    ]
   )
 
   return (
@@ -202,7 +247,6 @@ export function ShopProductClient({
               placement={designMode === 'custom' ? customPlacement : placement}
               alt={t('mockupAlt', { title: item.title })}
               previewWordmark={previewWordmark}
-              garmentVariationId={garmentWordmarkForShopSlug(item.slug)}
             />
             {gallerySlides.length > 1 ? (
               <div className="flex gap-2 mt-3 flex-wrap">
@@ -249,7 +293,7 @@ export function ShopProductClient({
                 className={pill(designMode === 'freeplug')}
                 onClick={() => {
                   setDesignMode('freeplug')
-                  setGalleryIndex(0)
+                  setGalleryIndex(shopGalleryIndexForColor(item, color))
                 }}
               >
                 {t('designFreeplug')}
@@ -269,6 +313,29 @@ export function ShopProductClient({
               </button>
             </div>
 
+            {designMode === 'freeplug' ? (
+              <div className="mb-6">
+                <BuyerWordmarkPicker
+                  value={wordmarkBrand}
+                  onChange={(brand) => {
+                    setWordmarkBrand(brand)
+                    syncWordmarkQuery(brand, wordmarkStyle)
+                  }}
+                  styleValue={wordmarkStyle}
+                  onStyleChange={(style) => {
+                    setWordmarkStyle(style)
+                    syncWordmarkQuery(wordmarkBrand, style)
+                  }}
+                  bakedInPrintify={wordmarkBaked}
+                  labels={{
+                    heading: t('wordmarkHeading'),
+                    styleHeading: t('wordmarkStyleHeading'),
+                    bakedNote: t('wordmarkBakedNote'),
+                  }}
+                />
+              </div>
+            ) : null}
+
             {mode === 'color-size' || mode === 'color-only' ? (
               <label className="block text-sm text-gray-600 mb-3">
                 {t('colorLabel')}
@@ -280,7 +347,7 @@ export function ShopProductClient({
                     setColor(nextColor)
                     const nextSizes = sizesForColor(item.variants, nextColor)
                     setSize(nextSizes[0] ?? '')
-                    setGalleryIndex(0)
+                    setGalleryIndex(shopGalleryIndexForColor(item, nextColor))
                   }}
                 >
                   {colorOptions.map((c) => (
