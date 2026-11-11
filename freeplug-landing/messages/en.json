@@ -952,6 +952,7 @@
         "personalUse": "Free for personal use",
         "allMerch": "All merch",
         "shopAll": "Shop all",
+        "scrollMore": "More",
         "collections": {
           "drinkware": "Drinkware",
           "hats": "Hats",
@@ -974,7 +975,8 @@
         "meta": {
           "indexTitle": "Shop all merch | Freeplug",
           "indexDescription": "Browse 195 print-on-demand blanks with the Freeplug logo or your own art. US shipping at checkout.",
-          "productDescription": "Choose size and color, or upload your own design. Printed to order in the USA."
+          "productTitle": "{name} | Freeplug",
+          "productDescription": "{name}. Choose size and color, or upload your own design. Printed to order in the USA."
         },
         "eyebrow": "Shop",
         "heading": "Shop all merch",
@@ -1053,6 +1055,9 @@
         "fromPrice": "From {price}",
         "priceFrontOnly": "Front print: $15.99 (S–XL), $17.99 (2XL), $19.99 (3XL)",
         "priceFrontBack": "Front and back print: $21.99 (S–XL), $23.99 (2XL), $25.99 (3XL)",
+        "emptyFiltersTitle": "No tees match these filters",
+        "emptyFiltersBody": "Designed Freeplug tees don't use the rectangular name preview. Browse wordmarked blanks in the shop instead.",
+        "emptyFiltersShopCta": "Shop rectangular style",
         "breadcrumbMerch": "Merch",
         "cardAlt": "{title} mockup",
         "buyCta": "Buy shirt",

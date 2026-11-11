@@ -62,11 +62,11 @@ export function MerchSecondaryNav() {
       aria-label={t('subnav.aria')}
       className="sticky top-16 sm:top-20 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md"
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
         <div className="relative min-w-0">
           <ul
             ref={listRef}
-            className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain py-2 pl-0.5 pr-14 snap-x snap-mandatory scroll-px-4 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 max-lg:scroll-smooth"
+            className="flex w-full min-w-0 gap-1.5 sm:gap-2 overflow-x-auto overscroll-x-contain py-2 pl-0.5 pr-14 snap-x snap-mandatory scroll-px-4 scroll-smooth [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5"
           >
             {[...FONT_TABS, ...COLLECTION_TABS].map((tab) => {
               const href = publicHref(`/merch/${tab.slug}`, locale)
@@ -77,7 +77,7 @@ export function MerchSecondaryNav() {
                   <Link
                     href={href}
                     className={cn(
-                      'inline-flex items-center justify-center rounded-lg px-3 sm:px-4 min-h-11 min-w-[44px] text-sm font-medium whitespace-nowrap transition-colors',
+                      'inline-flex items-center justify-center rounded-lg px-2.5 sm:px-3 lg:px-3.5 min-h-11 min-w-[44px] text-sm font-medium whitespace-nowrap transition-colors',
                       active
                         ? 'bg-[#ba3d3d]/10 text-[#ba3d3d]'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -92,10 +92,10 @@ export function MerchSecondaryNav() {
           </ul>
           {scrollHint ? (
             <div
-              className="pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-end gap-0.5 bg-gradient-to-l from-white from-20% via-white/95 to-transparent pr-1 max-lg:flex lg:hidden"
+              className="pointer-events-none absolute inset-y-0 right-0 flex w-16 items-center justify-end gap-0.5 bg-gradient-to-l from-white from-20% via-white/95 to-transparent pr-1"
               aria-hidden
             >
-              <span className="text-[10px] font-medium text-gray-400 hidden min-[360px]:inline">More</span>
+              <span className="text-[10px] font-medium text-gray-400 hidden min-[360px]:inline">{t('subnav.scrollMore')}</span>
               <ChevronRight className="h-5 w-5 text-[#ba3d3d]/70" strokeWidth={2.5} />
             </div>
           ) : null}

@@ -952,6 +952,7 @@
         "personalUse": "Gratis para uso personal",
         "allMerch": "Toda la mercancía",
         "shopAll": "Ver todo",
+        "scrollMore": "Más",
         "collections": {
           "drinkware": "Bebidas",
           "hats": "Gorras",
@@ -974,7 +975,8 @@
         "meta": {
           "indexTitle": "Ver toda la mercancía | Freeplug",
           "indexDescription": "Explora 195 productos bajo pedido con el logo Freeplug o tu propio arte. Envío EE. UU. al pagar.",
-          "productDescription": "Elige talla y color, o sube tu diseño. Impreso bajo pedido en EE. UU."
+          "productTitle": "{name} | Freeplug",
+          "productDescription": "{name}. Elige talla y color, o sube tu diseño. Impreso bajo pedido en EE. UU."
         },
         "eyebrow": "Tienda",
         "heading": "Ver toda la mercancía",
@@ -1053,6 +1055,9 @@
         "fromPrice": "Desde {price}",
         "priceFrontOnly": "Solo frente: $15.99 (S–XL), $17.99 (2XL), $19.99 (3XL)",
         "priceFrontBack": "Frente y espalda: $21.99 (S–XL), $23.99 (2XL), $25.99 (3XL)",
+        "emptyFiltersTitle": "Ninguna camiseta coincide con estos filtros",
+        "emptyFiltersBody": "Las camisetas con diseño Freeplug no usan la vista previa rectangular del nombre. Explora blanks con marca en la tienda.",
+        "emptyFiltersShopCta": "Ver estilo rectangular",
         "breadcrumbMerch": "Merch",
         "cardAlt": "Mockup de {title}",
         "buyCta": "Comprar camiseta",

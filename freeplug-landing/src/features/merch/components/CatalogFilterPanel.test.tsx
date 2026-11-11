@@ -109,6 +109,22 @@ describe('CatalogFilterPanel i18n', () => {
     expect(screen.getByText('Estilo rectangular Freeplug')).toBeTruthy()
   })
 
+  it('hides rectangular style when the facet count is zero', () => {
+    const brandNames = Object.fromEntries(BRAND_NAME_KEYS.map((k) => [k, 0])) as Record<(typeof BRAND_NAME_KEYS)[number], number>
+    const styles = Object.fromEntries(WORDMARK_STYLE_GROUPS.map((k) => [k, 0])) as Record<(typeof WORDMARK_STYLE_GROUPS)[number], number>
+    render(
+      <CatalogFilterPanel
+        scope="t-shirts"
+        panelFacets={baseFacets}
+        previewWordmarkFacets={{ brandNames, rectangularStyle: 0, styles }}
+        state={EMPTY_CATALOG_FILTER}
+        onChange={() => {}}
+        onClear={() => {}}
+      />
+    )
+    expect(screen.queryByText('Freeplug rectangular style')).toBeNull()
+  })
+
   it('has a human label in EN and ES for every catalog product type slug', () => {
     for (const slug of listCatalogProductTypeSlugs()) {
       expect(typeof lookup(en, `public.merch.catalogFilter.productTypeLabels.${slug}`)).toBe('string')
