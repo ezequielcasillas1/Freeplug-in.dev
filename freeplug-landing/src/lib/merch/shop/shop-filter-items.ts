@@ -4,6 +4,7 @@ import {
   shopHasColorMockups,
   shopHasPrintifyFreeplug,
 } from './printify-catalog'
+import { shopListingImageSrc } from './shop-listing-image'
 import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 
 /** Build-time rows for /shop and /merch/all shop segment (195 items). */
@@ -25,7 +26,7 @@ export function listShopFilterItems(): CatalogFilterItem[] {
       href: `/shop/${item.slug}`,
       title: item.title,
       sortName: item.title,
-      image: item.gridImage,
+      image: shopListingImageSrc(item.slug, item.gridImage),
       fromPriceCents: item.fromRetailCents,
       featuredRank: item.featuredRank,
       category: item.tab,
