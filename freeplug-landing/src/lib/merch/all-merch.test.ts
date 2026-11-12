@@ -12,7 +12,7 @@ describe('all merch listing', () => {
   const items = listAllMerchItems()
 
   it('lists every t-shirt, collection product, and shop item once', () => {
-    expect(items.filter((i) => i.key.startsWith('tshirts/'))).toHaveLength(48)
+    expect(items.filter((i) => i.key.startsWith('tshirts/'))).toHaveLength(49)
     expect(items.filter((i) => i.key.startsWith('shop/'))).toHaveLength(195)
     expect(items.filter((i) => !i.key.startsWith('shop/') && !i.key.startsWith('tshirts/'))).toHaveLength(79)
     expect(new Set(items.map((i) => i.key)).size).toBe(items.length)
