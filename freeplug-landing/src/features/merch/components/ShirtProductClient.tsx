@@ -66,7 +66,11 @@ export function ShirtProductClient({
   const shippingCents = shirtShippingCents(quantity)
   const title = t(`products.${product.titleKey}`)
   const colorDesignNote = isColorDesignNoteSlug(product.slug) ? t(`colorDesignNotes.${product.slug}`) : null
-  const productDescription = product.slug === 'patience-undefined' ? t('productDescriptions.patience-undefined') : null
+  const productDescriptions = t.raw('productDescriptions') as Record<string, string> | undefined
+  const productDescription =
+    productDescriptions && typeof productDescriptions[product.slug] === 'string'
+      ? productDescriptions[product.slug]
+      : null
 
   return (
     <MerchPageChrome>

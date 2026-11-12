@@ -1133,7 +1133,13 @@
           "patience-undefined": "Patience Undefined",
           "33-world-work-for-you": "Work For You",
           "34-world-let-your-work-beat-fantasies": "Let Your Work/Job Beat Fantasies",
-          "35-world-straight-after-the-freeplug": "Straight After The Freeplug. After All."
+          "35-world-straight-after-the-freeplug": "Straight After The Freeplug. After All.",
+          "36-stand-144000-crest": "I Stand With the 144,000 — Crest",
+          "37-stand-144000-stencil": "I Stand With the 144,000 — Stencil",
+          "38-stand-144000-blend": "I Stand With the 144,000 — Blend",
+          "39-knock-doors-left-chest": "Knock on Doors — Left Chest",
+          "40-knock-doors-centered": "Knock on Doors — Centered",
+          "41-knock-doors-front-back": "Knock on Doors — Front and Back"
         },
         "colorDesignNotes": {
           "32-world-watch-out-rockefeller": "Color picks the design: Classic on White/Black, Bowler on Natural/Charcoal.",
@@ -1141,7 +1147,13 @@
           "35-world-straight-after-the-freeplug": "Color picks the mark: curly Fp on White/Black, letter FP on Natural/Charcoal."
         },
         "productDescriptions": {
-          "patience-undefined": "patience: undefined // Freeplug: solved."
+          "patience-undefined": "patience: undefined // Freeplug: solved.",
+          "36-stand-144000-crest": "Unisex soft tee with crest artwork. Printed to order.",
+          "37-stand-144000-stencil": "Unisex soft tee with stencil artwork. Printed to order.",
+          "38-stand-144000-blend": "Unisex soft tee with blend artwork. Printed to order.",
+          "39-knock-doors-left-chest": "Unisex soft tee with left-chest artwork. Printed to order.",
+          "40-knock-doors-centered": "Unisex soft tee with centered front artwork. Printed to order.",
+          "41-knock-doors-front-back": "Unisex soft tee with front and back print. Printed to order."
         }
       },
       "collections": {
