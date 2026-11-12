@@ -6,6 +6,9 @@ import {
   resolvePreviewWordmark,
   type ResolvePreviewWordmarkInput,
 } from '@/lib/merch/preview/preview-wordmark-resolve'
+import { DesignedTeeSloganOverlay } from '@/features/merch/components/DesignedTeeSloganOverlay'
+import { isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
+import type { ShirtColor } from '@/lib/merch/shirts/catalog'
 import { cn } from '@/lib/utils/cn'
 
 type MerchPreviewFigureProps = {
@@ -37,11 +40,18 @@ export function MerchPreviewFigure({
         garmentColor: preview.garmentColor ?? null,
       })
     : null
+  const shirtColor = (preview.garmentColor ?? 'Black') as ShirtColor
+  const designedSlogan =
+    showOverlay && preview.source === 't-shirts' && isSupremeStyleShirtSlug(preview.slug)
 
   return (
     <figure
       data-testid="merch-shirt-mockup"
-      className={cn('overflow-hidden rounded-2xl border border-gray-200 bg-white', className)}
+      className={cn(
+        designedSlogan ? 'overflow-visible' : 'overflow-hidden',
+        'rounded-2xl border border-gray-200 bg-white',
+        className
+      )}
     >
       <div className="relative w-full">
         <Image
@@ -54,7 +64,9 @@ export function MerchPreviewFigure({
           sizes={sizes}
           className="block h-auto w-full max-w-full object-contain"
         />
-        {overlay ? (
+        {designedSlogan ? (
+          <DesignedTeeSloganOverlay slug={preview.slug} shirtColor={shirtColor} />
+        ) : overlay ? (
           <div className="pointer-events-none absolute inset-0 z-[2]" aria-hidden>
             <CatalogPreviewWordmarkOverlay config={overlay} />
           </div>

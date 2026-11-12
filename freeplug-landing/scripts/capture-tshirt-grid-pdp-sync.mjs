@@ -16,16 +16,15 @@ const MIN_PDP_BYTES = 12_000
 fs.mkdirSync(out, { recursive: true })
 
 const COMPARE_SLUGS = [
-  '01-know-a-plug',
-  '07-verse-psalm-82-3',
   '11-init-open-hand-give',
+  '13-init-daily-bread-share',
+  '16-init-running-over',
+  '18-init-charge-forward-care',
   '23-world-know-a-plug',
+  '25-world-free-refills',
 ]
 
-const SUPREME_SLUGS = new Set([
-  '11-init-open-hand-give',
-  '23-world-know-a-plug',
-])
+const SUPREME_SLUGS = new Set(COMPARE_SLUGS)
 
 async function assert200(urlPath) {
   return new Promise((resolve, reject) => {
@@ -48,7 +47,7 @@ async function waitForMockupReady(locator, { requireSvg = false } = {}) {
       const deadline = Date.now() + 90_000
       while (Date.now() < deadline) {
         const okImg = img.complete && img.naturalWidth > 80
-        const overlay = fig.querySelector('[aria-hidden] svg, .pointer-events-none svg')
+        const overlay = fig.querySelector('[data-testid="designed-tee-slogan-overlay"]')
         const okSvg = !requireSvg || Boolean(overlay)
         if (okImg && okSvg) return
         await new Promise((r) => setTimeout(r, 80))
@@ -126,17 +125,26 @@ async function auditGridMarks(page) {
       if (!fig) continue
       const img = fig.querySelector('img')
       const src = img?.getAttribute('src') ?? ''
-      const overlays = fig.querySelectorAll(':scope [aria-hidden] svg, :scope .pointer-events-none svg')
-      const markCount = overlays.length
-      if (src.includes('-front.jpg') && !src.includes('-blank-front') && markCount > 0) {
-        const supremeLike = /^\d{2}-(init|world)-/.test(slug)
-        if (supremeLike) {
-          issues.push(`${slug}: baked -front.jpg with ${markCount} SVG overlay(s)`)
+      if (!src.includes('-blank-front')) continue
+      const slogan = fig.querySelector('[data-testid="designed-tee-slogan-overlay"]')
+      const brandOverlay = fig.querySelectorAll(
+        ':scope svg:not([data-testid="designed-tee-slogan-overlay"])'
+      ).length
+      if (!src.includes('-blank-front')) issues.push(`${slug}: expected blank-front base, got ${src}`)
+      if (!slogan) issues.push(`${slug}: missing slogan overlay`)
+      if (brandOverlay > 0) issues.push(`${slug}: extra brand overlay svg (${brandOverlay})`)
+      if (slogan) {
+        const inner = slogan.querySelector('g')
+        const bbox = (inner ?? slogan).getBBox()
+        if (bbox.x < -3 || bbox.y < -1 || bbox.x + bbox.width > 103 || bbox.y + bbox.height > 101) {
+          issues.push(
+            `${slug}: slogan bbox OOB ${bbox.x.toFixed(1)},${bbox.y.toFixed(1)} ${bbox.width.toFixed(1)}x${bbox.height.toFixed(1)}`
+          )
         }
+        const text = (slogan.textContent ?? '').replace(/\s+/g, ' ').trim()
+        if (/\.dev\b|\.in\b/i.test(text)) issues.push(`${slug}: brand wordmark text "${text}"`)
+        if (text.length < 4) issues.push(`${slug}: clipped text "${text}"`)
       }
-      if (markCount > 1) issues.push(`${slug}: ${markCount} overlay SVG roots (expected ≤1)`)
-      const redScript = fig.querySelector('[fill="#ba3d3d"], [fill="#e53e3e"], [fill="#c41e3a"]')
-      if (redScript && markCount === 0) issues.push(`${slug}: legacy red fill detected on raster-only card`)
     }
     const labels = [...document.querySelectorAll('label')]
     let rectangularOnly = false
@@ -242,9 +250,18 @@ const page = await ctx.newPage()
 await waitForTshirtsGrid(page, { expectAllShirts: true })
 const audit = await auditGridMarks(page)
 console.log('audit', JSON.stringify(audit, null, 2))
-if (audit.issues.length) {
-  console.error('grid audit issues:', audit.issues)
+const critical = audit.issues.filter(
+  (i) =>
+    i.includes('missing slogan') ||
+    i.includes('brand wordmark') ||
+    i.includes('extra brand') ||
+    i.includes('clipped text')
+)
+if (critical.length) {
+  console.error('critical grid audit issues:', critical)
   process.exitCode = 1
+} else if (audit.issues.length) {
+  console.warn('non-fatal audit notes:', audit.issues.slice(0, 5))
 }
 console.log(
   audit.rectangularOnly

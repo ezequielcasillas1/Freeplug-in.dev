@@ -21,16 +21,16 @@ describe('preview overlay layout', () => {
     expect(scale).toBeCloseTo(0.25, 2)
   })
 
-  it('overlays print-surface wordmarks on init/world rectangular tees', () => {
-    const r = resolvePreviewWordmark({
-      source: 't-shirts',
-      slug: '28-world-taste-the-charge',
-      href: '/merch/t-shirts/28-world-taste-the-charge',
-      productType: 't-shirt',
-      catalogKey: 'tshirts/28-world-taste-the-charge',
-      garmentColor: 'Black',
-    })
-    expect(r?.printSurface).toBe(true)
-    expect(r?.placement.top).toBeCloseTo(0.577, 2)
+  it('does not use catalog wordmark overlays on init/world tees', () => {
+    expect(
+      resolvePreviewWordmark({
+        source: 't-shirts',
+        slug: '28-world-taste-the-charge',
+        href: '/merch/t-shirts/28-world-taste-the-charge',
+        productType: 't-shirt',
+        catalogKey: 'tshirts/28-world-taste-the-charge',
+        garmentColor: 'Black',
+      })
+    ).toBeNull()
   })
 })

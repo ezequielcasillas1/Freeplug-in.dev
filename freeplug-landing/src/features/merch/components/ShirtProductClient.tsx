@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
-import { ShirtMockupFigure } from '@/features/merch/components/ShirtMockupFigure'
+import { ShirtHeroMockup } from '@/features/merch/components/ShirtHeroMockup'
 import { MerchShirtCheckoutButton } from '@/features/merch/components/MerchShirtCheckoutButton'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
@@ -23,8 +23,6 @@ import {
   type ShirtSize,
 } from '@/lib/merch/shirts/catalog'
 import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
-import { usePreviewOverlaysEnabled } from '@/features/merch/hooks/usePreviewOverlaysEnabled'
-import { shirtGarmentDisplayMockupSrc } from '@/lib/merch/shirts/shirt-display-mockup'
 import { cn } from '@/lib/utils/cn'
 
 const SWATCH: Record<ShirtColor, string> = {
@@ -60,13 +58,9 @@ export function ShirtProductClient({
   const [size, setSize] = useState<ShirtSize>('M')
   const [quantity, setQuantity] = useState(1)
   const [view, setView] = useState<'front' | 'back'>('front')
-  const layersOn = usePreviewOverlaysEnabled()
 
   const canToggleBack = product.backPrint
-  const mockupSrc = useMemo(() => {
-    const side = view === 'back' && canToggleBack ? 'back' : 'front'
-    return shirtGarmentDisplayMockupSrc(product.slug, color, side, { designedSvgFront: layersOn })
-  }, [canToggleBack, color, layersOn, product.slug, view])
+  const heroSide = view === 'back' && canToggleBack ? 'back' : 'front'
 
   const unitCents = shirtPriceCents(entry, size)
   const shippingCents = shirtShippingCents(quantity)
@@ -107,13 +101,11 @@ export function ShirtProductClient({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 min-w-0">
               <motion.div variants={fadeInUp} className="min-w-0 space-y-3 sm:space-y-4 order-1">
                 <Suspense fallback={<div className="aspect-[5/6] w-full rounded-2xl border border-gray-200 bg-zinc-50" />}>
-                  <ShirtMockupFigure
+                  <ShirtHeroMockup
                     slug={product.slug}
-                    src={mockupSrc}
-                    alt={t('mockupAlt', { title, color, view })}
-                    width={1000}
-                    height={1200}
                     shirtColor={color}
+                    side={heroSide}
+                    alt={t('mockupAlt', { title, color, view })}
                     priority
                     sizes="(max-width: 1024px) 100vw, 480px"
                   />

@@ -14,6 +14,7 @@ type ShirtMockupFigureProps = {
   width: number
   height: number
   shirtColor: ShirtColor
+  side?: 'front' | 'back'
   className?: string
   priority?: boolean
   sizes?: string
@@ -27,13 +28,14 @@ export function ShirtMockupFigure({
   width,
   height,
   shirtColor,
+  side: sideProp,
   className,
   priority,
   sizes = '(max-width: 1024px) 100vw, 480px',
   showOverlay = true,
 }: ShirtMockupFigureProps) {
   const layersOn = usePreviewOverlaysEnabled()
-  const side = shirtGarmentDisplayMockupSideFromPublicPath(src)
+  const side = sideProp ?? shirtGarmentDisplayMockupSideFromPublicPath(src)
   const displaySrc = shirtGarmentDisplayMockupSrc(slug, shirtColor, side, { designedSvgFront: layersOn })
   const designedFrontArt = shirtUsesDesignedSvgFront(slug, side)
   const overlayOn = layersOn && (designedFrontArt || showOverlay)
