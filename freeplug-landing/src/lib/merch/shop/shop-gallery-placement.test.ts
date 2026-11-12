@@ -125,6 +125,21 @@ describe('shopGalleryPlacement', () => {
     expect(p!.top).toBeLessThan(0.38)
   })
 
+  it('cotton tote 553 marks front green bag only', () => {
+    const p = resolveShopGalleryPlacement({
+      slug: 'cotton-tote-bag-553',
+      productType: 'bag',
+      catalogKey: 'shop/cotton-tote-bag-553',
+      galleryIndex: 0,
+      galleryLength: 2,
+    })
+    expect(p!.left).toBeGreaterThan(0.22)
+    expect(p!.left).toBeLessThan(0.32)
+    expect(p!.top).toBeGreaterThan(0.46)
+    expect(p!.top).toBeLessThan(0.54)
+    expect(p!.inkBlankKind).toBe('light')
+  })
+
   it('cotton tote 553-1 stays hidden and is never the hero slide', () => {
     expect(isShopGallerySlideHidden('cotton-tote-bag-553', 1)).toBe(true)
     const item = catalogItems.find((i) => i.slug === 'cotton-tote-bag-553')!

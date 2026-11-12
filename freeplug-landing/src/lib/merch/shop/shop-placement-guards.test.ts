@@ -6,8 +6,10 @@ import {
   auditHeroPlacementGuards,
   chestDefaultPlacement,
   heroSlideHasExplicitPlacement,
+  MAX_MARK_SURFACE_LUM_SPLIT,
   MAX_NON_FABRIC_SURFACE_SHARE,
   MAX_SKIN_SHARE_UNDER_OVERLAY,
+  markSurfaceLuminanceSplit,
   nonFabricSurfaceShareUnderPlacement,
   skinShareUnderPlacement,
 } from './shop-placement-guards'
@@ -40,6 +42,21 @@ describe('shop placement guards', () => {
     expect(patch).not.toBeNull()
     expect(patch!.top).toBeLessThan(0.34)
     expect(patch!.inkBlankKind).toBe('dark')
+  })
+
+  it('cotton tote 553 mark does not span stacked bags', async () => {
+    const item = catalog.items.find((i) => i.slug === 'cotton-tote-bag-553')!
+    const hero = shopHeroGalleryIndex(item)
+    const placement = resolveShopGalleryPlacement({
+      slug: item.slug,
+      productType: item.productType,
+      catalogKey: `shop/${item.slug}`,
+      galleryIndex: hero,
+      galleryLength: item.gallery.length,
+    })!
+    const split = await markSurfaceLuminanceSplit(item.gallery[hero]!, placement)
+    expect(split).not.toBeNull()
+    expect(split!).toBeLessThanOrEqual(MAX_MARK_SURFACE_LUM_SPLIT)
   })
 
   it('pet tank 571 mark sits on fabric not fur', async () => {

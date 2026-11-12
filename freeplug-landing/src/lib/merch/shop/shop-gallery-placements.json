@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T03:52:41.442Z",
+  "generatedAt": "2026-11-12T03:58:04.556Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -941,10 +941,10 @@
     "cotton-tote-bag-553": {
       "slides": [
         {
-          "top": 0.48,
-          "left": 0.55,
-          "width": 0.22,
-          "inkBlankKind": "dark"
+          "top": 0.5,
+          "left": 0.27,
+          "width": 0.16,
+          "inkBlankKind": "light"
         },
         {
           "hide": true

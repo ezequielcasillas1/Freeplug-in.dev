@@ -415,10 +415,10 @@
     "cotton-tote-bag-553": {
       "slides": [
         {
-          "top": 0.48,
-          "left": 0.55,
-          "width": 0.22,
-          "inkBlankKind": "dark"
+          "top": 0.5,
+          "left": 0.27,
+          "width": 0.16,
+          "inkBlankKind": "light"
         },
         {
           "hide": true

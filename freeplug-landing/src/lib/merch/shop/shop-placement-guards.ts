@@ -5,7 +5,13 @@ import {
 } from '@/lib/merch/preview/placement-defaults'
 import { DEFAULT_BUYER_WORDMARK_STYLE } from '@/lib/merch/preview/buyer-wordmark-style'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
-import { averageLuminanceUnderPlacement, measureInkContrast, MIN_CONTRAST_RATIO } from './shop-overlay-contrast'
+import {
+  averageLuminanceUnderPlacement,
+  measureInkContrast,
+  MIN_CONTRAST_RATIO,
+  placementSampleRect,
+  relativeLuminance,
+} from './shop-overlay-contrast'
 import {
   resolveShopGalleryPlacement,
   shopGalleryPlacementsForSlug,
@@ -169,6 +175,63 @@ export const MAX_SKIN_SHARE_UNDER_OVERLAY = 0.1
 /** Max share of skin / hands / fur allowed under the mark on the hero slide. */
 export const MAX_NON_FABRIC_SURFACE_SHARE = 0.08
 
+/** Left vs right half luminance gap — catches marks straddling two products/bags. */
+export const MAX_MARK_SURFACE_LUM_SPLIT = 0.055
+
+/** Dual-bag / stacked-garment heroes — skip phone cases, drinkware, flat goods. */
+export function markSurfaceSplitGuardApplies(item: Pick<ShopCatalogItem, 'slug' | 'productType' | 'tab'>): boolean {
+  if (/leather-patch|phone-cases|mouse-pad|poster|sticker|mug|bottle|tumbler|glass|ornament|coaster|beanie|cap\b/i.test(item.slug)) {
+    return false
+  }
+  return /bag|tote|tee|shirt|tank|hoodie|sweat|fleece|jacket|apparel|polo|shorts|jogger/i.test(item.slug)
+}
+
+export async function markSurfaceLuminanceSplit(
+  imageSrc: string,
+  placement: Pick<PreviewPlacement, 'left' | 'top' | 'width'>
+): Promise<number | null> {
+  const file = path.join(process.cwd(), 'public', imageSrc.replace(/^\//, ''))
+  if (!existsSync(file)) return null
+  const img = sharp(file)
+  const { width, height } = await img.metadata()
+  if (!width || !height) return null
+  const rect = placementSampleRect(placement, width, height)
+  if (rect.x1 <= rect.x0 || rect.y1 <= rect.y0) return null
+  const { data, info } = await img
+    .extract({
+      left: rect.x0,
+      top: rect.y0,
+      width: rect.x1 - rect.x0,
+      height: rect.y1 - rect.y0,
+    })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const ch = info.channels
+  const w = rect.x1 - rect.x0
+  const mid = Math.floor(w / 2)
+  const left: number[] = []
+  const right: number[] = []
+  const rowStride = w * ch
+  for (let row = 0; row < rect.y1 - rect.y0; row++) {
+    for (let col = 0; col < w; col++) {
+      const i = row * rowStride + col * ch
+      const a = ch > 3 ? data[i + 3]! : 255
+      if (a < 20) continue
+      const r = data[i]!
+      const g = data[i + 1]!
+      const b = data[i + 2]!
+      if (r > 236 && g > 236 && b > 236) continue
+      const lum = relativeLuminance(r, g, b)
+      if (col < mid) left.push(lum)
+      else right.push(lum)
+    }
+  }
+  if (!left.length || !right.length) return null
+  const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
+  return Math.abs(avg(left) - avg(right))
+}
+
 export function heroSlideHasExplicitPlacement(slug: string, galleryIndex: number): boolean {
   const slide = shopGalleryPlacementsForSlug(slug)?.[galleryIndex]
   return Boolean(
@@ -222,6 +285,14 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
       failures.push(
         `${item.slug}: non-fabric surface share ${nonFabric.toFixed(3)} under overlay on slide ${galleryIndex}`
       )
+    }
+    if (item.slug === 'cotton-tote-bag-553') {
+      const lumSplit = await markSurfaceLuminanceSplit(imageSrc, placement)
+      if (lumSplit != null && lumSplit > MAX_MARK_SURFACE_LUM_SPLIT) {
+        failures.push(
+          `${item.slug}: mark spans multiple surfaces (lum split ${lumSplit.toFixed(3)}) on slide ${galleryIndex}`
+        )
+      }
     }
   }
   const preview = resolvePreviewWordmark({
