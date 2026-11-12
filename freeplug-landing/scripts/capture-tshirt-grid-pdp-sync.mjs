@@ -7,6 +7,16 @@ import { chromium } from 'playwright'
 import fs from 'node:fs'
 import path from 'node:path'
 import http from 'node:http'
+import { fileURLToPath } from 'node:url'
+import { detectDuplicateSloganBands } from './lib/slogan-duplicate-detect.mjs'
+
+const specs = JSON.parse(
+  fs.readFileSync(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), '../src/lib/merch/shirts/supreme-preview-specs.json'),
+    'utf8'
+  )
+)
+const supremeBySlug = new Map(specs.map((s) => [s.slug, s]))
 
 const base = process.env.BASE_URL ?? 'http://127.0.0.1:3000'
 const out = process.env.ARTIFACT_DIR ?? '/opt/cursor/artifacts'
@@ -128,44 +138,12 @@ async function auditGridMarks(page) {
       const supreme = /\/(1[1-9]|2\d|30)-/.test(slug)
       if (!supreme) continue
       const slogan = fig.querySelector('[data-testid="designed-tee-slogan-overlay"]')
-      const brandOverlay = fig.querySelectorAll(
-        ':scope svg:not([data-testid="designed-tee-slogan-overlay"])'
-      ).length
+      const brandOverlay = fig.querySelectorAll(':scope svg').length
       if (!/-front\.jpg/i.test(src) || /blank-front/.test(src)) {
         issues.push(`${slug}: expected *-front.jpg base, got ${src}`)
       }
-      if (!slogan) issues.push(`${slug}: missing slogan overlay`)
-      if (brandOverlay > 0) issues.push(`${slug}: extra brand overlay svg (${brandOverlay})`)
-      if (slogan) {
-        const printMaxW = Number(slogan.getAttribute('data-print-max-w') ?? 0)
-        const stripW = Number(slogan.getAttribute('data-strip-w') ?? 0)
-        const stripH = Number(slogan.getAttribute('data-strip-h') ?? 0)
-        if (stripW > printMaxW + 0.6) {
-          issues.push(`${slug}: strip width ${stripW.toFixed(1)} > print ${printMaxW.toFixed(1)}`)
-        }
-        for (const rect of slogan.querySelectorAll('rect')) {
-          const fill = rect.getAttribute('fill') ?? ''
-          if (!fill || fill === 'none' || fill === 'transparent') continue
-          const rw = Number(rect.getAttribute('width') ?? 0)
-          const rh = Number(rect.getAttribute('height') ?? 0)
-          if (rw > printMaxW + 0.6) {
-            issues.push(`${slug}: opaque panel too wide ${rw.toFixed(1)} > ${printMaxW.toFixed(1)}`)
-          }
-          if (rh > stripH * 1.4 + 0.5) {
-            issues.push(`${slug}: opaque panel too tall ${rh.toFixed(1)} > strip ${stripH.toFixed(1)}`)
-          }
-        }
-        const inner = slogan.querySelector('g')
-        const bbox = (inner ?? slogan).getBBox()
-        if (bbox.x < -3 || bbox.y < -1 || bbox.x + bbox.width > 103 || bbox.y + bbox.height > 101) {
-          issues.push(
-            `${slug}: slogan bbox OOB ${bbox.x.toFixed(1)},${bbox.y.toFixed(1)} ${bbox.width.toFixed(1)}x${bbox.height.toFixed(1)}`
-          )
-        }
-        const text = (slogan.textContent ?? '').replace(/\s+/g, ' ').trim()
-        if (/\.dev\b|\.in\b/i.test(text)) issues.push(`${slug}: brand wordmark text "${text}"`)
-        if (text.length < 4) issues.push(`${slug}: clipped text "${text}"`)
-      }
+      if (slogan) issues.push(`${slug}: slogan SVG overlay must be off (live PDP parity)`)
+      if (brandOverlay > 0) issues.push(`${slug}: extra overlay svg (${brandOverlay})`)
     }
     const labels = [...document.querySelectorAll('label')]
     let rectangularOnly = false
@@ -188,7 +166,7 @@ async function captureGridCard(page, slug) {
   const card = page.locator(`a[href*="/merch/t-shirts/${slug}"]`).first()
   await card.scrollIntoViewIfNeeded()
   const mockup = card.locator('[data-testid="merch-shirt-mockup"]')
-  await waitForMockupReady(mockup, { requireSvg: SUPREME_SLUGS.has(slug) })
+  await waitForMockupReady(mockup, { requireSvg: false })
   const box = await mockup.boundingBox()
   if (!box || box.width < 50) throw new Error(`grid mockup box too small for ${slug}`)
   const file = path.join(out, `tshirt-grid-card-${slug}-en-1280.png`)
@@ -201,7 +179,7 @@ async function captureGridCard(page, slug) {
 async function capturePdp(page, slug) {
   await page.goto(`${base}/merch/t-shirts/${slug}`, { waitUntil: 'networkidle', timeout: 180_000 })
   const mockup = page.locator('[data-testid="merch-shirt-mockup"]').first()
-  await waitForMockupReady(mockup, { requireSvg: SUPREME_SLUGS.has(slug) })
+  await waitForMockupReady(mockup, { requireSvg: false })
   const box = await mockup.boundingBox()
   if (!box) throw new Error(`PDP mockup missing for ${slug}`)
   const file = path.join(out, `tshirt-pdp-${slug}-en-1280.png`)
@@ -273,13 +251,10 @@ const audit = await auditGridMarks(page)
 console.log('audit', JSON.stringify(audit, null, 2))
 const critical = audit.issues.filter(
   (i) =>
-    i.includes('missing slogan') ||
-    i.includes('brand wordmark') ||
-    i.includes('extra brand') ||
-    i.includes('clipped text') ||
-    i.includes('opaque panel') ||
-    i.includes('strip width') ||
-    i.includes('expected *-front')
+    i.includes('slogan SVG') ||
+    i.includes('extra overlay') ||
+    i.includes('expected *-front') ||
+    i.includes('duplicate slogan')
 )
 if (critical.length) {
   console.error('critical grid audit issues:', critical)
@@ -294,10 +269,20 @@ console.log(
 )
 console.log('preview on photos default:', audit.previewOnPhotos)
 
+const duplicateIssues = []
 for (const slug of COMPARE_SLUGS) {
-  await captureGridCard(page, slug)
+  const gridFile = await captureGridCard(page, slug)
   await capturePdp(page, slug)
+  const spec = supremeBySlug.get(slug)
+  if (spec) {
+    const dup = await detectDuplicateSloganBands(gridFile, spec.placement)
+    if (dup.duplicate) duplicateIssues.push(`${slug}: ${dup.detail}`)
+  }
   console.log('pair ok', slug)
+}
+if (duplicateIssues.length) {
+  console.error('duplicate slogan bands:', duplicateIssues)
+  process.exitCode = 1
 }
 
 await fullGridShot(page, '/merch/t-shirts', 'tshirts-grid-en-1280.png')

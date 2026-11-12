@@ -1,7 +1,6 @@
 'use client'
 
 import { ShirtMockupFigure } from '@/features/merch/components/ShirtMockupFigure'
-import { usePreviewOverlaysEnabled } from '@/features/merch/hooks/usePreviewOverlaysEnabled'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
 import { shirtGarmentDisplayMockupSrc } from '@/lib/merch/shirts/shirt-display-mockup'
 
@@ -25,8 +24,7 @@ export function ShirtHeroMockup({
   showOverlay?: boolean
   className?: string
 }) {
-  const layersOn = usePreviewOverlaysEnabled()
-  const src = shirtGarmentDisplayMockupSrc(slug, shirtColor, side, { designedSvgFront: layersOn })
+  const src = shirtGarmentDisplayMockupSrc(slug, shirtColor, side)
 
   return (
     <ShirtMockupFigure

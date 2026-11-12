@@ -4,7 +4,7 @@ import {
   shirtDefaultSelectedColor,
   shirtListCardFrontMockup,
 } from '@/lib/merch/shirts/catalog'
-import { shirtGarmentDisplayMockupSrc, shirtUsesDesignedSvgFront } from '@/lib/merch/shirts/shirt-display-mockup'
+import { shirtGarmentDisplayMockupSrc } from '@/lib/merch/shirts/shirt-display-mockup'
 import { isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
 
 describe('shirt display mockup (grid vs PDP)', () => {
@@ -18,15 +18,12 @@ describe('shirt display mockup (grid vs PDP)', () => {
     expect(grid.color).toBe(color)
   })
 
-  it('uses front mockup base for init/world rectangular tees (SVG covers legacy slogan only)', () => {
+  it('init/world rectangular tees use baked *-front.jpg (live PDP parity)', () => {
     for (const p of products) {
-      const supreme = isSupremeStyleShirtSlug(p.slug)
+      if (!isSupremeStyleShirtSlug(p.slug)) continue
       const src = shirtGarmentDisplayMockupSrc(p.slug, shirtDefaultSelectedColor(p.slug), 'front')
-      if (supreme) {
-        expect(src).toMatch(/-front\.jpg$/)
-        expect(src).not.toContain('-blank-front')
-        expect(shirtUsesDesignedSvgFront(p.slug, 'front')).toBe(true)
-      }
+      expect(src).toMatch(/-front\.jpg$/)
+      expect(src).not.toContain('-blank-front')
     }
   })
 

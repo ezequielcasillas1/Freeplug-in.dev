@@ -4,7 +4,6 @@ import type { ShirtColor } from '@/lib/merch/shirts/catalog'
 import {
   shirtGarmentDisplayMockupSideFromPublicPath,
   shirtGarmentDisplayMockupSrc,
-  shirtUsesDesignedSvgFront,
 } from '@/lib/merch/shirts/shirt-display-mockup'
 
 type ShirtMockupFigureProps = {
@@ -36,9 +35,9 @@ export function ShirtMockupFigure({
 }: ShirtMockupFigureProps) {
   const layersOn = usePreviewOverlaysEnabled()
   const side = sideProp ?? shirtGarmentDisplayMockupSideFromPublicPath(src)
-  const displaySrc = shirtGarmentDisplayMockupSrc(slug, shirtColor, side, { designedSvgFront: layersOn })
-  const designedFrontArt = shirtUsesDesignedSvgFront(slug, side)
-  const overlayOn = layersOn && (designedFrontArt || showOverlay)
+  const displaySrc = shirtGarmentDisplayMockupSrc(slug, shirtColor, side)
+  const overlayOn = layersOn && showOverlay
+
   return (
     <MerchPreviewFigure
       showOverlay={overlayOn}
