@@ -17,6 +17,20 @@ const PDP_SLUGS = [
   ['pet-bandana-562', 'pdp-pet-bandana-562.png'],
 ]
 
+const PDP_ALL_SLIDES = [
+  'mid-profile-baseball-cap-with-leather-patch-rect-2707',
+  'dad-hat-with-leather-patch-round-1287',
+]
+
+const OVERSIZED_TOP_SLUGS = [
+  'laguna-raglan-sweatshirt-3554',
+  'unisex-jersey-tank-39',
+  'women-s-cotton-tee-472',
+  'unisex-jersey-short-sleeve-tee-12',
+  'pet-tank-top-571',
+  'women-s-ideal-racerback-tank-18',
+]
+
 mkdirSync(ARTIFACTS, { recursive: true })
 const browser = await chromium.launch()
 
@@ -43,8 +57,49 @@ async function shotPdp(slug, fileName) {
   await page.close()
 }
 
+async function waitHeroOverlay(page) {
+  await page
+    .locator('[data-testid="shop-pdp-hero-mockup"] svg image, [data-testid="shop-pdp-hero-mockup"] svg g')
+  .first()
+  .waitFor({ state: 'attached', timeout: 60_000 })
+  .catch(() => {})
+  await page.waitForTimeout(800)
+}
+
 for (const [slug, fileName] of PDP_SLUGS) {
   await shotPdp(slug, fileName)
+}
+
+for (const slug of PDP_ALL_SLIDES) {
+  const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } })
+  await page.goto(`${base}/shop/${slug}`, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+  await page.waitForLoadState('networkidle', { timeout: 60_000 }).catch(() => {})
+  const hero = await page.waitForSelector('[data-testid="shop-pdp-hero-mockup"]', { state: 'attached', timeout: 90_000 })
+  await waitHeroOverlay(page)
+  await hero.screenshot({ path: path.join(ARTIFACTS, `pdp-${slug}-hero-default.png`) })
+  const thumbs = page.locator('[data-testid="shop-pdp-hero-mockup"]').locator('..').locator('button')
+  const count = await thumbs.count()
+  for (let i = 0; i < count; i++) {
+    const btn = thumbs.nth(i)
+    if (await btn.isDisabled()) continue
+    await btn.click()
+    await page.waitForTimeout(600)
+    await waitHeroOverlay(page)
+    await (await page.$('[data-testid="shop-pdp-hero-mockup"]')).screenshot({
+      path: path.join(ARTIFACTS, `pdp-${slug}-slide-${i}.png`),
+    })
+  }
+  await page.close()
+}
+
+for (const slug of OVERSIZED_TOP_SLUGS) {
+  const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } })
+  await page.goto(`${base}/shop/${slug}`, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+  await page.waitForLoadState('networkidle', { timeout: 60_000 }).catch(() => {})
+  const hero = await page.waitForSelector('[data-testid="shop-pdp-hero-mockup"]', { state: 'attached', timeout: 90_000 })
+  await waitHeroOverlay(page)
+  await hero.screenshot({ path: path.join(ARTIFACTS, `pdp-top-guard-${slug}.png`) })
+  await page.close()
 }
 
 const gridPage = await browser.newPage({ viewport: { width: 1280, height: 900 } })

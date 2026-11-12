@@ -14,8 +14,20 @@
     },
     "zippered-canvas-tote-1990": {
       "slides": [
-        { "top": 0.672, "left": 0.5, "width": 0.17 },
+        { "hide": true },
         { "top": 0.66, "left": 0.5, "width": 0.17 }
+      ]
+    },
+    "cotton-tote-bag-553": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.58, "left": 0.44, "width": 0.16 }
+      ]
+    },
+    "colored-frame-posters-5651": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" }
       ]
     },
     "tote-bag-aop-1389": {
@@ -45,19 +57,19 @@
     "dad-hat-with-leather-patch-round-1287": {
       "slides": [
         { "hide": true },
-        { "top": 0.375, "left": 0.51, "width": 0.19, "inkBlankKind": "dark" }
+        { "top": 0.158, "left": 0.438, "width": 0.086, "inkBlankKind": "dark" }
       ]
     },
     "mid-profile-baseball-cap-with-leather-patch-rect-2707": {
       "slides": [
         { "hide": true },
-        { "top": 0.392, "left": 0.47, "width": 0.2, "inkBlankKind": "dark" }
+        { "top": 0.158, "left": 0.438, "width": 0.088, "inkBlankKind": "dark" }
       ]
     },
     "copper-vacuum-insulated-bottle-22oz-572": {
       "slides": [
-        { "top": 0.46, "left": 0.5, "width": 0.36, "inkBlankKind": "light" },
-        { "top": 0.562, "left": 0.546, "width": 0.24, "inkBlankKind": "light" }
+        { "top": 0.48, "left": 0.602, "width": 0.078, "inkBlankKind": "light" },
+        { "hide": true }
       ]
     },
     "district-v-i-t-men-s-fleece-hoodie-1979": {
@@ -96,6 +108,36 @@
         { "top": 0.42, "left": 0.5, "width": 0.17 }
       ]
     },
+    "unisex-garment-dyed-tank-top-1459": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.22 }
+      ]
+    },
+    "the-concert-tank-3076": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.22 }
+      ]
+    },
+    "unisex-heavy-blend-crewneck-sweatshirt-49": {
+      "slides": [
+        { "top": 0.42, "left": 0.5, "width": 0.22 },
+        { "hide": true }
+      ]
+    },
+    "women-s-favorite-tee-9": {
+      "slides": [
+        { "top": 0.42, "left": 0.5, "width": 0.22 },
+        { "hide": true }
+      ]
+    },
+    "women-s-cotton-tank-top-5478": {
+      "slides": [
+        { "top": 0.54, "left": 0.5, "width": 0.22 },
+        { "hide": true }
+      ]
+    },
     "value-cabana-stripe-beach-towel-5583": {
       "slides": [
         {
@@ -112,6 +154,60 @@
           "inkBlankKind": "light",
           "wordmarkStyle": "cursive-plate"
         }
+      ]
+    },
+    "women-s-ideal-racerback-tank-18": {
+      "slides": [
+        { "top": 0.54, "left": 0.5, "width": 0.2, "inkBlankKind": "light" },
+        { "hide": true }
+      ]
+    },
+    "unisex-cvc-jersey-t-shirt-1317": {
+      "slides": [
+        { "top": 0.54, "left": 0.5, "width": 0.2, "inkBlankKind": "light" },
+        { "hide": true }
+      ]
+    },
+    "unisex-jersey-short-sleeve-tee-12": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" }
+      ]
+    },
+    "posicharge-competitor-2-button-henley-4129": {
+      "slides": [
+        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" },
+        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" }
+      ]
+    },
+    "insulated-lunch-tote-5123": {
+      "slides": [
+        { "top": 0.56, "left": 0.44, "width": 0.16, "inkBlankKind": "dark" },
+        { "hide": true }
+      ]
+    },
+    "black-mug-11oz-15oz-479": {
+      "slides": [
+        { "top": 0.42, "left": 0.5, "width": 0.18, "inkBlankKind": "dark" },
+        { "hide": true }
+      ]
+    },
+    "toddler-full-zip-fleece-hoodie-2728": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" }
+      ]
+    },
+    "kids-relax-hoodie-1617": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" }
+      ]
+    },
+    "leatherette-ornament-3-shapes-engraving-2756": {
+      "slides": [
+        { "top": 0.45, "left": 0.5, "width": 0.12, "inkBlankKind": "dark" },
+        { "hide": true }
       ]
     }
   }

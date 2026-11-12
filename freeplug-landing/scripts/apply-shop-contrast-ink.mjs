@@ -94,6 +94,9 @@ async function bestInk(publicPath, placement, plateBacking = false) {
   return best
 }
 
+const OVERRIDES = path.join(ROOT, 'src/lib/merch/shop/shop-gallery-placements-overrides.json')
+const overrideDoc = existsSync(OVERRIDES) ? JSON.parse(readFileSync(OVERRIDES, 'utf8')).bySlug ?? {} : {}
+
 const catalog = JSON.parse(readFileSync(CATALOG, 'utf8'))
 const placements = JSON.parse(readFileSync(PLACEMENTS, 'utf8'))
 let fixed = 0
@@ -107,7 +110,8 @@ for (const item of catalog.items) {
     if (typeof top !== 'number' || typeof left !== 'number' || typeof width !== 'number') continue
     const imageSrc = item.gallery[idx] ?? item.gridImage
     const plate = wordmarkStyle === 'cursive-plate' || wordmarkStyle === 'pop-plate-v2'
-    const ink = await bestInk(imageSrc, { top, left, width }, plate)
+    const lockedInk = overrideDoc[item.slug]?.slides?.[idx]?.inkBlankKind
+    const ink = lockedInk ?? (await bestInk(imageSrc, { top, left, width }, plate))
     if (slide.inkBlankKind !== ink) {
       slide.inkBlankKind = ink
       fixed++

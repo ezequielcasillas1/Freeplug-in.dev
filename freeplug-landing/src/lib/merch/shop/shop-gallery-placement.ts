@@ -52,7 +52,7 @@ export function shopBuyerVisibleGalleryIndex(
   for (let i = 0; i < galleryLength; i++) {
     if (slides[i] && !slides[i].hide) return i
   }
-  return Math.min(Math.max(0, preferredIndex), Math.max(0, galleryLength - 1))
+  return 0
 }
 
 export function printAreaToPreviewPlacement(
@@ -90,7 +90,12 @@ export type ResolveShopGalleryPlacementInput = {
   printArea?: ShopPrintArea
 }
 
-/** Per-slide placement table (195 items); falls back to print-area / product type. */
+function slideHasPlacement(slide: ShopGallerySlidePlacement | undefined): slide is ShopGallerySlidePlacement {
+  if (!slide || slide.hide) return false
+  return typeof slide.top === 'number' && typeof slide.left === 'number' && typeof slide.width === 'number'
+}
+
+/** Per-slide placement table (195 items). When the table exists, never fall back to print-area on hidden/missing slides. */
 export function resolveShopGalleryPlacement(
   input: ResolveShopGalleryPlacementInput
 ): ShopGallerySlidePlacement | null {
@@ -100,12 +105,37 @@ export function resolveShopGalleryPlacement(
       ? slides[input.galleryIndex]
       : undefined
 
-  if (slide?.hide) return null
+  if (slides?.length) {
+    if (slide?.hide) return null
+    if (slideHasPlacement(slide)) {
+      const { hide: _hide, ...rest } = slide
+      return rest
+    }
+    return null
+  }
 
-  if (slide) {
+  if (slide?.hide) return null
+  if (slideHasPlacement(slide)) {
     const { hide: _hide, ...rest } = slide
     return rest
   }
 
   return defaultPlacementForItem(input.slug, input.productType, input.catalogKey, input.printArea)
+}
+
+/** PDP/grid hero must land on a slide that is not hidden and has coordinates. */
+export function shopGalleryIndexWithPrintablePlacement(
+  slug: string,
+  galleryLength: number,
+  preferredIndex: number
+): number {
+  const idx = shopBuyerVisibleGalleryIndex(slug, galleryLength, preferredIndex)
+  if (slideHasPlacement(shopGalleryPlacementsForSlug(slug)?.[idx] ?? undefined)) return idx
+  const slides = shopGalleryPlacementsForSlug(slug)
+  if (slides?.length) {
+    for (let i = 0; i < galleryLength; i++) {
+      if (slideHasPlacement(slides[i])) return i
+    }
+  }
+  return idx
 }

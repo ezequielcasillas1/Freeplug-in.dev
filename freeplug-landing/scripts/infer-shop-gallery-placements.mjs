@@ -184,12 +184,30 @@ function skinShare(cells) {
   return total ? skinW / total : 0
 }
 
+function isChestGarment(productType, slug) {
+  if (productType === 'leather-patch-hat' || productType === 'mug' || productType === 'large-flat') return false
+  if (productType === 'apparel' || productType === 'hoodie' || productType === 'sweatshirt') return true
+  if (/tee|tank|sweat|crewneck|polo|hoodie|jersey|raglan|long-sleeve/i.test(slug)) return true
+  return false
+}
+
+function clampChestGarmentPlacement(productType, slug, p, printPosition) {
+  if (!p || p.hide || !isChestGarment(productType, slug)) return p
+  const seed = categorySeed(productType, slug, printPosition)
+  return {
+    ...p,
+    top: seed.top,
+    left: seed.left,
+    width: Math.min(Math.max(p.width, seed.width * 0.9), seed.width * 1.1),
+  }
+}
+
 function categorySeed(productType, slug, printPosition) {
   if (printPosition?.x != null && printPosition?.y != null) {
     return {
       left: printPosition.x,
       top: printPosition.y,
-      width: Math.min(0.34, (printPosition.scale ?? 0.38) * 0.52),
+      width: Math.min(0.5, Math.max(0.14, (printPosition.scale ?? 0.38) * 0.58)),
     }
   }
   if (productType === 'leather-patch-hat') return { left: 0.48, top: 0.34, width: 0.14 }
@@ -236,7 +254,7 @@ function placementSkinOverlap(left, top, width, cells) {
 }
 
 function detectLeatherPatch(cells) {
-  const patchCells = cells.filter((c) => c.leather > 0.16 && c.skin < 0.28 && c.cy < 0.58)
+  const patchCells = cells.filter((c) => c.leather > 0.16 && c.skin < 0.22 && c.cy < 0.4 && c.cy > 0.1)
   if (!patchCells.length) return null
   const half = 0.5 / GRID
   let minX = 1
@@ -329,8 +347,8 @@ function detectCenterBrightProduct(cells, forbidden) {
     if (!best || score > best.score) best = { cx: c.cx, cy: c.cy, lum: c.lum, score }
   }
   if (!best) return null
-  const width = 0.22
-  const fit = shrinkOrHide(best.cx, best.cy, width, forbidden, 0.16)
+  const width = 0.26
+  const fit = shrinkOrHide(best.cx, best.cy, width, forbidden, 0.12)
   if (fit.hide) return null
   return { ...fit, inkBlankKind: best.lum > 145 ? 'dark' : 'light' }
 }
@@ -457,7 +475,7 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
     const patch = detectLeatherPatch(cells)
     if (patch) {
       const skinAtPatch = placementSkinOverlap(patch.left, patch.top, patch.width, cells)
-      if (skinShare(cells) > 0.08 && skinAtPatch > 0.14) {
+      if (skinAtPatch > 0.1 || patch.top > 0.38) {
         return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
       }
       return {
@@ -467,9 +485,7 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
         inkBlankKind: patch.inkBlankKind,
       }
     }
-    const seed = categorySeed(productType, slug, printPosition)
-    const fallback = nudgeLeatherCenter(seed.left, seed.top, seed.width, forbidden)
-    if (!fallback.hide) return { ...fallback, inkBlankKind: 'dark' }
+    return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
   }
 
   if (/bandana/i.test(slug)) {
@@ -487,7 +503,17 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
     }
   }
 
-  if (lifestyle || productType === 'pets') {
+  const chest = isChestGarment(productType, slug)
+  if (chest && lifestyle && skinShare(cells) > 0.04) {
+    const seed = categorySeed(productType, slug, printPosition)
+    const fit = refinePlacement(seed, forbidden, productType, seed.width * 0.85)
+    if (!fit.hide && placementSkinOverlap(fit.left, fit.top, fit.width, cells) < 0.12) {
+      return clampChestGarmentPlacement(productType, slug, fit, printPosition)
+    }
+    return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
+  }
+
+  if (!chest && (lifestyle || productType === 'pets')) {
     const fabric = detectLifestyleFabric(slug, cells, forbidden)
     if (fabric) return fabric
   }
@@ -507,7 +533,8 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
   const seed = categorySeed(productType, slug, printPosition)
   const minW = productType === 'mug' || productType === 'large-flat' ? 0.3 : 0.09
   const fit = refinePlacement(seed, forbidden, productType, minW)
-  return fit.hide ? { hide: true, top: 0.5, left: 0.5, width: 0.12 } : fit
+  const done = fit.hide ? { hide: true, top: 0.5, left: 0.5, width: 0.12 } : fit
+  return clampChestGarmentPlacement(productType, slug, done, printPosition)
 }
 
 function roundPlacement(p) {
@@ -545,10 +572,12 @@ for (const item of catalog.items) {
       if (ov.hide) hidden++
       continue
     }
-    const placement = await inferPlacementForSlide(item.slug, productType, src, item.printArea?.position)
+    let placement = await inferPlacementForSlide(item.slug, productType, src, item.printArea?.position)
+    placement = clampChestGarmentPlacement(productType, item.slug, placement, item.printArea?.position)
     slides.push(roundPlacement(placement))
     if (placement.hide) hidden++
   }
+
   await rebalanceTwoSlideHides(item, productType, slides)
   if (slides.length && slides.every((s) => s.hide)) {
     await salvageAllHiddenSlides(item, productType, slides)

@@ -19,9 +19,12 @@ const LEATHER_PATCH_LIFESTYLE_HIDDEN = new Set([
   'dad-hat-with-leather-patch-round-1287',
 ])
 
+/** Slide 0 hidden — placement on slide 1 (flat product / bag body). */
+const HERO_ON_SLIDE_ONE = new Set(['zippered-canvas-tote-1990', ...LEATHER_PATCH_LIFESTYLE_HIDDEN])
+
 describe('shopGalleryPlacement', () => {
   it.each(CHEKE_SLUGS)('%s has a printable placement on its hero slide', (slug) => {
-    const galleryIndex = LEATHER_PATCH_LIFESTYLE_HIDDEN.has(slug) ? 1 : 0
+    const galleryIndex = HERO_ON_SLIDE_ONE.has(slug) ? 1 : 0
     const p = resolveShopGalleryPlacement({
       slug,
       productType: null,
@@ -32,7 +35,8 @@ describe('shopGalleryPlacement', () => {
     expect(p).not.toBeNull()
     expect(p!.left).toBeGreaterThan(0.2)
     expect(p!.left).toBeLessThan(0.8)
-    expect(p!.width).toBeGreaterThan(0.09)
+    const patchCap = LEATHER_PATCH_LIFESTYLE_HIDDEN.has(slug)
+    expect(p!.width).toBeGreaterThan(patchCap ? 0.07 : 0.09)
   })
 
   it('caps place wordmark on crown (upper mockup)', () => {
@@ -65,7 +69,7 @@ describe('shopGalleryPlacement', () => {
       slug: 'zippered-canvas-tote-1990',
       productType: 'bag',
       catalogKey: 'shop/zippered-canvas-tote-1990',
-      galleryIndex: 0,
+      galleryIndex: 1,
       galleryLength: 2,
     })
     expect(p!.top).toBeGreaterThan(0.62)

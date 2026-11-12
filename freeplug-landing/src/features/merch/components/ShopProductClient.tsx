@@ -34,6 +34,7 @@ import {
   shopDefaultPreviewColor,
   shopGalleryIndexForColor,
 } from '@/lib/merch/shop/shop-gallery-blank-kind'
+import { isShopGallerySlideHidden } from '@/lib/merch/shop/shop-gallery-placement'
 import { useRouter } from 'next/navigation'
 
 export function ShopProductClient({
@@ -81,6 +82,13 @@ export function ShopProductClient({
   const [uploading, setUploading] = useState(false)
   const [uploadToken, setUploadToken] = useState<string | null>(null)
   const [customSoldOut, setCustomSoldOut] = useState(false)
+
+  useEffect(() => {
+    if (designMode !== 'freeplug') return
+    if (isShopGallerySlideHidden(item.slug, galleryIndex)) {
+      setGalleryIndex(shopGalleryIndexForColor(item, color))
+    }
+  }, [color, designMode, galleryIndex, item])
 
   const sizeOptions = useMemo(() => sizesForColor(item.variants, color || null), [item.variants, color])
 
@@ -256,15 +264,24 @@ export function ShopProductClient({
             />
             {gallerySlides.length > 1 ? (
               <div className="flex gap-2 mt-3 flex-wrap">
-                {gallerySlides.map((slide, idx) => (
+                {gallerySlides.map((slide, idx) => {
+                  const thumbHidden =
+                    designMode === 'freeplug' && isShopGallerySlideHidden(item.slug, idx)
+                  return (
                   <button
                     key={`${slide.kind}-${slide.src}-${idx}`}
                     type="button"
+                    disabled={thumbHidden}
+                    title={thumbHidden ? t('gallerySlideNoOverlay') : undefined}
                     className={cn(
                       'rounded-lg border p-1',
+                      thumbHidden && 'opacity-40 cursor-not-allowed',
                       galleryIndex === idx ? 'border-[#ba3d3d]' : 'border-gray-200'
                     )}
-                    onClick={() => setGalleryIndex(idx)}
+                    onClick={() => {
+                      if (thumbHidden) return
+                      setGalleryIndex(idx)
+                    }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -275,7 +292,8 @@ export function ShopProductClient({
                       referrerPolicy={isRemoteShopImage(slide.src) ? 'no-referrer' : undefined}
                     />
                   </button>
-                ))}
+                  )
+                })}
               </div>
             ) : null}
           </div>

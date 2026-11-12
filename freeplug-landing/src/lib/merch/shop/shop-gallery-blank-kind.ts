@@ -1,6 +1,6 @@
 import type { ShopCatalogItem } from './types'
 import { classifyBlankColor, type BlankKind } from './contrast'
-import { shopBuyerVisibleGalleryIndex } from './shop-gallery-placement'
+import { shopGalleryIndexWithPrintablePlacement } from './shop-gallery-placement'
 
 /** Parse `…/blanks/49-1.webp` → slide index, else null. */
 export function shopBlankGalleryIndexFromSrc(src: string): number | null {
@@ -64,7 +64,7 @@ export function shopGalleryIndexForColor(item: ShopCatalogItem, garmentColor: st
     }
   } else if (item.gallery.length < 2) preferred = 0
   else preferred = target === 'dark' ? 1 : 0
-  return shopBuyerVisibleGalleryIndex(item.slug, item.gallery.length, preferred)
+  return shopGalleryIndexWithPrintablePlacement(item.slug, item.gallery.length, preferred)
 }
 
 export function shopGalleryIndexForBlankKind(item: ShopCatalogItem, blankKind: BlankKind): number {

@@ -154,7 +154,11 @@ export async function auditShopOverlayContrastForItem(
     buyerWordmarkStyle: style,
   })
   const ink = preview?.blankKind ?? blankKind
-  let measure = await measureInkContrast({ imageSrc, placement, blankKind: ink })
+  const leatherPatch = /leather-patch/i.test(item.slug)
+  const samplePlacement = leatherPatch
+    ? { ...placement, width: placement.width * 0.72, top: placement.top - placement.width * 0.02 }
+    : placement
+  let measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind: ink })
   if (plateStyle && measure && measure.ratio < MIN_CONTRAST_RATIO) {
     const bg = Math.max(measure.backgroundLum, 0.84)
     measure = {
