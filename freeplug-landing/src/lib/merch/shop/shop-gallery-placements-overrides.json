@@ -68,7 +68,7 @@
     },
     "copper-vacuum-insulated-bottle-22oz-572": {
       "slides": [
-        { "top": 0.48, "left": 0.602, "width": 0.078, "inkBlankKind": "light" },
+        { "top": 0.48, "left": 0.498, "width": 0.072, "inkBlankKind": "light" },
         { "hide": true }
       ]
     },
