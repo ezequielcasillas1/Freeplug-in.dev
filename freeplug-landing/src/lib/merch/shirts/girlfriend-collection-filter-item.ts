@@ -6,7 +6,7 @@ import {
   SHIRT_SIZES,
 } from '@/lib/merch/shirts/girlfriend-collection'
 
-/** Optional t-shirts grid row for the girlfriend collection PDP (coming soon). */
+/** Optional t-shirts grid row for the girlfriend collection PDP. */
 export function girlfriendCollectionCatalogFilterItem(): CatalogFilterItem {
   return {
     key: `tshirts/${GIRLFRIEND_COLLECTION_SLUG}`,
@@ -19,10 +19,10 @@ export function girlfriendCollectionCatalogFilterItem(): CatalogFilterItem {
     category: 'apparel',
     productType: 't-shirt',
     source: 't-shirts',
-    colors: ['Black'],
+    colors: ['Black', 'Charcoal', 'Natural', 'White'],
     sizes: [...SHIRT_SIZES],
-    availability: ['coming-soon'],
+    availability: ['buyable'],
     designs: ['freeplug'],
-    comingSoonLabel: true,
+    comingSoonLabel: false,
   }
 }

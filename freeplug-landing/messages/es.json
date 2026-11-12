@@ -1158,8 +1158,8 @@
         "girlfriendCollection": {
           "pageTitle": "Colección Girlfriend",
           "cardTitle": "Colección Girlfriend — 7 diseños",
-          "pageLead": "Siete camisetas de impresión frontal con wordmarks Freeplug. Elige la frase, arte para prenda clara u oscura, y color y talla cuando abra el checkout.",
-          "metaDescription": "Explora siete diseños Freeplug con temática girlfriend. Arte para prenda clara u oscura, tallas unisex. Checkout próximamente.",
+          "pageLead": "Siete camisetas de impresión frontal con wordmarks Freeplug. Elige la frase, arte para prenda clara u oscura, color y talla.",
+          "metaDescription": "Compra siete diseños Freeplug con temática girlfriend. Arte para prenda clara u oscura, tallas unisex, solo impresión frontal.",
           "designLabel": "Diseño",
           "garmentLabel": "Arte de prenda",
           "garment": {
@@ -1171,7 +1171,6 @@
             "dark": "Tinta clara para camisetas negras y carbón."
           },
           "mockupAlt": "{title} en {garment}",
-          "checkoutHold": "El checkout está en pausa hasta vincular productos Printify para cada diseño.",
           "designs": {
             "01-no-time": {
               "title": "Sin tiempo",
