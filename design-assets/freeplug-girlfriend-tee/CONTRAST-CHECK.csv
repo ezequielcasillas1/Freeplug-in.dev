@@ -1,0 +1,113 @@
+design,title,garment,element,text,ink,kind,ground,ground_hex,min_required,ratio,pass
+01-no-time,Don't have time,light,icon,heart icon,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+01-no-time,Don't have time,light,icon,heart icon,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+01-no-time,Don't have time,light,line-0,FREEPLUG DON’T HAVE TIME,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+01-no-time,Don't have time,light,line-0,FREEPLUG DON’T HAVE TIME,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+01-no-time,Don't have time,light,line-1,FOR GIRLFRIENDS.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+01-no-time,Don't have time,light,line-1,FOR GIRLFRIENDS.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+01-no-time,Don't have time,light,monogram,FP monogram,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+01-no-time,Don't have time,light,monogram,FP monogram,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+01-no-time,Don't have time,dark,icon,heart icon,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+01-no-time,Don't have time,dark,icon,heart icon,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+01-no-time,Don't have time,dark,line-0,FREEPLUG DON’T HAVE TIME,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+01-no-time,Don't have time,dark,line-0,FREEPLUG DON’T HAVE TIME,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+01-no-time,Don't have time,dark,line-1,FOR GIRLFRIENDS.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+01-no-time,Don't have time,dark,line-1,FOR GIRLFRIENDS.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+01-no-time,Don't have time,dark,monogram,FP monogram,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+01-no-time,Don't have time,dark,monogram,FP monogram,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+02-plugging-needy,Plugging the needy,light,icon,plug-heart icon,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+02-plugging-needy,Plugging the needy,light,icon,plug-heart icon,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+02-plugging-needy,Plugging the needy,light,line-0,Freeplug don’t have time for girlfriends.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+02-plugging-needy,Plugging the needy,light,line-0,Freeplug don’t have time for girlfriends.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+02-plugging-needy,Plugging the needy,light,line-1,Too busy plugging the needy.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+02-plugging-needy,Plugging the needy,light,line-1,Too busy plugging the needy.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+02-plugging-needy,Plugging the needy,light,monogram,FP monogram,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+02-plugging-needy,Plugging the needy,light,monogram,FP monogram,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+02-plugging-needy,Plugging the needy,dark,icon,plug-heart icon,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+02-plugging-needy,Plugging the needy,dark,icon,plug-heart icon,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+02-plugging-needy,Plugging the needy,dark,line-0,Freeplug don’t have time for girlfriends.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+02-plugging-needy,Plugging the needy,dark,line-0,Freeplug don’t have time for girlfriends.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+02-plugging-needy,Plugging the needy,dark,line-1,Too busy plugging the needy.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+02-plugging-needy,Plugging the needy,dark,line-1,Too busy plugging the needy.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+02-plugging-needy,Plugging the needy,dark,monogram,FP monogram,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+02-plugging-needy,Plugging the needy,dark,monogram,FP monogram,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+03-deadlines-deeds,Deadlines and deeds,light,icon,clock-check icon,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+03-deadlines-deeds,Deadlines and deeds,light,icon,clock-check icon,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+03-deadlines-deeds,Deadlines and deeds,light,line-0,No girlfriend.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+03-deadlines-deeds,Deadlines and deeds,light,line-0,No girlfriend.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+03-deadlines-deeds,Deadlines and deeds,light,line-1,Just deadlines and good deeds.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+03-deadlines-deeds,Deadlines and deeds,light,line-1,Just deadlines and good deeds.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+03-deadlines-deeds,Deadlines and deeds,light,monogram,FP monogram,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+03-deadlines-deeds,Deadlines and deeds,light,monogram,FP monogram,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+03-deadlines-deeds,Deadlines and deeds,dark,icon,clock-check icon,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+03-deadlines-deeds,Deadlines and deeds,dark,icon,clock-check icon,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+03-deadlines-deeds,Deadlines and deeds,dark,line-0,No girlfriend.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+03-deadlines-deeds,Deadlines and deeds,dark,line-0,No girlfriend.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+03-deadlines-deeds,Deadlines and deeds,dark,line-1,Just deadlines and good deeds.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+03-deadlines-deeds,Deadlines and deeds,dark,line-1,Just deadlines and good deeds.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+03-deadlines-deeds,Deadlines and deeds,dark,monogram,FP monogram,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+03-deadlines-deeds,Deadlines and deeds,dark,monogram,FP monogram,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+04-status-shipping,Status: shipping,light,icon,box icon,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+04-status-shipping,Status: shipping,light,icon,box icon,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+04-status-shipping,Status: shipping,light,line-0,Relationship status:,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+04-status-shipping,Status: shipping,light,line-0,Relationship status:,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+04-status-shipping,Status: shipping,light,line-1,shipping.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+04-status-shipping,Status: shipping,light,line-1,shipping.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+04-status-shipping,Status: shipping,light,monogram,FP monogram,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+04-status-shipping,Status: shipping,light,monogram,FP monogram,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+04-status-shipping,Status: shipping,dark,icon,box icon,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+04-status-shipping,Status: shipping,dark,icon,box icon,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+04-status-shipping,Status: shipping,dark,line-0,Relationship status:,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+04-status-shipping,Status: shipping,dark,line-0,Relationship status:,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+04-status-shipping,Status: shipping,dark,line-1,shipping.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+04-status-shipping,Status: shipping,dark,line-1,shipping.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+04-status-shipping,Status: shipping,dark,monogram,FP monogram,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+04-status-shipping,Status: shipping,dark,monogram,FP monogram,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+05-taken-mission,Taken by the mission,light,icon,target icon,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+05-taken-mission,Taken by the mission,light,icon,target icon,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+05-taken-mission,Taken by the mission,light,line-0,Taken by the mission.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+05-taken-mission,Taken by the mission,light,line-0,Taken by the mission.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+05-taken-mission,Taken by the mission,light,monogram,FP monogram,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+05-taken-mission,Taken by the mission,light,monogram,FP monogram,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+05-taken-mission,Taken by the mission,dark,icon,target icon,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+05-taken-mission,Taken by the mission,dark,icon,target icon,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+05-taken-mission,Taken by the mission,dark,line-0,Taken by the mission.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+05-taken-mission,Taken by the mission,dark,line-0,Taken by the mission.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+05-taken-mission,Taken by the mission,dark,monogram,FP monogram,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+05-taken-mission,Taken by the mission,dark,monogram,FP monogram,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+06-single-busy-building,Single. Busy. Building.,light,icon,blocks icon,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+06-single-busy-building,Single. Busy. Building.,light,icon,blocks icon,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+06-single-busy-building,Single. Busy. Building.,light,line-0,Single.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+06-single-busy-building,Single. Busy. Building.,light,line-0,Single.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+06-single-busy-building,Single. Busy. Building.,light,line-1,Busy.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+06-single-busy-building,Single. Busy. Building.,light,line-1,Busy.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+06-single-busy-building,Single. Busy. Building.,light,line-2,Building.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+06-single-busy-building,Single. Busy. Building.,light,line-2,Building.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+06-single-busy-building,Single. Busy. Building.,light,monogram,FP monogram,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+06-single-busy-building,Single. Busy. Building.,light,monogram,FP monogram,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+06-single-busy-building,Single. Busy. Building.,dark,icon,blocks icon,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+06-single-busy-building,Single. Busy. Building.,dark,icon,blocks icon,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+06-single-busy-building,Single. Busy. Building.,dark,line-0,Single.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+06-single-busy-building,Single. Busy. Building.,dark,line-0,Single.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+06-single-busy-building,Single. Busy. Building.,dark,line-1,Busy.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+06-single-busy-building,Single. Busy. Building.,dark,line-1,Busy.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+06-single-busy-building,Single. Busy. Building.,dark,line-2,Building.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+06-single-busy-building,Single. Busy. Building.,dark,line-2,Building.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+06-single-busy-building,Single. Busy. Building.,dark,monogram,FP monogram,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+06-single-busy-building,Single. Busy. Building.,dark,monogram,FP monogram,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+07-love-language,Love language,light,icon,chevrons-heart icon,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+07-love-language,Love language,light,icon,chevrons-heart icon,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+07-love-language,Love language,light,line-0,My love language is,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+07-love-language,Love language,light,line-0,My love language is,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+07-love-language,Love language,light,line-1,free websites.,#111111,body,ivory tee,#F7F3EA,4.5,17.05,True
+07-love-language,Love language,light,line-1,free websites.,#111111,body,white tee,#FFFFFF,4.5,18.88,True
+07-love-language,Love language,light,monogram,FP monogram,#8B1A1E,accent,ivory tee,#F7F3EA,4.5,8.37,True
+07-love-language,Love language,light,monogram,FP monogram,#8B1A1E,accent,white tee,#FFFFFF,4.5,9.27,True
+07-love-language,Love language,dark,icon,chevrons-heart icon,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+07-love-language,Love language,dark,icon,chevrons-heart icon,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
+07-love-language,Love language,dark,line-0,My love language is,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+07-love-language,Love language,dark,line-0,My love language is,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+07-love-language,Love language,dark,line-1,free websites.,#F7F3EA,body,black tee,#111111,4.5,17.05,True
+07-love-language,Love language,dark,line-1,free websites.,#F7F3EA,body,charcoal tee,#232323,4.5,14.19,True
+07-love-language,Love language,dark,monogram,FP monogram,#FFDCD6,accent,black tee,#111111,4.5,14.8,True
+07-love-language,Love language,dark,monogram,FP monogram,#FFDCD6,accent,charcoal tee,#232323,4.5,12.32,True
