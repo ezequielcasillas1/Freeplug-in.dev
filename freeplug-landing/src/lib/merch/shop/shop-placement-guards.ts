@@ -42,13 +42,24 @@ export function chestDefaultPlacement(
   return placementForProductType(inferred)
 }
 
+/** Full-zip hoodies/jackets: single chest panel, not across zipper. */
+export function isZipFrontGarment(item: Pick<ShopCatalogItem, 'slug' | 'title'>): boolean {
+  const hay = `${item.slug} ${item.title ?? ''}`.toLowerCase()
+  if (/tote|bag|zippered-canvas/i.test(item.slug)) return false
+  return /zip/.test(hay) && /(hoodie|jacket|fleece)/.test(hay)
+}
+
 export function apparelWidthWithinSpec(
   slug: string,
   productType: string | null,
   placement: Pick<PreviewPlacement, 'width'>,
-  printArea?: ShopCatalogItem['printArea']
+  printArea?: ShopCatalogItem['printArea'],
+  item?: Pick<ShopCatalogItem, 'slug' | 'title'>
 ): boolean {
   if (!isChestGarmentSlug(slug, productType)) return true
+  if (item && isZipFrontGarment(item)) {
+    return placement.width >= 0.1 && placement.width <= 0.14
+  }
   const ref = chestDefaultPlacement(slug, productType, printArea).width
   return placement.width >= ref * 0.9 && placement.width <= ref * 1.1
 }
@@ -194,8 +205,11 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
   }
   const { inkBlankKind: ink, wordmarkStyle: _ws, ...placement } = placementResolved
   const imageSrc = item.gallery[galleryIndex] ?? item.gridImage
-  if (!apparelWidthWithinSpec(item.slug, item.productType, placement, item.printArea)) {
+  if (!apparelWidthWithinSpec(item.slug, item.productType, placement, item.printArea, item)) {
     failures.push(`${item.slug}: apparel width ${placement.width.toFixed(3)} outside chest spec`)
+  }
+  if (isZipFrontGarment(item) && placement.left >= 0.45 && placement.left <= 0.55) {
+    failures.push(`${item.slug}: zip garment mark must be on left chest panel, not center zipper`)
   }
   const leatherPatch = /leather-patch/i.test(item.slug)
   if (leatherPatch && placement.top > 0.34) {

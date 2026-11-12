@@ -37,10 +37,11 @@ describe('shop gallery blank kind', () => {
     expect(kind).toBe('dark')
   })
 
-  it('hides baked lifestyle slide on cotton tote 553', () => {
+  it('never surfaces cotton tote 553-1 (baked HI lifestyle slide)', () => {
     const item = catalog.items.find((i) => i.slug === 'cotton-tote-bag-553') as ShopCatalogItem
-    expect(shopHeroGalleryIndex(item)).toBe(1)
-    expect(shopGalleryIndexForColor(item, 'Black')).toBe(1)
-    expect(item.gallery[shopHeroGalleryIndex(item)]).toMatch(/553-1\.webp$/)
+    expect(shopHeroGalleryIndex(item)).toBe(0)
+    expect(shopGalleryIndexForColor(item, 'Black')).toBe(0)
+    expect(item.gallery[shopHeroGalleryIndex(item)]).toMatch(/553-0\.webp$/)
+    expect(item.gallery[shopGalleryIndexForColor(item, 'Cream')]).toMatch(/553-0\.webp$/)
   })
 })

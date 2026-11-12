@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { resolveShopGalleryPlacement } from './shop-gallery-placement'
+import catalog from './shop-catalog.json'
+import { isShopGallerySlideHidden, resolveShopGalleryPlacement } from './shop-gallery-placement'
+import { shopHeroGalleryIndex } from './shop-gallery-blank-kind'
+import type { ShopCatalogItem } from './types'
+
+const catalogItems = (catalog as { items: ShopCatalogItem[] }).items
 
 const CHEKE_SLUGS = [
   'cotton-canvas-tote-bag-1313',
@@ -118,5 +123,39 @@ describe('shopGalleryPlacement', () => {
     })
     expect(p!.top).toBeGreaterThan(0.3)
     expect(p!.top).toBeLessThan(0.38)
+  })
+
+  it('cotton tote 553-1 stays hidden and is never the hero slide', () => {
+    expect(isShopGallerySlideHidden('cotton-tote-bag-553', 1)).toBe(true)
+    const item = catalogItems.find((i) => i.slug === 'cotton-tote-bag-553')!
+    expect(shopHeroGalleryIndex(item)).toBe(0)
+    expect(resolveShopGalleryPlacement({
+      slug: item.slug,
+      productType: item.productType,
+      catalogKey: `shop/${item.slug}`,
+      galleryIndex: 1,
+      galleryLength: 2,
+    })).toBeNull()
+  })
+
+  it('zip hoodies place mark off-center chest panel (~0.12 width)', () => {
+    for (const slug of [
+      'unisex-fleece-zip-up-hoodie-1925',
+      'repeat-1-2-zip-long-sleeve-hooded-jacket-4397',
+      'toddler-full-zip-fleece-hoodie-2728',
+    ]) {
+      const item = catalogItems.find((i) => i.slug === slug)!
+      const hero = shopHeroGalleryIndex(item)
+      const p = resolveShopGalleryPlacement({
+        slug,
+        productType: item.productType,
+        catalogKey: `shop/${slug}`,
+        galleryIndex: hero,
+        galleryLength: item.gallery.length,
+      })
+      expect(p?.width, slug).toBeGreaterThanOrEqual(0.1)
+      expect(p?.width, slug).toBeLessThanOrEqual(0.14)
+      expect(p!.left, slug).toBeGreaterThan(0.52)
+    }
   })
 })

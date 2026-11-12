@@ -341,8 +341,8 @@
         },
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
+          "left": 0.58,
+          "width": 0.12,
           "inkBlankKind": "dark"
         }
       ]
@@ -415,13 +415,13 @@
     "cotton-tote-bag-553": {
       "slides": [
         {
-          "hide": true
-        },
-        {
-          "top": 0.5,
-          "left": 0.5,
+          "top": 0.48,
+          "left": 0.55,
           "width": 0.22,
           "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
         }
       ]
     },
@@ -616,6 +616,19 @@
         }
       ]
     },
+    "repeat-1-2-zip-long-sleeve-hooded-jacket-4397": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.58,
+          "width": 0.12,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
     "unisex-fleece-zip-up-hoodie-1925": {
       "slides": [
         {
@@ -623,8 +636,8 @@
         },
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
+          "left": 0.58,
+          "width": 0.12,
           "inkBlankKind": "dark"
         }
       ]
