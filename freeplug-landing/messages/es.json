@@ -1017,6 +1017,7 @@
         "fromPrice": "Desde {price}",
         "breadcrumbShop": "Tienda",
         "designFreeplug": "Logo Freeplug",
+        "gallerySlideNoOverlay": "La marca no se muestra en esta foto de estilo de vida",
         "designCustom": "Tu arte",
         "colorLabel": "Color",
         "sizeLabel": "Talla",
@@ -1047,7 +1048,9 @@
         "successBack": "Volver a este producto",
         "wordmarkHeading": "Marca en la impresión",
         "wordmarkStyleHeading": "Estilo",
-        "wordmarkBakedNote": "La vista previa usa mockups en blanco y tus selecciones. Los archivos publicados en Printify pueden seguir con arte anterior hasta que entren los nuevos borradores."
+        "wordmarkBakedNote": "La vista previa usa mockups en blanco y tus selecciones. Los archivos publicados en Printify pueden seguir con arte anterior hasta que entren los nuevos borradores.",
+        "wordmarkFulfillmentNote": "La vista previa muestra una de 16 marcas en un mockup sin logo. El checkout guarda nombre y estilo en los metadatos del pedido; la ruta al borrador de Printify que corresponde aún no está conectada: el cumplimiento sigue usando el producto publicado por defecto hasta vincular los borradores por variante.",
+        "wordmarkGridBadge": "{count} marcas"
       },
       "tshirts": {
         "heading": "Camisetas",

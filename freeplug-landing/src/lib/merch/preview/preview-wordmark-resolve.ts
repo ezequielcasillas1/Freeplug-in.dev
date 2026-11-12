@@ -15,6 +15,8 @@ import {
 import { variationIdForBuyerWordmark } from './buyer-wordmark-variation'
 import { buyerShopUsesPreviewWordmarkOverlay } from './preview-overlay-eligibility'
 import { classifyBlankColor } from '@/lib/merch/shop/contrast'
+import { resolveShopGalleryPlacement } from '@/lib/merch/shop/shop-gallery-placement'
+import type { ShopPrintArea } from '@/lib/merch/shop/types'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
 
 export type PreviewWordmarkMode = 'full' | 'skip'
@@ -75,6 +77,10 @@ export type ResolvePreviewWordmarkInput = {
   buyerWordmarkStyle?: BuyerWordmarkStyleKey | null
   /** When set (buyer-shop), ink follows the visible mockup, not only the color label. */
   garmentBlankKind?: 'light' | 'dark' | null
+  /** Buyer-shop: which gallery slide is visible (per-image placement table). */
+  galleryIndex?: number
+  galleryLength?: number
+  shopPrintArea?: ShopPrintArea | null
 }
 
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
@@ -87,15 +93,30 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
   if (buyerShopUsesPreviewWordmarkOverlay(input.source)) {
     const productType = inferProductTypeFromCatalog(input.slug, input.productType, input.catalogKey)
     const brand = parseBuyerWordmarkBrand(input.buyerWordmarkBrand ?? DEFAULT_BUYER_WORDMARK_BRAND)
-    const style = parseBuyerWordmarkStyle(input.buyerWordmarkStyle ?? DEFAULT_BUYER_WORDMARK_STYLE)
-    const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
-  const blankKind =
+    const blankKind =
       input.garmentBlankKind ??
       (input.garmentColor ? classifyBlankColor(input.garmentColor) : 'light')
+    const galleryIndex = input.galleryIndex ?? 0
+    const placementResolved = resolveShopGalleryPlacement({
+      slug: input.slug,
+      productType: input.productType,
+      catalogKey: input.catalogKey,
+      galleryIndex,
+      galleryLength: input.galleryLength ?? Math.max(1, galleryIndex + 1),
+      printArea: input.shopPrintArea ?? undefined,
+    })
+    if (placementResolved === null) {
+      return null
+    }
+    // Buyer grid/hero default is plain cursive; plate styles are picker-only (never from placement table).
+    const style = parseBuyerWordmarkStyle(input.buyerWordmarkStyle ?? DEFAULT_BUYER_WORDMARK_STYLE)
+    const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
+    const inkBlankKind = placementResolved.inkBlankKind ?? blankKind
+    const { inkBlankKind: _ink, wordmarkStyle: _ws, ...placement } = placementResolved
     return {
       variationId: variationIdForBuyerWordmark(brand, style),
-      placement: placementForProductType(productType),
-      blankKind,
+      placement,
+      blankKind: inkBlankKind,
       mode: 'full',
       printSurface: !plateStyle,
     }

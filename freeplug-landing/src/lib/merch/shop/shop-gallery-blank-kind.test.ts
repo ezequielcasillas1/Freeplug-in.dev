@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import catalog from './shop-catalog.json'
 import {
   blankKindForGallerySlide,
   resolveShopPreviewBlankKind,
   shopGalleryIndexForColor,
+  shopHeroGalleryIndex,
 } from './shop-gallery-blank-kind'
 import type { ShopCatalogItem } from './types'
 
@@ -33,5 +35,13 @@ describe('shop gallery blank kind', () => {
       galleryIndex: 0,
     })
     expect(kind).toBe('dark')
+  })
+
+  it('never surfaces cotton tote 553-1 (baked HI lifestyle slide)', () => {
+    const item = catalog.items.find((i) => i.slug === 'cotton-tote-bag-553') as ShopCatalogItem
+    expect(shopHeroGalleryIndex(item)).toBe(0)
+    expect(shopGalleryIndexForColor(item, 'Black')).toBe(0)
+    expect(item.gallery[shopHeroGalleryIndex(item)]).toMatch(/553-0\.webp$/)
+    expect(item.gallery[shopGalleryIndexForColor(item, 'Cream')]).toMatch(/553-0\.webp$/)
   })
 })

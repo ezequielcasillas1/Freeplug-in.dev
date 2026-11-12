@@ -1,4 +1,6 @@
 import shopCatalog from './shop-catalog.json'
+import { parseBuyerWordmarkBrand } from '@/lib/merch/preview/buyer-wordmark-brand'
+import { parseBuyerWordmarkStyle } from '@/lib/merch/preview/buyer-wordmark-style'
 import { printifyProductIdForVariant } from './printify-catalog'
 import { shopListingImageSrc } from './shop-listing-image'
 import type { ShopCard, ShopCatalogItem, ShopTabSlug, ShopVariant } from './types'
@@ -80,6 +82,8 @@ export type ShopCheckoutLine = {
   uploadToken?: string
   moderationResult?: 'pass' | 'held'
   rightsAcceptedLocale?: string
+  buyerWordmarkBrand?: string
+  buyerWordmarkStyle?: string
 }
 
 type ValidateBody = {
@@ -92,6 +96,8 @@ type ValidateBody = {
   rights_confirmed?: unknown
   upload_token?: unknown
   rights_accepted_locale?: unknown
+  wordmark_brand?: unknown
+  wordmark_style?: unknown
 }
 
 export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: number): ValidatedShopLine {
@@ -155,6 +161,11 @@ export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: 
     }
   }
 
+  const buyerWordmarkBrand =
+    designMode === 'freeplug' ? parseBuyerWordmarkBrand(body.wordmark_brand) : undefined
+  const buyerWordmarkStyle =
+    designMode === 'freeplug' ? parseBuyerWordmarkStyle(body.wordmark_style) : undefined
+
   return {
     ok: true,
     line: {
@@ -181,6 +192,8 @@ export function validateShopCheckoutLine(body: ValidateBody, _customPaidToday?: 
           : undefined,
       rightsAcceptedLocale:
         typeof body.rights_accepted_locale === 'string' ? body.rights_accepted_locale.trim().slice(0, 8) : undefined,
+      buyerWordmarkBrand,
+      buyerWordmarkStyle,
     },
   }
 }

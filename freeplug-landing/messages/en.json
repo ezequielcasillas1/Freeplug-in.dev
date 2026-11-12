@@ -1017,6 +1017,7 @@
         "fromPrice": "From {price}",
         "breadcrumbShop": "Shop",
         "designFreeplug": "Freeplug logo",
+        "gallerySlideNoOverlay": "Wordmark not shown on this lifestyle photo",
         "designCustom": "Your artwork",
         "colorLabel": "Color",
         "sizeLabel": "Size",
@@ -1047,7 +1048,9 @@
         "successBack": "Back to this product",
         "wordmarkHeading": "Wordmark on print",
         "wordmarkStyleHeading": "Style",
-        "wordmarkBakedNote": "Preview uses blank mockups and your selections. Published Printify files may still use older art until new drafts go live."
+        "wordmarkBakedNote": "Preview uses blank mockups and your selections. Published Printify files may still use older art until new drafts go live.",
+        "wordmarkFulfillmentNote": "Preview shows one of 16 wordmarks on a logo-free blank. Checkout records your name and style in order metadata; routing to the matching unpublished Printify draft per item is not wired yet—fulfillment still uses the default published product until variant drafts are linked.",
+        "wordmarkGridBadge": "{count} wordmarks"
       },
       "tshirts": {
         "heading": "T-shirts",

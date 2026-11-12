@@ -28,6 +28,8 @@ type Body = {
   rights_confirmed?: unknown
   upload_token?: unknown
   rights_accepted_locale?: unknown
+  wordmark_brand?: unknown
+  wordmark_style?: unknown
   unitAmountCents?: unknown
   price?: unknown
 }

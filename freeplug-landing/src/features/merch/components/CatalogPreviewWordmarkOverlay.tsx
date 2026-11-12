@@ -38,7 +38,9 @@ export function CatalogPreviewWordmarkOverlay({
       preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >
-      <g transform={`translate(${cx} ${cy}) scale(${scale})`}>
+      <g
+        transform={`translate(${cx} ${cy}) rotate(${placement.rotate ?? 0}) scale(${scale})`}
+      >
         <BrandWordmarkGraphic
           key={`${config.variationId}-${config.blankKind}`}
           variationId={config.variationId}

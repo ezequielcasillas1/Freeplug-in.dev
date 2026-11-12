@@ -1,18 +1,30 @@
 import { describe, expect, it } from 'vitest'
 import { SHOP_FREEPLUG_COMING_SOON_SLUGS } from './printify-catalog'
-import { shopBrandedListingImage, shopListingImageSrc } from './shop-listing-image'
+import {
+  isPrintifyMockupImageSrc,
+  shopBrandedListingImage,
+  shopListingImageSrc,
+} from './shop-listing-image'
+import { listShopFilterItems } from './shop-filter-items'
 import { listShopItems } from './catalog'
 
 describe('shop listing images', () => {
-  it('uses Freeplug mockups for 188 shop cards and blanks for 7', () => {
-    const items = listShopItems()
-    let branded = 0
-    for (const item of items) {
-      if (shopBrandedListingImage(item.slug)) branded += 1
+  it('never serves Printify mockup URLs on public listing paths', () => {
+    for (const item of listShopItems()) {
+      expect(shopListingImageSrc(item.slug, item.gridImage)).toBe(item.gridImage)
+      expect(isPrintifyMockupImageSrc(shopListingImageSrc(item.slug, item.gridImage))).toBe(false)
+      for (const src of item.gallery ?? []) {
+        expect(isPrintifyMockupImageSrc(src)).toBe(false)
+        expect(src.startsWith('/merch/shop/')).toBe(true)
+      }
     }
-    expect(items.length).toBe(195)
-    expect(branded).toBe(188)
-    expect(items.length - branded).toBe(7)
+  })
+
+  it('grid filter rows use local blank heroes only', () => {
+    for (const row of listShopFilterItems()) {
+      expect(isPrintifyMockupImageSrc(row.image)).toBe(false)
+      expect(row.image.startsWith('/merch/')).toBe(true)
+    }
   })
 
   it('falls back to blank grid image when no mockup exists', () => {
@@ -20,12 +32,6 @@ describe('shop listing images', () => {
     expect(item).toBeTruthy()
     expect(shopBrandedListingImage(item!.slug)).toBeNull()
     expect(shopListingImageSrc(item!.slug, item!.gridImage)).toBe(item!.gridImage)
-  })
-
-  it('serves a Printify URL for a branded slug', () => {
-    const item = listShopItems()[0]!
-    const src = shopBrandedListingImage(item.slug)
-    expect(src).toMatch(/^https:\/\/images-api\.printify\.com\//)
   })
 
   it('coming-soon slugs have no branded listing image', () => {

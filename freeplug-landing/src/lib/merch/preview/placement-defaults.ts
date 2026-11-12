@@ -4,6 +4,8 @@ export type PreviewPlacement = {
   left: number
   width: number
   scale?: number
+  /** Degrees, clockwise; optional per-mockup adjustment */
+  rotate?: number
 }
 
 export const PREVIEW_PLACEMENT_BY_PRODUCT_TYPE: Record<string, PreviewPlacement> = {

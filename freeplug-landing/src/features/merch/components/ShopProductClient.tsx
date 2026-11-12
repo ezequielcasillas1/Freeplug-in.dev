@@ -34,6 +34,10 @@ import {
   shopDefaultPreviewColor,
   shopGalleryIndexForColor,
 } from '@/lib/merch/shop/shop-gallery-blank-kind'
+import {
+  isShopGallerySlideHidden,
+  shopGalleryIndexWithPrintablePlacement,
+} from '@/lib/merch/shop/shop-gallery-placement'
 import { useRouter } from 'next/navigation'
 
 export function ShopProductClient({
@@ -44,6 +48,7 @@ export function ShopProductClient({
   initialWordmarkBrand = DEFAULT_BUYER_WORDMARK_BRAND,
   initialWordmarkStyle = DEFAULT_BUYER_WORDMARK_STYLE,
   initialColor = null,
+  initialWordmarkOverlayDisabled = false,
 }: {
   item: ShopCatalogItem
   checkoutEnabled: boolean
@@ -53,6 +58,8 @@ export function ShopProductClient({
   initialWordmarkStyle?: BuyerWordmarkStyleKey
   /** Optional deep-link color (must match item.colors). */
   initialColor?: string | null
+  /** QA: `?shop_wordmark_overlay=0` disables the live SVG overlay. */
+  initialWordmarkOverlayDisabled?: boolean
 }) {
   const t = useTranslations('public.merch.shop')
   const locale = toAppLocale(useLocale())
@@ -69,7 +76,13 @@ export function ShopProductClient({
   const [color, setColor] = useState(defaultColor)
   const [size, setSize] = useState(() => sizesForColor(item.variants, defaultColor || null)[0] ?? '')
   const [titleVariantId, setTitleVariantId] = useState(item.variants[0]?.id ?? 0)
-  const [galleryIndex, setGalleryIndex] = useState(() => shopGalleryIndexForColor(item, defaultColor))
+  const [galleryIndex, setGalleryIndex] = useState(() =>
+    shopGalleryIndexWithPrintablePlacement(
+      item.slug,
+      item.gallery.length,
+      shopGalleryIndexForColor(item, defaultColor)
+    )
+  )
   const [quantity, setQuantity] = useState(1)
   const [designMode, setDesignMode] = useState<'freeplug' | 'custom'>('freeplug')
   const [wordmarkBrand, setWordmarkBrand] = useState<BuyerWordmarkBrandKey>(initialWordmarkBrand)
@@ -81,6 +94,13 @@ export function ShopProductClient({
   const [uploading, setUploading] = useState(false)
   const [uploadToken, setUploadToken] = useState<string | null>(null)
   const [customSoldOut, setCustomSoldOut] = useState(false)
+
+  useEffect(() => {
+    if (designMode !== 'freeplug') return
+    if (isShopGallerySlideHidden(item.slug, galleryIndex)) {
+      setGalleryIndex(shopGalleryIndexForColor(item, color))
+    }
+  }, [color, designMode, galleryIndex, item])
 
   const sizeOptions = useMemo(() => sizesForColor(item.variants, color || null), [item.variants, color])
 
@@ -174,6 +194,8 @@ export function ShopProductClient({
         rights_confirmed: designMode === 'custom' ? rightsConfirmed : undefined,
         upload_token: designMode === 'custom' ? uploadToken : undefined,
         rights_accepted_locale: locale,
+        wordmark_brand: designMode === 'freeplug' ? wordmarkBrand : undefined,
+        wordmark_style: designMode === 'freeplug' ? wordmarkStyle : undefined,
       }),
     })
     const json = (await res.json().catch(() => null)) as { url?: string; error?: string } | null
@@ -188,17 +210,15 @@ export function ShopProductClient({
   const canBuyCustom = designMode === 'custom' && Boolean(customPath) && Boolean(uploadToken) && rightsConfirmed && !customSoldOut
   const buyDisabled = !checkoutEnabled || (designMode === 'freeplug' ? !canBuyFreeplug : !canBuyCustom)
 
-  const previewGarmentBlankKind = useMemo(
-    () =>
-      resolveShopPreviewBlankKind({
-        item,
-        garmentColor: color || null,
-        variantBlankKind: variant?.blankKind,
-        displayImageSrc: productSrc,
-        galleryIndex,
-      }),
-    [color, galleryIndex, item, productSrc, variant?.blankKind]
-  )
+  const previewGarmentBlankKind = useMemo(() => {
+    if (variant?.blankKind) return variant.blankKind
+    return resolveShopPreviewBlankKind({
+      item,
+      garmentColor: color || null,
+      displayImageSrc: productSrc,
+      galleryIndex,
+    })
+  }, [color, galleryIndex, item, productSrc, variant?.blankKind])
 
   function syncWordmarkQuery(brand: BuyerWordmarkBrandKey, style: BuyerWordmarkStyleKey) {
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
@@ -210,7 +230,7 @@ export function ShopProductClient({
 
   const previewWordmark = useMemo(
     () =>
-      designMode === 'freeplug'
+      designMode === 'freeplug' && !initialWordmarkOverlayDisabled
         ? resolvePreviewWordmark({
             source: 'buyer-shop',
             slug: item.slug,
@@ -221,12 +241,19 @@ export function ShopProductClient({
             garmentBlankKind: previewGarmentBlankKind,
             buyerWordmarkBrand: wordmarkBrand,
             buyerWordmarkStyle: wordmarkStyle,
+            galleryIndex,
+            galleryLength: item.gallery.length,
+            shopPrintArea: item.printArea,
           })
         : null,
     [
       color,
       designMode,
+      galleryIndex,
+      item.gallery.length,
+      item.printArea,
       item.productType,
+      initialWordmarkOverlayDisabled,
       item.slug,
       previewGarmentBlankKind,
       wordmarkBrand,
@@ -250,15 +277,24 @@ export function ShopProductClient({
             />
             {gallerySlides.length > 1 ? (
               <div className="flex gap-2 mt-3 flex-wrap">
-                {gallerySlides.map((slide, idx) => (
+                {gallerySlides.map((slide, idx) => {
+                  const thumbHidden =
+                    designMode === 'freeplug' && isShopGallerySlideHidden(item.slug, idx)
+                  return (
                   <button
                     key={`${slide.kind}-${slide.src}-${idx}`}
                     type="button"
+                    disabled={thumbHidden}
+                    title={thumbHidden ? t('gallerySlideNoOverlay') : undefined}
                     className={cn(
                       'rounded-lg border p-1',
+                      thumbHidden && 'opacity-40 cursor-not-allowed',
                       galleryIndex === idx ? 'border-[#ba3d3d]' : 'border-gray-200'
                     )}
-                    onClick={() => setGalleryIndex(idx)}
+                    onClick={() => {
+                      if (thumbHidden) return
+                      setGalleryIndex(idx)
+                    }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -269,7 +305,8 @@ export function ShopProductClient({
                       referrerPolicy={isRemoteShopImage(slide.src) ? 'no-referrer' : undefined}
                     />
                   </button>
-                ))}
+                  )
+                })}
               </div>
             ) : null}
           </div>
@@ -326,11 +363,11 @@ export function ShopProductClient({
                     setWordmarkStyle(style)
                     syncWordmarkQuery(wordmarkBrand, style)
                   }}
-                  bakedInPrintify={wordmarkBaked}
+                  bakedInPrintify={false}
                   labels={{
                     heading: t('wordmarkHeading'),
                     styleHeading: t('wordmarkStyleHeading'),
-                    bakedNote: t('wordmarkBakedNote'),
+                    bakedNote: t('wordmarkFulfillmentNote'),
                   }}
                 />
               </div>

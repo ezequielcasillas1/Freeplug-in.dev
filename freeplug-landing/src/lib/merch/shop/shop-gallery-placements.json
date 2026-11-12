@@ -1,0 +1,2575 @@
+{
+  "version": 2,
+  "generatedAt": "2026-11-12T10:26:06.947Z",
+  "bySlug": {
+    "unisex-heavy-blend-crewneck-sweatshirt-49": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-sponge-fleece-pullover-hoodie-175": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "district-v-i-t-men-s-fleece-hoodie-1979": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "three-panel-fleece-hoodie-439": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "unisex-college-hoodie-92": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "champion-hoodie-528": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "men-s-cotton-polyester-hoodie-5485": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "youth-heavy-blend-hooded-sweatshirt-314": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "unisex-heavyweight-pullover-hoodie-2001": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "unisex-midweight-softstyle-fleece-hoodie-1525": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "core-fleece-crewneck-sweatshirt-3613": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-fleece-zip-up-hoodie-1925": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.58,
+          "width": 0.13,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "v-i-t-heavyweight-fleece-hoodie-3483": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "unisex-ecosmart-pullover-hoodie-sweatshirt-536": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "unisex-hooded-sweatshirt-696": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "unisex-sweatshirt-95": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "garment-dyed-crewneck-sweatshirt-3607": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-crew-neck-sweatshirt-723": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-heavy-blend-hooded-sweatshirt-77": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        }
+      ]
+    },
+    "unisex-jersey-long-sleeve-tee-41": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-tri-blend-long-sleeve-colorblock-raglan-3004": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "women-s-perfect-tri-long-sleeve-hoodie-2831": {
+      "slides": [
+        {
+          "top": 0.4,
+          "left": 0.44,
+          "width": 0.24,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "women-s-posi-uv-pro-long-sleeve-2865": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "women-s-perfect-tri-midi-long-sleeve-hoodie-3809": {
+      "slides": [
+        {
+          "top": 0.38,
+          "left": 0.44,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "laguna-raglan-sweatshirt-3554": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "featherweight-french-terry-long-sleeve-crewneck-3472": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "halftime-long-sleeve-hoodie-3155": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.42,
+          "width": 0.24,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-french-terry-raglan-crewneck-1708": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "long-sleeve-ultimate-performance-crew-3157": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "repeat-1-2-zip-long-sleeve-hooded-jacket-4397": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.58,
+          "width": 0.13,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "unisex-jersey-tank-39": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "women-s-cotton-tee-472": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-garment-dyed-tank-top-1459": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "pet-tank-top-571": {
+      "slides": [
+        {
+          "top": 0.56,
+          "left": 0.42,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "posicharge-reversible-mesh-tank-4135": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "women-s-ideal-racerback-tank-18": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "the-concert-tank-3076": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "women-s-cotton-tank-top-5478": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-jersey-short-sleeve-tee-12": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-heavy-cotton-tee-6": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-softstyle-t-shirt-145": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-heather-cvc-short-sleeve-tee-3013": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.2
+        }
+      ]
+    },
+    "unisex-garment-dyed-t-shirt-706": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-ultra-cotton-tee-36": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-cotton-crew-tee-5": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "easy-cotton-tee-3127": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "district-perfect-tri-tee-2027": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "women-s-favorite-tee-9": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-cotton-t-shirt-2979": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "dri-power-50-50-cotton-poly-t-shirt-2968": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-creator-2-0-tee-3169": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "unisex-cvc-jersey-t-shirt-1317": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-hd-cotton-t-shirt-1439": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "tie-dye-tee-cyclone-631": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "tie-dye-tee-crystal-630": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "infant-fine-jersey-tee-34": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "the-concert-tee-2835": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "toddler-s-fine-jersey-tee-32": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.198
+        }
+      ]
+    },
+    "unisex-moisture-wicking-tee-1121": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-garment-dyed-long-sleeve-t-shirt-710": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "canvas-tote-bag-5-color-straps-507": {
+      "slides": [
+        {
+          "top": 0.72,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.56,
+          "left": 0.44,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "cotton-canvas-tote-bag-1313": {
+      "slides": [
+        {
+          "top": 0.56,
+          "left": 0.46,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.56,
+          "left": 0.44,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "zippered-canvas-tote-1990": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.66,
+          "left": 0.5,
+          "width": 0.17
+        }
+      ]
+    },
+    "cotton-tote-bag-553": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.27,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "fanny-pack-468": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.46,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "drawstring-bag-414": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.186
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "backpack-413": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "tote-bag-aop-1389": {
+      "slides": [
+        {
+          "top": 0.56,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "essential-zip-tote-5098": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.46,
+          "width": 0.24,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "beach-wash-tote-5106": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.46,
+          "width": 0.24,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "insulated-lunch-tote-5123": {
+      "slides": [
+        {
+          "top": 0.58,
+          "left": 0.46,
+          "width": 0.17,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "day-tote-5096": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.54,
+          "left": 0.46,
+          "width": 0.17,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "ceramic-mug-11oz-15oz-478": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "mug-11oz-68": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "black-mug-11oz-15oz-479": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "mug-15oz-425": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "white-ceramic-mug-11oz-503": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "enamel-camping-mug-483": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "coffee-mug-tumbler-15oz-1511": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "pint-glass-16oz-633": {
+      "slides": [
+        {
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.45,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "vacuum-insulated-tumbler-11oz-604": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.38,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "chill-wine-tumbler-620": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.38,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.38,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "colorful-mugs-11oz-15oz-1151": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "accent-coffee-mug-11-15oz-635": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "two-tone-accent-mug-11oz-15oz-2693": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "accent-rim-handle-mug-11oz-15oz-2692": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "dad-hat-with-leather-patch-rectangle-1221": {
+      "slides": [
+        {
+          "top": 0.345,
+          "left": 0.5,
+          "width": 0.11,
+          "inkBlankKind": "dark"
+        },
+        {
+          "top": 0.345,
+          "left": 0.5,
+          "width": 0.11,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "classic-cuffed-beanie-embroidery-1691": {
+      "slides": [
+        {
+          "top": 0.28,
+          "left": 0.5,
+          "width": 0.32,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "5-panel-trucker-cap-1734": {
+      "slides": [
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "cuff-beanie-5385": {
+      "slides": [
+        {
+          "top": 0.28,
+          "left": 0.48,
+          "width": 0.32,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.72,
+          "left": 0.5,
+          "width": 0.28,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "action-snapback-cap-5284": {
+      "slides": [
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "canvas-mesh-back-cap-4802": {
+      "slides": [
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
+        },
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "snapback-trucker-cap-1743": {
+      "slides": [
+        {
+          "top": 0.33,
+          "left": 0.4,
+          "width": 0.28,
+          "inkBlankKind": "dark"
+        },
+        {
+          "top": 0.33,
+          "left": 0.4,
+          "width": 0.28,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "impact-mesh-stretch-tek-cap-5625": {
+      "slides": [
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "mid-profile-baseball-cap-with-leather-patch-rect-2707": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.36,
+          "left": 0.5,
+          "width": 0.14,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "snapback-trucker-cap-1446": {
+      "slides": [
+        {
+          "top": 0.34,
+          "left": 0.49,
+          "width": 0.26,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "12-solid-cuffed-beanie-5665": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.36,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "dad-hat-with-leather-patch-round-1287": {
+      "slides": [
+        {
+          "top": 0.36,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "full-length-apron-5541": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "tea-towel-677": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.383
+        },
+        {
+          "top": 0.554,
+          "left": 0.408,
+          "width": 0.366
+        }
+      ]
+    },
+    "hardboard-coasters-with-cork-bottom-set-of-4-2764": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "glass-cutting-board-938": {
+      "slides": [
+        {
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "velveteen-plush-blanket-522": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.383
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "shower-curtains-235": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "posicharge-competitor-2-button-henley-4129": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "competitor-united-crew-4118": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "scented-soy-candles-with-black-lid-4-and-9oz-1943": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "scented-candles-coconut-apricot-wax-4oz-9oz-1488": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "posicharge-competitor-7-pocketed-short-4616": {
+      "slides": [
+        {
+          "top": 0.46,
+          "left": 0.38,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "tin-candles-1379": {
+      "slides": [
+        {
+          "top": 0.62,
+          "left": 0.52,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "posicharge-competitor-short-4127": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.64,
+          "left": 0.36,
+          "width": 0.26,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "candle-set-with-wick-trimmer-5453": {
+      "slides": [
+        {
+          "top": 0.61,
+          "left": 0.4,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "rally-towel-5577": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.51,
+          "width": 0.367
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "paper-gift-bag-2729": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-flyer-jogger-4628": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.66,
+          "left": 0.34,
+          "width": 0.17,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "unisex-pique-gym-shorts-6173": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.66,
+          "left": 0.34,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "scented-soy-candle-multi-size-amber-jar-1468": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "women-s-ultimate-performance-v-neck-3151": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "women-s-dare-shorts-5786": {
+      "slides": [
+        {
+          "top": 0.66,
+          "left": 0.34,
+          "width": 0.18,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "scented-soy-candles-with-white-lid-9oz-755": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "natural-stone-stretch-bar-bracelet-engraving-2651": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "circle-necklace-engraving-2341": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "heart-necklace-engraving-2655": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.68,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "horizontal-bar-necklace-engraving-2654": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "cutout-heart-bar-necklace-engraving-2659": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "cutout-paw-bar-necklace-engraving-2652": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "youth-easy-cotton-tee-3125": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "toddler-short-sleeve-tee-580": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "baby-short-sleeve-onesie-568": {
+      "slides": [
+        {
+          "top": 0.539,
+          "left": 0.499,
+          "width": 0.29
+        },
+        {
+          "top": 0.537,
+          "left": 0.499,
+          "width": 0.29
+        }
+      ]
+    },
+    "11oz-accent-mug-583": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "toddler-full-zip-fleece-hoodie-2728": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.58,
+          "width": 0.13,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "infant-baby-rib-bodysuit-561": {
+      "slides": [
+        {
+          "top": 0.554,
+          "left": 0.506,
+          "width": 0.42
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "kids-relax-hoodie-1617": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "kids-heavy-cotton-tee-157": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "youth-midweight-tee-750": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "youth-competitor-tee-1142": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
+      ]
+    },
+    "ceramic-ornament-4-shapes-531": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "garden-house-banner-976": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "beach-towel-352": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.383
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "picnic-blanket-1124": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "leatherette-ornament-3-shapes-engraving-2756": {
+      "slides": [
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "metal-ornaments-1182": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "ceramic-decoration-ornament-1pc-1632": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "wooden-ornaments-697": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.56,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "value-beach-towel-5582": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.32
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "value-cabana-stripe-beach-towel-5583": {
+      "slides": [
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.34,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.32,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "beach-towel-5580": {
+      "slides": [
+        {
+          "top": 0.51,
+          "left": 0.5,
+          "width": 0.32
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "flag-1347": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.383
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "pet-bandana-562": {
+      "slides": [
+        {
+          "top": 0.686,
+          "left": 0.504,
+          "width": 0.42
+        },
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.36
+        }
+      ]
+    },
+    "copper-vacuum-insulated-bottle-22oz-572": {
+      "slides": [
+        {
+          "top": 0.48,
+          "left": 0.498,
+          "width": 0.23,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "pet-bowl-570": {
+      "slides": [
+        {
+          "top": 0.577,
+          "left": 0.477,
+          "width": 0.42
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "pet-bed-419": {
+      "slides": [
+        {
+          "top": 0.519,
+          "left": 0.5,
+          "width": 0.42
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "clip-on-pet-bandana-1672": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.66,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "pet-bowl-18oz-engraving-1520": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.32,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "pet-feeding-mats-623": {
+      "slides": [
+        {
+          "top": 0.611,
+          "left": 0.49,
+          "width": 0.42
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "sublimation-socks-376": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.186
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "sublimation-crew-socks-1433": {
+      "slides": [
+        {
+          "top": 0.58,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-padded-crew-socks-dtg-2941": {
+      "slides": [
+        {
+          "top": 0.58,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.58,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "unisex-joggers-embroidery-1903": {
+      "slides": [
+        {
+          "top": 0.56,
+          "left": 0.4,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.56,
+          "left": 0.62,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "cushioned-crew-socks-574": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.186
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "recycled-poly-socks-452": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.494,
+          "width": 0.42
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "kiss-cut-stickers-400": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.3,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "square-stickers-384": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.4,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "die-cut-stickers-600": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "sticker-sheets-661": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "kiss-cut-sticker-sheet-5372": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "greeting-cards-1-10-30-and-50pcs-1094": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "postcard-bundles-envelopes-not-included-1073": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "postcard-bundles-envelopes-included-1101": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "round-vinyl-stickers-564": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "transparent-outdoor-stickers-square-1pc-794": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "tough-phone-cases-269": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.62,
+          "width": 0.18,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "slim-phone-cases-268": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "mouse-pad-rectangle-608": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "spiral-notebook-ruled-line-74": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.09
+        }
+      ]
+    },
+    "laptop-sleeve-429": {
+      "slides": [
+        {
+          "top": 0.48,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "phone-case-with-card-holder-1022": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.186
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "pu-leather-phone-cases-engraving-5369": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "desk-mat-488": {
+      "slides": [
+        {
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "desk-mats-975": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "laptop-sleeve-648": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.3,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "colored-frame-posters-5651": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "matte-canvas-framed-multi-color-944": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "matte-horizontal-posters-284": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "satin-posters-210gsm-97": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "matte-vertical-posters-282": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "matte-canvas-stretched-1-25-1159": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.29
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "metal-art-sign-1206": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.29
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "framed-vertical-poster-540": {
+      "slides": [
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.28,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "matte-canvas-stretched-0-75-multi-size-937": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.29
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "satin-and-archival-matte-posters-1309": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "rolled-posters-1220": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "uncoated-posters-1068": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "indoor-and-outdoor-silk-posters-763": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.244
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "ceramic-ornaments-1-side-print-1600": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
+      ]
+    }
+  }
+}

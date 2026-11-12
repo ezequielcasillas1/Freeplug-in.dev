@@ -4,7 +4,6 @@ import { ShopProductClient } from '@/features/merch/components/ShopProductClient
 import { isMerchCheckoutEnabled } from '@/lib/merch/flags'
 import { parseBuyerWordmarkBrand } from '@/lib/merch/preview/buyer-wordmark-brand'
 import { parseBuyerWordmarkStyle } from '@/lib/merch/preview/buyer-wordmark-style'
-import { isWordmarkBakedInPrintify } from '@/lib/merch/preview/wordmark-baked-fulfillment'
 
 /** Allow `?wordmark_brand=` / `?wordmark_style=` preview URLs (SSR overlay for QA). */
 export const dynamic = 'force-dynamic'
@@ -33,16 +32,17 @@ export default async function ShopProductPage({
     typeof sp.wordmark_style === 'string' ? sp.wordmark_style : null
   )
   const initialColor = typeof sp.color === 'string' ? sp.color : null
-  const wordmarkBaked = isWordmarkBakedInPrintify({ catalogSource: 'buyer-shop', slug })
+  const initialWordmarkOverlayDisabled = sp.shop_wordmark_overlay === '0'
   return (
     <ShopProductClient
       item={item}
       checkoutEnabled={checkoutEnabled}
       hasPrintifyProduct={hasPrintifyProduct}
-      wordmarkBaked={wordmarkBaked}
+      wordmarkBaked={false}
       initialWordmarkBrand={initialWordmarkBrand}
       initialWordmarkStyle={initialWordmarkStyle}
       initialColor={initialColor}
+      initialWordmarkOverlayDisabled={initialWordmarkOverlayDisabled}
     />
   )
 }

@@ -76,6 +76,20 @@ describe('resolvePreviewWordmark', () => {
     expect(r?.blankKind).toBe('light')
   })
 
+  it('ignores placement table wordmarkStyle (picker-only plates)', () => {
+    const r = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: 'women-s-favorite-tee-9',
+      href: '/shop/women-s-favorite-tee-9',
+      productType: 't-shirt',
+      catalogKey: 'shop/women-s-favorite-tee-9',
+      galleryIndex: 0,
+      galleryLength: 2,
+    })
+    expect(r?.variationId).toBe('buyer-cursive-freeplug-dev')
+    expect(r?.printSurface).toBe(true)
+  })
+
   it('uses buyer brand and style for buyer-shop', () => {
     const r = resolvePreviewWordmark({
       source: 'buyer-shop',
