@@ -1133,7 +1133,13 @@
           "patience-undefined": "Paciencia indefinida",
           "33-world-work-for-you": "Trabaja para ti",
           "34-world-let-your-work-beat-fantasies": "Deja que tu trabajo/empleo venza las fantasías",
-          "35-world-straight-after-the-freeplug": "Directo después del Freeplug. Después de todo."
+          "35-world-straight-after-the-freeplug": "Directo después del Freeplug. Después de todo.",
+          "36-stand-144000-crest": "Me mantengo con los 144.000 — Cresta",
+          "37-stand-144000-stencil": "Me mantengo con los 144.000 — Plantilla",
+          "38-stand-144000-blend": "Me mantengo con los 144.000 — Mezcla",
+          "39-knock-doors-left-chest": "Tocar puertas — Pecho izquierdo",
+          "40-knock-doors-centered": "Tocar puertas — Centrado",
+          "41-knock-doors-front-back": "Tocar puertas — Frente y espalda"
         },
         "colorDesignNotes": {
           "32-world-watch-out-rockefeller": "El color elige el diseño: clásico en blanco/negro; bowler en natural/carbón.",
@@ -1141,7 +1147,13 @@
           "35-world-straight-after-the-freeplug": "El color elige la marca: Fp cursiva en blanco/negro; FP en letras en natural/carbón."
         },
         "productDescriptions": {
-          "patience-undefined": "patience: undefined // Freeplug: solved."
+          "patience-undefined": "patience: undefined // Freeplug: solved.",
+          "36-stand-144000-crest": "Camiseta unisex con arte cresta. Impresa bajo pedido.",
+          "37-stand-144000-stencil": "Camiseta unisex con arte plantilla. Impresa bajo pedido.",
+          "38-stand-144000-blend": "Camiseta unisex con arte mezcla. Impresa bajo pedido.",
+          "39-knock-doors-left-chest": "Camiseta unisex con arte en pecho izquierdo. Impresa bajo pedido.",
+          "40-knock-doors-centered": "Camiseta unisex con arte centrado al frente. Impresa bajo pedido.",
+          "41-knock-doors-front-back": "Camiseta unisex con impresión al frente y espalda. Impresa bajo pedido."
         }
       },
       "collections": {
