@@ -2140,5 +2140,47 @@
       "Natural-front": "https://images-api.printify.com/mockup/6af6138fd7c504ab480baa49/63303/97992/only-one-man-tee-jesus-christ.jpg?camera_label=front",
       "Natural-back": "https://images-api.printify.com/mockup/6af6138fd7c504ab480baa49/63303/97993/only-one-man-tee-jesus-christ.jpg?camera_label=back"
     }
+  },
+  {
+    "slug": "45-art-of-freeplug",
+    "title": "The Art of Freeplug Tee",
+    "printify_product_id": "6af630372eca3ec3fc0b03c1",
+    "back_print": false,
+    "variants": {
+      "S / Charcoal": 38153,
+      "S / White": 38163,
+      "S / Black": 38164,
+      "M / Charcoal": 38167,
+      "M / White": 38177,
+      "M / Black": 38178,
+      "L / Charcoal": 38181,
+      "L / White": 38191,
+      "L / Black": 38192,
+      "XL / Charcoal": 38195,
+      "XL / White": 38205,
+      "XL / Black": 38206,
+      "2XL / Charcoal": 38209,
+      "2XL / White": 38219,
+      "2XL / Black": 38220,
+      "3XL / Charcoal": 42109,
+      "3XL / White": 42120,
+      "3XL / Black": 42122,
+      "S / Natural": 63293,
+      "M / Natural": 63298,
+      "L / Natural": 63303,
+      "XL / Natural": 63308,
+      "2XL / Natural": 63313,
+      "3XL / Natural": 63318
+    },
+    "mockups": {
+      "White-front": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/38191/97992/the-art-of-freeplug-tee.jpg?camera_label=front",
+      "White-back": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/38191/97993/the-art-of-freeplug-tee.jpg?camera_label=back",
+      "Black-front": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/38192/97992/the-art-of-freeplug-tee.jpg?camera_label=front",
+      "Black-back": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/38192/97993/the-art-of-freeplug-tee.jpg?camera_label=back",
+      "Charcoal-front": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/38181/97992/the-art-of-freeplug-tee.jpg?camera_label=front",
+      "Charcoal-back": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/38181/97993/the-art-of-freeplug-tee.jpg?camera_label=back",
+      "Natural-front": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/63303/97992/the-art-of-freeplug-tee.jpg?camera_label=front",
+      "Natural-back": "https://images-api.printify.com/mockup/6af630372eca3ec3fc0b03c1/63303/97993/the-art-of-freeplug-tee.jpg?camera_label=back"
+    }
   }
 ]

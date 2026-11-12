@@ -9,7 +9,7 @@ describe('sitemap and robots', () => {
     expect(buildSitemap('off').map((e) => e.url)).toEqual(
       SITEMAP_PATHS.map((path) => (path === '/' ? `${SITE}/` : `${SITE}${path}`))
     )
-    expect(SITEMAP_PATHS.filter((p) => p.startsWith('/merch/t-shirts/') && p !== '/merch/t-shirts')).toHaveLength(50)
+    expect(SITEMAP_PATHS.filter((p) => p.startsWith('/merch/t-shirts/') && p !== '/merch/t-shirts')).toHaveLength(53)
     expect(SITEMAP_PATHS.filter((p) => p.startsWith('/shop'))).toHaveLength(196)
   })
 
