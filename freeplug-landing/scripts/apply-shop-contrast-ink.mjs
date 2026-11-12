@@ -101,21 +101,46 @@ const catalog = JSON.parse(readFileSync(CATALOG, 'utf8'))
 const placements = JSON.parse(readFileSync(PLACEMENTS, 'utf8'))
 let fixed = 0
 
+async function contrastOk(publicPath, placement, kind, plate) {
+  const bg0 = await avgLum(publicPath, placement)
+  if (bg0 == null) return false
+  if (plate) {
+    const bg = Math.max(bg0, 0.84)
+    return contrastRatio(inkLum('light'), bg) >= MIN
+  }
+  return contrastRatio(inkLum(kind), bg0) >= MIN
+}
+
 for (const item of catalog.items) {
   const slides = placements.bySlug[item.slug]?.slides ?? []
   for (let idx = 0; idx < item.gallery.length; idx++) {
     const slide = slides[idx]
     if (!slide || slide.hide) continue
-    const { top, left, width, wordmarkStyle } = slide
+    const { top, left, width } = slide
     if (typeof top !== 'number' || typeof left !== 'number' || typeof width !== 'number') continue
     const imageSrc = item.gallery[idx] ?? item.gridImage
-    const plate = wordmarkStyle === 'cursive-plate' || wordmarkStyle === 'pop-plate-v2'
-    const lockedInk = overrideDoc[item.slug]?.slides?.[idx]?.inkBlankKind
-    const ink = lockedInk ?? (await bestInk(imageSrc, { top, left, width }, plate))
+    const placement = { top, left, width }
+  const lockedInk = overrideDoc[item.slug]?.slides?.[idx]?.inkBlankKind
+  const lockedStyle = overrideDoc[item.slug]?.slides?.[idx]?.wordmarkStyle
+    let plate = slide.wordmarkStyle === 'cursive-plate' || slide.wordmarkStyle === 'pop-plate-v2'
+    let ink = lockedInk ?? (await bestInk(imageSrc, placement, plate))
+    let ok =
+      (await contrastOk(imageSrc, placement, ink, plate)) ||
+      (plate && (await contrastOk(imageSrc, placement, ink, true)))
+    if (!ok && !lockedStyle) {
+      plate = true
+      slide.wordmarkStyle = 'cursive-plate'
+      ink = lockedInk ?? (await bestInk(imageSrc, placement, true))
+      ok = await contrastOk(imageSrc, placement, ink, true)
+    }
+    if (!ok && !lockedInk) {
+      const flip = ink === 'light' ? 'dark' : 'light'
+      if (await contrastOk(imageSrc, placement, flip, plate)) ink = flip
+    }
     if (slide.inkBlankKind !== ink) {
       slide.inkBlankKind = ink
       fixed++
-      console.log(item.slug, `slide ${idx}`, '->', ink)
+      console.log(item.slug, `slide ${idx}`, 'ink ->', ink, plate ? '+plate' : '')
     }
   }
 }

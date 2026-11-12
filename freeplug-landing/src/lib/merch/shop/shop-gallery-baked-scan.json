@@ -1,0 +1,680 @@
+{
+  "generatedAt": "2026-11-12T03:29:23.219Z",
+  "slideCount": 390,
+  "bakedSlideCount": 66,
+  "findings": [
+    {
+      "slug": "11oz-accent-mug-583",
+      "slide": 1,
+      "src": "/merch/shop/blanks/583-1.webp",
+      "share": 0.0438,
+      "patchFpShare": 0.0042,
+      "reasons": [
+        "printify-green:0.0430",
+        "preprint-red:0.0008"
+      ]
+    },
+    {
+      "slug": "12-solid-cuffed-beanie-5665",
+      "slide": 0,
+      "src": "/merch/shop/blanks/5665-0.webp",
+      "share": 0.4585,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.4585",
+        "printify-cyan:0.0000"
+      ]
+    },
+    {
+      "slug": "12-solid-cuffed-beanie-5665",
+      "slide": 1,
+      "src": "/merch/shop/blanks/5665-1.webp",
+      "share": 0.4585,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.4585",
+        "printify-cyan:0.0000"
+      ]
+    },
+    {
+      "slug": "accent-coffee-mug-11-15oz-635",
+      "slide": 1,
+      "src": "/merch/shop/blanks/635-1.webp",
+      "share": 0.0298,
+      "patchFpShare": 0,
+      "reasons": [
+        "preprint-red:0.0227",
+        "printify-cyan:0.0070"
+      ]
+    },
+    {
+      "slug": "accent-rim-handle-mug-11oz-15oz-2692",
+      "slide": 1,
+      "src": "/merch/shop/blanks/2692-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1282,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1282"
+      ]
+    },
+    {
+      "slug": "backpack-413",
+      "slide": 1,
+      "src": "/merch/shop/blanks/413-1.webp",
+      "share": 0.1358,
+      "patchFpShare": 0.0195,
+      "reasons": [
+        "printify-green:0.1358"
+      ]
+    },
+    {
+      "slug": "beach-towel-352",
+      "slide": 1,
+      "src": "/merch/shop/blanks/352-1.webp",
+      "share": 0.1223,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.1223"
+      ]
+    },
+    {
+      "slug": "ceramic-decoration-ornament-1pc-1632",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1632-1.webp",
+      "share": 0.2015,
+      "patchFpShare": 0.0009,
+      "reasons": [
+        "printify-green:0.2015"
+      ]
+    },
+    {
+      "slug": "ceramic-ornament-4-shapes-531",
+      "slide": 1,
+      "src": "/merch/shop/blanks/531-1.webp",
+      "share": 0.1062,
+      "patchFpShare": 0.0001,
+      "reasons": [
+        "printify-green:0.1062"
+      ]
+    },
+    {
+      "slug": "colorful-mugs-11oz-15oz-1151",
+      "slide": 0,
+      "src": "/merch/shop/blanks/1151-0.webp",
+      "share": 0.0435,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.0435"
+      ]
+    },
+    {
+      "slug": "competitor-united-crew-4118",
+      "slide": 0,
+      "src": "/merch/shop/blanks/4118-0.webp",
+      "share": 0,
+      "patchFpShare": 0.1509,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1509"
+      ]
+    },
+    {
+      "slug": "competitor-united-crew-4118",
+      "slide": 1,
+      "src": "/merch/shop/blanks/4118-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1252,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1252"
+      ]
+    },
+    {
+      "slug": "copper-vacuum-insulated-bottle-22oz-572",
+      "slide": 1,
+      "src": "/merch/shop/blanks/572-1.webp",
+      "share": 0.0411,
+      "patchFpShare": 0.0009,
+      "reasons": [
+        "printify-green:0.0411"
+      ]
+    },
+    {
+      "slug": "cotton-tote-bag-553",
+      "slide": 1,
+      "src": "/merch/shop/blanks/553-1.webp",
+      "share": 0.0008,
+      "patchFpShare": 0.0021,
+      "reasons": [
+        "printify-purple:0.0004",
+        "printify-cyan:0.0002",
+        "preprint-red:0.0001",
+        "printify-green:0.0001"
+      ]
+    },
+    {
+      "slug": "cutout-paw-bar-necklace-engraving-2652",
+      "slide": 0,
+      "src": "/merch/shop/blanks/2652-0.webp",
+      "share": 0,
+      "patchFpShare": 0.1176,
+      "reasons": [
+        "printify-green:0.0000",
+        "orange-fp-pattern-crown:0.1176"
+      ]
+    },
+    {
+      "slug": "dad-hat-with-leather-patch-round-1287",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1287-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0014,
+      "reasons": []
+    },
+    {
+      "slug": "desk-mat-488",
+      "slide": 1,
+      "src": "/merch/shop/blanks/488-1.webp",
+      "share": 0.297,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.2970"
+      ]
+    },
+    {
+      "slug": "district-perfect-tri-tee-2027",
+      "slide": 1,
+      "src": "/merch/shop/blanks/2027-1.webp",
+      "share": 0.0262,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.0262"
+      ]
+    },
+    {
+      "slug": "drawstring-bag-414",
+      "slide": 1,
+      "src": "/merch/shop/blanks/414-1.webp",
+      "share": 0.2088,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.2088"
+      ]
+    },
+    {
+      "slug": "featherweight-french-terry-long-sleeve-crewneck-3472",
+      "slide": 0,
+      "src": "/merch/shop/blanks/3472-0.webp",
+      "share": 0,
+      "patchFpShare": 0.0598,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0598"
+      ]
+    },
+    {
+      "slug": "full-length-apron-5541",
+      "slide": 0,
+      "src": "/merch/shop/blanks/5541-0.webp",
+      "share": 0,
+      "patchFpShare": 0.0917,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0917"
+      ]
+    },
+    {
+      "slug": "full-length-apron-5541",
+      "slide": 1,
+      "src": "/merch/shop/blanks/5541-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1026,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1026"
+      ]
+    },
+    {
+      "slug": "garden-house-banner-976",
+      "slide": 1,
+      "src": "/merch/shop/blanks/976-1.webp",
+      "share": 0,
+      "patchFpShare": 0.129,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1290"
+      ]
+    },
+    {
+      "slug": "glass-cutting-board-938",
+      "slide": 1,
+      "src": "/merch/shop/blanks/938-1.webp",
+      "share": 0.223,
+      "patchFpShare": 0.0157,
+      "reasons": [
+        "printify-green:0.2230"
+      ]
+    },
+    {
+      "slug": "greeting-cards-1-10-30-and-50pcs-1094",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1094-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1371,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1371"
+      ]
+    },
+    {
+      "slug": "hardboard-coasters-with-cork-bottom-set-of-4-2764",
+      "slide": 1,
+      "src": "/merch/shop/blanks/2764-1.webp",
+      "share": 0.3825,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.3825"
+      ]
+    },
+    {
+      "slug": "heart-necklace-engraving-2655",
+      "slide": 0,
+      "src": "/merch/shop/blanks/2655-0.webp",
+      "share": 0,
+      "patchFpShare": 0.2888,
+      "reasons": [
+        "orange-fp-pattern-crown:0.2888"
+      ]
+    },
+    {
+      "slug": "horizontal-bar-necklace-engraving-2654",
+      "slide": 0,
+      "src": "/merch/shop/blanks/2654-0.webp",
+      "share": 0,
+      "patchFpShare": 0.1049,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1049"
+      ]
+    },
+    {
+      "slug": "kids-heavy-cotton-tee-157",
+      "slide": 1,
+      "src": "/merch/shop/blanks/157-1.webp",
+      "share": 0.0049,
+      "patchFpShare": 0.0608,
+      "reasons": [
+        "printify-green:0.0049",
+        "orange-fp-pattern-crown:0.0608"
+      ]
+    },
+    {
+      "slug": "laguna-raglan-sweatshirt-3554",
+      "slide": 0,
+      "src": "/merch/shop/blanks/3554-0.webp",
+      "share": 0,
+      "patchFpShare": 0.114,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1140"
+      ]
+    },
+    {
+      "slug": "laptop-sleeve-648",
+      "slide": 1,
+      "src": "/merch/shop/blanks/648-1.webp",
+      "share": 0.0943,
+      "patchFpShare": 0.0102,
+      "reasons": [
+        "printify-green:0.0943"
+      ]
+    },
+    {
+      "slug": "matte-canvas-stretched-1-25-1159",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1159-1.webp",
+      "share": 0.1529,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.1529"
+      ]
+    },
+    {
+      "slug": "matte-horizontal-posters-284",
+      "slide": 1,
+      "src": "/merch/shop/blanks/284-1.webp",
+      "share": 0.1927,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.1927"
+      ]
+    },
+    {
+      "slug": "mug-15oz-425",
+      "slide": 1,
+      "src": "/merch/shop/blanks/425-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0746,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0746"
+      ]
+    },
+    {
+      "slug": "pet-feeding-mats-623",
+      "slide": 1,
+      "src": "/merch/shop/blanks/623-1.webp",
+      "share": 0.0014,
+      "patchFpShare": 0.0556,
+      "reasons": [
+        "printify-purple:0.0008",
+        "preprint-red:0.0006",
+        "orange-fp-pattern-crown:0.0556"
+      ]
+    },
+    {
+      "slug": "pet-tank-top-571",
+      "slide": 1,
+      "src": "/merch/shop/blanks/571-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0627,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0627"
+      ]
+    },
+    {
+      "slug": "picnic-blanket-1124",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1124-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1233,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1233"
+      ]
+    },
+    {
+      "slug": "posicharge-reversible-mesh-tank-4135",
+      "slide": 0,
+      "src": "/merch/shop/blanks/4135-0.webp",
+      "share": 0,
+      "patchFpShare": 0.0918,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0918"
+      ]
+    },
+    {
+      "slug": "postcard-bundles-envelopes-not-included-1073",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1073-1.webp",
+      "share": 0.1896,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.1896"
+      ]
+    },
+    {
+      "slug": "recycled-poly-socks-452",
+      "slide": 1,
+      "src": "/merch/shop/blanks/452-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0666,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0666"
+      ]
+    },
+    {
+      "slug": "repeat-1-2-zip-long-sleeve-hooded-jacket-4397",
+      "slide": 0,
+      "src": "/merch/shop/blanks/4397-0.webp",
+      "share": 0,
+      "patchFpShare": 0.1196,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1196"
+      ]
+    },
+    {
+      "slug": "repeat-1-2-zip-long-sleeve-hooded-jacket-4397",
+      "slide": 1,
+      "src": "/merch/shop/blanks/4397-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1072,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1072"
+      ]
+    },
+    {
+      "slug": "satin-and-archival-matte-posters-1309",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1309-1.webp",
+      "share": 0.2593,
+      "patchFpShare": 0.0236,
+      "reasons": [
+        "printify-green:0.2593"
+      ]
+    },
+    {
+      "slug": "scented-candles-coconut-apricot-wax-4oz-9oz-1488",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1488-1.webp",
+      "share": 0.0597,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.0597"
+      ]
+    },
+    {
+      "slug": "scented-soy-candle-multi-size-amber-jar-1468",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1468-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1416,
+      "reasons": [
+        "preprint-red:0.0000",
+        "orange-fp-pattern-crown:0.1416"
+      ]
+    },
+    {
+      "slug": "snapback-trucker-cap-1446",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1446-1.webp",
+      "share": 0.0272,
+      "patchFpShare": 0.0034,
+      "reasons": [
+        "preprint-red:0.0272",
+        "printify-purple:0.0000"
+      ]
+    },
+    {
+      "slug": "sublimation-crew-socks-1433",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1433-1.webp",
+      "share": 0.0346,
+      "patchFpShare": 0.0003,
+      "reasons": [
+        "printify-green:0.0346",
+        "printify-purple:0.0000"
+      ]
+    },
+    {
+      "slug": "sublimation-socks-376",
+      "slide": 1,
+      "src": "/merch/shop/blanks/376-1.webp",
+      "share": 0.0876,
+      "patchFpShare": 0.0041,
+      "reasons": [
+        "printify-green:0.0876"
+      ]
+    },
+    {
+      "slug": "the-concert-tank-3076",
+      "slide": 0,
+      "src": "/merch/shop/blanks/3076-0.webp",
+      "share": 0,
+      "patchFpShare": 0.0871,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0871"
+      ]
+    },
+    {
+      "slug": "the-concert-tank-3076",
+      "slide": 1,
+      "src": "/merch/shop/blanks/3076-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0582,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0582"
+      ]
+    },
+    {
+      "slug": "the-concert-tee-2835",
+      "slide": 1,
+      "src": "/merch/shop/blanks/2835-1.webp",
+      "share": 0.0358,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.0358"
+      ]
+    },
+    {
+      "slug": "tie-dye-tee-crystal-630",
+      "slide": 1,
+      "src": "/merch/shop/blanks/630-1.webp",
+      "share": 0.1543,
+      "patchFpShare": 0.002,
+      "reasons": [
+        "preprint-red:0.1543"
+      ]
+    },
+    {
+      "slug": "tin-candles-1379",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1379-1.webp",
+      "share": 0.033,
+      "patchFpShare": 0.0096,
+      "reasons": [
+        "printify-green:0.0330",
+        "preprint-red:0.0000"
+      ]
+    },
+    {
+      "slug": "tough-phone-cases-269",
+      "slide": 1,
+      "src": "/merch/shop/blanks/269-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0772,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0772"
+      ]
+    },
+    {
+      "slug": "transparent-outdoor-stickers-square-1pc-794",
+      "slide": 0,
+      "src": "/merch/shop/blanks/794-0.webp",
+      "share": 0.1753,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.1753"
+      ]
+    },
+    {
+      "slug": "two-tone-accent-mug-11oz-15oz-2693",
+      "slide": 0,
+      "src": "/merch/shop/blanks/2693-0.webp",
+      "share": 0,
+      "patchFpShare": 0.0653,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0653"
+      ]
+    },
+    {
+      "slug": "two-tone-accent-mug-11oz-15oz-2693",
+      "slide": 1,
+      "src": "/merch/shop/blanks/2693-1.webp",
+      "share": 0.1389,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.1389"
+      ]
+    },
+    {
+      "slug": "uncoated-posters-1068",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1068-1.webp",
+      "share": 0.453,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.4530"
+      ]
+    },
+    {
+      "slug": "unisex-cvc-jersey-t-shirt-1317",
+      "slide": 1,
+      "src": "/merch/shop/blanks/1317-1.webp",
+      "share": 0,
+      "patchFpShare": 0.1065,
+      "reasons": [
+        "orange-fp-pattern-crown:0.1065"
+      ]
+    },
+    {
+      "slug": "unisex-jersey-short-sleeve-tee-12",
+      "slide": 1,
+      "src": "/merch/shop/blanks/12-1.webp",
+      "share": 0.0001,
+      "patchFpShare": 0.0121,
+      "reasons": [
+        "printify-purple:0.0001"
+      ]
+    },
+    {
+      "slug": "women-s-cotton-tank-top-5478",
+      "slide": 1,
+      "src": "/merch/shop/blanks/5478-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0576,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0576"
+      ]
+    },
+    {
+      "slug": "women-s-perfect-tri-midi-long-sleeve-hoodie-3809",
+      "slide": 0,
+      "src": "/merch/shop/blanks/3809-0.webp",
+      "share": 0,
+      "patchFpShare": 0.0772,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0772"
+      ]
+    },
+    {
+      "slug": "women-s-perfect-tri-midi-long-sleeve-hoodie-3809",
+      "slide": 1,
+      "src": "/merch/shop/blanks/3809-1.webp",
+      "share": 0,
+      "patchFpShare": 0.0721,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0721"
+      ]
+    },
+    {
+      "slug": "women-s-ultimate-performance-v-neck-3151",
+      "slide": 0,
+      "src": "/merch/shop/blanks/3151-0.webp",
+      "share": 0,
+      "patchFpShare": 0.0585,
+      "reasons": [
+        "orange-fp-pattern-crown:0.0585"
+      ]
+    },
+    {
+      "slug": "wooden-ornaments-697",
+      "slide": 1,
+      "src": "/merch/shop/blanks/697-1.webp",
+      "share": 0.0127,
+      "patchFpShare": 0.0005,
+      "reasons": [
+        "printify-green:0.0127"
+      ]
+    },
+    {
+      "slug": "youth-midweight-tee-750",
+      "slide": 1,
+      "src": "/merch/shop/blanks/750-1.webp",
+      "share": 0.0194,
+      "patchFpShare": 0,
+      "reasons": [
+        "printify-green:0.0194"
+      ]
+    }
+  ]
+}

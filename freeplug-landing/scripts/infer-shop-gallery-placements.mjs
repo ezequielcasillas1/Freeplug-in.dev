@@ -8,6 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
+import { analyzeBakedMockArt, bakedSlideHeuristic } from './lib/shop-blank-baked-art.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(__dirname, '..')
@@ -422,12 +423,35 @@ async function skinForGallerySrc(slug, productType, src) {
 }
 
 /** Prefer hiding the slide with more visible skin (lifestyle), keep flat product visible when possible. */
+async function slideHasBakedArt(src) {
+  const scan = await analyzeBakedMockArt(src, ROOT)
+  return scan.baked
+}
+
 async function rebalanceTwoSlideHides(item, productType, slides) {
   const gallery = item.gallery ?? []
   if (gallery.length !== 2) return
   const ov0 = overrides[item.slug]?.slides?.[0]
   const ov1 = overrides[item.slug]?.slides?.[1]
   if (ov0?.hide || ov1?.hide) return
+  const baked0 = await slideHasBakedArt(gallery[0])
+  const baked1 = await slideHasBakedArt(gallery[1])
+  if (baked0 && !baked1 && slides[1]?.hide) {
+    const flat = await inferSafeFlatPlacement(item.slug, productType, gallery[1], item.printArea?.position)
+    if (!flat.hide) {
+      slides[1] = roundPlacement(flat)
+      slides[0] = { hide: true }
+      return
+    }
+  }
+  if (baked1 && !baked0 && slides[0]?.hide) {
+    const flat = await inferSafeFlatPlacement(item.slug, productType, gallery[0], item.printArea?.position)
+    if (!flat.hide) {
+      slides[0] = roundPlacement(flat)
+      slides[1] = { hide: true }
+      return
+    }
+  }
   if (!slides[0]?.hide || slides[1]?.hide) return
   const skin0 = await skinForGallerySrc(item.slug, productType, gallery[0])
   const skin1 = await skinForGallerySrc(item.slug, productType, gallery[1])
@@ -464,7 +488,11 @@ async function salvageAllHiddenSlides(item, productType, slides) {
   console.warn(`Could not salvage visible placement: ${item.slug}`)
 }
 
-async function inferPlacementForSlide(slug, productType, src, printPosition) {
+async function inferPlacementForSlide(slug, productType, src, printPosition, slideIndex = 0) {
+  const bakedScan = await analyzeBakedMockArt(src, ROOT)
+  if (bakedScan.baked || bakedSlideHeuristic(bakedScan, slug, slideIndex)) {
+    return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
+  }
   const px = await loadPixels(src)
   if (!px) return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
 
@@ -572,7 +600,7 @@ for (const item of catalog.items) {
       if (ov.hide) hidden++
       continue
     }
-    let placement = await inferPlacementForSlide(item.slug, productType, src, item.printArea?.position)
+    let placement = await inferPlacementForSlide(item.slug, productType, src, item.printArea?.position, i)
     placement = clampChestGarmentPlacement(productType, item.slug, placement, item.printArea?.position)
     slides.push(roundPlacement(placement))
     if (placement.hide) hidden++

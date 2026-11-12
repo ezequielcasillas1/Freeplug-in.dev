@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T02:59:56.487Z",
+  "generatedAt": "2026-11-12T03:29:09.831Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -114,6 +114,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -130,6 +131,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -271,12 +273,14 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -351,6 +355,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -374,10 +379,7 @@
     "laguna-raglan-sweatshirt-3554": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
           "top": 0.42,
@@ -451,10 +453,7 @@
     "repeat-1-2-zip-long-sleeve-hooded-jacket-4397": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
           "top": 0.42,
@@ -486,6 +485,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -505,6 +505,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -577,13 +578,13 @@
     "unisex-jersey-short-sleeve-tee-12": {
       "slides": [
         {
-          "hide": true
-        },
-        {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
           "inkBlankKind": "light"
+        },
+        {
+          "hide": true
         }
       ]
     },
@@ -644,6 +645,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -686,6 +688,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -702,13 +705,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -718,7 +719,8 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark"
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
           "hide": true
@@ -805,13 +807,15 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "light"
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "light"
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         }
       ]
     },
@@ -821,13 +825,15 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark"
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark"
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         }
       ]
     },
@@ -850,13 +856,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -953,13 +957,14 @@
     "cotton-tote-bag-553": {
       "slides": [
         {
-          "hide": true
+          "top": 0.48,
+          "left": 0.36,
+          "width": 0.11,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
-          "top": 0.58,
-          "left": 0.44,
-          "width": 0.16,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
@@ -985,10 +990,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.186,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1001,10 +1003,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.51,
-          "left": 0.5,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1053,10 +1052,11 @@
     "insulated-lunch-tote-5123": {
       "slides": [
         {
-          "top": 0.56,
-          "left": 0.44,
+          "top": 0.54,
+          "left": 0.46,
           "width": 0.16,
-          "inkBlankKind": "dark"
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
           "hide": true
@@ -1069,10 +1069,11 @@
           "hide": true
         },
         {
-          "top": 0.58,
-          "left": 0.44,
-          "width": 0.2,
-          "inkBlankKind": "dark"
+          "top": 0.54,
+          "left": 0.46,
+          "width": 0.17,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         }
       ]
     },
@@ -1127,10 +1128,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.521,
-          "left": 0.713,
-          "width": 0.15,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
@@ -1198,10 +1196,11 @@
     "vacuum-insulated-tumbler-11oz-604": {
       "slides": [
         {
-          "top": 0.49,
-          "left": 0.552,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
           "hide": true
@@ -1227,13 +1226,13 @@
     "colorful-mugs-11oz-15oz-1151": {
       "slides": [
         {
-          "top": 0.281,
-          "left": 0.594,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.031,
+          "left": 0.156,
+          "width": 0.32,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1246,25 +1245,19 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.552,
-          "left": 0.469,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "two-tone-accent-mug-11oz-15oz-2693": {
       "slides": [
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.383,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "top": 0.281,
-          "left": 0.469,
-          "width": 0.26,
+          "top": 0.031,
+          "left": 0.156,
+          "width": 0.32,
           "inkBlankKind": "light"
         }
       ]
@@ -1365,13 +1358,13 @@
     "canvas-mesh-back-cap-4802": {
       "slides": [
         {
-          "hide": true
-        },
-        {
           "top": 0.19,
           "left": 0.5,
           "width": 0.19,
           "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
         }
       ]
     },
@@ -1429,20 +1422,14 @@
           "inkBlankKind": "dark"
         },
         {
-          "top": 0.38,
-          "left": 0.54,
-          "width": 0.094,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
     "12-solid-cuffed-beanie-5665": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "dark"
+          "hide": true
         },
         {
           "top": 0.42,
@@ -1455,26 +1442,27 @@
     "dad-hat-with-leather-patch-round-1287": {
       "slides": [
         {
-          "hide": true
+          "top": 0.168,
+          "left": 0.5,
+          "width": 0.125,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
-          "top": 0.158,
-          "left": 0.438,
-          "width": 0.086,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
     "full-length-apron-5541": {
       "slides": [
         {
-          "top": 0.557,
-          "left": 0.501,
-          "width": 0.398,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.427,
+          "left": 0.323,
+          "width": 0.16,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1497,16 +1485,14 @@
     "hardboard-coasters-with-cork-bottom-set-of-4-2764": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.45,
           "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "width": 0.14,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1519,10 +1505,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.546,
-          "left": 0.502,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1577,15 +1560,12 @@
     "competitor-united-crew-4118": {
       "slides": [
         {
-          "top": 0.553,
-          "left": 0.452,
-          "width": 0.178,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "top": 0.564,
-          "left": 0.468,
-          "width": 0.168,
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
           "inkBlankKind": "light"
         }
       ]
@@ -1593,29 +1573,26 @@
     "scented-soy-candles-with-black-lid-4-and-9oz-1943": {
       "slides": [
         {
-          "hide": true
+          "top": 0.38,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "scented-candles-coconut-apricot-wax-4oz-9oz-1488": {
       "slides": [
         {
-          "top": 0.46,
+          "top": 0.38,
           "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "width": 0.18,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1644,10 +1621,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.553,
-          "left": 0.333,
-          "width": 0.32,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1657,9 +1631,9 @@
           "hide": true
         },
         {
-          "top": 0.177,
-          "left": 0.719,
-          "width": 0.16,
+          "top": 0.62,
+          "left": 0.38,
+          "width": 0.14,
           "inkBlankKind": "dark"
         }
       ]
@@ -1696,13 +1670,14 @@
     "paper-gift-bag-2729": {
       "slides": [
         {
-          "hide": true
+          "top": 0.46,
+          "left": 0.42,
+          "width": 0.15,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
-          "top": 0.031,
-          "left": 0.073,
-          "width": 0.16,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1712,9 +1687,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.17,
+          "top": 0.62,
+          "left": 0.38,
+          "width": 0.14,
           "inkBlankKind": "dark"
         }
       ]
@@ -1735,10 +1710,11 @@
     "scented-soy-candle-multi-size-amber-jar-1468": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.4,
           "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "width": 0.16,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
           "hide": true
@@ -1748,10 +1724,11 @@
     "women-s-ultimate-performance-v-neck-3151": {
       "slides": [
         {
-          "top": 0.54,
-          "left": 0.485,
-          "width": 0.208,
-          "inkBlankKind": "light"
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
           "hide": true
@@ -1761,9 +1738,9 @@
     "women-s-dare-shorts-5786": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
+          "top": 0.62,
+          "left": 0.38,
+          "width": 0.14,
           "inkBlankKind": "dark"
         },
         {
@@ -1774,16 +1751,14 @@
     "scented-soy-candles-with-white-lid-9oz-755": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.38,
           "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "width": 0.17,
+          "inkBlankKind": "dark",
+          "wordmarkStyle": "cursive-plate"
         },
         {
-          "top": 0.544,
-          "left": 0.547,
-          "width": 0.25,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1922,10 +1897,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.543,
-          "left": 0.527,
-          "width": 0.42,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
@@ -1990,13 +1962,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2009,6 +1979,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -2022,10 +1993,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2051,23 +2019,20 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.521,
-          "left": 0.516,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "picnic-blanket-1124": {
       "slides": [
         {
-          "hide": true
+          "top": 0.031,
+          "left": 0.156,
+          "width": 0.32,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.052,
-          "left": 0.49,
-          "width": 0.32,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
@@ -2109,23 +2074,20 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "wooden-ornaments-697": {
       "slides": [
         {
-          "hide": true
-        },
-        {
           "top": 0.031,
-          "left": 0.281,
+          "left": 0.073,
           "width": 0.16,
           "inkBlankKind": "light"
+        },
+        {
+          "hide": true
         }
       ]
     },
@@ -2207,7 +2169,7 @@
         {
           "top": 0.48,
           "left": 0.498,
-          "width": 0.072,
+          "width": 0.23,
           "inkBlankKind": "light"
         },
         {
@@ -2279,6 +2241,7 @@
           "top": 0.611,
           "left": 0.49,
           "width": 0.42,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2295,10 +2258,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.56,
-          "left": 0.588,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2311,10 +2271,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.146,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2375,10 +2332,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.51,
-          "left": 0.483,
-          "width": 0.28,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2417,6 +2371,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2478,13 +2433,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2529,10 +2482,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2600,6 +2550,7 @@
           "top": 0.606,
           "left": 0.511,
           "width": 0.16,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2642,13 +2593,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.144,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2677,10 +2626,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.562,
-          "left": 0.44,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2722,10 +2668,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2735,6 +2678,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2767,10 +2711,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.29,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2780,6 +2721,7 @@
           "top": 0.5,
           "left": 0.5,
           "width": 0.29,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2806,6 +2748,7 @@
           "top": 0.5,
           "left": 0.5,
           "width": 0.29,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2822,13 +2765,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
-          "top": 0.558,
-          "left": 0.443,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2838,6 +2779,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2854,13 +2796,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2870,6 +2810,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2883,6 +2824,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
+          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {

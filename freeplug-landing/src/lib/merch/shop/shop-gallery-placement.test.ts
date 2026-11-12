@@ -13,11 +13,8 @@ const CHEKE_SLUGS = [
   'classic-cuffed-beanie-embroidery-1691',
 ] as const
 
-/** Lifestyle slide 0 hidden — patch placement lives on slide 1 (flat product). */
-const LEATHER_PATCH_LIFESTYLE_HIDDEN = new Set([
-  'mid-profile-baseball-cap-with-leather-patch-rect-2707',
-  'dad-hat-with-leather-patch-round-1287',
-])
+/** Rect leather patch: hide lifestyle slide 0, place on slide 1. */
+const LEATHER_PATCH_LIFESTYLE_HIDDEN = new Set(['mid-profile-baseball-cap-with-leather-patch-rect-2707'])
 
 /** Slide 0 hidden — placement on slide 1 (flat product / bag body). */
 const HERO_ON_SLIDE_ONE = new Set(['zippered-canvas-tote-1990', ...LEATHER_PATCH_LIFESTYLE_HIDDEN])

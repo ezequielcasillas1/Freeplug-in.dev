@@ -159,12 +159,14 @@ export async function auditShopOverlayContrastForItem(
     ? { ...placement, width: placement.width * 0.72, top: placement.top - placement.width * 0.02 }
     : placement
   let measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind: ink })
-  if (plateStyle && measure && measure.ratio < MIN_CONTRAST_RATIO) {
+  if (plateStyle && measure) {
     const bg = Math.max(measure.backgroundLum, 0.84)
+    const plateInk = 0.06
     measure = {
       ...measure,
       backgroundLum: bg,
-      ratio: contrastRatio(measure.inkLum, bg),
+      inkLum: plateInk,
+      ratio: contrastRatio(plateInk, bg),
     }
   }
   if (measure && measure.ratio < MIN_CONTRAST_RATIO) {
