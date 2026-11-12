@@ -93,9 +93,7 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
   if (buyerShopUsesPreviewWordmarkOverlay(input.source)) {
     const productType = inferProductTypeFromCatalog(input.slug, input.productType, input.catalogKey)
     const brand = parseBuyerWordmarkBrand(input.buyerWordmarkBrand ?? DEFAULT_BUYER_WORDMARK_BRAND)
-    const style = parseBuyerWordmarkStyle(input.buyerWordmarkStyle ?? DEFAULT_BUYER_WORDMARK_STYLE)
-    const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
-  const blankKind =
+    const blankKind =
       input.garmentBlankKind ??
       (input.garmentColor ? classifyBlankColor(input.garmentColor) : 'light')
     const galleryIndex = input.galleryIndex ?? 0
@@ -107,18 +105,15 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
       galleryLength: input.galleryLength ?? Math.max(1, galleryIndex + 1),
       printArea: input.shopPrintArea ?? undefined,
     })
-    const fallbackPlacement = placementForProductType(productType)
     if (placementResolved === null) {
-      return {
-        variationId: variationIdForBuyerWordmark(brand, style),
-        placement: fallbackPlacement,
-        blankKind,
-        mode: 'full',
-        printSurface: !plateStyle,
-      }
+      return null
     }
+    const style = placementResolved.wordmarkStyle
+      ? parseBuyerWordmarkStyle(placementResolved.wordmarkStyle)
+      : parseBuyerWordmarkStyle(input.buyerWordmarkStyle ?? DEFAULT_BUYER_WORDMARK_STYLE)
+    const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
     const inkBlankKind = placementResolved.inkBlankKind ?? blankKind
-    const { hide: _hide, inkBlankKind: _ink, ...placement } = placementResolved
+    const { inkBlankKind: _ink, wordmarkStyle: _ws, ...placement } = placementResolved
     return {
       variationId: variationIdForBuyerWordmark(brand, style),
       placement,

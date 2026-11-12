@@ -15,17 +15,12 @@ describe('shopGridMockupProps', () => {
     expect(parsed).toContain('-on-dark.png')
   })
 
-  it('matches blank kind to analyzed slide for every catalog row', () => {
-    const items = listShopFilterItems()
-    const mismatches: string[] = []
-    for (const item of items) {
-      if (!item.galleryBlankKinds?.length || !item.image) continue
-      const kind = shopGridGarmentBlankKind(item)
+  it('renders a full wordmark overlay on every grid card', () => {
+    const missing: string[] = []
+    for (const item of listShopFilterItems()) {
       const props = shopGridMockupPropsForItem(item)
-      if (props.overlay && props.overlay.blankKind !== kind) {
-        mismatches.push(item.key)
-      }
+      if (!props.overlay || props.overlay.mode !== 'full') missing.push(item.key)
     }
-    expect(mismatches).toEqual([])
+    expect(missing).toEqual([])
   })
 })

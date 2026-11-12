@@ -4,6 +4,7 @@ import {
   inferProductTypeFromCatalog,
   placementForProductType,
 } from '@/lib/merch/preview/placement-defaults'
+import type { BuyerWordmarkStyleKey } from '@/lib/merch/preview/buyer-wordmark-style'
 import type { ShopCatalogItem, ShopPrintArea } from './types'
 
 export type ShopGallerySlidePlacement = PreviewPlacement & {
@@ -11,6 +12,8 @@ export type ShopGallerySlidePlacement = PreviewPlacement & {
   hide?: boolean
   /** Ink follows patch / embroidery surface, not whole garment. */
   inkBlankKind?: 'light' | 'dark'
+  /** Grid/hero default style when cursive alone lacks contrast (e.g. striped towel). */
+  wordmarkStyle?: BuyerWordmarkStyleKey
 }
 
 type PlacementsFile = {
@@ -97,9 +100,7 @@ export function resolveShopGalleryPlacement(
       ? slides[input.galleryIndex]
       : undefined
 
-  if (slide?.hide) {
-    return defaultPlacementForItem(input.slug, input.productType, input.catalogKey, input.printArea)
-  }
+  if (slide?.hide) return null
 
   if (slide) {
     const { hide: _hide, ...rest } = slide

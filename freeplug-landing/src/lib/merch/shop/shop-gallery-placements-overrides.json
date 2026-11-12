@@ -42,16 +42,76 @@
         { "top": 0.34, "left": 0.5, "width": 0.14 }
       ]
     },
+    "dad-hat-with-leather-patch-round-1287": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.375, "left": 0.51, "width": 0.19, "inkBlankKind": "dark" }
+      ]
+    },
+    "mid-profile-baseball-cap-with-leather-patch-rect-2707": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.392, "left": 0.47, "width": 0.2, "inkBlankKind": "dark" }
+      ]
+    },
     "copper-vacuum-insulated-bottle-22oz-572": {
       "slides": [
-        { "top": 0.46, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" },
-        { "top": 0.562, "left": 0.546, "width": 0.2, "inkBlankKind": "dark" }
+        { "top": 0.46, "left": 0.5, "width": 0.36, "inkBlankKind": "light" },
+        { "top": 0.562, "left": 0.546, "width": 0.24, "inkBlankKind": "light" }
+      ]
+    },
+    "district-v-i-t-men-s-fleece-hoodie-1979": {
+      "slides": [
+        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" },
+        { "hide": true }
+      ]
+    },
+    "women-s-perfect-tri-midi-long-sleeve-hoodie-3809": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.2 }
+      ]
+    },
+    "beach-wash-tote-5106": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.58, "left": 0.44, "width": 0.22 }
+      ]
+    },
+    "day-tote-5096": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.58, "left": 0.44, "width": 0.2 }
+      ]
+    },
+    "canvas-mesh-back-cap-4802": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.19, "left": 0.5, "width": 0.19 }
+      ]
+    },
+    "unisex-flyer-jogger-4628": {
+      "slides": [
+        { "hide": true },
+        { "top": 0.42, "left": 0.5, "width": 0.17 }
       ]
     },
     "value-cabana-stripe-beach-towel-5583": {
       "slides": [
-        { "top": 0.44, "left": 0.5, "width": 0.36, "inkBlankKind": "dark" },
-        { "top": 0.281, "left": 0.5, "width": 0.32, "inkBlankKind": "dark" }
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.34,
+          "inkBlankKind": "light",
+          "wordmarkStyle": "cursive-plate"
+        },
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.32,
+          "inkBlankKind": "light",
+          "wordmarkStyle": "cursive-plate"
+        }
       ]
     }
   }

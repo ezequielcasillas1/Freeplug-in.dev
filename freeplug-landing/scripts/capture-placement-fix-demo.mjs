@@ -22,13 +22,18 @@ const browser = await chromium.launch()
 
 async function shotPdp(slug, fileName) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } })
-  await page.goto(`${base}/shop/${slug}`, { waitUntil: 'load', timeout: 90_000 })
-  await page.waitForLoadState('networkidle', { timeout: 25_000 }).catch(() => {})
-  await page.waitForFunction(
-    () => Boolean(document.querySelector('[data-testid="shop-pdp-hero-mockup"]')),
-    { timeout: 45_000 }
-  )
-  const el = await page.$('[data-testid="shop-pdp-hero-mockup"]')
+  await page.goto(`${base}/shop/${slug}`, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+  await page.waitForLoadState('networkidle', { timeout: 60_000 }).catch(() => {})
+  const el = await page.waitForSelector('[data-testid="shop-pdp-hero-mockup"]', {
+    state: 'attached',
+    timeout: 90_000,
+  })
+  await page
+    .locator('[data-testid="shop-pdp-hero-mockup"] svg image, [data-testid="shop-pdp-hero-mockup"] img')
+    .first()
+    .waitFor({ state: 'attached', timeout: 60_000 })
+    .catch(() => {})
+  await page.waitForTimeout(600)
   if (!el) {
     await page.screenshot({ path: path.join(ARTIFACTS, `debug-${slug}.png`), fullPage: true })
     await page.close()

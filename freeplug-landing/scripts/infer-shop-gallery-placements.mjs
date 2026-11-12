@@ -221,6 +221,20 @@ function refinePlacement(seed, forbidden, productType, minWidth = 0.09) {
   return best ?? shrinkOrHide(seed.left, seed.top, seed.width, forbidden, minWidth)
 }
 
+function placementSkinOverlap(left, top, width, cells) {
+  const halfW = width / 2
+  const halfH = width * WORDMARK_HALF_HEIGHT_RATIO
+  let skinW = 0
+  let n = 0
+  for (const c of cells) {
+    if (Math.abs(c.cx - left) <= halfW + 0.06 && Math.abs(c.cy - top) <= halfH + 0.08) {
+      skinW += c.skin * c.n
+      n += c.n
+    }
+  }
+  return n ? skinW / n : 0
+}
+
 function detectLeatherPatch(cells) {
   const patchCells = cells.filter((c) => c.leather > 0.16 && c.skin < 0.28 && c.cy < 0.58)
   if (!patchCells.length) return null
@@ -341,6 +355,97 @@ function nudgeLeatherCenter(left, top, width, forbidden) {
   return shrinkOrHide(left, top, width, forbidden, 0.07)
 }
 
+function findBestPrintCell(cells, forbidden, productType) {
+  const width =
+    productType === 'mug' || productType === 'large-flat'
+      ? 0.32
+      : productType === 'hoodie' || productType === 'apparel'
+        ? 0.22
+        : 0.16
+  let best = null
+  for (const c of cells) {
+    if (c.skin > 0.1 || c.strap > 0.3) continue
+    if (productType === 'hoodie' && (c.cy < 0.36 || c.cy > 0.72)) continue
+    if (productType === 'hat' && c.cy > 0.42) continue
+    if (!boxFitsForbidden(c.cx, c.cy, width, forbidden)) continue
+    const score = (1 - c.skin) * c.n
+    if (!best || score > best.score) {
+      best = { left: c.cx, top: c.cy, width, score }
+    }
+  }
+  return best
+}
+
+/** When inference would hide every slide, pick flat product placement (print-area seed, no lifestyle heuristics). */
+async function inferSafeFlatPlacement(slug, productType, src, printPosition) {
+  const px = await loadPixels(src)
+  if (!px) return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
+
+  const { forbidden, cells } = analyzeGrid(px, productType, slug)
+  const seed = categorySeed(productType, slug, printPosition)
+  const minW = productType === 'mug' || productType === 'large-flat' ? 0.28 : 0.09
+  let fit = refinePlacement(seed, forbidden, productType, minW)
+  if (fit.hide) {
+    const cell = findBestPrintCell(cells, forbidden, productType)
+    if (cell) fit = { left: cell.left, top: cell.top, width: cell.width, hide: false }
+  }
+  if (fit.hide) return fit
+  if (placementSkinOverlap(fit.left, fit.top, fit.width, cells) > 0.16) {
+    return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
+  }
+  return fit
+}
+
+async function skinForGallerySrc(slug, productType, src) {
+  const px = await loadPixels(src)
+  if (!px) return 1
+  const { cells } = analyzeGrid(px, productType, slug)
+  return skinShare(cells)
+}
+
+/** Prefer hiding the slide with more visible skin (lifestyle), keep flat product visible when possible. */
+async function rebalanceTwoSlideHides(item, productType, slides) {
+  const gallery = item.gallery ?? []
+  if (gallery.length !== 2) return
+  const ov0 = overrides[item.slug]?.slides?.[0]
+  const ov1 = overrides[item.slug]?.slides?.[1]
+  if (ov0?.hide || ov1?.hide) return
+  if (!slides[0]?.hide || slides[1]?.hide) return
+  const skin0 = await skinForGallerySrc(item.slug, productType, gallery[0])
+  const skin1 = await skinForGallerySrc(item.slug, productType, gallery[1])
+  if (skin1 <= skin0 && skin0 > 0.05) return
+  if (skin0 < 0.045 && skin0 <= skin1) {
+    /* flat product on slide 0 */
+  } else if (skin1 <= skin0 + 0.008) return
+  const flat = await inferSafeFlatPlacement(item.slug, productType, gallery[0], item.printArea?.position)
+  if (flat.hide) return
+  slides[0] = roundPlacement(flat)
+  slides[1] = { hide: true }
+}
+
+async function salvageAllHiddenSlides(item, productType, slides) {
+  const gallery = item.gallery ?? []
+  if (!gallery.length) return
+  const tryOrder = []
+  for (let i = gallery.length - 1; i >= 0; i--) tryOrder.push(i)
+  for (let i = 0; i < gallery.length; i++) {
+    if (!tryOrder.includes(i)) tryOrder.push(i)
+  }
+  for (const i of tryOrder) {
+    const placement = await inferSafeFlatPlacement(
+      item.slug,
+      productType,
+      gallery[i],
+      item.printArea?.position
+    )
+    if (!placement.hide) {
+      slides[i] = roundPlacement(placement)
+      return
+    }
+  }
+  console.warn(`Could not salvage visible placement: ${item.slug}`)
+}
+
 async function inferPlacementForSlide(slug, productType, src, printPosition) {
   const px = await loadPixels(src)
   if (!px) return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
@@ -351,6 +456,10 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
   if (productType === 'leather-patch-hat') {
     const patch = detectLeatherPatch(cells)
     if (patch) {
+      const skinAtPatch = placementSkinOverlap(patch.left, patch.top, patch.width, cells)
+      if (skinShare(cells) > 0.08 && skinAtPatch > 0.14) {
+        return { hide: true, top: 0.5, left: 0.5, width: 0.12 }
+      }
       return {
         left: patch.left,
         top: patch.top,
@@ -402,6 +511,7 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
 }
 
 function roundPlacement(p) {
+  if (p.hide) return { hide: true }
   const out = {
     top: Math.round(p.top * 1000) / 1000,
     left: Math.round(p.left * 1000) / 1000,
@@ -411,6 +521,7 @@ function roundPlacement(p) {
   if (p.rotate != null) out.rotate = Math.round(p.rotate * 10) / 10
   if (p.hide) out.hide = true
   if (p.inkBlankKind) out.inkBlankKind = p.inkBlankKind
+  if (p.wordmarkStyle) out.wordmarkStyle = p.wordmarkStyle
   return out
 }
 
@@ -437,6 +548,11 @@ for (const item of catalog.items) {
     const placement = await inferPlacementForSlide(item.slug, productType, src, item.printArea?.position)
     slides.push(roundPlacement(placement))
     if (placement.hide) hidden++
+  }
+  await rebalanceTwoSlideHides(item, productType, slides)
+  if (slides.length && slides.every((s) => s.hide)) {
+    await salvageAllHiddenSlides(item, productType, slides)
+    if (!slides.every((s) => s.hide)) hidden--
   }
   bySlug[item.slug] = { slides }
 }

@@ -13,13 +13,20 @@ const CHEKE_SLUGS = [
   'classic-cuffed-beanie-embroidery-1691',
 ] as const
 
+/** Lifestyle slide 0 hidden — patch placement lives on slide 1 (flat product). */
+const LEATHER_PATCH_LIFESTYLE_HIDDEN = new Set([
+  'mid-profile-baseball-cap-with-leather-patch-rect-2707',
+  'dad-hat-with-leather-patch-round-1287',
+])
+
 describe('shopGalleryPlacement', () => {
-  it.each(CHEKE_SLUGS)('%s has a placement entry on slide 0', (slug) => {
+  it.each(CHEKE_SLUGS)('%s has a printable placement on its hero slide', (slug) => {
+    const galleryIndex = LEATHER_PATCH_LIFESTYLE_HIDDEN.has(slug) ? 1 : 0
     const p = resolveShopGalleryPlacement({
       slug,
       productType: null,
       catalogKey: `shop/${slug}`,
-      galleryIndex: 0,
+      galleryIndex,
       galleryLength: 2,
     })
     expect(p).not.toBeNull()
@@ -62,6 +69,17 @@ describe('shopGalleryPlacement', () => {
       galleryLength: 2,
     })
     expect(p!.top).toBeGreaterThan(0.62)
+  })
+
+  it('leather-patch 2707 hides lifestyle slide 0', () => {
+    const hidden = resolveShopGalleryPlacement({
+      slug: 'mid-profile-baseball-cap-with-leather-patch-rect-2707',
+      productType: 'hat',
+      catalogKey: 'shop/mid-profile-baseball-cap-with-leather-patch-rect-2707',
+      galleryIndex: 0,
+      galleryLength: 2,
+    })
+    expect(hidden).toBeNull()
   })
 
   it('leather-patch dad hat centers on patch with light ink', () => {

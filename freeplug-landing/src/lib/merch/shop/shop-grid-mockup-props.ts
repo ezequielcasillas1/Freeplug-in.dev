@@ -6,6 +6,7 @@ import {
   galleryIndexForSrc,
   resolveShopPreviewBlankKind,
   shopDefaultPreviewColor,
+  shopHeroGalleryIndex,
   shopHeroImageSrc,
 } from '@/lib/merch/shop/shop-gallery-blank-kind'
 import { isRemoteShopImage } from '@/lib/merch/shop/shop-listing-image'
@@ -38,8 +39,10 @@ export function shopGridGarmentBlankKind(item: CatalogFilterItem): 'light' | 'da
   const slug = slugFromCatalogKey(item.key)
   const catalogItem = getShopItem(slug)
   const previewItem = catalogItem ?? previewItemFromFilter(item)
-  const imageSrc = catalogItem ? shopHeroImageSrc(catalogItem) : item.image
-  const galleryIndex = galleryIndexForSrc(previewItem, imageSrc)
+  const galleryIndex = catalogItem ? shopHeroGalleryIndex(catalogItem) : galleryIndexForSrc(previewItem, item.image)
+  const imageSrc = catalogItem
+    ? (catalogItem.gallery[galleryIndex] ?? catalogItem.gridImage)
+    : item.image
   const garmentColor = catalogItem
     ? shopDefaultPreviewColor(catalogItem)
     : item.colors[0] ?? null
@@ -60,8 +63,10 @@ export function shopGridMockupPropsForItem(item: CatalogFilterItem): ShopGridMoc
   const slug = slugFromCatalogKey(item.key)
   const catalogItem = getShopItem(slug)
   const previewItem = catalogItem ?? previewItemFromFilter(item)
-  const imageSrc = catalogItem ? shopHeroImageSrc(catalogItem) : item.image
-  const galleryIndex = galleryIndexForSrc(previewItem, imageSrc)
+  const galleryIndex = catalogItem ? shopHeroGalleryIndex(catalogItem) : galleryIndexForSrc(previewItem, item.image)
+  const imageSrc = catalogItem
+    ? (catalogItem.gallery[galleryIndex] ?? catalogItem.gridImage)
+    : item.image
   const garmentColor = catalogItem
     ? shopDefaultPreviewColor(catalogItem)
     : item.colors[0] ?? null
