@@ -50,9 +50,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.44,
           "left": 0.5,
-          "width": 0.22,
+          "width": 0.24,
           "inkBlankKind": "light"
         }
       ]
@@ -61,13 +61,12 @@
       "slides": [
         {
           "top": 0.56,
-          "left": 0.48,
-          "width": 0.18
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.55,
-          "left": 0.48,
-          "width": 0.18
+          "hide": true
         }
       ]
     },
@@ -90,16 +89,16 @@
     "snapback-trucker-cap-1743": {
       "slides": [
         {
-          "top": 0.19,
-          "left": 0.5,
-          "width": 0.2,
-          "inkBlankKind": "light"
+          "top": 0.33,
+          "left": 0.4,
+          "width": 0.28,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.19,
-          "left": 0.5,
-          "width": 0.2,
-          "inkBlankKind": "light"
+          "top": 0.33,
+          "left": 0.4,
+          "width": 0.28,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -171,24 +170,26 @@
     "women-s-perfect-tri-midi-long-sleeve-hoodie-3809": {
       "slides": [
         {
-          "hide": true
+          "top": 0.38,
+          "left": 0.44,
+          "width": 0.22,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.2
+          "hide": true
         }
       ]
     },
     "beach-wash-tote-5106": {
       "slides": [
         {
-          "hide": true
+          "top": 0.52,
+          "left": 0.46,
+          "width": 0.24,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.58,
-          "left": 0.44,
-          "width": 0.22
+          "hide": true
         }
       ]
     },
@@ -698,18 +699,18 @@
         {
           "top": 0.44,
           "left": 0.5,
-          "width": 0.18,
-          "inkBlankKind": "dark"
+          "width": 0.24,
+          "inkBlankKind": "light"
         }
       ]
     },
     "circle-necklace-engraving-2341": {
       "slides": [
         {
-          "top": 0.44,
+          "top": 0.46,
           "left": 0.5,
-          "width": 0.17,
-          "inkBlankKind": "dark"
+          "width": 0.26,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -719,10 +720,10 @@
     "heart-necklace-engraving-2655": {
       "slides": [
         {
-          "top": 0.56,
-          "left": 0.48,
-          "width": 0.17,
-          "inkBlankKind": "dark"
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -732,10 +733,10 @@
     "horizontal-bar-necklace-engraving-2654": {
       "slides": [
         {
-          "top": 0.56,
-          "left": 0.48,
-          "width": 0.17,
-          "inkBlankKind": "dark"
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -745,10 +746,10 @@
     "cutout-heart-bar-necklace-engraving-2659": {
       "slides": [
         {
-          "top": 0.56,
-          "left": 0.48,
-          "width": 0.17,
-          "inkBlankKind": "dark"
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -758,10 +759,10 @@
     "cutout-paw-bar-necklace-engraving-2652": {
       "slides": [
         {
-          "top": 0.56,
-          "left": 0.48,
-          "width": 0.17,
-          "inkBlankKind": "dark"
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -771,10 +772,10 @@
     "pet-bowl-18oz-engraving-1520": {
       "slides": [
         {
-          "top": 0.46,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.2,
-          "inkBlankKind": "dark"
+          "width": 0.32,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -988,16 +989,16 @@
     "snapback-trucker-cap-1446": {
       "slides": [
         {
-          "top": 0.34,
-          "left": 0.38,
-          "width": 0.28,
-          "inkBlankKind": "dark"
+          "top": 0.33,
+          "left": 0.4,
+          "width": 0.26,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.32,
-          "left": 0.38,
-          "width": 0.28,
-          "inkBlankKind": "dark"
+          "top": 0.31,
+          "left": 0.42,
+          "width": 0.26,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1023,9 +1024,9 @@
           "hide": true
         },
         {
-          "top": 0.66,
-          "left": 0.24,
-          "width": 0.2,
+          "top": 0.38,
+          "left": 0.42,
+          "width": 0.32,
           "inkBlankKind": "light"
         }
       ]
@@ -1190,8 +1191,8 @@
       "slides": [
         {
           "top": 0.61,
-          "left": 0.52,
-          "width": 0.24,
+          "left": 0.4,
+          "width": 0.22,
           "inkBlankKind": "light"
         },
         {
@@ -1231,10 +1232,10 @@
     "picnic-blanket-1124": {
       "slides": [
         {
-          "top": 0.52,
-          "left": 0.48,
-          "width": 0.3,
-          "inkBlankKind": "dark"
+          "top": 0.46,
+          "left": 0.52,
+          "width": 0.32,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1313,6 +1314,113 @@
           "left": 0.5,
           "width": 0.24,
           "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "halftime-long-sleeve-hoodie-3155": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.42,
+          "width": 0.24,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "featherweight-french-terry-long-sleeve-crewneck-3472": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-hd-cotton-t-shirt-1439": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "laptop-sleeve-648": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.3,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "matte-canvas-framed-multi-color-944": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "framed-vertical-poster-540": {
+      "slides": [
+        {
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.28,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "women-s-perfect-tri-long-sleeve-hoodie-2831": {
+      "slides": [
+        {
+          "top": 0.4,
+          "left": 0.44,
+          "width": 0.24,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "essential-zip-tote-5098": {
+      "slides": [
+        {
+          "top": 0.52,
+          "left": 0.46,
+          "width": 0.24,
+          "inkBlankKind": "dark"
         },
         {
           "hide": true

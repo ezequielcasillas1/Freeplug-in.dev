@@ -6,7 +6,7 @@ import { shopItemMissingMockup } from './shop-public-grid'
 describe('listShopFilterItems images', () => {
   it('uses logo-free blank mockups for every grid card (no Printify baked logo)', () => {
     const items = listShopFilterItems()
-    expect(items).toHaveLength(195)
+    expect(items).toHaveLength(187)
     for (const row of items) {
       expect(isPrintifyMockupImageSrc(row.image)).toBe(false)
       expect(row.image).toMatch(/^\/merch\/shop\//)

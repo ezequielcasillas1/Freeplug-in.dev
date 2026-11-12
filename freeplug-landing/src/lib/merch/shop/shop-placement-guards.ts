@@ -23,6 +23,13 @@ import type { ShopCatalogItem } from './types'
 import sharp from 'sharp'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
+import { shopNoCleanMockupSlugs } from './shop-exclude-no-clean-mockup'
+import {
+  measureRenderedOverlayPixelDelta,
+  MIN_RENDERED_OVERLAY_CHANGED_SHARE,
+  MIN_RENDERED_OVERLAY_CONTRAST,
+  MIN_RENDERED_OVERLAY_MARK_CHANGED_SHARE,
+} from './shop-overlay-visibility'
 
 const WORDMARK_HALF_HEIGHT_RATIO = 0.11
 
@@ -359,7 +366,9 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     /sticker/i.test(item.slug) ||
     /necklace-engraving|bracelet-engraving/.test(item.slug) ||
     ornamentSurface ||
-    /beanie-embroidery-1691|snapback-trucker-cap-(1446|1743)|posicharge-competitor-7-pocketed-short-4616/.test(item.slug) ||
+    /beanie-embroidery-1691|snapback-trucker-cap-(1446|1743)|posicharge-competitor-7-pocketed-short-4616/.test(
+      item.slug
+    ) ||
     /scented-|tin-candles|candle-set-with-wick/.test(item.slug)
   if (measure && measure.ratio < MIN_CONTRAST_RATIO && !leatherPatch && !skipContrast) {
     failures.push(`${item.slug}: contrast ${measure.ratio.toFixed(2)} on hero slide ${galleryIndex}`)
@@ -369,6 +378,57 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     failures.push(
       `${item.slug}: grid mark width ~${markPx.toFixed(1)}px < ${MIN_GRID_MARK_WIDTH_PX}px on hero slide ${galleryIndex}`
     )
+  }
+  return failures
+}
+
+export async function auditRenderedOverlayVisibility(items: ShopCatalogItem[]): Promise<string[]> {
+  const noClean = shopNoCleanMockupSlugs()
+  const failures: string[] = []
+  for (const item of items) {
+    if (noClean.has(item.slug)) continue
+    if (
+      /poster|canvas-stretched|canvas-framed|metal-art-sign|rolled-posters|uncoated-posters|satin-posters|matte-posters|satin-and-archival|indoor-and-outdoor-silk|ceramic-ornaments-1-side/i.test(
+        item.slug
+      )
+    ) {
+      continue
+    }
+    const galleryIndex = shopHeroGalleryIndex(item)
+    const slidePlacement = shopGalleryPlacementsForSlug(item.slug)?.[galleryIndex]
+    if (slidePlacement?.hide) continue
+    const placementResolved = resolveShopGalleryPlacement({
+      slug: item.slug,
+      productType: item.productType,
+      catalogKey: `shop/${item.slug}`,
+      galleryIndex,
+      galleryLength: item.gallery.length,
+      printArea: item.printArea,
+    })
+    if (!placementResolved) continue
+    const preview = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: item.slug,
+      href: `/shop/${item.slug}`,
+      productType: item.productType,
+      catalogKey: `shop/${item.slug}`,
+      galleryIndex,
+      galleryLength: item.gallery.length,
+      shopPrintArea: item.printArea,
+      buyerWordmarkStyle: DEFAULT_BUYER_WORDMARK_STYLE,
+    })
+    if (!preview || preview.mode === 'skip') continue
+    const { inkBlankKind: _ink, wordmarkStyle: _ws, ...placement } = placementResolved
+    const imageSrc = item.gallery[galleryIndex] ?? item.gridImage
+    const vis = await measureRenderedOverlayPixelDelta(imageSrc, placement, preview.blankKind)
+    if (!vis) continue
+    const tileOk = vis.changedShare >= MIN_RENDERED_OVERLAY_CHANGED_SHARE
+    const markOk = vis.markChangedShare >= MIN_RENDERED_OVERLAY_MARK_CHANGED_SHARE
+    if (!tileOk && !markOk) {
+      failures.push(
+        `${item.slug}: rendered overlay changed ${(vis.changedShare * 100).toFixed(2)}% tile / ${(vis.markChangedShare * 100).toFixed(0)}% mark on slide ${galleryIndex}`
+      )
+    }
   }
   return failures
 }

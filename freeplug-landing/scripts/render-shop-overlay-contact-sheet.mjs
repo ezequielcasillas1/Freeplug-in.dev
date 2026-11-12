@@ -237,9 +237,7 @@ for (let si = 0; si < slugs.length; si++) {
 await stitchPages(pdpTileSlugs, pdpTiles, 'shop-overlay-contact-pdp')
 
 /** Slugs excluded from the sheet still need labeled PDP crops for review. */
-const EXTRA_CROP_SLUGS = [
-  'mid-profile-baseball-cap-with-leather-patch-rect-2707',
-]
+const EXTRA_CROP_SLUGS = ['mid-profile-baseball-cap-with-leather-patch-rect-2707']
 const cropPrefix = process.env.CROP_PREFIX ?? 'round12'
 for (const slug of EXTRA_CROP_SLUGS) {
   if (pdpTileSlugs.includes(slug)) continue

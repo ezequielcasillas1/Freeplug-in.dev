@@ -9,6 +9,7 @@ import path from 'node:path'
 import sharp from 'sharp'
 
 const ARTIFACTS = '/opt/cursor/artifacts'
+const PREFIX = process.env.ROUND_PREFIX ?? 'round12'
 const MIN_HALF_W = 1600
 
 for (let p = 1; p <= 5; p++) {
@@ -34,7 +35,7 @@ for (let p = 1; p <= 5; p++) {
       .resize(outHalf, outH, { kernel: sharp.kernel.lanczos3 })
       .png()
       .toBuffer()
-    await sharp(buf).toFile(path.join(ARTIFACTS, `round11-contact-pdp-page${p}-${side}.png`))
+    await sharp(buf).toFile(path.join(ARTIFACTS, `${PREFIX}-contact-pdp-page${p}-${side}.png`))
   }
   console.log(`Page ${p}: split ${w}×${h} → halves ~${outHalf}px wide`)
 }

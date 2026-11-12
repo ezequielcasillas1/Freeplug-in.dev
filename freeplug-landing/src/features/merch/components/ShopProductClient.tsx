@@ -48,6 +48,7 @@ export function ShopProductClient({
   initialWordmarkBrand = DEFAULT_BUYER_WORDMARK_BRAND,
   initialWordmarkStyle = DEFAULT_BUYER_WORDMARK_STYLE,
   initialColor = null,
+  initialWordmarkOverlayDisabled = false,
 }: {
   item: ShopCatalogItem
   checkoutEnabled: boolean
@@ -57,6 +58,8 @@ export function ShopProductClient({
   initialWordmarkStyle?: BuyerWordmarkStyleKey
   /** Optional deep-link color (must match item.colors). */
   initialColor?: string | null
+  /** QA: `?shop_wordmark_overlay=0` disables the live SVG overlay. */
+  initialWordmarkOverlayDisabled?: boolean
 }) {
   const t = useTranslations('public.merch.shop')
   const locale = toAppLocale(useLocale())
@@ -227,7 +230,7 @@ export function ShopProductClient({
 
   const previewWordmark = useMemo(
     () =>
-      designMode === 'freeplug'
+      designMode === 'freeplug' && !initialWordmarkOverlayDisabled
         ? resolvePreviewWordmark({
             source: 'buyer-shop',
             slug: item.slug,
@@ -250,6 +253,7 @@ export function ShopProductClient({
       item.gallery.length,
       item.printArea,
       item.productType,
+      initialWordmarkOverlayDisabled,
       item.slug,
       previewGarmentBlankKind,
       wordmarkBrand,

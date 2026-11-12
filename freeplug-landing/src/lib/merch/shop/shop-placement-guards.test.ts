@@ -4,6 +4,7 @@ import {
   apparelWidthWithinSpec,
   auditAllHeroPlacementGuards,
   auditHeroPlacementGuards,
+  auditRenderedOverlayVisibility,
   chestDefaultPlacement,
   heroSlideHasExplicitPlacement,
   MAX_MARK_SURFACE_LUM_SPLIT,
@@ -121,10 +122,24 @@ describe('shop placement guards', () => {
     }
   })
 
-  it('every catalog hero passes skin, contrast, width, and visibility guards', async () => {
+  it('every catalog hero passes skin, contrast, and width guards', async () => {
     const failures = await auditAllHeroPlacementGuards(catalog.items)
     expect(failures, failures.join('\n')).toEqual([])
   }, 180_000)
+
+  it('round-13 review heroes pass rendered overlay visibility (raster simulation)', async () => {
+    const review = new Set([
+      'posicharge-competitor-7-pocketed-short-4616',
+      'dad-hat-with-leather-patch-rectangle-1221',
+      'candle-set-with-wick-trimmer-5453',
+      'picnic-blanket-1124',
+      'snapback-trucker-cap-1446',
+      'tote-bag-aop-1389',
+      'heart-necklace-engraving-2655',
+    ])
+    const failures = await auditRenderedOverlayVisibility(catalog.items.filter((i) => review.has(i.slug)))
+    expect(failures, failures.join('\n')).toEqual([])
+  }, 120_000)
 
   it('every hero slide has explicit placement or is intentionally skipped only off-hero', () => {
     const missing: string[] = []

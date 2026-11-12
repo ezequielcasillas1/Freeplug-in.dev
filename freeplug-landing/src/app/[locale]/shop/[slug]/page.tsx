@@ -32,6 +32,7 @@ export default async function ShopProductPage({
     typeof sp.wordmark_style === 'string' ? sp.wordmark_style : null
   )
   const initialColor = typeof sp.color === 'string' ? sp.color : null
+  const initialWordmarkOverlayDisabled = sp.shop_wordmark_overlay === '0'
   return (
     <ShopProductClient
       item={item}
@@ -41,6 +42,7 @@ export default async function ShopProductPage({
       initialWordmarkBrand={initialWordmarkBrand}
       initialWordmarkStyle={initialWordmarkStyle}
       initialColor={initialColor}
+      initialWordmarkOverlayDisabled={initialWordmarkOverlayDisabled}
     />
   )
 }
