@@ -1,4 +1,4 @@
-# Printify custom integration — publish handshake (tees 36–41)
+# Printify custom integration — publish handshake (tees 36–42)
 
 After deploy, call **publishing_succeeded** once per product (do not run until live URLs work).
 
@@ -36,6 +36,11 @@ curl -sS -X POST "https://api.printify.com/v1/shops/$SHOP_ID/products/6af5cba1f6
   -H "Authorization: Bearer $PRINTIFY_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"external":{"id":"41-knock-doors-front-back","handle":"'$BASE'/merch/t-shirts/41-knock-doors-front-back"}}'
+
+curl -sS -X POST "https://api.printify.com/v1/shops/$SHOP_ID/products/6af5fc3fd7c504ab480b974f/publishing_succeeded.json" \
+  -H "Authorization: Bearer $PRINTIFY_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"external":{"id":"42-still-here-portrait","handle":"'$BASE'/merch/t-shirts/42-still-here-portrait"}}'
 
 ```
 
