@@ -26,6 +26,8 @@ const eslintConfig = defineConfig([
       // L-1 (Oct 4): addon_removals_owed store (service_role-only table, RLS), same pattern as the lock store.
       "src/lib/stripe/addon-removal-owed-server.ts",
       "src/lib/stripe/checkout-customer.ts",
+      // Envato picker (Oct 12): catalog store adapter, service_role-only tables.
+      "src/lib/envato/store-server.ts",
       "src/lib/stripe/sync-checkout-customer.ts",
       // Oct 19: email_opt_outs store (service_role-only table, RLS on, no policies).
       "src/lib/unsubscribe/store.ts",
