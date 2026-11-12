@@ -1,32 +1,25 @@
 {
-  "description": "Shop items with no gallery slide free of Printify baked placeholder art (owner may hide or replace assets).",
-  "generatedAt": "2026-11-12T04:25:11.810Z",
+  "description": "Every gallery slide has baked Printify placeholder art (YOUR DESIGN, sample graphics, green grids). Hidden from grid when shopExcludeNoCleanMockup is on (default).",
+  "generatedAt": "2026-11-12T04:35:00.000Z",
+  "slugReasons": {
+    "12-solid-cuffed-beanie-5665": "Both slides: full-lime beanie with green YOUR DESIGN placeholder (~46% Printify green on every pixel band).",
+    "die-cut-stickers-600": "Slide 0: baked magnifying-glass sample icon; slide 1: YOUR DESIGN die-cut with purple arrow art.",
+    "kiss-cut-sticker-sheet-5372": "Slide 0: sheet of green sample icons ($, bag, etc.); slide 1: purple grid with YOUR DESIGN on every sticker.",
+    "round-vinyl-stickers-564": "Slide 0: baked dollar-sign sample; slide 1: purple YOUR DESIGN with Printify P pattern.",
+    "sticker-sheets-661": "Slide 0: baked money-themed sample stickers; slide 1: four YOUR DESIGN placeholders with arrow art.",
+    "transparent-outdoor-stickers-square-1pc-794": "Slide 0: green starburst with baked arrow sample; slide 1: orange Printify grid with YOUR DESIGN."
+  },
   "slugs": [
     "12-solid-cuffed-beanie-5665",
-    "colored-frame-posters-5651",
-    "colorful-mugs-11oz-15oz-1151",
-    "competitor-united-crew-4118",
-    "full-length-apron-5541",
+    "die-cut-stickers-600",
     "kiss-cut-sticker-sheet-5372",
-    "paper-gift-bag-2729",
-    "posicharge-reversible-mesh-tank-4135",
-    "repeat-1-2-zip-long-sleeve-hooded-jacket-4397",
     "round-vinyl-stickers-564",
-    "snapback-trucker-cap-1446",
-    "snapback-trucker-cap-1743",
-    "the-concert-tank-3076",
-    "tie-dye-tee-crystal-630",
-    "two-tone-accent-mug-11oz-15oz-2693",
-    "unisex-cvc-jersey-t-shirt-1317",
-    "women-s-cotton-tank-top-5478",
-    "women-s-perfect-tri-midi-long-sleeve-hoodie-3809",
-    "wooden-ornaments-697",
-    "youth-midweight-tee-750"
+    "sticker-sheets-661",
+    "transparent-outdoor-stickers-square-1pc-794"
   ],
   "ownerNoVisibleMark": [
     "square-stickers-384",
     "posicharge-competitor-short-4127",
-    "12-solid-cuffed-beanie-5665",
     "snapback-trucker-cap-1446"
   ]
 }

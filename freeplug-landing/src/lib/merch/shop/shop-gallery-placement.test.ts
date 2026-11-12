@@ -99,7 +99,7 @@ describe('shopGalleryPlacement', () => {
     expect(p!.left).toBeGreaterThan(0.46)
     expect(p!.left).toBeLessThan(0.54)
     expect(p!.width).toBeGreaterThanOrEqual(0.16)
-    expect(p!.inkBlankKind).toBe('light')
+    expect(p!.inkBlankKind).toBe('dark')
   })
 
   it('pet bandana lifestyle slide avoids upper fur', () => {
@@ -121,8 +121,14 @@ describe('shopGalleryPlacement', () => {
       galleryIndex: 0,
       galleryLength: 2,
     })
-    expect(p!.top).toBeGreaterThan(0.3)
-    expect(p!.top).toBeLessThan(0.38)
+    expect(p!.top).toBeGreaterThan(0.65)
+    expect(resolveShopGalleryPlacement({
+      slug: 'classic-cuffed-beanie-embroidery-1691',
+      productType: 'hat',
+      catalogKey: 'shop/classic-cuffed-beanie-embroidery-1691',
+      galleryIndex: 1,
+      galleryLength: 2,
+    })).toBeNull()
   })
 
   it('cotton tote 553 marks front green bag only', () => {

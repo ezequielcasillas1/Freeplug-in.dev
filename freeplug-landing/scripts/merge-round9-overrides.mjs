@@ -34,10 +34,8 @@ const ROUND9 = {
   'round-vinyl-stickers-564': { slides: [{ hide: true }, { ...STICKER_MARK, width: 0.22 }] },
   'transparent-outdoor-stickers-square-1pc-794': { slides: [{ hide: true }, { ...STICKER_MARK }] },
   'square-stickers-384': { slides: [{ top: 0.5, left: 0.5, width: 0.28, inkBlankKind: 'dark' }, { hide: true }] },
-  'colorful-mugs-11oz-15oz-1151': {
-    slides: [{ hide: true }, { top: 0.5, left: 0.5, width: 0.22, inkBlankKind: 'dark' }],
-  },
-  'two-tone-accent-mug-11oz-15oz-2693': { slides: [{ hide: true }, { ...MUG_BODY }] },
+  'colorful-mugs-11oz-15oz-1151': { slides: [{ ...MUG_BODY }, { hide: true }] },
+  'two-tone-accent-mug-11oz-15oz-2693': { slides: [{ ...MUG_BODY }, { hide: true }] },
   'accent-coffee-mug-11-15oz-635': { slides: [{ ...MUG_BODY }, { hide: true }] },
   'accent-rim-handle-mug-2692': { slides: [{ ...MUG_BODY }, { hide: true }] },
   '11oz-accent-mug-583': { slides: [{ ...MUG_BODY }, { hide: true }] },

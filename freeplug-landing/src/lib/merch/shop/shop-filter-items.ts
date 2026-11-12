@@ -1,6 +1,10 @@
 import { listShopItems } from './catalog'
 import { shopHeroImageSrc } from './shop-gallery-blank-kind'
 import {
+  isShopExcludeNoCleanMockupEnabled,
+  shopNoCleanMockupSlugs,
+} from './shop-exclude-no-clean-mockup'
+import {
   isFreeplugShopComingSoon,
   shopHasColorMockups,
   shopHasPrintifyFreeplug,
@@ -9,7 +13,11 @@ import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 
 /** Build-time rows for /shop and /merch/all shop segment (195 items). */
 export function listShopFilterItems(): CatalogFilterItem[] {
-  return listShopItems().map((item) => {
+  const excludeNoClean = isShopExcludeNoCleanMockupEnabled()
+  const noClean = excludeNoClean ? shopNoCleanMockupSlugs() : null
+  return listShopItems()
+    .filter((item) => !noClean?.has(item.slug))
+    .map((item) => {
     const comingSoon = isFreeplugShopComingSoon(item.slug)
     const hasFreeplug = shopHasPrintifyFreeplug(item.slug)
     const hasMockups = shopHasColorMockups(item.slug)

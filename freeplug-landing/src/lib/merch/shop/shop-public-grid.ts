@@ -1,5 +1,9 @@
 import type { CatalogAvailability, CatalogFilterItem, CatalogFilterState, CatalogSort } from '@/lib/merch/catalog-filter-types'
 import { sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
+import {
+  isShopExcludeNoCleanMockupEnabled,
+  shopNoCleanMockupSlugs,
+} from './shop-exclude-no-clean-mockup'
 
 /** True when the buyer-shop row lacks grid mockups (current catalog + printify-products.json only). */
 export function shopItemMissingMockup(item: CatalogFilterItem): boolean {
@@ -23,8 +27,17 @@ function buyerExplicitlyShowsMissingMockups(state: CatalogFilterState): boolean 
 
 /** Grid pool: full list for facets; this narrows default buyer-shop visibility. */
 export function filterItemsForPublicGrid(items: CatalogFilterItem[], state: CatalogFilterState): CatalogFilterItem[] {
-  if (buyerExplicitlyShowsMissingMockups(state)) return items
-  return items.filter(shopItemVisibleInPublicGrid)
+  let pool = items
+  if (isShopExcludeNoCleanMockupEnabled()) {
+    const noClean = shopNoCleanMockupSlugs()
+    pool = pool.filter((item) => {
+      if (item.source !== 'buyer-shop') return true
+      const slug = item.key.replace(/^shop\//, '')
+      return !noClean.has(slug)
+    })
+  }
+  if (buyerExplicitlyShowsMissingMockups(state)) return pool
+  return pool.filter(shopItemVisibleInPublicGrid)
 }
 
 /** Stable-sort coming-soon buyer-shop rows after buyable peers (reuse after PR #59 grouping). */

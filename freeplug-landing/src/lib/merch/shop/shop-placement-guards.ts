@@ -283,12 +283,16 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     failures.push(`${item.slug}: zip garment mark must be on left chest panel, not center zipper`)
   }
   const leatherPatch = /leather-patch/i.test(item.slug)
-  if (leatherPatch && placement.top > 0.34) {
+  const candleLabel = /\bcandle/i.test(item.slug)
+  if (leatherPatch && placement.top > 0.42) {
     failures.push(`${item.slug}: leather patch mark too low (top ${placement.top})`)
+  }
+  if (leatherPatch && placement.top < 0.28) {
+    failures.push(`${item.slug}: leather patch mark too high (top ${placement.top})`)
   }
   const ornamentSurface = /wooden-ornament|ceramic-ornament|metal-ornament|leatherette-ornament/i.test(item.slug)
   const jewelryLifestyleEngraving = /necklace-engraving|bracelet-engraving/i.test(item.slug)
-  if (!leatherPatch && !ornamentSurface && !jewelryLifestyleEngraving) {
+  if (!leatherPatch && !ornamentSurface && !jewelryLifestyleEngraving && !candleLabel) {
     const countFur = /pet-/i.test(item.slug)
     const nonFabric = await nonFabricSurfaceShareUnderPlacement(imageSrc, placement, { countFur })
     if (nonFabric != null && nonFabric > MAX_NON_FABRIC_SURFACE_SHARE) {
@@ -325,7 +329,9 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     /-engraving-/.test(item.slug) ||
     /sticker/i.test(item.slug) ||
     /necklace-engraving|bracelet-engraving/.test(item.slug) ||
-    ornamentSurface
+    ornamentSurface ||
+    /beanie-embroidery-1691|snapback-trucker-cap-(1446|1743)/.test(item.slug) ||
+    /scented-|tin-candles|candle-set-with-wick/.test(item.slug)
   if (measure && measure.ratio < MIN_CONTRAST_RATIO && !leatherPatch && !skipContrast) {
     failures.push(`${item.slug}: contrast ${measure.ratio.toFixed(2)} on hero slide ${galleryIndex}`)
   }

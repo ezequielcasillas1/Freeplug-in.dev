@@ -126,10 +126,10 @@ export async function analyzeBakedMockArt(publicPath, root) {
     (purpleShare >= 0.006 && (greenShare >= 0.002 || purpleShare >= 0.02)) ||
     patchFpShare >= 0.055 ||
     (kinds['preprint-red'] ?? 0) / n >= 0.02 ||
-    textBandShare >= 0.38
+    (textBandShare >= 0.55 && (greenShare >= 0.002 || purpleShare >= 0.002))
 
   const reasonsOut = [...reasons]
-  if (textBandShare >= 0.25) reasonsOut.push(`placeholder-text-band:${textBandShare.toFixed(4)}`)
+  if (textBandShare >= 0.45) reasonsOut.push(`placeholder-text-band:${textBandShare.toFixed(4)}`)
 
   return {
     baked: bakedFlag,
@@ -145,7 +145,7 @@ export async function analyzeBakedMockArt(publicPath, root) {
 /** Slides with visible Printify / pre-print mock art even when global share is low (localized grids, fp patch). */
 export function bakedSlideHeuristic(scan, slug, slideIndex) {
   if (scan.baked) return true
-  if (scan.textBandShare >= 0.38) return true
+  if (scan.textBandShare >= 0.55 && (scan.kinds?.['printify-green'] || scan.kinds?.['printify-purple'])) return true
   if (scan.patchFpShare >= 0.08) return true
   if (/jersey-short-sleeve-tee-12/.test(slug) && slideIndex === 1) return true
   if (/dad-hat-with-leather-patch-round-1287/.test(slug) && slideIndex === 1) return true

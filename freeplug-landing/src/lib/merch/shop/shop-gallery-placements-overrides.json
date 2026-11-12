@@ -74,52 +74,55 @@
     "action-snapback-cap-5284": {
       "slides": [
         {
-          "top": 0.18,
-          "left": 0.49,
-          "width": 0.19
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.17,
-          "left": 0.49,
-          "width": 0.19
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
         }
       ]
     },
     "snapback-trucker-cap-1743": {
       "slides": [
         {
-          "top": 0.17,
+          "top": 0.19,
           "left": 0.5,
-          "width": 0.2
+          "width": 0.2,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.17,
+          "top": 0.19,
           "left": 0.5,
-          "width": 0.2
+          "width": 0.2,
+          "inkBlankKind": "light"
         }
       ]
     },
     "classic-cuffed-beanie-embroidery-1691": {
       "slides": [
         {
-          "top": 0.336,
+          "top": 0.78,
           "left": 0.5,
-          "width": 0.14
+          "width": 0.18,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.34,
-          "left": 0.5,
-          "width": 0.14
+          "hide": true
         }
       ]
     },
     "dad-hat-with-leather-patch-round-1287": {
       "slides": [
         {
-          "top": 0.168,
+          "top": 0.36,
           "left": 0.5,
-          "width": 0.15,
-          "inkBlankKind": "light"
+          "width": 0.16,
+          "inkBlankKind": "dark"
         },
         {
           "hide": true
@@ -132,9 +135,9 @@
           "hide": true
         },
         {
-          "top": 0.168,
+          "top": 0.36,
           "left": 0.5,
-          "width": 0.11,
+          "width": 0.13,
           "inkBlankKind": "dark"
         }
       ]
@@ -194,12 +197,14 @@
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "dark"
         },
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -387,10 +392,10 @@
     "scented-soy-candles-with-black-lid-4-and-9oz-1943": {
       "slides": [
         {
-          "top": 0.38,
+          "top": 0.54,
           "left": 0.5,
-          "width": 0.18,
-          "inkBlankKind": "dark"
+          "width": 0.2,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -400,10 +405,10 @@
     "scented-candles-coconut-apricot-wax-4oz-9oz-1488": {
       "slides": [
         {
-          "top": 0.38,
+          "top": 0.54,
           "left": 0.5,
-          "width": 0.18,
-          "inkBlankKind": "dark"
+          "width": 0.2,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -428,7 +433,7 @@
         {
           "top": 0.48,
           "left": 0.5,
-          "width": 0.18,
+          "width": 0.2,
           "inkBlankKind": "light"
         },
         {
@@ -452,9 +457,9 @@
     "scented-soy-candle-multi-size-amber-jar-1468": {
       "slides": [
         {
-          "top": 0.4,
+          "top": 0.54,
           "left": 0.5,
-          "width": 0.18,
+          "width": 0.2,
           "inkBlankKind": "light"
         },
         {
@@ -536,9 +541,9 @@
     "scented-soy-candles-with-white-lid-9oz-755": {
       "slides": [
         {
-          "top": 0.38,
+          "top": 0.54,
           "left": 0.5,
-          "width": 0.17,
+          "width": 0.2,
           "inkBlankKind": "light"
         },
         {
@@ -567,7 +572,7 @@
         {
           "top": 0.66,
           "left": 0.34,
-          "width": 0.17,
+          "width": 0.18,
           "inkBlankKind": "dark"
         }
       ]
@@ -577,7 +582,7 @@
         {
           "top": 0.66,
           "left": 0.34,
-          "width": 0.17,
+          "width": 0.18,
           "inkBlankKind": "dark"
         },
         {
@@ -883,26 +888,26 @@
     "colorful-mugs-11oz-15oz-1151": {
       "slides": [
         {
-          "hide": true
-        },
-        {
           "top": 0.5,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark"
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
         }
       ]
     },
     "two-tone-accent-mug-11oz-15oz-2693": {
       "slides": [
         {
-          "hide": true
-        },
-        {
           "top": 0.5,
           "left": 0.5,
           "width": 0.22,
           "inkBlankKind": "light"
+        },
+        {
+          "hide": true
         }
       ]
     },
@@ -948,16 +953,16 @@
     "dad-hat-with-leather-patch-rectangle-1221": {
       "slides": [
         {
-          "top": 0.168,
+          "top": 0.36,
           "left": 0.5,
           "width": 0.16,
-          "inkBlankKind": "light"
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.168,
+          "top": 0.36,
           "left": 0.5,
           "width": 0.16,
-          "inkBlankKind": "light"
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -966,26 +971,30 @@
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "light"
         },
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "light"
         }
       ]
     },
     "cuff-beanie-5385": {
       "slides": [
         {
-          "top": 0.34,
+          "top": 0.78,
           "left": 0.5,
-          "width": 0.17
+          "width": 0.18,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.34,
+          "top": 0.78,
           "left": 0.5,
-          "width": 0.17
+          "width": 0.18,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -994,12 +1003,14 @@
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "dark"
         },
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1008,12 +1019,14 @@
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "light"
         },
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.18
+          "width": 0.2,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1022,7 +1035,7 @@
         {
           "top": 0.7,
           "left": 0.28,
-          "width": 0.17,
+          "width": 0.18,
           "inkBlankKind": "dark"
         },
         {
@@ -1048,7 +1061,7 @@
         {
           "top": 0.46,
           "left": 0.5,
-          "width": 0.2,
+          "width": 0.22,
           "inkBlankKind": "light"
         },
         {
@@ -1059,9 +1072,9 @@
     "tin-candles-1379": {
       "slides": [
         {
-          "top": 0.4,
-          "left": 0.5,
-          "width": 0.18,
+          "top": 0.62,
+          "left": 0.52,
+          "width": 0.22,
           "inkBlankKind": "light"
         },
         {
@@ -1088,9 +1101,9 @@
           "hide": true
         },
         {
-          "top": 0.44,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.17,
+          "width": 0.2,
           "inkBlankKind": "dark"
         }
       ]
@@ -1166,6 +1179,32 @@
           "top": 0.46,
           "left": 0.5,
           "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "12-solid-cuffed-beanie-5665": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.36,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
+        }
+      ]
+    },
+    "candle-set-with-wick-trimmer-5453": {
+      "slides": [
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
           "inkBlankKind": "light"
         },
         {

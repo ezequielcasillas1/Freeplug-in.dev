@@ -40,7 +40,8 @@ describe('shop placement guards', () => {
       galleryLength: 2,
     })
     expect(patch).not.toBeNull()
-    expect(patch!.top).toBeLessThan(0.34)
+    expect(patch!.top).toBeLessThan(0.43)
+    expect(patch!.top).toBeGreaterThan(0.28)
     expect(patch!.inkBlankKind).toBe('dark')
   })
 
