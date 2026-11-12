@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
@@ -14,6 +15,8 @@ import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/
 import { useCatalogFilterUrl } from '@/features/merch/hooks/useCatalogFilterUrl'
 import { applyCatalogFilters, computeCatalogFacets, sortCatalogItems } from '@/lib/merch/catalog-filter-logic'
 import { computePreviewWordmarkFacets } from '@/lib/merch/preview/preview-wordmark-filter'
+import { girlfriendCollectionCatalogFilterItem } from '@/lib/merch/shirts/girlfriend-collection-filter-item'
+import { GIRLFRIEND_COLLECTION_SLUG, girlfriendCollectionFromPriceCents } from '@/lib/merch/shirts/girlfriend-collection'
 import { shirtProductsToCatalogFilterItems } from '@/lib/merch/shirts/shirt-catalog-filter-items'
 import { formatUsdFromCents, shirtListCardFrontMockup, type PublicShirtProduct } from '@/lib/merch/shirts/catalog'
 
@@ -23,7 +26,10 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
   const locale = toAppLocale(useLocale())
   const { state, setState, clearAll } = useCatalogFilterUrl('t-shirts')
 
-  const items = useMemo(() => shirtProductsToCatalogFilterItems(products), [products])
+  const items = useMemo(
+    () => [girlfriendCollectionCatalogFilterItem(), ...shirtProductsToCatalogFilterItems(products)],
+    [products]
+  )
   const filtered = useMemo(() => sortCatalogItems(applyCatalogFilters(items, state), state.sort), [items, state])
   const panelFacets = useMemo(() => computeCatalogFacets(items), [items])
   const previewWordmarkFacets = useMemo(() => computePreviewWordmarkFacets(items), [items])
@@ -83,6 +89,36 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
 
               <ul className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 min-w-0">
                 {filtered.map((row) => {
+                  if (row.key === `tshirts/${GIRLFRIEND_COLLECTION_SLUG}`) {
+                    const title = t('girlfriendCollection.cardTitle')
+                    return (
+                      <motion.li key={row.key} variants={fadeInUp} className="min-w-0">
+                        <Link
+                          href={publicHref(`/merch/t-shirts/${GIRLFRIEND_COLLECTION_SLUG}`, locale)}
+                          className="block rounded-2xl border border-gray-200 bg-white hover:border-[#ba3d3d]/40 transition-colors min-h-[44px]"
+                        >
+                          <div className="relative aspect-[5/6] w-full overflow-hidden rounded-t-2xl border-b border-gray-100 bg-zinc-50">
+                            <Image
+                              src={row.image}
+                              alt={t('cardAlt', { title })}
+                              width={600}
+                              height={720}
+                              className="h-full w-full object-contain"
+                              sizes="(max-width: 640px) 100vw, 320px"
+                            />
+                          </div>
+                          <div className="p-3.5 sm:p-4 min-w-0">
+                            <h2 className="font-semibold text-gray-900 text-[0.95rem] min-[360px]:text-base leading-snug break-words">
+                              {title}
+                            </h2>
+                            <p className="text-sm min-[360px]:text-base text-[#ba3d3d] font-semibold mt-1.5">
+                              {t('fromPrice', { price: formatUsdFromCents(girlfriendCollectionFromPriceCents()) })}
+                            </p>
+                          </div>
+                        </Link>
+                      </motion.li>
+                    )
+                  }
                   const p = bySlug.get(row.key.replace('tshirts/', ''))
                   if (!p) return null
                   const { color: listColor } = shirtListCardFrontMockup(p)

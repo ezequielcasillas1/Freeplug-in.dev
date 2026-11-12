@@ -81,6 +81,8 @@ export type ValidatedShirtLine = {
   printifyProductId: string
   printifyVariantId: number
   backPrint: boolean
+  /** Girlfriend collection design key when `slug` is girlfriend-collection. */
+  designId?: string
 }
 
 export function parseShirtSize(v: unknown): ShirtSize | null {

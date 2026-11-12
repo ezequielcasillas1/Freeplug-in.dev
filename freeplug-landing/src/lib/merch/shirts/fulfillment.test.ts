@@ -130,6 +130,35 @@ describe('handleMerchShirtCheckoutSessionCompleted', () => {
     vi.unstubAllEnvs()
   })
 
+  it('fulfills girlfriend collection using shirt_design metadata', async () => {
+    vi.stubEnv('PRINTIFY_API_TOKEN', 'token')
+    vi.stubEnv('PRINTIFY_SHOP_ID', '29664778')
+    const fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ id: 'pf_gf' }),
+    })
+    const gfSession = {
+      ...sessionBase,
+      id: 'cs_gf',
+      metadata: {
+        ...sessionBase.metadata,
+        product_slug: 'girlfriend-collection',
+        shirt_design: '02-plugging-needy',
+        shirt_color: 'White',
+        shirt_size: 'S',
+        printify_product_id: '6af60bd478c8f580b0070efb',
+        printify_variant_id: '38163',
+      },
+    } as unknown as Stripe.Checkout.Session
+    const r = await handleMerchShirtCheckoutSessionCompleted(makeAdmin() as never, gfSession, { fetch })
+    expect(r).toBe('handled')
+    const [, init] = fetch.mock.calls[0] as [string, { body: string }]
+    const body = JSON.parse(init.body)
+    expect(body.line_items[0].product_id).toBe('6af60bd478c8f580b0070efb')
+    expect(body.line_items[0].variant_id).toBe(38163)
+    vi.unstubAllEnvs()
+  })
+
   it('throws when Printify fails so Stripe can retry', async () => {
     vi.stubEnv('PRINTIFY_API_TOKEN', 'token')
     const fetch = vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'err' })
