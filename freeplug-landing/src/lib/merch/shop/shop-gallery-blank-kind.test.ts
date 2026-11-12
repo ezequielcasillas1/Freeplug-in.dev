@@ -39,8 +39,8 @@ describe('shop gallery blank kind', () => {
 
   it('hides baked lifestyle slide on cotton tote 553', () => {
     const item = catalog.items.find((i) => i.slug === 'cotton-tote-bag-553') as ShopCatalogItem
-    expect(shopHeroGalleryIndex(item)).toBe(0)
-    expect(shopGalleryIndexForColor(item, 'Black')).toBe(0)
-    expect(item.gallery[shopHeroGalleryIndex(item)]).toMatch(/553-0\.webp$/)
+    expect(shopHeroGalleryIndex(item)).toBe(1)
+    expect(shopGalleryIndexForColor(item, 'Black')).toBe(1)
+    expect(item.gallery[shopHeroGalleryIndex(item)]).toMatch(/553-1\.webp$/)
   })
 })

@@ -60,6 +60,17 @@ function isSkin(r: number, g: number, b: number): boolean {
   return r > 95 && g > 45 && b > 35 && r > g + 12 && g > b
 }
 
+/** Dark / brown animal fur (pet lifestyle mocks only — not garment fabric). */
+function isAnimalFur(r: number, g: number, b: number): boolean {
+  const spread = Math.max(r, g, b) - Math.min(r, g, b)
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  if (spread < 18 && max > 95) return false
+  if (max < 72 && spread < 42) return true
+  if (min > 55 && max < 145 && spread < 32 && r > g + 8 && g > b + 4) return true
+  return false
+}
+
 export async function skinShareUnderPlacement(
   imageSrc: string,
   placement: Pick<PreviewPlacement, 'left' | 'top' | 'width'>
@@ -99,8 +110,53 @@ export async function skinShareUnderPlacement(
   return n ? skin / n : null
 }
 
-/** Face/cheek pixels in overlay bbox (lifestyle slides should be hidden instead). */
+/** Skin, hands, and (on pet mocks) fur in the overlay bbox — mark must sit on product fabric. */
+export async function nonFabricSurfaceShareUnderPlacement(
+  imageSrc: string,
+  placement: Pick<PreviewPlacement, 'left' | 'top' | 'width'>,
+  opts?: { countFur?: boolean }
+): Promise<number | null> {
+  const file = path.join(process.cwd(), 'public', imageSrc.replace(/^\//, ''))
+  if (!existsSync(file)) return null
+  const img = sharp(file)
+  const { width, height } = await img.metadata()
+  if (!width || !height) return null
+  const halfW = (placement.width * width) / 2
+  const halfH = halfW * WORDMARK_HALF_HEIGHT_RATIO * 2
+  const cx = placement.left * width
+  const cy = placement.top * height
+  const x0 = Math.max(0, Math.floor(cx - halfW))
+  const y0 = Math.max(0, Math.floor(cy - halfH))
+  const x1 = Math.min(width, Math.ceil(cx + halfW))
+  const y1 = Math.min(height, Math.ceil(cy + halfH))
+  if (x1 <= x0 || y1 <= y0) return null
+  const { data, info } = await img
+    .extract({ left: x0, top: y0, width: x1 - x0, height: y1 - y0 })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const ch = info.channels
+  let bad = 0
+  let n = 0
+  const countFur = opts?.countFur ?? false
+  for (let i = 0; i < data.length; i += ch) {
+    const a = ch > 3 ? data[i + 3]! : 255
+    if (a < 20) continue
+    const r = data[i]!
+    const g = data[i + 1]!
+    const b = data[i + 2]!
+    if (r > 236 && g > 236 && b > 236) continue
+    n++
+    if (isSkin(r, g, b) || (countFur && isAnimalFur(r, g, b))) bad++
+  }
+  return n ? bad / n : null
+}
+
+/** Face/cheek/hand pixels in overlay bbox (lifestyle slides should be hidden instead). */
 export const MAX_SKIN_SHARE_UNDER_OVERLAY = 0.1
+
+/** Max share of skin / hands / fur allowed under the mark on the hero slide. */
+export const MAX_NON_FABRIC_SURFACE_SHARE = 0.08
 
 export function heroSlideHasExplicitPlacement(slug: string, galleryIndex: number): boolean {
   const slide = shopGalleryPlacementsForSlug(slug)?.[galleryIndex]
@@ -146,9 +202,12 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     failures.push(`${item.slug}: leather patch mark too low (top ${placement.top})`)
   }
   if (!leatherPatch) {
-    const skin = await skinShareUnderPlacement(imageSrc, placement)
-    if (skin != null && skin > MAX_SKIN_SHARE_UNDER_OVERLAY) {
-      failures.push(`${item.slug}: skin share ${skin.toFixed(3)} under overlay on slide ${galleryIndex}`)
+    const countFur = /pet-/i.test(item.slug)
+    const nonFabric = await nonFabricSurfaceShareUnderPlacement(imageSrc, placement, { countFur })
+    if (nonFabric != null && nonFabric > MAX_NON_FABRIC_SURFACE_SHARE) {
+      failures.push(
+        `${item.slug}: non-fabric surface share ${nonFabric.toFixed(3)} under overlay on slide ${galleryIndex}`
+      )
     }
   }
   const preview = resolvePreviewWordmark({

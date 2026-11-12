@@ -6,7 +6,9 @@ import {
   auditHeroPlacementGuards,
   chestDefaultPlacement,
   heroSlideHasExplicitPlacement,
+  MAX_NON_FABRIC_SURFACE_SHARE,
   MAX_SKIN_SHARE_UNDER_OVERLAY,
+  nonFabricSurfaceShareUnderPlacement,
   skinShareUnderPlacement,
 } from './shop-placement-guards'
 import { shopHeroGalleryIndex } from './shop-gallery-blank-kind'
@@ -38,6 +40,21 @@ describe('shop placement guards', () => {
     expect(patch).not.toBeNull()
     expect(patch!.top).toBeLessThan(0.34)
     expect(patch!.inkBlankKind).toBe('dark')
+  })
+
+  it('pet tank 571 mark sits on fabric not fur', async () => {
+    const item = catalog.items.find((i) => i.slug === 'pet-tank-top-571')!
+    const hero = shopHeroGalleryIndex(item)
+    const placement = resolveShopGalleryPlacement({
+      slug: item.slug,
+      productType: item.productType,
+      catalogKey: `shop/${item.slug}`,
+      galleryIndex: hero,
+      galleryLength: item.gallery.length,
+    })!
+    const share = await nonFabricSurfaceShareUnderPlacement(item.gallery[hero]!, placement, { countFur: true })
+    expect(share).not.toBeNull()
+    expect(share!).toBeLessThanOrEqual(MAX_NON_FABRIC_SURFACE_SHARE)
   })
 
   it('572 mark bbox avoids high skin (not on face/bottle neighbor)', async () => {

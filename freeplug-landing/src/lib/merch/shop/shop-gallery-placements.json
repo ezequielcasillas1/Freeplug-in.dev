@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T03:38:54.019Z",
+  "generatedAt": "2026-11-12T03:46:47.384Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -175,13 +175,13 @@
     "unisex-fleece-zip-up-hoodie-1925": {
       "slides": [
         {
+          "hide": true
+        },
+        {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
           "inkBlankKind": "dark"
-        },
-        {
-          "hide": true
         }
       ]
     },
@@ -506,8 +506,8 @@
     "pet-tank-top-571": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
+          "top": 0.56,
+          "left": 0.42,
           "width": 0.22,
           "inkBlankKind": "light"
         },
@@ -896,8 +896,8 @@
     "canvas-tote-bag-5-color-straps-507": {
       "slides": [
         {
-          "top": 0.64,
-          "left": 0.46,
+          "top": 0.72,
+          "left": 0.5,
           "width": 0.16,
           "inkBlankKind": "light"
         },
@@ -941,13 +941,13 @@
     "cotton-tote-bag-553": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.58,
-          "width": 0.14,
-          "inkBlankKind": "dark"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -2247,15 +2247,15 @@
     "unisex-padded-crew-socks-dtg-2941": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.58,
           "left": 0.5,
-          "width": 0.186,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
+          "top": 0.58,
           "left": 0.5,
-          "width": 0.186,
+          "width": 0.18,
           "inkBlankKind": "light"
         }
       ]
