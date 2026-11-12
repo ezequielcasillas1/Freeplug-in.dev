@@ -24,6 +24,34 @@ export function shopGalleryPlacementsForSlug(slug: string): ShopGallerySlidePlac
   return PLACEMENTS.bySlug[slug]?.slides ?? null
 }
 
+export function isShopGallerySlideHidden(slug: string, galleryIndex: number): boolean {
+  const slides = shopGalleryPlacementsForSlug(slug)
+  if (!slides || galleryIndex < 0 || galleryIndex >= slides.length) return false
+  return Boolean(slides[galleryIndex]?.hide)
+}
+
+/** Prefer `preferredIndex` when visible; otherwise first slide with a printable placement. */
+export function shopBuyerVisibleGalleryIndex(
+  slug: string,
+  galleryLength: number,
+  preferredIndex: number
+): number {
+  const slides = shopGalleryPlacementsForSlug(slug)
+  if (!slides?.length) return Math.min(Math.max(0, preferredIndex), Math.max(0, galleryLength - 1))
+  if (
+    preferredIndex >= 0 &&
+    preferredIndex < galleryLength &&
+    slides[preferredIndex] &&
+    !slides[preferredIndex].hide
+  ) {
+    return preferredIndex
+  }
+  for (let i = 0; i < galleryLength; i++) {
+    if (slides[i] && !slides[i].hide) return i
+  }
+  return Math.min(Math.max(0, preferredIndex), Math.max(0, galleryLength - 1))
+}
+
 export function printAreaToPreviewPlacement(
   position: ShopPrintArea['position'] | undefined | null
 ): PreviewPlacement | null {
@@ -69,7 +97,9 @@ export function resolveShopGalleryPlacement(
       ? slides[input.galleryIndex]
       : undefined
 
-  if (slide?.hide) return null
+  if (slide?.hide) {
+    return defaultPlacementForItem(input.slug, input.productType, input.catalogKey, input.printArea)
+  }
 
   if (slide) {
     const { hide: _hide, ...rest } = slide

@@ -43,20 +43,49 @@ for (const [slug, fileName] of PDP_SLUGS) {
 }
 
 const gridPage = await browser.newPage({ viewport: { width: 1280, height: 900 } })
-for (const locale of ['', '/es']) {
-  await gridPage.goto(`${base}${locale}/shop`, { waitUntil: 'load', timeout: 90_000 })
+
+async function loadFullShopGrid(page) {
+  await page.goto(`${base}/shop`, { waitUntil: 'load', timeout: 90_000 })
   for (;;) {
-    const btn = gridPage.getByRole('button', { name: /Show more|Mostrar más/i })
+    const btn = page.getByRole('button', { name: /Show more|Mostrar más/i })
     if (!(await btn.count())) break
     await btn.click()
-    await gridPage.waitForTimeout(400)
+    await page.waitForTimeout(400)
   }
+}
+
+async function shotGridCard(slug, fileName) {
+  await loadFullShopGrid(gridPage)
+  const link = gridPage.locator(`a[href="/shop/${slug}"], a[href="/es/shop/${slug}"]`).first()
+  const card = link.locator('xpath=ancestor::li[1]')
+  await card.scrollIntoViewIfNeeded()
+  await gridPage.waitForTimeout(300)
+  await card.screenshot({ path: path.join(ARTIFACTS, fileName) })
+}
+
+for (const [slug, fileName] of [
+  ['copper-vacuum-insulated-bottle-22oz-572', 'grid-card-copper-vacuum-bottle-572.png'],
+  ['value-cabana-stripe-beach-towel-5583', 'grid-card-cabana-towel-5583.png'],
+]) {
+  await shotGridCard(slug, fileName)
+}
+
+for (const locale of ['', '/es']) {
+  await gridPage.goto(`${base}${locale}/shop`, { waitUntil: 'load', timeout: 90_000 })
+  await loadFullShopGrid(gridPage)
   await gridPage.screenshot({
     path: path.join(ARTIFACTS, `shop-grid-${locale ? 'es' : 'en'}-placement-fix-1280.png`),
     fullPage: false,
   })
 }
 await gridPage.close()
+
+for (const [slug, fileName] of [
+  ['copper-vacuum-insulated-bottle-22oz-572', 'pdp-copper-vacuum-bottle-572.png'],
+  ['value-cabana-stripe-beach-towel-5583', 'pdp-cabana-towel-5583.png'],
+]) {
+  await shotPdp(slug, fileName)
+}
 
 await browser.close()
 console.log('Saved placement-fix PDP/grid shots →', ARTIFACTS)

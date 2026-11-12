@@ -75,7 +75,7 @@ describe('shopGalleryPlacement', () => {
     expect(p!.left).toBeGreaterThan(0.46)
     expect(p!.left).toBeLessThan(0.54)
     expect(p!.width).toBeGreaterThanOrEqual(0.16)
-    expect(p!.inkBlankKind).toBe('light')
+    expect(p!.inkBlankKind).toBe('dark')
   })
 
   it('pet bandana lifestyle slide avoids upper fur', () => {

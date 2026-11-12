@@ -41,6 +41,18 @@
         { "top": 0.336, "left": 0.5, "width": 0.14 },
         { "top": 0.34, "left": 0.5, "width": 0.14 }
       ]
+    },
+    "copper-vacuum-insulated-bottle-22oz-572": {
+      "slides": [
+        { "top": 0.46, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" },
+        { "top": 0.562, "left": 0.546, "width": 0.2, "inkBlankKind": "dark" }
+      ]
+    },
+    "value-cabana-stripe-beach-towel-5583": {
+      "slides": [
+        { "top": 0.44, "left": 0.5, "width": 0.36, "inkBlankKind": "dark" },
+        { "top": 0.281, "left": 0.5, "width": 0.32, "inkBlankKind": "dark" }
+      ]
     }
   }
 }

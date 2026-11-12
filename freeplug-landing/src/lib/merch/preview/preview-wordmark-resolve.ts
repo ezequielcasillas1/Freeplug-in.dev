@@ -113,7 +113,7 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
         variationId: variationIdForBuyerWordmark(brand, style),
         placement: fallbackPlacement,
         blankKind,
-        mode: 'skip',
+        mode: 'full',
         printSurface: !plateStyle,
       }
     }

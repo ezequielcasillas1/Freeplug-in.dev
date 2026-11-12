@@ -239,7 +239,7 @@ function detectLeatherPatch(cells) {
   const top = (minY + maxY) / 2
   const patchW = Math.max(0.06, maxX - minX)
   const width = Math.min(0.22, Math.max(0.08, patchW * 0.7))
-  return { left, top, width, inkBlankKind: 'light' }
+  return { left, top, width, inkBlankKind: 'dark' }
 }
 
 /** Lifestyle / model / pet shots: center on fabric, not fur or skin. */
@@ -303,6 +303,24 @@ function bboxFromPrintableCells(cells) {
   }
 }
 
+/** Multi-bottle lifestyle: center mark on brightest center column (white bottle body). */
+function detectCenterBrightProduct(cells, forbidden) {
+  const cols = cells.filter(
+    (c) => c.cx >= 0.4 && c.cx <= 0.6 && c.cy >= 0.28 && c.cy <= 0.72 && c.skin < 0.2 && c.strap < 0.34
+  )
+  if (cols.length < 4) return null
+  let best = null
+  for (const c of cols) {
+    const score = c.lum * c.n * (1 - c.skin)
+    if (!best || score > best.score) best = { cx: c.cx, cy: c.cy, lum: c.lum, score }
+  }
+  if (!best) return null
+  const width = 0.22
+  const fit = shrinkOrHide(best.cx, best.cy, width, forbidden, 0.16)
+  if (fit.hide) return null
+  return { ...fit, inkBlankKind: best.lum > 145 ? 'dark' : 'light' }
+}
+
 function seedLargePrintArea(cells, forbidden) {
   const bbox = bboxFromPrintableCells(cells)
   if (!bbox) return null
@@ -342,7 +360,7 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
     }
     const seed = categorySeed(productType, slug, printPosition)
     const fallback = nudgeLeatherCenter(seed.left, seed.top, seed.width, forbidden)
-    if (!fallback.hide) return { ...fallback, inkBlankKind: 'light' }
+    if (!fallback.hide) return { ...fallback, inkBlankKind: 'dark' }
   }
 
   if (/bandana/i.test(slug)) {
@@ -370,7 +388,9 @@ async function inferPlacementForSlide(slug, productType, src, printPosition) {
     if (large) return large
   }
 
-  if (productType === 'mug') {
+  if (productType === 'mug' || /bottle/i.test(slug)) {
+    const center = detectCenterBrightProduct(cells, forbidden)
+    if (center) return center
     const large = seedLargePrintArea(cells, forbidden)
     if (large) return large
   }

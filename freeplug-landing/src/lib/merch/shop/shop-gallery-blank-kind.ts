@@ -1,5 +1,6 @@
 import type { ShopCatalogItem } from './types'
 import { classifyBlankColor, type BlankKind } from './contrast'
+import { shopBuyerVisibleGalleryIndex } from './shop-gallery-placement'
 
 /** Parse `…/blanks/49-1.webp` → slide index, else null. */
 export function shopBlankGalleryIndexFromSrc(src: string): number | null {
@@ -54,17 +55,16 @@ export function blankKindForCatalogColor(
 export function shopGalleryIndexForColor(item: ShopCatalogItem, garmentColor: string | null | undefined): number {
   const target = blankKindForCatalogColor(item, garmentColor)
   const kinds = item.galleryBlankKinds
+  let preferred = 0
   if (kinds?.length) {
     const exact = kinds.findIndex((k) => k === target)
-    if (exact >= 0) return exact
-    const uniformKind = kinds.length >= 2 && kinds.every((k) => k === kinds[0])
-    if (uniformKind) {
-      return target === 'dark' ? kinds.length - 1 : 0
+    if (exact >= 0) preferred = exact
+    else if (kinds.length >= 2 && kinds.every((k) => k === kinds[0])) {
+      preferred = target === 'dark' ? kinds.length - 1 : 0
     }
-    return 0
-  }
-  if (item.gallery.length < 2) return 0
-  return target === 'dark' ? 1 : 0
+  } else if (item.gallery.length < 2) preferred = 0
+  else preferred = target === 'dark' ? 1 : 0
+  return shopBuyerVisibleGalleryIndex(item.slug, item.gallery.length, preferred)
 }
 
 export function shopGalleryIndexForBlankKind(item: ShopCatalogItem, blankKind: BlankKind): number {
