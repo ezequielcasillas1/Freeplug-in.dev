@@ -8,6 +8,7 @@ import { isMerchShirtsEnabled } from '@/lib/merch/flags'
 import { stripeConfigured } from '@/lib/merch/product'
 import { buildMerchShirtSessionParams } from '@/lib/merch/shirts/checkout'
 import { shirtShippingCents, validateShirtCheckoutLine } from '@/lib/merch/shirts/catalog'
+import { GIRLFRIEND_COLLECTION_SLUG, validateGirlfriendCheckoutLine } from '@/lib/merch/shirts/girlfriend-collection'
 import { rateCheck } from '@/lib/rate-limit'
 import { clientIpFrom } from '@/lib/rate-limit/client-ip'
 
@@ -17,6 +18,7 @@ const IP_LIMIT = { bucket: 'merch_shirt_checkout_ip', limit: 30, windowSeconds: 
 
 type Body = {
   slug?: unknown
+  design?: unknown
   color?: unknown
   size?: unknown
   quantity?: unknown
@@ -49,12 +51,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Price must not be sent from the client.' }, { status: 400 })
   }
 
-  const validated = validateShirtCheckoutLine({
-    slug: body.slug,
-    color: body.color,
-    size: body.size,
-    quantity: body.quantity,
-  })
+  const slug = typeof body.slug === 'string' ? body.slug.trim() : ''
+  const validated =
+    slug === GIRLFRIEND_COLLECTION_SLUG
+      ? validateGirlfriendCheckoutLine({
+          design: body.design,
+          color: body.color,
+          size: body.size,
+          quantity: body.quantity,
+        })
+      : validateShirtCheckoutLine({
+          slug: body.slug,
+          color: body.color,
+          size: body.size,
+          quantity: body.quantity,
+        })
   if (!validated.ok) {
     return NextResponse.json({ error: validated.error }, { status: 400 })
   }

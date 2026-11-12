@@ -111,7 +111,6 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
                             <h2 className="font-semibold text-gray-900 text-[0.95rem] min-[360px]:text-base leading-snug break-words">
                               {title}
                             </h2>
-                            <p className="text-xs text-gray-500 mt-1">{t('comingSoon')}</p>
                             <p className="text-sm min-[360px]:text-base text-[#ba3d3d] font-semibold mt-1.5">
                               {t('fromPrice', { price: formatUsdFromCents(girlfriendCollectionFromPriceCents()) })}
                             </p>

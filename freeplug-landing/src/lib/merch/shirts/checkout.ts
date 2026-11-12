@@ -73,6 +73,7 @@ export function buildMerchShirtSessionParams(
       shirt_quantity: String(line.quantity),
       printify_product_id: line.printifyProductId,
       printify_variant_id: String(line.printifyVariantId),
+      ...(line.designId ? { shirt_design: line.designId } : {}),
     },
     payment_intent_data: {
       metadata: {

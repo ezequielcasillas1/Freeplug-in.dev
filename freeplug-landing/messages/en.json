@@ -1158,8 +1158,8 @@
         "girlfriendCollection": {
           "pageTitle": "Girlfriend collection",
           "cardTitle": "Girlfriend collection — 7 designs",
-          "pageLead": "Seven front-print tees with Freeplug wordmarks. Pick a line, light or dark garment art, then color and size when checkout opens.",
-          "metaDescription": "Browse seven Freeplug girlfriend-themed tee designs. Light and dark garment art, unisex sizes. Coming soon to checkout.",
+          "pageLead": "Seven front-print tees with Freeplug wordmarks. Pick a line, light or dark garment art, then color and size.",
+          "metaDescription": "Shop seven Freeplug girlfriend-themed tee designs. Light and dark garment art, unisex sizes, front print only.",
           "designLabel": "Design",
           "garmentLabel": "Garment art",
           "garment": {
@@ -1171,7 +1171,6 @@
             "dark": "Light ink for Black and Charcoal shirts."
           },
           "mockupAlt": "{title} on {garment}",
-          "checkoutHold": "Checkout is paused until Printify products are linked for each design.",
           "designs": {
             "01-no-time": {
               "title": "Don't have time",

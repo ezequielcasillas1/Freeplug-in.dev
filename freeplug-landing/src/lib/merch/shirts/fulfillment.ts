@@ -12,6 +12,7 @@ import {
   stripeShippingToPrintifyAddress,
   type PrintifyDeps,
 } from './printify'
+import { GIRLFRIEND_COLLECTION_SLUG, girlfriendDesignCheckoutTitle, parseGirlfriendDesignId } from './girlfriend-collection'
 import { getShirtBySlug } from './catalog'
 import {
   findMerchShirtOrderBySession,
@@ -30,11 +31,29 @@ function lineFromSessionMetadata(session: Stripe.Checkout.Session) {
   const productId = session.metadata?.printify_product_id
   const variantId = session.metadata?.printify_variant_id
   if (!slug || !color || !size || !productId || !variantId || !qty) return null
-  const entry = getShirtBySlug(slug)
-  if (!entry) return null
   const quantity = parseInt(qty, 10)
   const printifyVariantId = parseInt(variantId, 10)
   if (!Number.isFinite(quantity) || quantity < 1 || !Number.isFinite(printifyVariantId)) return null
+
+  if (slug === GIRLFRIEND_COLLECTION_SLUG) {
+    const designId = parseGirlfriendDesignId(session.metadata?.shirt_design)
+    if (!designId) return null
+    return {
+      slug,
+      title: girlfriendDesignCheckoutTitle(designId),
+      color,
+      size,
+      quantity,
+      printifyProductId: productId,
+      printifyVariantId,
+      backPrint: false,
+      unitAmountCents: 0,
+      designId,
+    }
+  }
+
+  const entry = getShirtBySlug(slug)
+  if (!entry) return null
   return {
     slug,
     title: entry.title,
