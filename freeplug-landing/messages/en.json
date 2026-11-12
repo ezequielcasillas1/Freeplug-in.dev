@@ -1154,6 +1154,54 @@
           "39-knock-doors-left-chest": "Unisex soft tee with left-chest artwork. Printed to order.",
           "40-knock-doors-centered": "Unisex soft tee with centered front artwork. Printed to order.",
           "41-knock-doors-front-back": "Unisex soft tee with front and back print. Printed to order."
+        },
+        "girlfriendCollection": {
+          "pageTitle": "Girlfriend collection",
+          "cardTitle": "Girlfriend collection — 7 designs",
+          "pageLead": "Seven front-print tees with Freeplug wordmarks. Pick a line, light or dark garment art, then color and size when checkout opens.",
+          "metaDescription": "Browse seven Freeplug girlfriend-themed tee designs. Light and dark garment art, unisex sizes. Coming soon to checkout.",
+          "designLabel": "Design",
+          "garmentLabel": "Garment art",
+          "garment": {
+            "light": "Light garment",
+            "dark": "Dark garment"
+          },
+          "garmentHint": {
+            "light": "Dark ink for White and Natural shirts.",
+            "dark": "Light ink for Black and Charcoal shirts."
+          },
+          "mockupAlt": "{title} on {garment}",
+          "checkoutHold": "Checkout is paused until Printify products are linked for each design.",
+          "designs": {
+            "01-no-time": {
+              "title": "Don't have time",
+              "text": "FREEPLUG DON'T HAVE TIME FOR GIRLFRIENDS."
+            },
+            "02-plugging-needy": {
+              "title": "Plugging the needy",
+              "text": "Freeplug don't have time for girlfriends. Too busy plugging the needy."
+            },
+            "03-deadlines-deeds": {
+              "title": "Deadlines and deeds",
+              "text": "No girlfriend. Just deadlines and good deeds."
+            },
+            "04-status-shipping": {
+              "title": "Status: shipping",
+              "text": "Relationship status: shipping."
+            },
+            "05-taken-mission": {
+              "title": "Taken by the mission",
+              "text": "Taken by the mission."
+            },
+            "06-single-busy-building": {
+              "title": "Single. Busy. Building.",
+              "text": "Single. Busy. Building."
+            },
+            "07-love-language": {
+              "title": "Love language",
+              "text": "My love language is free websites."
+            }
+          }
         }
       },
       "collections": {
