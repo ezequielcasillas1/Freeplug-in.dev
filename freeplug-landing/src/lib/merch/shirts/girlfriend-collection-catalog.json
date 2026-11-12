@@ -1,0 +1,41 @@
+{
+  "pageSlug": "girlfriend-collection",
+  "checkoutEnabled": false,
+  "designs": [
+    {
+      "id": "01-no-time",
+      "printify_product_id": "",
+      "variants": {}
+    },
+    {
+      "id": "02-plugging-needy",
+      "printify_product_id": "",
+      "variants": {}
+    },
+    {
+      "id": "03-deadlines-deeds",
+      "printify_product_id": "",
+      "variants": {}
+    },
+    {
+      "id": "04-status-shipping",
+      "printify_product_id": "",
+      "variants": {}
+    },
+    {
+      "id": "05-taken-mission",
+      "printify_product_id": "",
+      "variants": {}
+    },
+    {
+      "id": "06-single-busy-building",
+      "printify_product_id": "",
+      "variants": {}
+    },
+    {
+      "id": "07-love-language",
+      "printify_product_id": "",
+      "variants": {}
+    }
+  ]
+}

@@ -1154,6 +1154,54 @@
           "39-knock-doors-left-chest": "Camiseta unisex con arte en pecho izquierdo. Impresa bajo pedido.",
           "40-knock-doors-centered": "Camiseta unisex con arte centrado al frente. Impresa bajo pedido.",
           "41-knock-doors-front-back": "Camiseta unisex con impresión al frente y espalda. Impresa bajo pedido."
+        },
+        "girlfriendCollection": {
+          "pageTitle": "Colección Girlfriend",
+          "cardTitle": "Colección Girlfriend — 7 diseños",
+          "pageLead": "Siete camisetas de impresión frontal con wordmarks Freeplug. Elige la frase, arte para prenda clara u oscura, y color y talla cuando abra el checkout.",
+          "metaDescription": "Explora siete diseños Freeplug con temática girlfriend. Arte para prenda clara u oscura, tallas unisex. Checkout próximamente.",
+          "designLabel": "Diseño",
+          "garmentLabel": "Arte de prenda",
+          "garment": {
+            "light": "Prenda clara",
+            "dark": "Prenda oscura"
+          },
+          "garmentHint": {
+            "light": "Tinta oscura para camisetas blancas y natural.",
+            "dark": "Tinta clara para camisetas negras y carbón."
+          },
+          "mockupAlt": "{title} en {garment}",
+          "checkoutHold": "El checkout está en pausa hasta vincular productos Printify para cada diseño.",
+          "designs": {
+            "01-no-time": {
+              "title": "Sin tiempo",
+              "text": "FREEPLUG DON'T HAVE TIME FOR GIRLFRIENDS."
+            },
+            "02-plugging-needy": {
+              "title": "Conectando a los necesitados",
+              "text": "Freeplug don't have time for girlfriends. Too busy plugging the needy."
+            },
+            "03-deadlines-deeds": {
+              "title": "Plazos y buenas obras",
+              "text": "No girlfriend. Just deadlines and good deeds."
+            },
+            "04-status-shipping": {
+              "title": "Estado: en envío",
+              "text": "Relationship status: shipping."
+            },
+            "05-taken-mission": {
+              "title": "Comprometido con la misión",
+              "text": "Taken by the mission."
+            },
+            "06-single-busy-building": {
+              "title": "Single. Busy. Building.",
+              "text": "Single. Busy. Building."
+            },
+            "07-love-language": {
+              "title": "Lenguaje del amor",
+              "text": "My love language is free websites."
+            }
+          }
         }
       },
       "collections": {

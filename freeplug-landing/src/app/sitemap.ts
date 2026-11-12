@@ -12,7 +12,10 @@ const COLLECTION_PATHS = MERCH_COLLECTIONS.flatMap((c) => [
   ...listPublicCollectionProducts(c).map((p) => `/merch/${c}/${p.slug}`),
 ])
 
-const SHIRT_DETAIL_PATHS = listPublicShirtProducts().map((p) => `/merch/t-shirts/${p.slug}`)
+const SHIRT_DETAIL_PATHS = [
+  '/merch/t-shirts/girlfriend-collection',
+  ...listPublicShirtProducts().map((p) => `/merch/t-shirts/${p.slug}`),
+]
 
 const SHOP_PATHS = ['/shop', ...listShopItems().map((item) => `/shop/${item.slug}`)]
 
