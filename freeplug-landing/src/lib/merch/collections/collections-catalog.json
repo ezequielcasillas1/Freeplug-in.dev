@@ -1876,13 +1876,13 @@
     ]
   },
   {
-    "slug": "good-measure-longsleeve",
+    "slug": "giving-verses-tee",
     "collection": "apparel",
-    "title": "Freeplug Good Measure Long Sleeve Tee",
-    "title_key": "goodMeasureLongsleeve",
-    "printify_product_id": "6af11657e16bc2f47108ae9c",
+    "title": "Freeplug Giving Verses Long Sleeve Tee",
+    "title_key": "givingVersesTee",
+    "printify_product_id": "",
     "shipping_class": "apparel_light",
-    "mockup": "good-measure-longsleeve.jpg",
+    "mockup": "giving-verses-tee.webp",
     "options": [
       {
         "key": "l-asphalt",
@@ -2076,7 +2076,8 @@
         "printify_variant_id": 39133,
         "price_cents": 3399
       }
-    ]
+    ],
+    "checkout_sellable": false
   },
   {
     "slug": "hustle-joggers",

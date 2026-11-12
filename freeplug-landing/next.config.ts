@@ -23,6 +23,20 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "6mb",
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/merch/apparel/good-measure-longsleeve",
+        destination: "/merch/apparel/giving-verses-tee",
+        permanent: true,
+      },
+      {
+        source: "/es/merch/apparel/good-measure-longsleeve",
+        destination: "/es/merch/apparel/giving-verses-tee",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     const toList = (h: Record<string, string>) => Object.entries(h).map(([key, value]) => ({ key, value }));
     return [

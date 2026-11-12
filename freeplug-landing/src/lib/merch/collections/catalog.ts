@@ -41,6 +41,8 @@ export type MerchCatalogEntry = {
   shipping_class: MerchShippingClass
   mockup: string
   options: CatalogOptionRow[]
+  /** When false, PDP shows Coming soon and checkout API refuses the line (preview / pending Printify). */
+  checkout_sellable?: boolean
 }
 
 const CREWNECK_VARIANT_IDS: Record<CrewneckSize, Record<CrewneckColor, number>> = {
@@ -162,6 +164,9 @@ export function validateCollectionCheckoutLine(input: {
 
   const entry = getCatalogProductInCollection(collection, slug)
   if (!entry) return { ok: false, error: 'Unknown product.' }
+  if (entry.checkout_sellable === false) {
+    return { ok: false, error: 'This product is not available for purchase yet.' }
+  }
 
   let optionKey = typeof input.option_key === 'string' ? input.option_key.trim() : ''
   if (entry.slug === 'hero-crewneck') {
