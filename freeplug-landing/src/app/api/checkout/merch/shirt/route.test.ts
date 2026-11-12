@@ -90,6 +90,36 @@ describe('POST /api/checkout/merch/shirt', () => {
     )
   })
 
+  it('creates session for girlfriend collection with design metadata', async () => {
+    vi.stubEnv('MERCH_SHIRTS_ENABLED', 'true')
+    vi.stubEnv('STRIPE_SECRET_KEY', 'sk_test_x')
+    const req = new Request('http://localhost:3000/api/checkout/merch/shirt', {
+      method: 'POST',
+      headers: { origin: 'http://localhost:3000', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        slug: 'girlfriend-collection',
+        design: '05-taken-mission',
+        color: 'Charcoal',
+        size: 'XL',
+        quantity: 1,
+      }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(200)
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        line_items: [expect.objectContaining({ price_data: expect.objectContaining({ unit_amount: 1599 }) })],
+        metadata: expect.objectContaining({
+          checkout_type: 'merch_shirt',
+          product_slug: 'girlfriend-collection',
+          shirt_design: '05-taken-mission',
+          printify_product_id: '6af60bee8f2784e4780bc4a6',
+          printify_variant_id: '38195',
+        }),
+      })
+    )
+  })
+
   it('uses front+back price for design 01', async () => {
     vi.stubEnv('MERCH_SHIRTS_ENABLED', 'true')
     vi.stubEnv('STRIPE_SECRET_KEY', 'sk_test_x')

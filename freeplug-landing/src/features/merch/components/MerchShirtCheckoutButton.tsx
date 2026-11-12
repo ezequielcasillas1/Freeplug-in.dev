@@ -6,6 +6,8 @@ import type { ShirtColor, ShirtSize } from '@/lib/merch/shirts/catalog'
 
 type Props = {
   slug: string
+  /** Required when slug is girlfriend-collection. */
+  designId?: string
   color: ShirtColor
   size: ShirtSize
   quantity: number
@@ -18,6 +20,7 @@ type Props = {
 
 export function MerchShirtCheckoutButton({
   slug,
+  designId,
   color,
   size,
   quantity,
@@ -38,7 +41,7 @@ export function MerchShirtCheckoutButton({
       const res = await fetch('/api/checkout/merch/shirt', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ slug, color, size, quantity }),
+        body: JSON.stringify({ slug, ...(designId ? { design: designId } : {}), color, size, quantity }),
       })
       const data = (await res.json().catch(() => null)) as { url?: string; error?: string } | null
       if (!res.ok || !data?.url) {

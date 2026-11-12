@@ -23,7 +23,6 @@ import {
   girlfriendCollectionDefaultColor,
   girlfriendCollectionMockupPublicPath,
   girlfriendCollectionUnitPriceCents,
-  getGirlfriendCollectionCatalog,
   SHIRT_SIZES,
   type GirlfriendDesignId,
   type GirlfriendGarmentInk,
@@ -38,11 +37,10 @@ const SWATCH: Record<ShirtColor, string> = {
   White: '#ffffff',
 }
 
-export function GirlfriendCollectionProductClient() {
+export function GirlfriendCollectionProductClient({ checkoutEnabled }: { checkoutEnabled: boolean }) {
   const t = useTranslations('public.merch.tshirts')
   const tGc = useTranslations('public.merch.tshirts.girlfriendCollection')
   const locale = toAppLocale(useLocale())
-  const catalog = getGirlfriendCollectionCatalog()
 
   const [designId, setDesignId] = useState<GirlfriendDesignId>('01-no-time')
   const [garment, setGarment] = useState<GirlfriendGarmentInk>('dark')
@@ -63,7 +61,6 @@ export function GirlfriendCollectionProductClient() {
   const tagline = tGc(`designs.${designId}.text`)
   const unitCents = girlfriendCollectionUnitPriceCents(size)
   const shippingCents = shirtShippingCents(quantity)
-  const checkoutEnabled = catalog.checkoutEnabled
 
   return (
     <MerchPageChrome>
@@ -223,6 +220,7 @@ export function GirlfriendCollectionProductClient() {
 
                 <MerchShirtCheckoutButton
                   slug={GIRLFRIEND_COLLECTION_SLUG}
+                  designId={designId}
                   color={color}
                   size={size}
                   quantity={quantity}
@@ -232,9 +230,6 @@ export function GirlfriendCollectionProductClient() {
                   errorGeneric={t('checkoutError')}
                   className="w-full"
                 />
-                {!checkoutEnabled ? (
-                  <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{tGc('checkoutHold')}</p>
-                ) : null}
 
                 <section className="text-sm sm:text-base text-gray-600 space-y-2 border-t border-gray-200 pt-4 break-words">
                   <p>{t('productionInfo')}</p>
