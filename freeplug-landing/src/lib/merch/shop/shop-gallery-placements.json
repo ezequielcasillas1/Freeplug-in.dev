@@ -1,20 +1,18 @@
 {
-  "version": 1,
-  "generatedAt": "2026-11-12T00:26:31.590Z",
+  "version": 2,
+  "generatedAt": "2026-11-12T00:47:54.414Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.178
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -23,30 +21,27 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "district-v-i-t-men-s-fleece-hoodie-1979": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -55,14 +50,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -71,14 +64,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -87,28 +78,26 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "men-s-cotton-polyester-hoodie-5485": {
       "slides": [
         {
-          "top": 0.297,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.276
+          "width": 0.198
         },
         {
-          "top": 0.352,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.264
+          "width": 0.198
         }
       ]
     },
@@ -117,14 +106,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -133,14 +120,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -149,14 +134,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -165,30 +148,28 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "unisex-fleece-zip-up-hoodie-1925": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -197,14 +178,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -213,14 +192,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -229,14 +206,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -245,14 +220,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -261,14 +234,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -277,14 +248,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -293,14 +262,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -309,28 +276,26 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "unisex-tri-blend-long-sleeve-colorblock-raglan-3004": {
       "slides": [
         {
-          "top": 0.323,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.286
+          "width": 0.198
         },
         {
-          "top": 0.321,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.286
+          "width": 0.198
         }
       ]
     },
@@ -339,14 +304,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -355,30 +318,29 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "women-s-perfect-tri-midi-long-sleeve-hoodie-3809": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -387,14 +349,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -403,14 +363,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.188
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -419,14 +377,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -435,14 +391,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -451,14 +405,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -467,14 +419,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -483,14 +433,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -499,30 +447,26 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "unisex-garment-dyed-tank-top-1459": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "top": 0.46,
+          "left": 0.44,
+          "width": 0.098
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -531,14 +475,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -547,30 +489,27 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "women-s-ideal-racerback-tank-18": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.44,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -579,30 +518,26 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "women-s-cotton-tank-top-5478": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.46,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.188
         }
       ]
     },
@@ -611,14 +546,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.46,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -627,14 +560,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -643,14 +574,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "left": 0.46,
+          "width": 0.138
         }
       ]
     },
@@ -659,14 +588,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "top": 0.44,
+          "left": 0.44,
+          "width": 0.198
         }
       ]
     },
@@ -675,14 +602,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -691,14 +616,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -707,14 +630,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -723,14 +644,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -739,44 +658,41 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "women-s-favorite-tee-9": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.36,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.098
         }
       ]
     },
     "unisex-cotton-t-shirt-2979": {
       "slides": [
         {
-          "top": 0.298,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.287
+          "width": 0.198
         },
         {
-          "top": 0.301,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.288
+          "width": 0.198
         }
       ]
     },
@@ -785,14 +701,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -801,30 +716,27 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "unisex-cvc-jersey-t-shirt-1317": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "top": 0.4,
+          "left": 0.56,
+          "width": 0.138
         }
       ]
     },
@@ -833,14 +745,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -849,14 +759,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -865,14 +773,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -881,14 +787,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -897,14 +802,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -913,14 +816,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.36,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.098
         }
       ]
     },
@@ -929,14 +830,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -945,88 +844,83 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "canvas-tote-bag-5-color-straps-507": {
       "slides": [
         {
-          "top": 0.6,
-          "left": 0.5,
-          "width": 0.28
+          "top": 0.57,
+          "left": 0.44,
+          "width": 0.16
         },
         {
-          "top": 0.58,
-          "left": 0.5,
-          "width": 0.28
+          "top": 0.56,
+          "left": 0.44,
+          "width": 0.16
         }
       ]
     },
     "cotton-canvas-tote-bag-1313": {
       "slides": [
         {
-          "top": 0.61,
-          "left": 0.48,
-          "width": 0.26
+          "top": 0.578,
+          "left": 0.432,
+          "width": 0.15
         },
         {
-          "top": 0.58,
-          "left": 0.5,
-          "width": 0.28
+          "top": 0.56,
+          "left": 0.44,
+          "width": 0.15
         }
       ]
     },
     "zippered-canvas-tote-1990": {
       "slides": [
         {
-          "top": 0.59,
+          "top": 0.672,
           "left": 0.5,
-          "width": 0.27
+          "width": 0.17
         },
         {
-          "top": 0.58,
+          "top": 0.66,
           "left": 0.5,
-          "width": 0.27
+          "width": 0.17
         }
       ]
     },
     "cotton-tote-bag-553": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "top": 0.4,
+          "left": 0.56,
+          "width": 0.098
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "top": 0.44,
+          "left": 0.56,
+          "width": 0.138
         }
       ]
     },
     "fanny-pack-468": {
       "slides": [
         {
-          "top": 0.5,
+          "top": 0.48,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.138
         },
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1035,14 +929,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         }
       ]
     },
@@ -1051,84 +943,88 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "tote-bag-aop-1389": {
       "slides": [
         {
-          "top": 0.57,
-          "left": 0.5,
-          "width": 0.3
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.18
         },
         {
-          "top": 0.56,
-          "left": 0.5,
-          "width": 0.3
+          "top": 0.55,
+          "left": 0.48,
+          "width": 0.18
         }
       ]
     },
     "essential-zip-tote-5098": {
       "slides": [
         {
-          "top": 0.358,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.232
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.386,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.253
+          "width": 0.198
         }
       ]
     },
     "beach-wash-tote-5106": {
       "slides": [
         {
-          "top": 0.366,
-          "left": 0.501,
-          "width": 0.176
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.366,
-          "left": 0.501,
-          "width": 0.176
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "insulated-lunch-tote-5123": {
       "slides": [
         {
-          "top": 0.377,
+          "top": 0.36,
           "left": 0.5,
-          "width": 0.239
+          "width": 0.138
         },
         {
-          "top": 0.377,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.241
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "day-tote-5096": {
       "slides": [
         {
-          "top": 0.379,
-          "left": 0.508,
-          "width": 0.227
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.379,
-          "left": 0.508,
-          "width": 0.227
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1137,14 +1033,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.138
         }
       ]
     },
@@ -1153,30 +1047,27 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "black-mug-11oz-15oz-479": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1185,14 +1076,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1201,14 +1091,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1217,14 +1105,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.38,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.168
         }
       ]
     },
@@ -1233,14 +1119,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "top": 0.46,
+          "left": 0.46,
+          "width": 0.138
         }
       ]
     },
@@ -1249,14 +1133,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1264,15 +1146,14 @@
       "slides": [
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "left": 0.52,
+          "width": 0.188
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1281,14 +1162,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1297,14 +1176,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1313,14 +1191,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "left": 0.48,
+          "width": 0.218
         }
       ]
     },
@@ -1329,14 +1205,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1345,42 +1219,43 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "dad-hat-with-leather-patch-rectangle-1221": {
       "slides": [
         {
-          "top": 0.19,
-          "left": 0.5,
-          "width": 0.19
+          "top": 0.328,
+          "left": 0.391,
+          "width": 0.1,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.18,
-          "left": 0.5,
-          "width": 0.19
+          "top": 0.325,
+          "left": 0.391,
+          "width": 0.1,
+          "inkBlankKind": "dark"
         }
       ]
     },
     "classic-cuffed-beanie-embroidery-1691": {
       "slides": [
         {
-          "top": 0.23,
+          "top": 0.336,
           "left": 0.5,
-          "width": 0.2
+          "width": 0.14
         },
         {
-          "top": 0.24,
+          "top": 0.34,
           "left": 0.5,
-          "width": 0.2
+          "width": 0.14
         }
       ]
     },
@@ -1389,30 +1264,26 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "left": 0.46,
+          "width": 0.138
         }
       ]
     },
     "cuff-beanie-5385": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "top": 0.36,
+          "left": 0.44,
+          "width": 0.138
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1421,26 +1292,28 @@
         {
           "top": 0.18,
           "left": 0.49,
-          "width": 0.2
+          "width": 0.19
         },
         {
           "top": 0.17,
           "left": 0.49,
-          "width": 0.2
+          "width": 0.19
         }
       ]
     },
     "canvas-mesh-back-cap-4802": {
       "slides": [
         {
-          "top": 0.22,
-          "left": 0.493,
-          "width": 0.22
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.214,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.27
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1449,40 +1322,42 @@
         {
           "top": 0.17,
           "left": 0.5,
-          "width": 0.21
+          "width": 0.2
         },
         {
           "top": 0.17,
           "left": 0.5,
-          "width": 0.21
+          "width": 0.2
         }
       ]
     },
     "impact-mesh-stretch-tek-cap-5625": {
       "slides": [
         {
-          "top": 0.173,
-          "left": 0.498,
-          "width": 0.222
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.218
         },
         {
-          "top": 0.168,
-          "left": 0.499,
-          "width": 0.262
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.218
         }
       ]
     },
     "mid-profile-baseball-cap-with-leather-patch-rect-2707": {
       "slides": [
         {
-          "top": 0.18,
-          "left": 0.5,
-          "width": 0.2
+          "top": 0.328,
+          "left": 0.39,
+          "width": 0.1,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.18,
-          "left": 0.5,
-          "width": 0.2
+          "top": 0.325,
+          "left": 0.39,
+          "width": 0.1,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1490,45 +1365,43 @@
       "slides": [
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "left": 0.52,
+          "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "top": 0.38,
+          "left": 0.56,
+          "width": 0.138
         }
       ]
     },
     "12-solid-cuffed-beanie-5665": {
       "slides": [
         {
-          "top": 0.244,
-          "left": 0.499,
-          "width": 0.28
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.218
         },
         {
-          "top": 0.244,
-          "left": 0.499,
-          "width": 0.28
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.218
         }
       ]
     },
     "dad-hat-with-leather-patch-round-1287": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "top": 0.32,
+          "left": 0.4,
+          "width": 0.09,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "top": 0.318,
+          "left": 0.4,
+          "width": 0.09,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1537,14 +1410,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1553,14 +1425,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -1569,14 +1439,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -1585,14 +1453,12 @@
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1601,14 +1467,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -1617,14 +1481,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -1633,14 +1495,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -1649,46 +1509,41 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "scented-soy-candles-with-black-lid-4-and-9oz-1943": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "scented-candles-coconut-apricot-wax-4oz-9oz-1488": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.46,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -1697,14 +1552,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.178
         }
       ]
     },
@@ -1713,29 +1566,28 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "posicharge-competitor-short-4127": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.317,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.284
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1744,14 +1596,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.188
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "top": 0.48,
+          "left": 0.44,
+          "width": 0.138
         }
       ]
     },
@@ -1760,43 +1610,45 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.325,
-          "left": 0.481,
-          "width": 0.365
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "paper-gift-bag-2729": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "unisex-flyer-jogger-4628": {
       "slides": [
         {
-          "top": 0.362,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.175
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.363,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.178
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1805,14 +1657,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -1821,14 +1671,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1837,28 +1686,28 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "women-s-dare-shorts-5786": {
       "slides": [
         {
-          "top": 0.375,
-          "left": 0.525,
-          "width": 0.307
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.198
         },
         {
-          "top": 0.375,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.348
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1867,124 +1716,116 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "top": 0.44,
+          "left": 0.52,
+          "width": 0.138
         }
       ]
     },
     "natural-stone-stretch-bar-bracelet-engraving-2651": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "circle-necklace-engraving-2341": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "heart-necklace-engraving-2655": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "horizontal-bar-necklace-engraving-2654": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "cutout-heart-bar-necklace-engraving-2659": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "cutout-paw-bar-necklace-engraving-2652": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "youth-easy-cotton-tee-3125": {
       "slides": [
         {
-          "top": 0.294,
-          "left": 0.503,
-          "width": 0.284
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.198
         },
         {
-          "top": 0.292,
-          "left": 0.503,
-          "width": 0.284
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.198
         }
       ]
     },
@@ -1993,14 +1834,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2009,14 +1848,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2025,30 +1862,28 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
     "toddler-full-zip-fleece-hoodie-2728": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2057,30 +1892,28 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "kids-relax-hoodie-1617": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2089,14 +1922,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2105,14 +1937,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2121,14 +1951,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2137,14 +1965,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2153,14 +1979,13 @@
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2169,14 +1994,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2185,30 +2008,29 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "leatherette-ornament-3-shapes-engraving-2756": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2217,14 +2039,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2233,30 +2053,28 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
     "wooden-ornaments-697": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2265,41 +2083,42 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.324,
-          "left": 0.498,
-          "width": 0.165
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "value-cabana-stripe-beach-towel-5583": {
       "slides": [
         {
-          "top": 0.347,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.192
+          "width": 0.188
         },
         {
-          "top": 0.209,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.269
+          "width": 0.138
         }
       ]
     },
     "beach-towel-5580": {
       "slides": [
         {
-          "top": 0.381,
+          "top": 0.42,
           "left": 0.5,
-          "width": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.366,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2308,30 +2127,27 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "pet-bandana-562": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "top": 0.4,
+          "left": 0.46,
+          "width": 0.218
         },
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "left": 0.44,
+          "width": 0.138
         }
       ]
     },
@@ -2340,14 +2156,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.188
         }
       ]
     },
@@ -2356,13 +2170,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.243,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2371,30 +2185,28 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "clip-on-pet-bandana-1672": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2403,14 +2215,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.178
         }
       ]
     },
@@ -2419,14 +2229,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2435,14 +2244,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         }
       ]
     },
@@ -2451,14 +2258,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.146
         }
       ]
     },
@@ -2467,14 +2272,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         }
       ]
     },
@@ -2483,14 +2286,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2499,14 +2300,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         }
       ]
     },
@@ -2515,14 +2314,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.146
         }
       ]
     },
@@ -2531,14 +2328,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2547,14 +2342,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.188
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2563,14 +2357,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2579,14 +2371,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2595,14 +2385,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.098
         }
       ]
     },
@@ -2611,14 +2399,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2627,14 +2414,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2643,14 +2428,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2659,14 +2442,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2674,15 +2455,13 @@
       "slides": [
         {
           "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "left": 0.46,
+          "width": 0.138
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2691,14 +2470,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.096
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2707,14 +2485,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.096
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2723,14 +2500,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2739,14 +2514,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.098
         }
       ]
     },
@@ -2755,14 +2528,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.188
         },
         {
-          "top": 0.42,
+          "top": 0.36,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.158
         }
       ]
     },
@@ -2771,30 +2542,29 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.166
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "pu-leather-phone-cases-engraving-5369": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.186,
-          "scale": 0.32
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2803,14 +2573,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.138
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2819,14 +2587,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2835,14 +2601,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "top": 0.46,
+          "left": 0.46,
+          "width": 0.138
         }
       ]
     },
@@ -2851,14 +2615,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -2867,14 +2629,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2883,14 +2643,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2899,14 +2657,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -2915,14 +2671,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2931,14 +2686,12 @@
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.29,
-          "scale": 0.5
+          "width": 0.26
         },
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.29,
-          "scale": 0.5
+          "width": 0.26
         }
       ]
     },
@@ -2947,14 +2700,13 @@
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.29,
-          "scale": 0.5
+          "width": 0.26
         },
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.29,
-          "scale": 0.5
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2963,14 +2715,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -2979,14 +2730,12 @@
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.29,
-          "scale": 0.5
+          "width": 0.26
         },
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.29,
-          "scale": 0.5
+          "width": 0.26
         }
       ]
     },
@@ -2995,14 +2744,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -3011,14 +2758,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         }
       ]
     },
@@ -3027,14 +2772,12 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         }
       ]
     },
@@ -3043,14 +2786,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.218
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
-          "scale": 0.42
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -3059,14 +2801,13 @@
         {
           "top": 0.42,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
-          "scale": 0.38
+          "width": 0.12,
+          "hide": true
         }
       ]
     }

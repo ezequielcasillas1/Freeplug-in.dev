@@ -174,6 +174,8 @@ export function ShopProductClient({
         rights_confirmed: designMode === 'custom' ? rightsConfirmed : undefined,
         upload_token: designMode === 'custom' ? uploadToken : undefined,
         rights_accepted_locale: locale,
+        wordmark_brand: designMode === 'freeplug' ? wordmarkBrand : undefined,
+        wordmark_style: designMode === 'freeplug' ? wordmarkStyle : undefined,
       }),
     })
     const json = (await res.json().catch(() => null)) as { url?: string; error?: string } | null
@@ -330,11 +332,11 @@ export function ShopProductClient({
                     setWordmarkStyle(style)
                     syncWordmarkQuery(wordmarkBrand, style)
                   }}
-                  bakedInPrintify={wordmarkBaked}
+                  bakedInPrintify={false}
                   labels={{
                     heading: t('wordmarkHeading'),
                     styleHeading: t('wordmarkStyleHeading'),
-                    bakedNote: t('wordmarkBakedNote'),
+                    bakedNote: t('wordmarkFulfillmentNote'),
                   }}
                 />
               </div>

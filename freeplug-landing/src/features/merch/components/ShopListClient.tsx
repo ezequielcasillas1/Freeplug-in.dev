@@ -18,6 +18,7 @@ import { computePreviewWordmarkFacets } from '@/lib/merch/preview/preview-wordma
 import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { formatUsdFromCents } from '@/lib/merch/shop/pricing'
 import { ALL_MERCH_PAGE_SIZE } from '@/features/merch/components/AllMerchListClient'
+import { BUYER_WORDMARK_VARIANT_COUNT } from '@/lib/merch/preview/buyer-wordmark-variants'
 
 export function ShopListClient({
   items,
@@ -96,6 +97,11 @@ export function ShopListClient({
                             showOverlay={state.previewOverlays}
                           />
                         )}
+                        {state.previewOverlays && !item.comingSoonLabel ? (
+                          <span className="absolute bottom-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-zinc-700 border border-zinc-200 shadow-sm">
+                            {t('wordmarkGridBadge', { count: BUYER_WORDMARK_VARIANT_COUNT })}
+                          </span>
+                        ) : null}
                         {item.comingSoonLabel ? (
                           <span className="absolute top-2 left-2 rounded-full bg-gray-900/80 px-2.5 py-1 text-xs font-medium text-white">
                             {t('comingSoon')}

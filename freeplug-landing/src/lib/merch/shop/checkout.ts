@@ -37,7 +37,9 @@ export function buildMerchShopSessionParams(
   const description =
     line.designMode === 'custom'
       ? `${line.optionLabel} — custom artwork`
-      : `${line.optionLabel} — Freeplug logo`
+      : line.buyerWordmarkBrand && line.buyerWordmarkStyle
+        ? `${line.optionLabel} — ${line.buyerWordmarkStyle} / ${line.buyerWordmarkBrand}`
+        : `${line.optionLabel} — Freeplug wordmark`
 
   return {
     mode: 'payment',
@@ -87,6 +89,8 @@ export function buildMerchShopSessionParams(
       shop_moderation_detail: '',
       rights_accepted_at: line.designMode === 'custom' ? new Date().toISOString() : '',
       rights_accepted_locale: line.rightsAcceptedLocale ?? '',
+      buyer_wordmark_brand: line.buyerWordmarkBrand ?? '',
+      buyer_wordmark_style: line.buyerWordmarkStyle ?? '',
     },
     payment_intent_data: {
       metadata: {

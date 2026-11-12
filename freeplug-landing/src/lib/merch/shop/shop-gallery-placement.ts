@@ -9,6 +9,8 @@ import type { ShopCatalogItem, ShopPrintArea } from './types'
 export type ShopGallerySlidePlacement = PreviewPlacement & {
   /** When true, do not draw preview wordmark on this slide. */
   hide?: boolean
+  /** Ink follows patch / embroidery surface, not whole garment. */
+  inkBlankKind?: 'light' | 'dark'
 }
 
 type PlacementsFile = {
@@ -70,8 +72,8 @@ export function resolveShopGalleryPlacement(
   if (slide?.hide) return null
 
   if (slide) {
-    const { hide: _hide, ...placement } = slide
-    return { ...placement, hide: undefined }
+    const { hide: _hide, ...rest } = slide
+    return rest
   }
 
   return defaultPlacementForItem(input.slug, input.productType, input.catalogKey, input.printArea)

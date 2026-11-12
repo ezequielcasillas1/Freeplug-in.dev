@@ -117,11 +117,12 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
         printSurface: !plateStyle,
       }
     }
-    const { hide: _hide, ...placement } = placementResolved
+    const inkBlankKind = placementResolved.inkBlankKind ?? blankKind
+    const { hide: _hide, inkBlankKind: _ink, ...placement } = placementResolved
     return {
       variationId: variationIdForBuyerWordmark(brand, style),
       placement,
-      blankKind,
+      blankKind: inkBlankKind,
       mode: 'full',
       printSurface: !plateStyle,
     }

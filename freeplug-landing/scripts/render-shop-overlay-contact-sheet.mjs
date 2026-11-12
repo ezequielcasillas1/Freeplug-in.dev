@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build overlay QA contact sheets (grid cards + PDP heroes).
+ * PDP/grid overlay QA sheets — full hero mockup + visible overlay + slug label (~40 tiles/page).
  * Usage: BASE_URL=http://127.0.0.1:3013 node scripts/render-shop-overlay-contact-sheet.mjs
  */
 import { mkdirSync, readFileSync } from 'node:fs'
@@ -26,6 +26,12 @@ const CHEKE_SLUGS = [
   'classic-cuffed-beanie-embroidery-1691',
 ]
 
+const COLS = 5
+const PER_PAGE = 40
+const CELL_W = 380
+const CELL_H = 420
+const LABEL_H = 36
+
 mkdirSync(ARTIFACTS, { recursive: true })
 
 const catalog = JSON.parse(
@@ -33,73 +39,91 @@ const catalog = JSON.parse(
 )
 const slugs = catalog.items.map((i) => i.slug)
 
-const browser = await chromium.launch()
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
-
-await page.goto(`${base}/shop`, { waitUntil: 'networkidle', timeout: 180_000 })
-for (;;) {
-  const btn = page.getByRole('button', { name: 'Show more' })
-  if (!(await btn.count())) break
-  await btn.click()
-  await page.waitForTimeout(350)
+async function slugLabelSvg(slug, width) {
+  const short = slug.length > 42 ? `${slug.slice(0, 40)}…` : slug
+  const esc = short.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  return Buffer.from(
+    `<svg width="${width}" height="${LABEL_H}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#ebebeb"/>
+      <text x="6" y="24" font-family="ui-monospace, monospace" font-size="11" fill="#111">${esc}</text>
+    </svg>`
+  )
 }
 
-await page.screenshot({ path: path.join(ARTIFACTS, 'shop-grid-overlay-full-1280.png'), fullPage: true })
-
-const cardShots = []
-const lis = page.locator('ul.grid li')
-const total = await lis.count()
-for (let i = 0; i < total; i++) {
-  const li = lis.nth(i)
-  await li.scrollIntoViewIfNeeded()
-  const buf = await li.screenshot({ type: 'png' })
-  cardShots.push(buf)
-}
-
-async function stitchGrid(buffers, cols, outPath, cell = 280) {
-  const rows = Math.ceil(buffers.length / cols)
-  const sheet = sharp({
+async function makeTile(heroBuf, slug) {
+  const imgH = CELL_H - LABEL_H
+  const fitted = await sharp(heroBuf)
+    .resize(CELL_W - 12, imgH - 12, { fit: 'inside', background: { r: 244, g: 244, b: 245 } })
+    .png()
+    .toBuffer()
+  const meta = await sharp(fitted).metadata()
+  const label = await slugLabelSvg(slug, CELL_W)
+  const left = Math.floor((CELL_W - (meta.width ?? CELL_W)) / 2)
+  return sharp({
     create: {
-      width: cols * cell,
-      height: rows * cell,
+      width: CELL_W,
+      height: CELL_H,
       channels: 3,
       background: { r: 245, g: 245, b: 245 },
     },
   })
-  const composites = buffers.map((buf, idx) => ({
-    input: buf,
-    top: Math.floor(idx / cols) * cell,
-    left: (idx % cols) * cell,
-  }))
-  await sheet.composite(composites).png().toFile(outPath)
+    .composite([
+      { input: fitted, top: 6, left },
+      { input: label, top: imgH, left: 0 },
+    ])
+    .png()
+    .toBuffer()
 }
 
-await stitchGrid(cardShots.slice(0, 100), 10, path.join(ARTIFACTS, 'shop-overlay-contact-grid-page1.png'))
-await stitchGrid(cardShots.slice(100), 10, path.join(ARTIFACTS, 'shop-overlay-contact-grid-page2.png'))
-
-for (const slug of CHEKE_SLUGS) {
-  await page.goto(`${base}/shop/${slug}`, { waitUntil: 'networkidle', timeout: 120_000 })
-  await page.locator('.aspect-square').first().screenshot({
-    path: path.join(ARTIFACTS, `pdp-overlay-${slug}.png`),
-  })
+async function stitchPages(tiles, prefix) {
+  for (let p = 0; p * PER_PAGE < tiles.length; p++) {
+    const chunk = tiles.slice(p * PER_PAGE, (p + 1) * PER_PAGE)
+    const rows = Math.ceil(chunk.length / COLS)
+    const sheet = sharp({
+      create: {
+        width: COLS * CELL_W,
+        height: rows * CELL_H,
+        channels: 3,
+        background: { r: 235, g: 235, b: 235 },
+      },
+    })
+    const composites = chunk.map((tile, idx) => ({
+      input: tile,
+      top: Math.floor(idx / COLS) * CELL_H,
+      left: (idx % COLS) * CELL_W,
+    }))
+    await sheet.composite(composites).png().toFile(path.join(ARTIFACTS, `${prefix}-page${p + 1}.png`))
+  }
 }
 
-const pdpShots = []
-for (let si = 0; si < slugs.length; si++) {
-  const slug = slugs[si]
-  process.stdout.write(`PDP ${si + 1}/${slugs.length}\r`)
+const browser = await chromium.launch()
+const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } })
+
+async function capturePdpHero(slug) {
   await page.goto(`${base}/shop/${slug}?wordmark_brand=freeplug-dev&wordmark_style=cursive`, {
     waitUntil: 'networkidle',
     timeout: 120_000,
   })
-  await page.waitForTimeout(150)
-  const buf = await page.locator('.aspect-square').first().screenshot({ type: 'png' })
-  pdpShots.push(buf)
+  await page.getByTestId('shop-pdp-hero-mockup').waitFor({ state: 'visible', timeout: 30_000 })
+  await page.locator('svg image').first().waitFor({ state: 'attached', timeout: 15_000 }).catch(() => {})
+  await page.waitForTimeout(200)
+  return page.getByTestId('shop-pdp-hero-mockup').screenshot({ type: 'png' })
 }
 
-await stitchGrid(pdpShots.slice(0, 65), 13, path.join(ARTIFACTS, 'shop-overlay-contact-pdp-page1.png'), 220)
-await stitchGrid(pdpShots.slice(65, 130), 13, path.join(ARTIFACTS, 'shop-overlay-contact-pdp-page2.png'), 220)
-await stitchGrid(pdpShots.slice(130), 13, path.join(ARTIFACTS, 'shop-overlay-contact-pdp-page3.png'), 220)
+for (const slug of CHEKE_SLUGS) {
+  const buf = await capturePdpHero(slug)
+  await sharp(buf).png().toFile(path.join(ARTIFACTS, `pdp-overlay-${slug}.png`))
+}
+
+const pdpTiles = []
+for (let si = 0; si < slugs.length; si++) {
+  const slug = slugs[si]
+  process.stdout.write(`PDP ${si + 1}/${slugs.length}\r`)
+  const hero = await capturePdpHero(slug)
+  pdpTiles.push(await makeTile(hero, slug))
+}
+
+await stitchPages(pdpTiles, 'shop-overlay-contact-pdp')
 
 await browser.close()
-console.log(`\nContact sheets → ${ARTIFACTS}`)
+console.log(`\nContact sheets (${pdpTiles.length} PDP tiles, ${CHEKE_SLUGS.length} named PDPs) → ${ARTIFACTS}`)

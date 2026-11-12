@@ -55,7 +55,10 @@ export function ShopMockupPreview({
   )
 
   return (
-    <div className={cn('relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-100', className)}>
+    <div
+      data-testid="shop-pdp-hero-mockup"
+      className={cn('relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-100', className)}
+    >
       <MerchMockupArtboard
         className="absolute inset-0"
         image={remoteProduct ? productImage : <div className="relative h-full w-full">{productImage}</div>}
