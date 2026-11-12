@@ -1876,10 +1876,14 @@
       "success": {
         "heading": "Gracias",
         "loading": "Preparando tu descarga…",
-        "missingSession": "Falta la sesión de pago. Si ya pagaste, usa el enlace del correo.",
+        "missingSession": "Falta la sesión de pago. Abre el enlace del recibo por correo o escribe a support@freeplug-in.dev.",
         "loadError": "No se pudo cargar la descarga.",
-        "saveLink": "Guarda este enlace antes de que expire:",
+        "saveLink": "Tu enlace de descarga (válido 24 horas, hasta 5 descargas):",
         "expires": "Expira: {date}",
+        "emailAlso": "También enviamos este enlace a tu correo.",
+        "emailRetry": "Tu correo está en camino. Puedes descargar desde esta página antes de que expire el enlace.",
+        "expiredSupport": "Este enlace expiró. Escribe a support@freeplug-in.dev e incluye tu recibo.",
+        "limitSupport": "Usaste las 5 descargas de esta compra. Escribe a support@freeplug-in.dev para ayuda.",
         "mock": "Modo demo: el archivo puede ser un marcador en este entorno.",
         "back": "Volver al producto"
       },

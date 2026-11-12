@@ -72,6 +72,8 @@ Local dev keeps the file fallback: `.merch-dev-only/<key>` or `MERCH_BUNDLE_LOCA
 Apply migration:
 
 - `supabase/migrations/20261107090000_merch_font_bundle.sql` → table `merch_font_bundle_tokens` (service_role only)
+- `supabase/migrations/20261109140000_merch_token_emailed_at.sql` → column `emailed_at` (one email per checkout)
+- Optional env `MERCH_TOKEN_SECRET` (else derives tokens using `SUPABASE_SERVICE_ROLE_KEY`)
 
 Rate limiting for personal demo uses existing `rate_check` RPC (no new migration).
 
