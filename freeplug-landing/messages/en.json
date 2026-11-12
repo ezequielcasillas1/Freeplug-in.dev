@@ -586,7 +586,14 @@
       "fast_lane": "Everything in Priority, plus included small edits by us each billing period.",
       "leads": "Everything in Fast lane, plus a monthly report and quote alerts.",
       "get_found": "Everything in Leads, plus Google Business Profile upkeep.",
-      "growth": "Everything in Get found, plus a seasonal refresh and a quarterly call."
+      "growth": "Everything in Get found, plus a seasonal refresh and a quarterly call.",
+      "plug_authority": "Everything in Growth partner, plus monthly care built for attraction and marketing."
+    },
+    "stepTaglines": {
+      "plug_authority": "Highest priority support. The most taken care of website."
+    },
+    "stepDescriptions": {
+      "plug_authority": "For the serious business looking for attraction: for its viability, its authenticness, its researchedness and conduction of research, its ability to influence others, and its marketing."
     },
     "perkLines": {
       "priorityQueue": "When you ask us for a change, you're ahead of lower plans in line.",
@@ -597,7 +604,13 @@
       "reviewKit": "A ready-made message and link you can send your customers to ask for reviews.",
       "seasonalRefresh": "Each season we refresh your site with your new photos and offers.",
       "quarterlyCall": "A 15-minute planning call with us every quarter.",
-      "doneForYouEdits": "Tell us what you want changed, and we make it for you."
+      "doneForYouEdits": "Tell us what you want changed, and we make it for you.",
+      "monthlySnapshotAction": "Monthly snapshot with one action: visits, top page, top searches, plus the one change we'll make next.",
+      "brokenLinkCopyFix": "Broken link and outdated copy fix: a monthly scan for dead links, old dates, hours or prices, and we fix them.",
+      "oneLineChangeLog": "One-line change log: one sentence each month on what changed and why.",
+      "monthlySpeedCheck": "Speed check: a monthly speed score, and we fix the biggest slowdown.",
+      "searchTuneUp": "Search tune-up: the page with the most search views but few clicks gets a new title and description.",
+      "reviewWatch": "Review watch: new Google reviews get a drafted reply; replies to 3 stars or lower wait for your OK."
     },
     "smallEditsNextBusinessDay": "Small edits: within 5 business days. Higher plans are usually faster.",
     "starterBaseLines": {
@@ -692,6 +705,7 @@
       "leads": "Leads",
       "getFound": "Get found",
       "growthPartner": "Growth partner",
+      "plugAuthority": "Plug Authority",
       "basic": "Basic",
       "plus": "Plus",
       "pro": "Pro"
@@ -703,7 +717,8 @@
       "fastLane": "One small edit by us included each month",
       "leads": "A monthly visitor report and quote alerts",
       "getFound": "We keep your Google Business Profile up to date",
-      "growthPartner": "A seasonal refresh and a quarterly planning call"
+      "growthPartner": "A seasonal refresh and a quarterly planning call",
+      "plugAuthority": "Highest-priority support and monthly care for attraction"
     }
   },
   "claim": {
@@ -2357,7 +2372,7 @@
       "rows": {
         "freeplug": {
           "upfront": "$0",
-          "monthly": "$35–$65/mo",
+          "monthly": "$35–$199/mo",
           "counts": "Yes, every dollar counts toward the buyout",
           "own": "From $250 (20% off if you own your domain)"
         },
@@ -2596,7 +2611,13 @@
       "reviewKit": "a review request kit",
       "seasonalRefresh": "a seasonal refresh",
       "quarterlyCall": "a 15-minute planning call every quarter",
-      "doneForYouEdits": "done-for-you edits"
+      "doneForYouEdits": "done-for-you edits",
+      "monthlySnapshotAction": "a monthly snapshot with one action",
+      "brokenLinkCopyFix": "broken link and outdated copy fixes",
+      "oneLineChangeLog": "a one-line monthly change log",
+      "monthlySpeedCheck": "a monthly speed check and fix",
+      "searchTuneUp": "a search tune-up for your top-view page",
+      "reviewWatch": "review watch with drafted replies"
     },
     "planStripTip": " + {tip} tip",
     "changeHeading": "Your monthly tip",

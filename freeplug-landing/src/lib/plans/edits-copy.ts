@@ -39,6 +39,7 @@ export const EDITS_COPY_ES = {
     leads: `12 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
     get_found: `15 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
     growth: `20 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES}${EDIT_TIMING_ES}`,
+    plug_authority: `25 ediciones al mes: cambios pequeños como tu horario, una foto o un precio.${CARRY_OVER_ES} Buscamos terminar en un plazo de 5 días hábiles.`,
   } as Record<PlanStepId, string>,
 } as const
 
@@ -65,6 +66,7 @@ export const PLAN_EDIT_EXPLANATIONS: Record<PlanStepId, string> = {
   leads: `12 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
   get_found: `15 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
   growth: `20 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN}${EDIT_TIMING_EN}`,
+  plug_authority: `25 edits a month: small changes like hours, a photo swap or a price change.${CARRY_OVER_EN} We aim to finish within 5 business days.`,
 }
 
 /** Retired: edit packs are not sold to customers. */

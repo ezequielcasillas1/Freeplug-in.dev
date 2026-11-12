@@ -48,7 +48,7 @@ function collectStrings(value: unknown, out: string[], depth = 0): void {
 describe('AI-edit counts stay hidden while showAiEditQuota is false', () => {
   it('the flag is false and the numbers are still kept in ladder.ts', () => {
     expect(showAiEditQuota).toBe(false)
-    expect(PLAN_STEPS.map((s) => s.aiEditsPerMonth)).toEqual([5, 15, 15, 40, 40, 40])
+    expect(PLAN_STEPS.map((s) => s.aiEditsPerMonth)).toEqual([5, 15, 15, 40, 40, 40, 40])
     for (const s of PLAN_STEPS) {
       expect(customerAiEditsPerMonth(s)).toBeNull()
       expect(copy.aiEditsLine(s)).toBeNull()

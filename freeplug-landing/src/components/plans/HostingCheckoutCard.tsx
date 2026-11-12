@@ -195,7 +195,49 @@ export function HostingCheckoutCard({
   onChangeAddon,
 }: Props) {
   const ladder = useLadderCopy()
-  const { PLAN_GLOSS, CHANGE_PLAN_BUTTON_NOW, CHANGE_PLAN_BUTTON_ON, CHANGE_PLAN_BUTTON, CHANGE_PLAN_CURRENT, CHANGE_PLAN_HELP_DOWN, CHANGE_PLAN_HELP_UP, CHANGE_PLAN_PICK_TO_SWITCH, COMING_SOON_LABEL, CONTINUE_TO_PAYMENT, CURRENT_PLAN_LINE, KEEP_PLAN_BUTTON, PENDING_CHANGE_LINE, EVERYTHING_IN, LADDER_HEADING, LADDER_SUBHEADING, MOST_POPULAR_LABEL, PER_MONTH, PERK_LINES, SEE_COMING_SOON, STARTS_ON_BADGE, aiEditsLine, STARTER_BASE_LINES, UPGRADE_CALCULATING, UPGRADE_CANCEL_BUTTON, UPGRADE_CONFIRM_BUTTON, UPGRADE_CONFIRM_FALLBACK, UPGRADE_CONFIRM_LINE, UPGRADE_PREVIEW_EXPIRED, UPGRADE_CONFIRM_ZERO, UPGRADE_REPLACES_PENDING, PLAN_CHANGE_TIP_ENDS, PLAN_CHANGE_TIP_ENDS_ON, ADDON_NAMES, addonsStayOnLine, planTotalBreakdown, planTotalLine, addonTodayTotal, CHANGE_PLAN_SWITCHING } = ladder
+  const {
+    PLAN_GLOSS,
+    CHANGE_PLAN_BUTTON_NOW,
+    CHANGE_PLAN_BUTTON_ON,
+    CHANGE_PLAN_BUTTON,
+    CHANGE_PLAN_CURRENT,
+    CHANGE_PLAN_HELP_DOWN,
+    CHANGE_PLAN_HELP_UP,
+    CHANGE_PLAN_PICK_TO_SWITCH,
+    COMING_SOON_LABEL,
+    CONTINUE_TO_PAYMENT,
+    CURRENT_PLAN_LINE,
+    KEEP_PLAN_BUTTON,
+    PENDING_CHANGE_LINE,
+    EVERYTHING_IN,
+    LADDER_HEADING,
+    LADDER_SUBHEADING,
+    MOST_POPULAR_LABEL,
+    PER_MONTH,
+    PERK_LINES,
+    SEE_COMING_SOON,
+    STARTS_ON_BADGE,
+    STEP_DESCRIPTION_PLUG_AUTHORITY,
+    STEP_TAGLINE_PLUG_AUTHORITY,
+    aiEditsLine,
+    STARTER_BASE_LINES,
+    UPGRADE_CALCULATING,
+    UPGRADE_CANCEL_BUTTON,
+    UPGRADE_CONFIRM_BUTTON,
+    UPGRADE_CONFIRM_FALLBACK,
+    UPGRADE_CONFIRM_LINE,
+    UPGRADE_PREVIEW_EXPIRED,
+    UPGRADE_CONFIRM_ZERO,
+    UPGRADE_REPLACES_PENDING,
+    PLAN_CHANGE_TIP_ENDS,
+    PLAN_CHANGE_TIP_ENDS_ON,
+    ADDON_NAMES,
+    addonsStayOnLine,
+    planTotalBreakdown,
+    planTotalLine,
+    addonTodayTotal,
+    CHANGE_PLAN_SWITCHING,
+  } = ladder
   const t = useTranslations()
   // sellable=false steps (ladder.ts) show "Coming soon" and can't be picked, except the step a
   // customer is already on. The server refuses them too (checkout, claim, publish, switching).
@@ -521,6 +563,7 @@ export function HostingCheckoutCard({
             {price(step)}
           </span>
           {gloss(step.id)}
+          {plugAuthorityIntro(step.id)}
           {badgesFor(step)}
           {body(step)}
         </span>
@@ -538,6 +581,21 @@ export function HostingCheckoutCard({
     ) : null
   }
 
+  /** Plug Authority: owner tagline and description above the cumulative perk list. */
+  function plugAuthorityIntro(id: PlanStepId, muted?: boolean) {
+    if (id !== 'plug_authority') return null
+    return (
+      <>
+        <span className={cn('mt-1 block text-sm font-medium', muted ? 'text-gray-600' : 'text-gray-800')} data-testid="plan-step-tagline">
+          {STEP_TAGLINE_PLUG_AUTHORITY}
+        </span>
+        <span className={cn('mt-2 block text-sm leading-snug', muted ? 'text-gray-600' : 'text-gray-600')} data-testid="plan-step-description">
+          {STEP_DESCRIPTION_PLUG_AUTHORITY}
+        </span>
+      </>
+    )
+  }
+
   /** Coming soon (Lina §0): no radio, not clickable, no hover, grey text (no opacity). */
   function soonRow(step: PlanStep) {
     return (
@@ -552,6 +610,7 @@ export function HostingCheckoutCard({
           {price(step, true)}
         </span>
         {gloss(step.id)}
+        {plugAuthorityIntro(step.id, true)}
         {badgesFor(step)}
         {body(step, true)}
       </div>
