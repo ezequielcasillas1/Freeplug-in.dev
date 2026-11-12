@@ -2,8 +2,10 @@
 
 import { CatalogCardWithPreview } from '@/features/merch/components/CatalogCardWithPreview'
 import { ShopGridCardFrame } from '@/features/merch/components/ShopGridCardFrame'
+import { ShopGridCardFromProps } from '@/features/merch/components/ShopGridCardFromProps'
+import type { ShopGridMockupProps } from '@/lib/merch/shop/shop-grid-mockup-props'
 import Link from 'next/link'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
 import { publicHref } from '@/i18n/routing'
@@ -19,11 +21,11 @@ import { ALL_MERCH_PAGE_SIZE } from '@/features/merch/components/AllMerchListCli
 
 export function ShopListClient({
   items,
-  gridMockups,
+  gridMockupProps,
 }: {
   items: CatalogFilterItem[]
-  /** Server-rendered garment + wordmark per `item.key` (shop index). */
-  gridMockups?: Record<string, ReactNode>
+  /** Server-computed grid mockup props per `item.key` (image + ink-aware overlay). */
+  gridMockupProps?: Record<string, ShopGridMockupProps>
 }) {
   const t = useTranslations('public.merch.shop')
   const tMerch = useTranslations('public.merch')
@@ -77,8 +79,16 @@ export function ShopListClient({
                       className="block rounded-xl border border-gray-200 bg-white p-4 hover:border-[#ba3d3d]/40 transition-colors min-h-full"
                     >
                       <div className="aspect-square rounded-lg bg-zinc-100 mb-3 overflow-hidden relative">
-                        {gridMockups?.[item.key] ? (
-                          <ShopGridCardFrame mockup={gridMockups[item.key]} showOverlay={state.previewOverlays} />
+                        {gridMockupProps?.[item.key] ? (
+                          <ShopGridCardFrame
+                            mockup={
+                              <ShopGridCardFromProps
+                                props={gridMockupProps[item.key]!}
+                                showOverlay={state.previewOverlays}
+                              />
+                            }
+                            showOverlay={state.previewOverlays}
+                          />
                         ) : (
                           <CatalogCardWithPreview
                             item={item}
