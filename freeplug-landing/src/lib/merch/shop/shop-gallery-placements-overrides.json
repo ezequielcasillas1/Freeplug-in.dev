@@ -108,7 +108,7 @@
         {
           "top": 0.28,
           "left": 0.5,
-          "width": 0.28,
+          "width": 0.32,
           "inkBlankKind": "light"
         },
         {
@@ -121,7 +121,7 @@
         {
           "top": 0.36,
           "left": 0.5,
-          "width": 0.2,
+          "width": 0.22,
           "inkBlankKind": "dark"
         },
         {
@@ -135,9 +135,9 @@
           "hide": true
         },
         {
-          "top": 0.19,
+          "top": 0.36,
           "left": 0.5,
-          "width": 0.12,
+          "width": 0.14,
           "inkBlankKind": "dark"
         }
       ]
@@ -570,7 +570,7 @@
           "hide": true
         },
         {
-          "top": 0.62,
+          "top": 0.64,
           "left": 0.36,
           "width": 0.26,
           "inkBlankKind": "dark"
@@ -698,7 +698,7 @@
         {
           "top": 0.44,
           "left": 0.5,
-          "width": 0.14,
+          "width": 0.18,
           "inkBlankKind": "dark"
         }
       ]
@@ -706,8 +706,8 @@
     "circle-necklace-engraving-2341": {
       "slides": [
         {
-          "top": 0.56,
-          "left": 0.48,
+          "top": 0.44,
+          "left": 0.5,
           "width": 0.17,
           "inkBlankKind": "dark"
         },
@@ -942,13 +942,13 @@
         {
           "top": 0.36,
           "left": 0.5,
-          "width": 0.12,
+          "width": 0.16,
           "inkBlankKind": "dark"
         },
         {
           "top": 0.36,
           "left": 0.5,
-          "width": 0.12,
+          "width": 0.16,
           "inkBlankKind": "dark"
         }
       ]
@@ -974,13 +974,13 @@
         {
           "top": 0.28,
           "left": 0.48,
-          "width": 0.28,
+          "width": 0.32,
           "inkBlankKind": "light"
         },
         {
           "top": 0.72,
           "left": 0.5,
-          "width": 0.24,
+          "width": 0.28,
           "inkBlankKind": "light"
         }
       ]
@@ -988,15 +988,15 @@
     "snapback-trucker-cap-1446": {
       "slides": [
         {
-          "top": 0.35,
-          "left": 0.44,
-          "width": 0.26,
+          "top": 0.34,
+          "left": 0.38,
+          "width": 0.28,
           "inkBlankKind": "dark"
         },
         {
-          "top": 0.33,
-          "left": 0.44,
-          "width": 0.26,
+          "top": 0.32,
+          "left": 0.38,
+          "width": 0.28,
           "inkBlankKind": "dark"
         }
       ]
@@ -1023,9 +1023,9 @@
           "hide": true
         },
         {
-          "top": 0.54,
-          "left": 0.42,
-          "width": 0.34,
+          "top": 0.66,
+          "left": 0.24,
+          "width": 0.2,
           "inkBlankKind": "light"
         }
       ]
@@ -1126,7 +1126,7 @@
         {
           "top": 0.54,
           "left": 0.62,
-          "width": 0.16,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
@@ -1189,9 +1189,9 @@
     "candle-set-with-wick-trimmer-5453": {
       "slides": [
         {
-          "top": 0.54,
-          "left": 0.5,
-          "width": 0.2,
+          "top": 0.61,
+          "left": 0.52,
+          "width": 0.24,
           "inkBlankKind": "light"
         },
         {
@@ -1231,8 +1231,86 @@
     "picnic-blanket-1124": {
       "slides": [
         {
-          "top": 0.48,
-          "left": 0.52,
+          "top": 0.52,
+          "left": 0.48,
+          "width": 0.3,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "ceramic-mug-11oz-15oz-478": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "mug-11oz-68": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "mug-15oz-425": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "white-ceramic-mug-11oz-503": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "enamel-camping-mug-483": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "coffee-mug-tumbler-15oz-1511": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
           "width": 0.24,
           "inkBlankKind": "light"
         },

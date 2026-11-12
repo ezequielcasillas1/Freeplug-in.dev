@@ -1,6 +1,6 @@
 {
   "description": "Every gallery slide has baked Printify placeholder art (YOUR DESIGN, sample graphics, green grids). Hidden from grid when shopExcludeNoCleanMockup is on (default).",
-  "generatedAt": "2026-11-12T04:35:00.000Z",
+  "generatedAt": "2026-11-12T05:45:00.000Z",
   "slugReasons": {
     "12-solid-cuffed-beanie-5665": "Both slides: full-lime beanie with green YOUR DESIGN placeholder (~46% Printify green on every pixel band).",
     "die-cut-stickers-600": "Slide 0: baked magnifying-glass sample icon; slide 1: YOUR DESIGN die-cut with purple arrow art.",
@@ -8,7 +8,8 @@
     "round-vinyl-stickers-564": "Slide 0: baked dollar-sign sample; slide 1: purple YOUR DESIGN with Printify P pattern.",
     "sticker-sheets-661": "Slide 0: baked money-themed sample stickers; slide 1: four YOUR DESIGN placeholders with arrow art.",
     "transparent-outdoor-stickers-square-1pc-794": "Slide 0: green starburst with baked arrow sample; slide 1: orange Printify grid with YOUR DESIGN.",
-    "square-stickers-384": "Slide 0: baked green magnifier sample in sticker preview; slide 1: folded corner only — no clean hero for overlay QA."
+    "square-stickers-384": "Slide 0: baked green magnifier sample in sticker preview; slide 1: folded corner only — no clean hero for overlay QA.",
+    "mid-profile-baseball-cap-with-leather-patch-rect-2707": "Slide 0: tan cap mock with ~68% placeholder text band on front panel — no clean hero for overlay QA."
   },
   "slugs": [
     "12-solid-cuffed-beanie-5665",
@@ -17,7 +18,8 @@
     "round-vinyl-stickers-564",
     "sticker-sheets-661",
     "transparent-outdoor-stickers-square-1pc-794",
-    "square-stickers-384"
+    "square-stickers-384",
+    "mid-profile-baseball-cap-with-leather-patch-rect-2707"
   ],
   "ownerNoVisibleMark": []
 }

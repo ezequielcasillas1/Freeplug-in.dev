@@ -3,7 +3,7 @@
  * PDP/grid overlay QA sheets — full hero mockup + visible overlay + slug label (~40 tiles/page).
  * Usage: BASE_URL=http://127.0.0.1:3013 node scripts/render-shop-overlay-contact-sheet.mjs
  */
-import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
@@ -104,9 +104,22 @@ async function makeTile(heroBuf, slug) {
     .toBuffer()
 }
 
-async function stitchPages(tiles, prefix) {
+async function stitchPages(tileSlugs, tiles, prefix) {
+  const manifest = {
+    generatedAt: new Date().toISOString(),
+    cols: COLS,
+    perPage: PER_PAGE,
+    cellW: CELL_W,
+    cellH: CELL_H,
+    labelH: LABEL_H,
+    excludeNoClean,
+    tileCount: tileSlugs.length,
+    pages: [],
+  }
   for (let p = 0; p * PER_PAGE < tiles.length; p++) {
-    const chunk = tiles.slice(p * PER_PAGE, (p + 1) * PER_PAGE)
+    const start = p * PER_PAGE
+    const chunk = tiles.slice(start, start + PER_PAGE)
+    const chunkSlugs = tileSlugs.slice(start, start + PER_PAGE)
     const rows = Math.ceil(chunk.length / COLS)
     const sheet = sharp({
       create: {
@@ -122,7 +135,9 @@ async function stitchPages(tiles, prefix) {
       left: (idx % COLS) * CELL_W,
     }))
     await sheet.composite(composites).png().toFile(path.join(ARTIFACTS, `${prefix}-page${p + 1}.png`))
+    manifest.pages.push({ page: p + 1, slugs: chunkSlugs })
   }
+  writeFileSync(path.join(ARTIFACTS, 'shop-overlay-contact-manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
 }
 
 const browser = await chromium.launch()
@@ -205,19 +220,39 @@ for (const slug of CHEKE_SLUGS) {
   }
 }
 
+const pdpTileSlugs = []
 const pdpTiles = []
 for (let si = 0; si < slugs.length; si++) {
   const slug = slugs[si]
   process.stdout.write(`PDP ${si + 1}/${slugs.length}\r`)
   try {
     const hero = await capturePdpHero(slug)
+    pdpTileSlugs.push(slug)
     pdpTiles.push(await makeTile(hero, slug))
   } catch (err) {
     console.warn(`\nSkip ${slug}:`, err.message)
   }
 }
 
-await stitchPages(pdpTiles, 'shop-overlay-contact-pdp')
+await stitchPages(pdpTileSlugs, pdpTiles, 'shop-overlay-contact-pdp')
+
+/** Slugs excluded from the sheet still need labeled PDP crops for review. */
+const EXTRA_CROP_SLUGS = [
+  'mid-profile-baseball-cap-with-leather-patch-rect-2707',
+]
+const cropPrefix = process.env.CROP_PREFIX ?? 'round12'
+for (const slug of EXTRA_CROP_SLUGS) {
+  if (pdpTileSlugs.includes(slug)) continue
+  try {
+    const hero = await capturePdpHero(slug)
+    const tile = await makeTile(hero, slug)
+    const out = path.join(ARTIFACTS, `${cropPrefix}-crop-${slug}.png`)
+    await sharp(tile).png().toFile(out)
+    console.log(`\nExtra crop → ${out}`)
+  } catch (err) {
+    console.warn(`\nSkip extra crop ${slug}:`, err.message)
+  }
+}
 
 await browser.close()
 console.log(`\nContact sheets (${pdpTiles.length} PDP tiles, ${CHEKE_SLUGS.length} named PDPs) → ${ARTIFACTS}`)
