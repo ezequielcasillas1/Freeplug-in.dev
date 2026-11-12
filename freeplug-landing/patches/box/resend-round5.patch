@@ -1,0 +1,3121 @@
+diff --git a/freeplug-landing/.env.example b/freeplug-landing/.env.example
+index 25bae89..8a6be49 100644
+--- a/freeplug-landing/.env.example
++++ b/freeplug-landing/.env.example
+@@ -35,14 +35,16 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
+ # Outbound email — Resend (the only app sender; nodemailer/SMTP was removed Oct 3, 2026).
+ # Used for password reset, the Google-only sign-in notice, the cancellation notice, the admin
+ # "Send email" box and /api/test-email. Without RESEND_API_KEY every app send fails with
+-# "Email is not configured" (logged) and the password reset falls back to Supabase Auth's mailer.
++# "Email is not configured" (logged) and the password reset falls back to Supabase Auth's mailer
++# (resetPasswordForEmail; also after a Resend 4xx/5xx, network error or 8 s timeout). Every fallback logs a
++# "[password-reset] FALLBACK" warning and shows on the admin mail banner.
+ # Set RESEND_API_KEY in .env.local only (do not commit). On Cloudflare: `wrangler versions secret put RESEND_API_KEY`.
+ # EMAIL_FROM must be on the main domain freeplug-in.dev, verified in Resend (DKIM on freeplug-in.dev;
+ # send.freeplug-in.dev is only Resend's return path for MX + SPF and never appears in From).
+ # RESEND_API_KEY=re_...
+ EMAIL_FROM_NAME="Freeplug"
+-EMAIL_FROM=support@freeplug-in.dev
+-# Optional default Reply-To (per-message replyTo, e.g. a customer's address, overrides it):
++EMAIL_FROM=no-reply@freeplug-in.dev
++# Default From: Freeplug <no-reply@freeplug-in.dev>. Default Reply-To (per-message replyTo overrides it):
+ # EMAIL_REPLY_TO=support@freeplug-in.dev
+ #
+ # Supabase Auth emails (sign-up confirmation, claim "send it again", fallback reset) are NOT sent by
+diff --git a/freeplug-landing/eslint.config.mjs b/freeplug-landing/eslint.config.mjs
+index 0c21036..1e0e429 100644
+--- a/freeplug-landing/eslint.config.mjs
++++ b/freeplug-landing/eslint.config.mjs
+@@ -20,6 +20,7 @@ const eslintConfig = defineConfig([
+       "src/app/(dashboard)/dashboard/buyout-actions.ts",
+       "src/app/(dashboard)/dashboard/request-website/actions.ts",
+       "src/app/api/webhooks/stripe/route.ts",
++      "src/lib/email/webhook-email-ledger.ts",
+       "src/lib/stripe/checkout-customer.ts",
+       "src/lib/stripe/sync-checkout-customer.ts",
+       "src/**/*.test.{ts,tsx}",
+diff --git a/freeplug-landing/src/app/(auth)/actions.ts b/freeplug-landing/src/app/(auth)/actions.ts
+index fa5f0ba..0f5738d 100644
+--- a/freeplug-landing/src/app/(auth)/actions.ts
++++ b/freeplug-landing/src/app/(auth)/actions.ts
+@@ -3,23 +3,26 @@
+ import { revalidatePath } from 'next/cache'
+ import { redirect } from 'next/navigation'
+ import { cookies, headers } from 'next/headers'
+-import { clientIpFrom, isTrustedClientIp } from '@/lib/rate-limit/client-ip'
++import { clientIpFrom } from '@/lib/rate-limit/client-ip'
+ import { createClient } from '@/lib/supabase/server'
+ import { createAdminClient } from '@/lib/supabase/admin'
+ import { appBaseUrl } from '@/lib/stripe/config'
+ import { safeNext } from '@/lib/auth/safe-next'
+ import { requestAwareBaseUrl } from '@/lib/site'
+-import {
+-  PASSWORD_MIN_LENGTH,
+-  isGoogleOnlyUser,
+-  isResetThrottledForEmail,
+-  isResetThrottledForIp,
+-  recoveryConfirmUrl,
+-} from '@/lib/auth/password-reset'
++import { PASSWORD_MIN_LENGTH, isGoogleOnlyUser, recoveryConfirmUrl } from '@/lib/auth/password-reset'
++import { isResetThrottled } from '@/lib/auth/reset-rate-limit'
++import { runAfterResponse } from '@/lib/background'
++import { createAnonClient } from '@/lib/supabase/anon'
+ import { isMailConfigured, sendMail } from '@/lib/email/mailer'
+ import { RESET_COOKIE_NAME, resetCookieSecret, verifyResetToken } from '@/lib/auth/reset-cookie'
+ import { sendPasswordResetEmail } from '@/lib/email/send'
+ import { GoogleSignInEmail } from '@/lib/email/templates/google-sign-in'
++import {
++  RESET_SEND_TIMEOUT_MS,
++  recordResetFallback,
++  resetFallbackReason,
++  type ResetFallbackReason,
++} from '@/lib/email/reset-fallback'
+ 
+ export async function signIn(formData: FormData) {
+   const email = String(formData.get('email') ?? '').trim()
+@@ -79,7 +82,16 @@ export async function signUp(formData: FormData) {
+       emailRedirectTo: next
+         ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+         : `${origin}/auth/callback`,
+-      ...(businessName ? { data: { business_name: businessName } } : {}),
++      // freeplug_claim: the "Confirm signup" email template sends claim sign-ups back to /claim
++      // ({{ if .Data.freeplug_claim }}, SUPABASE-AUTH-CHECKLIST.md); everyone else lands on /dashboard.
++      ...(businessName || next === '/claim'
++        ? {
++            data: {
++              ...(businessName ? { business_name: businessName } : {}),
++              ...(next === '/claim' ? { freeplug_claim: true } : {}),
++            },
++          }
++        : {}),
+     },
+   })
+ 
+@@ -131,69 +143,94 @@ async function clientIp(): Promise<string> {
+   return clientIpFrom(await headers())
+ }
+ 
+-/**
+- * Sends the reset email from our own sender (Resend; EMAIL_FROM / EMAIL_FROM_NAME).
+- * Unknown emails get nothing; Google-only accounts get a "sign in with Google" note.
+- * Falls back to Supabase Auth's own mailer (the hosted project's email settings, not ours) only when
+- * RESEND_API_KEY or the service role key is missing, or when our Resend send fails.
+- */
+ /** Reset-link base: the local origin in `next dev` on localhost, else emailBaseUrl(). */
+ async function resetLinkBaseUrl(): Promise<string> {
+   const h = await headers()
+   return requestAwareBaseUrl({ host: h.get('host'), forwardedProto: h.get('x-forwarded-proto') })
+ }
+ 
+-async function deliverPasswordReset(email: string): Promise<void> {
+-  const origin = await resetLinkBaseUrl()
++/**
++ * Sends the reset email from our own sender (Resend; EMAIL_FROM / EMAIL_FROM_NAME).
++ * Unknown emails get nothing; Google-only accounts get a "sign in with Google" note.
++ *
++ * Runs AFTER the response (runAfterResponse → ctx.waitUntil on Workers), so it must not touch request-scoped
++ * APIs: the caller passes `origin`, and the Supabase fallback uses a cookie-less anon client.
++ *
++ * Falls back to Supabase Auth's own mailer (resetPasswordForEmail: the hosted project's email settings)
++ * ONLY when Resend clearly didn't accept the email: RESEND_API_KEY or the service role key missing, a
++ * Resend 4xx/5xx, a network error with no response, no answer within RESET_SEND_TIMEOUT_MS (a late success
++ * may then mean a duplicate, acceptable for a reset), or our template failing to render (logged at ERROR
++ * with template + locale, counted separately). A returned id never falls back. Every fallback is logged
++ * (never the address) and counted on the admin mail banner.
++ */
++async function deliverPasswordReset(email: string, origin: string): Promise<void> {
++  const noKey = !isMailConfigured()
++  const noServiceRole = !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
++  const missing: ResetFallbackReason | null =
++    noKey && noServiceRole ? 'missing_key+missing_service_role' : noKey ? 'missing_key' : noServiceRole ? 'missing_service_role' : null
+ 
+-  if (isMailConfigured() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
++  if (!missing) {
+     const admin = createAdminClient()
+     const { data, error } = await admin.auth.admin.generateLink({ type: 'recovery', email })
+     if (error || !data?.properties?.hashed_token) {
+-      // Most often "user not found": send nothing, the page still shows the neutral message.
++      // Most often "user not found": send nothing (the response already went out, identical either way).
+       return
+     }
+ 
+     if (isGoogleOnlyUser(data.user)) {
++      // No fallback here: a Supabase reset link would let a Google-only account set a password.
+       const res = await sendMail({
+         to: email,
+         subject: 'How to sign in to Freeplug',
+         react: GoogleSignInEmail({ baseUrl: origin }),
++        template: 'google-sign-in',
+       })
+-      if (!res.success) console.error('[password-reset] google-only notice failed:', res.error)
++      if (!res.success) console.error('[password-reset] google-only notice not sent:', res.reason, res.status ?? '')
+       return
+     }
+ 
+-    const res = await sendPasswordResetEmail(email, {
+-      resetLink: recoveryConfirmUrl(origin, data.properties.hashed_token),
+-    })
+-    if (res.success) return
+-    console.error('[password-reset] Resend send failed, falling back to Supabase mailer:', res.error)
++    const res = await sendPasswordResetEmail(
++      email,
++      { resetLink: recoveryConfirmUrl(origin, data.properties.hashed_token) },
++      { timeoutMs: RESET_SEND_TIMEOUT_MS }
++    )
++    const fallback = resetFallbackReason(res)
++    if (!fallback) return // Resend accepted it (an id came back).
++    await recordResetFallback(fallback)
++  } else {
++    await recordResetFallback({ reason: missing, status: null })
+   }
+ 
+-  const supabase = await createClient()
+-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
++  const { error } = await createAnonClient().auth.resetPasswordForEmail(email, {
+     redirectTo: `${origin}/auth/callback?next=/reset-password`,
+   })
+   if (error) console.error('[password-reset] Supabase mailer error:', error.message)
+ }
+ 
++/**
++ * Forgot-password (Aria, round 5): validate, rate-limit (DB-backed, fails open to the in-memory limit for
++ * the reset only), then answer immediately with the same neutral response in every case. The account lookup
++ * and the send run after the response in ctx.waitUntil, so the response time doesn't depend on whether the
++ * account exists. No sleeps or padding.
++ */
+ export async function requestPasswordReset(formData: FormData) {
+   const email = String(formData.get('email') ?? '').trim().toLowerCase()
+   if (!email || !email.includes('@')) {
+     redirect('/forgot-password?error=' + encodeURIComponent('Enter the email you use to sign in.'))
+   }
+ 
++  // Request-scoped values first (the background task can't read them).
+   const ip = await clientIp()
+-  const throttled =
+-    // No per-IP throttle on the shared bucket (everyone without a trusted IP), only per email (Vera r2 N6).
+-    (isTrustedClientIp(ip) && isResetThrottledForIp(ip)) || isResetThrottledForEmail(email)
++  const origin = await resetLinkBaseUrl()
++
++  let throttled = false
++  try {
++    throttled = await isResetThrottled(email, ip)
++  } catch (e) {
++    console.error('[password-reset] rate limit check failed:', e instanceof Error ? e.message : e)
++  }
+   if (!throttled) {
+-    try {
+-      await deliverPasswordReset(email)
+-    } catch (e) {
+-      console.error('[password-reset]', e instanceof Error ? e.message : e)
+-    }
++    void runAfterResponse('password-reset', () => deliverPasswordReset(email, origin))
+   }
+ 
+   // Same response whether or not the account exists (or the request was throttled).
+diff --git a/freeplug-landing/src/app/(auth)/link-expired/page.test.tsx b/freeplug-landing/src/app/(auth)/link-expired/page.test.tsx
+new file mode 100644
+index 0000000..ca24745
+--- /dev/null
++++ b/freeplug-landing/src/app/(auth)/link-expired/page.test.tsx
+@@ -0,0 +1,24 @@
++// @vitest-environment node
++import { renderToStaticMarkup } from 'react-dom/server'
++import { describe, expect, it } from 'vitest'
++import { LINK_EXPIRED_MESSAGE } from '@/lib/auth/link-expired'
++import LinkExpiredPage from './page'
++
++const render = async (forWhat?: string) =>
++  renderToStaticMarkup(await LinkExpiredPage({ searchParams: Promise.resolve(forWhat ? { for: forWhat } : {}) }))
++
++describe('/link-expired', () => {
++  it('shows the exact neutral copy', () => expect(LINK_EXPIRED_MESSAGE).toBe('This link has expired. Request a new one.'))
++  it.each([
++    ['reset', '/forgot-password'],
++    ['claim', '/login?next=/claim'],
++    ['account', '/login'],
++    [undefined, '/login'],
++    ['https://evil.example', '/login'],
++  ])('for=%s links back to %s', async (forWhat, href) => {
++    const html = await render(forWhat)
++    expect(html).toContain(LINK_EXPIRED_MESSAGE)
++    expect(html).toContain(`href="${href}"`)
++    expect(html).not.toContain('evil')
++  })
++})
+diff --git a/freeplug-landing/src/app/(auth)/link-expired/page.tsx b/freeplug-landing/src/app/(auth)/link-expired/page.tsx
+new file mode 100644
+index 0000000..a10c378
+--- /dev/null
++++ b/freeplug-landing/src/app/(auth)/link-expired/page.tsx
+@@ -0,0 +1,35 @@
++import type { Metadata } from 'next'
++import Link from 'next/link'
++import { LINK_EXPIRED_MESSAGE } from '@/lib/auth/link-expired'
++
++export const metadata: Metadata = {
++  title: 'Link expired | Freeplug',
++  robots: { index: false, follow: false },
++}
++
++const BACK = {
++  reset: { href: '/forgot-password', label: 'Request a new reset link' },
++  claim: { href: '/login?next=/claim', label: 'Back to log in' },
++  account: { href: '/login', label: 'Back to log in' },
++} as const
++
++type Props = { searchParams: Promise<{ for?: string }> }
++
++export default async function LinkExpiredPage({ searchParams }: Props) {
++  const q = await searchParams
++  const back = q.for === 'reset' ? BACK.reset : q.for === 'claim' ? BACK.claim : BACK.account
++  return (
++    <div className="rounded-2xl bg-white p-8 shadow-sm border border-zinc-200">
++      <h1 className="text-2xl font-bold text-gray-900 mb-1">Link expired</h1>
++      <p className="mb-6 text-sm text-gray-700" role="status">
++        {LINK_EXPIRED_MESSAGE}
++      </p>
++      <Link
++        href={back.href}
++        className="inline-flex w-full items-center justify-center rounded-lg bg-[#ba3d3d] px-4 py-3 font-medium text-white hover:bg-[#a33535] transition-colors"
++      >
++        {back.label}
++      </Link>
++    </div>
++  )
++}
+diff --git a/freeplug-landing/src/app/(auth)/signup-metadata.test.ts b/freeplug-landing/src/app/(auth)/signup-metadata.test.ts
+new file mode 100644
+index 0000000..63f6363
+--- /dev/null
++++ b/freeplug-landing/src/app/(auth)/signup-metadata.test.ts
+@@ -0,0 +1,49 @@
++// @vitest-environment node
++import { beforeEach, describe, expect, it, vi } from 'vitest'
++
++/**
++ * Round 6: the "Confirm signup" template (SUPABASE-AUTH-CHECKLIST.md) sends claim sign-ups back to /claim
++ * with `{{ if .Data.freeplug_claim }}`, so signUp must set that metadata for next=/claim, and only then.
++ */
++const signUpSpy = vi.fn()
++vi.mock('next/navigation', () => ({
++  redirect: (url: string) => {
++    throw Object.assign(new Error('NEXT_REDIRECT'), { url })
++  },
++}))
++vi.mock('next/headers', () => ({ headers: async () => new Headers(), cookies: async () => ({ get: () => undefined, set: () => {} }) }))
++vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
++vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({ auth: { signUp: signUpSpy } }) }))
++vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({}) }))
++vi.mock('@/lib/supabase/anon', () => ({ createAnonClient: () => ({}) }))
++
++import { signUp } from './actions'
++
++function form(fields: Record<string, string>) {
++  const f = new FormData()
++  for (const [k, v] of Object.entries({ email: 'new@example.com', password: 'secret123', confirm: 'secret123', ...fields })) f.set(k, v)
++  return f
++}
++async function run(fields: Record<string, string>) {
++  await signUp(form(fields)).catch((e: { url?: string }) => {
++    if (!e.url) throw e
++  })
++  return signUpSpy.mock.calls.at(-1)![0].options as { emailRedirectTo: string; data?: Record<string, unknown> }
++}
++
++describe('signUp metadata for the Confirm signup template', () => {
++  beforeEach(() => {
++    signUpSpy.mockReset()
++    signUpSpy.mockResolvedValue({ data: { user: { id: 'u' }, session: null }, error: null })
++  })
++  it('claim sign-up: freeplug_claim true (plus business_name when given)', async () => {
++    expect((await run({ next: '/claim' })).data).toEqual({ freeplug_claim: true })
++    const withName = (await run({ next: '/claim', business_name: 'Tacos Kyle' })).data
++    expect(withName?.freeplug_claim).toBe(true)
++  })
++  it('any other sign-up: no freeplug_claim', async () => {
++    expect((await run({})).data?.freeplug_claim).toBeUndefined()
++    expect((await run({ next: '/dashboard' })).data?.freeplug_claim).toBeUndefined()
++    expect((await run({ next: '/claim/' })).data?.freeplug_claim).toBeUndefined()
++  })
++})
+diff --git a/freeplug-landing/src/app/admin/AdminMailBanner.tsx b/freeplug-landing/src/app/admin/AdminMailBanner.tsx
+index 6d1a842..f1bf994 100644
+--- a/freeplug-landing/src/app/admin/AdminMailBanner.tsx
++++ b/freeplug-landing/src/app/admin/AdminMailBanner.tsx
+@@ -1,16 +1,38 @@
+ import { isMailConfigured } from '@/lib/admin/mail'
++import { RESET_FALLBACK_WINDOW_HOURS, getResetFallbackStatus } from '@/lib/email/reset-fallback'
+ 
++/** Admin mail status: Resend configured or not, plus recent password-reset fallbacks to Supabase's mailer. */
+ export async function AdminMailBanner() {
+   const mailOn = isMailConfigured()
++  const fallback = await getResetFallbackStatus()
++  const degraded = fallback.count > 0
+   return (
+-    <p className="text-sm text-zinc-600 max-w-3xl mb-8">
+-      Account emails come from Supabase Auth. Use <strong>mailto</strong> anytime, or set{' '}
+-      <code className="bg-zinc-100 px-1 rounded text-xs">RESEND_API_KEY</code> for outbound mail from the app.{' '}
+-      {mailOn ? (
+-        <span className="text-emerald-700 font-medium">Email (Resend) is configured.</span>
+-      ) : (
+-        <span className="text-amber-800">Email not configured — mailto only.</span>
+-      )}
+-    </p>
++    <div className="text-sm text-zinc-600 max-w-3xl mb-8 space-y-1" data-testid="admin-mail-banner">
++      <p>
++        Account emails come from Supabase Auth. Use <strong>mailto</strong> anytime, or set{' '}
++        <code className="bg-zinc-100 px-1 rounded text-xs">RESEND_API_KEY</code> for outbound mail from the app.{' '}
++        {mailOn ? (
++          <span className="text-emerald-700 font-medium">Email (Resend) is configured.</span>
++        ) : (
++          <span className="text-amber-800 font-medium">Email not configured — mailto only.</span>
++        )}
++      </p>
++      {degraded ? (
++        <p className="text-amber-800" data-testid="reset-fallback-warning">
++          Email degraded: {fallback.count} password reset{fallback.count === 1 ? '' : 's'} fell back to the
++          Supabase mailer in the last {RESET_FALLBACK_WINDOW_HOURS} h
++          {fallback.lastReason ? ` (last: ${fallback.lastReason}${fallback.lastAt ? `, ${fallback.lastAt}` : ''})` : ''}
++          {fallback.source === 'instance' ? ' — counted on this server instance only' : ''}. Check the server logs.
++        </p>
++      ) : null}
++      {fallback.templateErrors > 0 ? (
++        <p className="text-red-700 font-medium" data-testid="reset-template-error">
++          Template errors: {fallback.templateErrors} password reset{fallback.templateErrors === 1 ? '' : 's'} could not be
++          rendered in the last {RESET_FALLBACK_WINDOW_HOURS} h and went out through the Supabase mailer instead
++          {fallback.lastTemplateError ? ` (last: ${fallback.lastTemplateError}${fallback.lastTemplateErrorAt ? `, ${fallback.lastTemplateErrorAt}` : ''})` : ''}
++          {fallback.source === 'instance' ? ' — counted on this server instance only' : ''}. Fix the template.
++        </p>
++      ) : null}
++    </div>
+   )
+ }
+diff --git a/freeplug-landing/src/app/api/webhooks/stripe/route-email-ledger.test.ts b/freeplug-landing/src/app/api/webhooks/stripe/route-email-ledger.test.ts
+new file mode 100644
+index 0000000..0f7e78a
+--- /dev/null
++++ b/freeplug-landing/src/app/api/webhooks/stripe/route-email-ledger.test.ts
+@@ -0,0 +1,174 @@
++// @vitest-environment node
++import { readFileSync } from 'node:fs'
++import path from 'node:path'
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
++
++/**
++ * Round 6 (Aria): the email_sends ledger, end to end through the real webhook route, the real
++ * cancel-notice and the real ledger module. Stripe, the sender and the database are fakes (the
++ * database fake follows the SQL, which was checked on a real Postgres 17). Nothing is sent.
++ */
++const h = vi.hoisted(() => ({
++  ledger: null as null | ReturnType<typeof import('../../../../../test/fake-email-sends').createFakeEmailSends>,
++  constructEventAsync: null as null | ((...a: unknown[]) => unknown),
++}))
++const sendCancelled = vi.fn()
++const subMetadata: Record<string, string> = {}
++const stripeCalls = { update: 0 }
++
++vi.mock('@/lib/email/send', () => ({
++  sendSubscriptionCancelledEmail: (...args: unknown[]) => sendCancelled(...args),
++}))
++vi.mock('@/lib/supabase/admin', () => ({
++  createAdminClient: () => ({ rpc: (fn: string, a: Record<string, unknown>) => h.ledger!.rpc(fn, a), from: vi.fn() }),
++}))
++const PERIOD_END = Math.floor(Date.now() / 1000) + 20 * 86400
++const liveSub = () => ({
++  id: 'sub_1',
++  customer: 'cus_1',
++  status: 'active',
++  cancel_at_period_end: true,
++  cancel_at: null,
++  canceled_at: 1790000000,
++  metadata: { ...subMetadata },
++  items: { data: [{ current_period_end: PERIOD_END }] },
++})
++vi.mock('@/lib/stripe/server', () => ({
++  getStripe: () => ({
++    webhooks: { constructEventAsync: (...a: unknown[]) => h.constructEventAsync!(...a) },
++    subscriptions: {
++      list: async () => ({ data: [] }),
++      retrieve: async () => liveSub(),
++      update: async (_id: string, p: { metadata: Record<string, string> }) => {
++        stripeCalls.update++
++        Object.assign(subMetadata, p.metadata)
++        return liveSub()
++      },
++    },
++    customers: { retrieve: async () => ({ id: 'cus_1', email: 'owner@example.com' }) },
++  }),
++}))
++
++import { createFakeEmailSends } from '../../../../../test/fake-email-sends'
++import { POST } from './route'
++
++const HOUR = 3600_000
++const MIN = 60_000
++
++async function deliver(eventId: string) {
++  h.constructEventAsync = async () => ({ id: eventId, type: 'customer.subscription.updated', data: { object: liveSub() } })
++  const res = await POST(
++    new Request('http://localhost/api/webhooks/stripe', { method: 'POST', headers: { 'stripe-signature': 't=1,v1=x' }, body: '{}' })
++  )
++  return res.status
++}
++
++let logs: { error: ReturnType<typeof vi.spyOn>; info: ReturnType<typeof vi.spyOn> }
++
++describe('Stripe webhook × email_sends ledger (round 6)', () => {
++  beforeEach(() => {
++    process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test'
++    h.ledger = createFakeEmailSends()
++    for (const k of Object.keys(subMetadata)) delete subMetadata[k]
++    stripeCalls.update = 0
++    sendCancelled.mockReset()
++    sendCancelled.mockResolvedValue({ success: true, id: 're_ok_1' })
++    logs = { error: vi.spyOn(console, 'error').mockImplementation(() => {}), info: vi.spyOn(console, 'info').mockImplementation(() => {}) }
++  })
++  afterEach(() => {
++    // No recipient address in any log line, whatever happened.
++    expect(JSON.stringify([logs.error.mock.calls, logs.info.mock.calls])).not.toContain('owner@example.com')
++    vi.restoreAllMocks()
++  })
++
++  it('a replay after the Resend key window: the sent row means no second send', async () => {
++    expect(await deliver('evt_A')).toBe(200)
++    h.ledger!.advance(25 * HOUR) // past Resend's 24 h idempotency window
++    expect(await deliver('evt_A')).toBe(200)
++    expect(await deliver('evt_A')).toBe(200)
++    expect(sendCancelled).toHaveBeenCalledTimes(1)
++    expect(sendCancelled.mock.calls[0][2]).toEqual({ idempotencyKey: 'evt_A:subscription-cancelled' })
++    expect(h.ledger!.byEvent('evt_A')).toMatchObject({ status: 'sent', resend_id: 're_ok_1', attempts: 1 })
++  })
++
++  it('two concurrent deliveries: exactly one send', async () => {
++    let release!: () => void
++    sendCancelled.mockImplementation(() => new Promise((r) => (release = () => r({ success: true, id: 're_ok_2' }))))
++    const a = deliver('evt_B')
++    const b = deliver('evt_B')
++    await vi.waitFor(() => expect(sendCancelled).toHaveBeenCalledTimes(1))
++    release()
++    expect(await Promise.all([a, b])).toEqual([200, 200])
++    expect(sendCancelled).toHaveBeenCalledTimes(1)
++    expect(h.ledger!.byEvent('evt_B')).toMatchObject({ status: 'sent', attempts: 1 })
++    expect(h.ledger!.rows.size).toBe(1)
++  })
++
++  it('a crash after the claim: pending under 15 min skips, over 15 min re-claims and sends once', async () => {
++    // The first delivery claimed (and marked the subscription), then the isolate died before sending.
++    await h.ledger!.rpc('email_send_claim', { p_stripe_event_id: 'evt_C', p_template: 'subscription-cancelled' })
++    Object.assign(subMetadata, { freeplug_cancel_email_sent_for: '1790000000', freeplug_cancel_email_event: 'evt_C' })
++    h.ledger!.advance(5 * MIN)
++    expect(await deliver('evt_C')).toBe(200)
++    expect(sendCancelled).not.toHaveBeenCalled()
++    h.ledger!.advance(9 * MIN) // 14 min
++    expect(await deliver('evt_C')).toBe(200)
++    expect(sendCancelled).not.toHaveBeenCalled()
++    h.ledger!.advance(2 * MIN) // 16 min
++    expect(await deliver('evt_C')).toBe(200)
++    expect(sendCancelled).toHaveBeenCalledTimes(1)
++    expect(h.ledger!.byEvent('evt_C')).toMatchObject({ status: 'sent', attempts: 2 })
++    expect(await deliver('evt_C')).toBe(200)
++    expect(sendCancelled).toHaveBeenCalledTimes(1)
++    expect(stripeCalls.update).toBe(0) // the marker was already this event's
++  })
++
++  it('a Resend 5xx, then the Stripe retry: the failed row is re-claimed and sent once', async () => {
++    sendCancelled.mockResolvedValueOnce({ success: false, reason: 'http', status: 503, error: 'Service unavailable' })
++    expect(await deliver('evt_D')).toBe(200)
++    expect(h.ledger!.byEvent('evt_D')).toMatchObject({ status: 'failed', last_error: 'http 503', attempts: 1 })
++    // The "updated" event our metadata write caused never sends (another event owns this cancellation).
++    expect(await deliver('evt_D2_metadata_update')).toBe(200)
++    h.ledger!.advance(HOUR) // Stripe's retry
++    expect(await deliver('evt_D')).toBe(200)
++    expect(await deliver('evt_D')).toBe(200)
++    expect(sendCancelled).toHaveBeenCalledTimes(2) // one failure + one success
++    expect(sendCancelled.mock.calls.map((c) => c[2])).toEqual([
++      { idempotencyKey: 'evt_D:subscription-cancelled' },
++      { idempotencyKey: 'evt_D:subscription-cancelled' },
++    ])
++    expect(h.ledger!.byEvent('evt_D')).toMatchObject({ status: 'sent', resend_id: 're_ok_1', attempts: 2, last_error: null })
++    expect(h.ledger!.byEvent('evt_D2_metadata_update')).toBeUndefined()
++    expect(String(logs.error.mock.calls.flat().join(' '))).toContain('[email-ledger] send failed: event=evt_D template=subscription-cancelled sub_1 attempt=1 (http 503)')
++  })
++
++  it.each([
++    ['returns an error', 'error'],
++    ['throws (no service role)', 'throw'],
++  ] as const)('the claim query %s: 2xx, no send, logged', async (_l, mode) => {
++    h.ledger!.claimFailure = mode
++    expect(await deliver('evt_E')).toBe(200)
++    expect(sendCancelled).not.toHaveBeenCalled()
++    expect(stripeCalls.update).toBe(0)
++    const err = logs.error.mock.calls.flat().join(' ')
++    expect(err).toContain('[email-ledger] claim failed; not sending: event=evt_E template=subscription-cancelled sub_1')
++    // Stripe's retry after the database recovers sends exactly once.
++    h.ledger!.claimFailure = null
++    expect(await deliver('evt_E')).toBe(200)
++    expect(sendCancelled).toHaveBeenCalledTimes(1)
++  })
++
++  it('every webhook-driven email goes through the ledger (source scan)', () => {
++    const src = path.resolve(__dirname, '../../../..')
++    const read = (f: string) => readFileSync(path.join(src, f), 'utf8')
++    const route = read('app/api/webhooks/stripe/route.ts')
++    // The route's only email path is the cancel notice; the modules it calls send no email.
++    expect(route).not.toMatch(/@\/lib\/email\/(send|mailer|index)'|sendMail\(/)
++    for (const f of ['lib/outreach/server.ts', 'lib/website-access.ts', 'lib/stripe/server.ts']) {
++      expect(read(f)).not.toMatch(/@\/lib\/email|sendMail\(|send[A-Z]\w*Email\(/)
++    }
++    const notice = read('lib/email/cancel-notice.ts')
++    expect(notice).toMatch(/sendWebhookEmailOnce\(eventId, CANCEL_EMAIL_TEMPLATE/)
++    expect(notice.match(/sendSubscriptionCancelledEmail\(/g)).toHaveLength(1)
++  })
++})
+diff --git a/freeplug-landing/src/app/api/webhooks/stripe/route.ts b/freeplug-landing/src/app/api/webhooks/stripe/route.ts
+index 9cf1d9d..fe57ea3 100644
+--- a/freeplug-landing/src/app/api/webhooks/stripe/route.ts
++++ b/freeplug-landing/src/app/api/webhooks/stripe/route.ts
+@@ -90,8 +90,9 @@ export async function POST(request: Request) {
+       websiteAccess = access.status
+       console.info('[webhook]', event.type, sub.id, sub.status, 'website access:', access.status)
+       if (event.type === 'customer.subscription.updated') {
+-        // Cancellation email, sent once per cancellation (see lib/email/cancel-notice.ts), after the
+-        // claim write and inside try/catch: an email failure never turns the webhook into a non-2xx.
++        // Cancellation email, sent once per cancellation (lib/email/cancel-notice.ts) and once per event
++        // (the email_sends ledger, lib/email/webhook-email-ledger.ts), inside try/catch: an email or
++        // ledger failure (including the claim itself erroring) never turns the webhook into a non-2xx.
+         // Resend idempotency key: `<event.id>:subscription-cancelled`.
+         try {
+           const notice = await sendCancelNoticeOnce(getStripe(), sub, event.id)
+diff --git a/freeplug-landing/src/app/auth/confirm/route.test.ts b/freeplug-landing/src/app/auth/confirm/route.test.ts
+new file mode 100644
+index 0000000..b8afca3
+--- /dev/null
++++ b/freeplug-landing/src/app/auth/confirm/route.test.ts
+@@ -0,0 +1,151 @@
++// @vitest-environment node
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
++
++/** Round 6 (Aria): /auth/confirm type + next allowlists, open-redirect variants, neutral expired page. */
++const verifyOtp = vi.fn()
++const jarSet = vi.fn()
++vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({ auth: { verifyOtp } }) }))
++vi.mock('next/headers', () => ({ cookies: async () => ({ set: jarSet }) }))
++
++import { GET } from './route'
++import { RESET_COOKIE_NAME } from '@/lib/auth/reset-cookie'
++
++const APP = 'https://freeplug-in.dev'
++
++async function visit(params: Record<string, string> | string) {
++  const qs = typeof params === 'string' ? params : new URLSearchParams(params).toString()
++  const res = await GET(new Request(`${APP}/auth/confirm${qs ? `?${qs}` : ''}`))
++  expect(res.status).toBe(307)
++  const location = res.headers.get('location')!
++  const u = new URL(location)
++  expect(u.origin).toBe(APP) // never anywhere else
++  return u.pathname + u.search
++}
++
++let warn: ReturnType<typeof vi.spyOn>
++
++beforeEach(() => {
++  vi.stubEnv('NEXT_PUBLIC_APP_URL', APP)
++  vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-only-not-a-real-key')
++  verifyOtp.mockReset()
++  verifyOtp.mockResolvedValue({ data: { user: { id: 'u1' }, session: {} }, error: null })
++  jarSet.mockReset()
++  warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
++})
++afterEach(() => {
++  vi.unstubAllEnvs()
++  vi.restoreAllMocks()
++})
++
++describe('valid links: each allowed type', () => {
++  it('recovery → /reset-password, with the 15-minute reset cookie', async () => {
++    expect(await visit({ token_hash: 'th_1', type: 'recovery', next: '/reset-password' })).toBe('/reset-password')
++    expect(verifyOtp).toHaveBeenCalledWith({ type: 'recovery', token_hash: 'th_1' })
++    expect(jarSet).toHaveBeenCalledWith(RESET_COOKIE_NAME, expect.any(String), expect.any(Object))
++  })
++  it('recovery without next, or with another allowed path, still → /reset-password', async () => {
++    expect(await visit({ token_hash: 'th_1', type: 'recovery' })).toBe('/reset-password')
++    expect(await visit({ token_hash: 'th_1', type: 'recovery', next: '/dashboard' })).toBe('/reset-password')
++  })
++  it('email (sign-up confirmation / magic link) → /dashboard by default, /claim for the claim flow', async () => {
++    expect(await visit({ token_hash: 'th_2', type: 'email', next: '/dashboard' })).toBe('/dashboard')
++    expect(await visit({ token_hash: 'th_2', type: 'email' })).toBe('/dashboard')
++    expect(await visit({ token_hash: 'th_2', type: 'email', next: '/claim' })).toBe('/claim')
++    expect(verifyOtp).toHaveBeenCalledWith({ type: 'email', token_hash: 'th_2' })
++    expect(jarSet).not.toHaveBeenCalled() // only recovery gets the reset cookie
++  })
++  it('invite → /dashboard', async () => {
++    expect(await visit({ token_hash: 'th_3', type: 'invite', next: '/dashboard' })).toBe('/dashboard')
++    expect(await visit({ token_hash: 'th_3', type: 'invite', next: '/claim' })).toBe('/dashboard')
++    expect(verifyOtp).toHaveBeenCalledWith({ type: 'invite', token_hash: 'th_3' })
++  })
++  it('email_change → /dashboard', async () => {
++    expect(await visit({ token_hash: 'th_4', type: 'email_change', next: '/dashboard' })).toBe('/dashboard')
++    expect(verifyOtp).toHaveBeenCalledWith({ type: 'email_change', token_hash: 'th_4' })
++  })
++})
++
++describe('bad type: never verified, neutral page', () => {
++  it.each(['signup', 'magiclink', 'sms', 'phone_change', 'RECOVERY', 'recovery ', ' email', 'recovery,email', 'email_change\u0000', '', 'token'])(
++    'type=%j',
++    async (type) => {
++      expect(await visit({ token_hash: 'th', type, next: '/dashboard' })).toBe('/link-expired?for=account')
++      expect(verifyOtp).not.toHaveBeenCalled()
++    }
++  )
++  it('a bad type on a reset link still offers a new reset link', async () => {
++    expect(await visit({ token_hash: 'th', type: 'signup', next: '/reset-password' })).toBe('/link-expired?for=reset')
++  })
++})
++
++describe('open-redirect variants in next: always the type default, always this origin', () => {
++  const VARIANTS = [
++    'https://evil.example',
++    'HTTPS://evil.example',
++    'http:/evil.example',
++    '//evil.example',
++    '///evil.example',
++    '/\\evil.example',
++    '\\\\evil.example',
++    '/\\/evil.example',
++    '%2F%2Fevil.example',
++    '/%2F/evil.example',
++    '/%2f%2fevil.example',
++    '/%5Cevil.example',
++    '/%5cevil.example',
++    '/%252F%252Fevil.example',
++    '/%25252F%25252Fevil.example',
++    '/%2525252F%2525252Fevil.example',
++    '/\t/evil.example',
++    '/\n/evil.example',
++    '/%09/evil.example',
++    '/%0a/evil.example',
++    ' /dashboard',
++    'javascript:alert(1)',
++    '/javascript:alert(1)',
++    'data:text/html,<script>alert(1)</script>',
++    'evil.example',
++    '/dashboard?next=https://evil.example',
++    '/dashboard#//evil.example',
++    '/dashboard/../..//evil.example',
++    '/dashboard/',
++    '/Dashboard',
++    '/claim?x=1',
++    '/admin/requests',
++    '/%E0%A4%A',
++    '/' + 'a'.repeat(600),
++  ]
++  it.each(VARIANTS)('next=%j', async (next) => {
++    expect(await visit({ token_hash: 'th', type: 'email', next })).toBe('/dashboard')
++    expect(await visit({ token_hash: 'th', type: 'recovery', next })).toBe('/reset-password')
++  })
++})
++
++describe('expired, used or incomplete links: one neutral page', () => {
++  const EXPIRED = { code: 'otp_expired', status: 403, message: 'Email link is invalid or has expired' }
++  it.each([
++    ['expired', EXPIRED],
++    ['already used', { ...EXPIRED }], // Supabase answers a used token with the same otp_expired error
++    ['other verify error', { code: 'unexpected_failure', status: 500, message: 'x' }],
++  ])('%s token', async (_label, error) => {
++    verifyOtp.mockResolvedValue({ data: { user: null, session: null }, error })
++    expect(await visit({ token_hash: 'th_secret_value', type: 'recovery', next: '/reset-password' })).toBe('/link-expired?for=reset')
++    expect(await visit({ token_hash: 'th_secret_value', type: 'email', next: '/claim' })).toBe('/link-expired?for=claim')
++    expect(await visit({ token_hash: 'th_secret_value', type: 'email' })).toBe('/link-expired?for=account')
++    expect(await visit({ token_hash: 'th_secret_value', type: 'email_change' })).toBe('/link-expired?for=account')
++    expect(jarSet).not.toHaveBeenCalled()
++    expect(JSON.stringify(warn.mock.calls)).not.toContain('th_secret_value')
++  })
++  it.each([
++    ['nothing', ''],
++    ['no token_hash', 'type=recovery&next=%2Freset-password'],
++    ['empty token_hash', 'token_hash=&type=email'],
++    ['no type', 'token_hash=th'],
++    ['empty type', 'token_hash=th&type='],
++    ['only next', 'next=%2Fclaim'],
++  ])('missing params: %s', async (_label, qs) => {
++    const to = await visit(qs)
++    expect(to).toMatch(/^\/link-expired\?for=(reset|claim|account)$/)
++    expect(verifyOtp).not.toHaveBeenCalled()
++  })
++})
+diff --git a/freeplug-landing/src/app/auth/confirm/route.ts b/freeplug-landing/src/app/auth/confirm/route.ts
+index 2d56e1f..cfc5540 100644
+--- a/freeplug-landing/src/app/auth/confirm/route.ts
++++ b/freeplug-landing/src/app/auth/confirm/route.ts
+@@ -1,9 +1,9 @@
+ import { NextResponse } from 'next/server'
+ import { cookies } from 'next/headers'
+-import type { EmailOtpType } from '@supabase/supabase-js'
+ import { createClient } from '@/lib/supabase/server'
+ import { appBaseUrl } from '@/lib/stripe/config'
+-import { safeNext } from '@/lib/auth/safe-next'
++import { confirmNext, confirmOtpType, type ConfirmOtpType } from '@/lib/auth/safe-next'
++import { linkExpiredPath, type LinkExpiredFor } from '@/lib/auth/link-expired'
+ import { requestAwareBaseUrl } from '@/lib/site'
+ import {
+   RESET_COOKIE_NAME,
+@@ -12,18 +12,28 @@ import {
+   signResetToken,
+ } from '@/lib/auth/reset-cookie'
+ 
+-const OTP_TYPES: EmailOtpType[] = ['recovery', 'signup', 'invite', 'magiclink', 'email_change', 'email']
+-
+ /**
+- * Token-hash email links (used by our own password reset email). Verifies the one-time token,
+- * sets the session cookies, then continues to `next`. Works in any browser, no PKCE verifier needed.
++ * Token-hash email links: our own password reset email, and every Supabase Auth template once it uses
++ * `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<type>&next=<path>` (SUPABASE-AUTH-CHECKLIST.md).
++ * Verifies the one-time token server-side, sets the session cookies, then continues to `next`. Works in
++ * any browser, no PKCE verifier needed (so it also works for the cookieless reset fallback and
++ * auth.resend, which sends no PKCE challenge).
++ *
++ * Round 6 (Aria): `type` must be on CONFIRM_OTP_TYPES and `next` on that type's allowlist (exact
++ * paths; open-redirect variants fall back to the type's default). Any failure (expired or used token,
++ * bad type, missing parameters) lands on the same neutral /link-expired page.
+  */
++function expiredFor(type: ConfirmOtpType | null, rawNext: string | null): LinkExpiredFor {
++  if (type === 'recovery' || rawNext === '/reset-password') return 'reset'
++  if (rawNext === '/claim') return 'claim'
++  return 'account'
++}
++
+ export async function GET(request: Request) {
+   const { searchParams } = new URL(request.url)
+   const tokenHash = searchParams.get('token_hash')
+-  const rawType = searchParams.get('type')
+-  const type = OTP_TYPES.find((t) => t === rawType)
+-  const next = safeNext(searchParams.get('next') ?? '/dashboard')
++  const rawNext = searchParams.get('next')
++  const type = confirmOtpType(searchParams.get('type'))
+   // Stay on the local dev server (localhost/127.0.0.1 in `next dev`) so the session cookies set
+   // here are used; otherwise NEXT_PUBLIC_APP_URL as before.
+   const origin = requestAwareBaseUrl(
+@@ -41,12 +51,11 @@ export async function GET(request: Request) {
+         const jar = await cookies()
+         jar.set(RESET_COOKIE_NAME, signResetToken(data.user.id, secret), resetCookieOptions())
+       }
+-      return NextResponse.redirect(`${origin}${next}`)
++      return NextResponse.redirect(`${origin}${confirmNext(type, rawNext)}`)
+     }
++    // No error detail in the log (Supabase's message can name the link type; never the address).
++    console.warn('[auth/confirm] link rejected:', type, error.code ?? error.status ?? 'error')
+   }
+ 
+-  if (type === 'recovery' || next === '/reset-password') {
+-    return NextResponse.redirect(`${origin}/reset-password?expired=1`)
+-  }
+-  return NextResponse.redirect(`${origin}/login?error=Could+not+authenticate`)
++  return NextResponse.redirect(`${origin}${linkExpiredPath(expiredFor(type, rawNext))}`)
+ }
+diff --git a/freeplug-landing/src/lib/auth/link-expired.ts b/freeplug-landing/src/lib/auth/link-expired.ts
+new file mode 100644
+index 0000000..9ae9529
+--- /dev/null
++++ b/freeplug-landing/src/lib/auth/link-expired.ts
+@@ -0,0 +1,9 @@
++/** Exact copy (Aria, round 6). The same page for an expired, used, malformed or incomplete email link. */
++export const LINK_EXPIRED_MESSAGE = 'This link has expired. Request a new one.'
++
++export type LinkExpiredFor = 'reset' | 'claim' | 'account'
++
++/** Path of the neutral page; `for` only picks the link back (never reveals why the link failed). */
++export function linkExpiredPath(forWhat: LinkExpiredFor): string {
++  return `/link-expired?for=${forWhat}`
++}
+diff --git a/freeplug-landing/src/lib/auth/reset-rate-limit.ts b/freeplug-landing/src/lib/auth/reset-rate-limit.ts
+new file mode 100644
+index 0000000..9c75b3d
+--- /dev/null
++++ b/freeplug-landing/src/lib/auth/reset-rate-limit.ts
+@@ -0,0 +1,36 @@
++import 'server-only'
++import { rateDecision, type RateRule } from '@/lib/rate-limit'
++import { isTrustedClientIp } from '@/lib/rate-limit/client-ip'
++import { isResetThrottledForEmail, isResetThrottledForIp } from './password-reset'
++
++/**
++ * Forgot-password rate limit (Aria, round 5): the shared DB-backed limiter (public.rate_check), so it holds
++ * across Workers isolates. For the reset ONLY it fails OPEN: if the database errors (or the service role is
++ * missing), the old in-memory per-isolate limit is used instead and a warning is logged. Every other
++ * rateCheck() caller still fails closed.
++ */
++export const RESET_LIMITS = {
++  /** One reset email per address per minute. */
++  perEmail: { bucket: 'reset_email', limit: 1, windowSeconds: 60 } satisfies RateRule,
++  /** At most 5 reset requests per trusted client IP per 10 minutes. */
++  perIp: { bucket: 'reset_ip', limit: 5, windowSeconds: 600 } satisfies RateRule,
++}
++
++/** true = throttled (send nothing). Runs before any account lookup or send. Never logs the address. */
++export async function isResetThrottled(email: string, ip: string): Promise<boolean> {
++  const checks: { rule: RateRule; key: string; inMemory: () => boolean }[] = []
++  // No per-IP throttle on the shared bucket (everyone without a trusted IP), only per email (Vera r2 N6).
++  if (isTrustedClientIp(ip)) checks.push({ rule: RESET_LIMITS.perIp, key: ip, inMemory: () => isResetThrottledForIp(ip) })
++  const normalized = email.trim().toLowerCase()
++  checks.push({ rule: RESET_LIMITS.perEmail, key: normalized, inMemory: () => isResetThrottledForEmail(normalized) })
++
++  for (const c of checks) {
++    const d = await rateDecision(c.rule, c.key)
++    if (d === 'limited') return true
++    if (d === 'error') {
++      console.warn(`[password-reset] rate limit database unavailable (${c.rule.bucket}); using the in-memory limit (fail open)`)
++      if (c.inMemory()) return true
++    }
++  }
++  return false
++}
+diff --git a/freeplug-landing/src/lib/auth/safe-next.test.ts b/freeplug-landing/src/lib/auth/safe-next.test.ts
+new file mode 100644
+index 0000000..dd8ec37
+--- /dev/null
++++ b/freeplug-landing/src/lib/auth/safe-next.test.ts
+@@ -0,0 +1,32 @@
++// @vitest-environment node
++import { describe, expect, it } from 'vitest'
++import { CONFIRM_NEXT_ALLOWLIST, CONFIRM_OTP_TYPES, confirmNext, confirmOtpType, safeNext } from './safe-next'
++
++describe('safeNext (login, /auth/callback, /auth/confirm)', () => {
++  it.each(['/dashboard', '/dashboard/request-website', '/dashboard/cancel', '/claim', '/reset-password', '/admin/requests', '/dashboard?tab=billing', '/'])(
++    'keeps the app path %j',
++    (p) => expect(safeNext(p)).toBe(p)
++  )
++  it.each([
++    null, undefined, '', 'https://evil.example', '//evil.example', '/\\evil.example', '\\evil.example', '/%2F/evil.example',
++    '/%5Cevil.example', '/%252F%252Fevil.example', '/%2525252F%2525252Fevil.example', '/\t/evil.example', '/%0d%0a/x',
++    'javascript:alert(1)', '/a?u=https://evil.example', '/%E0%A4%A', '/' + 'a'.repeat(600),
++  ])('refuses %j', (p) => expect(safeNext(p as string)).toBe('/dashboard'))
++  it('uses the given fallback', () => expect(safeNext('//x', '/login')).toBe('/login'))
++})
++
++describe('confirm allowlists', () => {
++  it('types are exactly the ones our links use', () => {
++    expect([...CONFIRM_OTP_TYPES]).toEqual(['recovery', 'email', 'invite', 'email_change'])
++    expect(confirmOtpType('signup')).toBeNull()
++    expect(confirmOtpType('magiclink')).toBeNull()
++    expect(confirmOtpType(null)).toBeNull()
++  })
++  it('next is an exact allowlisted path per type, else the type default', () => {
++    expect(CONFIRM_NEXT_ALLOWLIST.recovery).toEqual(['/reset-password'])
++    expect(confirmNext('email', '/claim')).toBe('/claim')
++    expect(confirmNext('email', '/claim/')).toBe('/dashboard')
++    expect(confirmNext('invite', '/claim')).toBe('/dashboard')
++    expect(confirmNext('recovery', null)).toBe('/reset-password')
++  })
++})
+diff --git a/freeplug-landing/src/lib/auth/safe-next.ts b/freeplug-landing/src/lib/auth/safe-next.ts
+index 5ec91e6..ada46a3 100644
+--- a/freeplug-landing/src/lib/auth/safe-next.ts
++++ b/freeplug-landing/src/lib/auth/safe-next.ts
+@@ -1,4 +1,65 @@
+-/** Path-only redirect target: must start with `/` but not `//`. */
+-export function safeNext(next: string): string {
+-  return next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
++import type { EmailOtpType } from '@supabase/supabase-js'
++
++/**
++ * Redirect targets after sign-in / email links. Only same-site relative paths are ever returned.
++ *
++ * safeNext() (login, /auth/callback, /auth/confirm): must start with a single `/` and, after up to three
++ * rounds of URL-decoding, must not start with `//` or `/\`, contain a backslash, control character or
++ * whitespace, or contain `://`; it must also resolve to the same origin. Anything else → the fallback.
++ * Hardened in round 6 (Aria): the old check only refused a leading `//`.
++ */
++const DEFAULT_NEXT = '/dashboard'
++const PROBE_ORIGIN = 'https://freeplug.invalid'
++
++function isSafeRelativePath(raw: string): boolean {
++  if (raw.length === 0 || raw.length > 512) return false
++  let v = raw
++  for (let round = 0; round < 4; round++) {
++    if (!v.startsWith('/') || v.startsWith('//') || v.startsWith('/\\')) return false
++    if (/[\\\s\u0000-\u001f\u007f]/.test(v) || v.includes('://')) return false
++    let decoded: string
++    try {
++      decoded = decodeURIComponent(v)
++    } catch {
++      return false
++    }
++    if (decoded === v) break
++    if (round === 3) return false // still decoding after three rounds: refuse
++    v = decoded
++  }
++  try {
++    return new URL(raw, PROBE_ORIGIN).origin === PROBE_ORIGIN
++  } catch {
++    return false
++  }
++}
++
++export function safeNext(next: string | null | undefined, fallback: string = DEFAULT_NEXT): string {
++  return typeof next === 'string' && isSafeRelativePath(next) ? next : fallback
++}
++
++/**
++ * /auth/confirm (token-hash email links): only these OTP types, matching the link lines in
++ * SUPABASE-AUTH-CHECKLIST.md and our own reset email. `email` covers sign-up confirmation and magic links
++ * (Supabase's non-deprecated type for both); `signup` / `magiclink` aren't used by any link we send.
++ */
++export const CONFIRM_OTP_TYPES = ['recovery', 'email', 'invite', 'email_change'] as const satisfies readonly EmailOtpType[]
++export type ConfirmOtpType = (typeof CONFIRM_OTP_TYPES)[number]
++
++export function confirmOtpType(raw: string | null | undefined): ConfirmOtpType | null {
++  return (CONFIRM_OTP_TYPES as readonly string[]).includes(raw ?? '') ? (raw as ConfirmOtpType) : null
++}
++
++/** Where each type may continue to (exact paths, no query or fragment). The first entry is the default. */
++export const CONFIRM_NEXT_ALLOWLIST: Record<ConfirmOtpType, readonly string[]> = {
++  recovery: ['/reset-password'],
++  email: ['/dashboard', '/claim'],
++  invite: ['/dashboard'],
++  email_change: ['/dashboard'],
++}
++
++export function confirmNext(type: ConfirmOtpType, raw: string | null | undefined): string {
++  const allowed = CONFIRM_NEXT_ALLOWLIST[type]
++  const candidate = safeNext(raw, '')
++  return allowed.includes(candidate) ? candidate : allowed[0]
+ }
+diff --git a/freeplug-landing/src/lib/background.ts b/freeplug-landing/src/lib/background.ts
+new file mode 100644
+index 0000000..d4332e7
+--- /dev/null
++++ b/freeplug-landing/src/lib/background.ts
+@@ -0,0 +1,27 @@
++import { getCloudflareContext } from '@opennextjs/cloudflare'
++
++/**
++ * Run `task` after the response (Aria, round 5: forgot-password answers before the lookup and send). On
++ * Cloudflare the promise is handed to ctx.waitUntil so the Worker stays alive until it settles. Elsewhere
++ * (`next dev`, `next start`, vitest) there is no Workers context; the promise simply runs on its own.
++ * Errors never escape: they are logged with `label`. The task must not use request-scoped APIs
++ * (headers(), cookies()): read what it needs before scheduling it.
++ */
++export function runAfterResponse(label: string, task: () => Promise<void>): Promise<void> {
++  const p = (async () => {
++    try {
++      await task()
++    } catch (e) {
++      console.error(`[${label}] background task failed:`, e instanceof Error ? e.message : e)
++    }
++  })()
++  let waitUntil: ((p: Promise<unknown>) => void) | undefined
++  try {
++    const ctx = getCloudflareContext().ctx as { waitUntil?: (p: Promise<unknown>) => void } | undefined
++    if (ctx && typeof ctx.waitUntil === 'function') waitUntil = ctx.waitUntil.bind(ctx)
++  } catch {
++    // Not running on Workers (or outside a request): local / test fallback below.
++  }
++  if (waitUntil) waitUntil(p)
++  return p
++}
+diff --git a/freeplug-landing/src/lib/email/cancel-notice.test.ts b/freeplug-landing/src/lib/email/cancel-notice.test.ts
+index c4f693a..fcefd9f 100644
+--- a/freeplug-landing/src/lib/email/cancel-notice.test.ts
++++ b/freeplug-landing/src/lib/email/cancel-notice.test.ts
+@@ -7,8 +7,12 @@ const sendCancelled = vi.fn()
+ vi.mock('@/lib/email/send', () => ({
+   sendSubscriptionCancelledEmail: (...args: unknown[]) => sendCancelled(...args),
+ }))
++// The email_sends ledger (round 6), in memory with the same rules as the SQL.
++const ledger = vi.hoisted(() => ({ current: null as null | ReturnType<typeof import('../../../test/fake-email-sends').createFakeEmailSends> }))
++vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ rpc: (fn: string, a: Record<string, unknown>) => ledger.current!.rpc(fn, a) }) }))
+ 
+-import { CANCEL_EMAIL_MARKER_KEY, sendCancelNoticeOnce } from './cancel-notice'
++import { createFakeEmailSends } from '../../../test/fake-email-sends'
++import { CANCEL_EMAIL_EVENT_KEY, CANCEL_EMAIL_MARKER_KEY, sendCancelNoticeOnce } from './cancel-notice'
+ 
+ const PERIOD_END = 1792886400 // Oct 25, 2026
+ 
+@@ -43,32 +47,36 @@ describe('sendCancelNoticeOnce', () => {
+   beforeEach(() => {
+     sendCancelled.mockReset()
+     sendCancelled.mockResolvedValue({ success: true, id: 'm1' })
++    ledger.current = createFakeEmailSends()
+   })
+ 
+   it('sends once when the plan is set to cancel, with the fixed date format', async () => {
+     const { stripe } = makeStripe(canceledSub)
+-    expect(await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription)).toBe('sent')
++    expect(await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription, 'evt_1')).toBe('sent')
+     expect(sendCancelled).toHaveBeenCalledTimes(1)
+-    expect(sendCancelled).toHaveBeenCalledWith('owner@example.com', { endDate: 'Oct 25, 2026' })
++    expect(sendCancelled).toHaveBeenCalledWith('owner@example.com', { endDate: 'Oct 25, 2026' }, expect.any(Object))
+   })
+ 
+   it('is idempotent: repeat webhook deliveries do not send again', async () => {
+     const { stripe, state } = makeStripe(canceledSub)
+     const event = canceledSub as unknown as Stripe.Subscription
+-    await sendCancelNoticeOnce(stripe, event)
+-    expect(await sendCancelNoticeOnce(stripe, event)).toBe('already_sent')
+-    expect(await sendCancelNoticeOnce(stripe, event)).toBe('already_sent')
++    await sendCancelNoticeOnce(stripe, event, 'evt_1')
++    // a redelivery of the same event (ledger row 'sent'), and the "updated" event our metadata write causes
++    expect(await sendCancelNoticeOnce(stripe, event, 'evt_1')).toBe('already_sent')
++    expect(await sendCancelNoticeOnce(stripe, event, 'evt_2_metadata_update')).toBe('already_sent')
+     expect(sendCancelled).toHaveBeenCalledTimes(1)
+     expect((state.metadata as Record<string, string>)[CANCEL_EMAIL_MARKER_KEY]).toBe('1790000000')
++    expect((state.metadata as Record<string, string>)[CANCEL_EMAIL_EVENT_KEY]).toBe('evt_1')
++    expect(ledger.current!.byEvent('evt_2_metadata_update')).toBeUndefined() // skipped before any claim
+   })
+ 
+   it('does nothing when the plan is not set to cancel (or was resumed before the retry)', async () => {
+     const active = { ...canceledSub, cancel_at_period_end: false, canceled_at: null }
+     const { stripe } = makeStripe(active)
+-    expect(await sendCancelNoticeOnce(stripe, active as unknown as Stripe.Subscription)).toBe('not_set_to_cancel')
++    expect(await sendCancelNoticeOnce(stripe, active as unknown as Stripe.Subscription, 'evt_1')).toBe('not_set_to_cancel')
+     // Event says canceled, but Stripe now says resumed:
+     const resumed = makeStripe(active)
+-    expect(await sendCancelNoticeOnce(resumed.stripe, canceledSub as unknown as Stripe.Subscription)).toBe(
++    expect(await sendCancelNoticeOnce(resumed.stripe, canceledSub as unknown as Stripe.Subscription, 'evt_2')).toBe(
+       'not_set_to_cancel'
+     )
+     expect(sendCancelled).not.toHaveBeenCalled()
+@@ -76,9 +84,9 @@ describe('sendCancelNoticeOnce', () => {
+ 
+   it('a new cancellation after a resume gets a new email', async () => {
+     const { stripe, state } = makeStripe(canceledSub)
+-    await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription)
++    await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription, 'evt_1')
+     state.canceled_at = 1791000000
+-    expect(await sendCancelNoticeOnce(stripe, { ...canceledSub, canceled_at: 1791000000 } as unknown as Stripe.Subscription)).toBe('sent')
++    expect(await sendCancelNoticeOnce(stripe, { ...canceledSub, canceled_at: 1791000000 } as unknown as Stripe.Subscription, 'evt_9')).toBe('sent')
+     expect(sendCancelled).toHaveBeenCalledTimes(2)
+   })
+ 
+@@ -94,6 +102,26 @@ describe('sendCancelNoticeOnce', () => {
+     const { stripe, raw } = makeStripe(canceledSub)
+     expect(await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription, 'evt_124')).toBe('send_failed')
+     expect(raw.subscriptions.update).toHaveBeenCalledTimes(1)
++    expect(ledger.current!.byEvent('evt_124')).toMatchObject({ status: 'failed', last_error: 'local_error' })
++    quiet.mockRestore()
++  })
++
++  it('a legacy marker (written before the ledger, no event key) still means already sent', async () => {
++    const { stripe } = makeStripe({ ...canceledSub, metadata: { [CANCEL_EMAIL_MARKER_KEY]: '1790000000' } })
++    expect(await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription, 'evt_new')).toBe('already_sent')
++    expect(sendCancelled).not.toHaveBeenCalled()
++    expect(ledger.current!.calls).toEqual([])
++  })
++
++  it('the ledger stores no recipient or Resend error text', async () => {
++    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {})
++    sendCancelled.mockResolvedValueOnce({ success: false, reason: 'http', status: 422, error: 'Invalid `to` field: owner@example.com' })
++    const { stripe } = makeStripe(canceledSub)
++    await sendCancelNoticeOnce(stripe, canceledSub as unknown as Stripe.Subscription, 'evt_pii')
++    const row = ledger.current!.byEvent('evt_pii')!
++    expect(row).toMatchObject({ status: 'failed', last_error: 'http 422' })
++    expect(JSON.stringify(row)).not.toContain('@')
++    expect(JSON.stringify(quiet.mock.calls)).not.toContain('owner@example.com')
+     quiet.mockRestore()
+   })
+ })
+diff --git a/freeplug-landing/src/lib/email/cancel-notice.ts b/freeplug-landing/src/lib/email/cancel-notice.ts
+index 630c6f5..30895d8 100644
+--- a/freeplug-landing/src/lib/email/cancel-notice.ts
++++ b/freeplug-landing/src/lib/email/cancel-notice.ts
+@@ -1,19 +1,27 @@
+ import type Stripe from 'stripe'
+ import { sendSubscriptionCancelledEmail } from '@/lib/email/send'
++import { sendWebhookEmailOnce } from '@/lib/email/webhook-email-ledger'
+ import { formatBillingDate, stripeTimestampToDate, subscriptionPeriodEnd } from '@/lib/stripe/subscription-dates'
+ 
+ /**
+- * Sends the "Your Freeplug hosting is canceled" email once when a subscription is set to cancel
+- * (cancel_at_period_end becomes true, or cancel_at is set). Called from the Stripe webhook on
+- * customer.subscription.updated, because cancelling happens in the Stripe billing portal.
++ * Sends the "Your Freeplug hosting is canceled" email once per cancellation (cancel_at_period_end becomes
++ * true, or cancel_at is set). Called from the Stripe webhook on customer.subscription.updated, because
++ * cancelling happens in the Stripe billing portal.
+  *
+- * Idempotent without a schema change: the subscription's Stripe metadata records which
+- * cancellation was emailed (CANCEL_EMAIL_MARKER_KEY = the cancellation's canceled_at/cancel_at).
+- * Repeat webhook deliveries (and the metadata update's own "updated" event) see the marker and
+- * skip. Resuming and cancelling again is a new cancellation, so it gets a new email.
++ * Two layers of "once" (round 6):
++ *  - Per cancellation, across events: the subscription's Stripe metadata records which cancellation was
++ *    emailed (CANCEL_EMAIL_MARKER_KEY = the cancellation's canceled_at/cancel_at) and by which event
++ *    (CANCEL_EMAIL_EVENT_KEY). Another event for the same cancellation (e.g. the "updated" event our own
++ *    metadata write causes) skips. Resuming and cancelling again is a new cancellation, so a new email.
++ *  - Per event: the email_sends ledger (sendWebhookEmailOnce). A redelivery of the claiming event after
++ *    Resend's 24 h idempotency window, or two deliveries at once, sends at most once; a failed send (or a
++ *    claim stuck 'pending' for 15+ minutes after a crash) is re-claimed by Stripe's next retry.
++ * The Resend idempotency key `<event.id>:subscription-cancelled` is kept as a third guard.
+  */
+ export const CANCEL_EMAIL_MARKER_KEY = 'freeplug_cancel_email_sent_for'
+-/** Template name in the Resend idempotency key `<event.id>:<template>`. */
++/** The Stripe event that claimed the cancellation in CANCEL_EMAIL_MARKER_KEY. */
++export const CANCEL_EMAIL_EVENT_KEY = 'freeplug_cancel_email_event'
++/** Template name in the ledger and in the Resend idempotency key `<event.id>:<template>`. */
+ export const CANCEL_EMAIL_TEMPLATE = 'subscription-cancelled'
+ 
+ export type CancelNoticeResult =
+@@ -22,6 +30,7 @@ export type CancelNoticeResult =
+   | 'already_sent'
+   | 'no_email'
+   | 'send_failed'
++  | 'claim_error'
+ 
+ function isSetToCancel(sub: Stripe.Subscription): boolean {
+   const live = ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
+@@ -35,8 +44,8 @@ function cancellationMarker(sub: Stripe.Subscription): string {
+ export async function sendCancelNoticeOnce(
+   stripe: Stripe,
+   subscriptionFromEvent: Stripe.Subscription,
+-  /** The Stripe event id: the send carries the Resend idempotency key `<eventId>:subscription-cancelled`. */
+-  eventId?: string
++  /** The Stripe event id: the ledger key and the Resend idempotency key `<eventId>:subscription-cancelled`. */
++  eventId: string
+ ): Promise<CancelNoticeResult> {
+   if (!isSetToCancel(subscriptionFromEvent)) return 'not_set_to_cancel'
+ 
+@@ -45,31 +54,25 @@ export async function sendCancelNoticeOnce(
+   const sub = await stripe.subscriptions.retrieve(subscriptionFromEvent.id)
+   if (!isSetToCancel(sub)) return 'not_set_to_cancel'
+   const marker = cancellationMarker(sub)
+-  if (sub.metadata?.[CANCEL_EMAIL_MARKER_KEY] === marker) return 'already_sent'
++  const metadata = sub.metadata ?? {}
++  const ownedByThisEvent = metadata[CANCEL_EMAIL_MARKER_KEY] === marker && metadata[CANCEL_EMAIL_EVENT_KEY] === eventId
++  // This cancellation was claimed by another event (or emailed before the ledger existed): never again.
++  if (metadata[CANCEL_EMAIL_MARKER_KEY] === marker && !ownedByThisEvent) return 'already_sent'
+ 
+   const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id
+   const customer = await stripe.customers.retrieve(customerId)
+   const email = 'deleted' in customer && customer.deleted ? null : (customer as Stripe.Customer).email
+   if (!email) return 'no_email'
+ 
+-  // Claim first so a concurrent retry can't send a second copy.
+-  await stripe.subscriptions.update(sub.id, {
+-    metadata: { [CANCEL_EMAIL_MARKER_KEY]: marker },
+-  })
+-
+-  // The claim above is the committed write; the email comes after it and can never throw out of here.
+   const endDate = formatBillingDate(stripeTimestampToDate(sub.cancel_at) ?? subscriptionPeriodEnd(sub))
+-  let result: Awaited<ReturnType<typeof sendSubscriptionCancelledEmail>>
+-  try {
+-    result = eventId
+-      ? await sendSubscriptionCancelledEmail(email, { endDate }, { idempotencyKey: `${eventId}:${CANCEL_EMAIL_TEMPLATE}` })
+-      : await sendSubscriptionCancelledEmail(email, { endDate })
+-  } catch (e) {
+-    result = { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+-  }
+-  if (!result.success) {
+-    console.error('[cancel-notice] send failed', sub.id, result.error)
+-    return 'send_failed'
+-  }
+-  return 'sent'
++  const outcome = await sendWebhookEmailOnce(eventId, CANCEL_EMAIL_TEMPLATE, sub.id, async () => {
++    // Claimed in the ledger: mark the cancellation as this event's before sending, so other events skip.
++    if (!ownedByThisEvent) {
++      await stripe.subscriptions.update(sub.id, {
++        metadata: { [CANCEL_EMAIL_MARKER_KEY]: marker, [CANCEL_EMAIL_EVENT_KEY]: eventId },
++      })
++    }
++    return sendSubscriptionCancelledEmail(email, { endDate }, { idempotencyKey: `${eventId}:${CANCEL_EMAIL_TEMPLATE}` })
++  })
++  return outcome === 'skipped' ? 'already_sent' : outcome
+ }
+diff --git a/freeplug-landing/src/lib/email/email-paths.test.ts b/freeplug-landing/src/lib/email/email-paths.test.ts
+index d1d5510..01914f0 100644
+--- a/freeplug-landing/src/lib/email/email-paths.test.ts
++++ b/freeplug-landing/src/lib/email/email-paths.test.ts
+@@ -16,27 +16,109 @@ vi.mock('resend', () => ({
+   },
+ }))
+ 
++// Template render switch (template_error path). Everything else uses the real react-email render.
++const rx = vi.hoisted(() => ({ failRender: false }))
++vi.mock('@react-email/components', async (orig) => {
++  const real = await orig<typeof import('@react-email/components')>()
++  return {
++    ...real,
++    render: (...args: Parameters<typeof real.render>) => {
++      if (rx.failRender) throw new Error('boom in template')
++      return real.render(...args)
++    },
++  }
++})
++
++// Cloudflare ctx.waitUntil stand-in: collects background work so tests can await it (or see it pending).
++const bg = vi.hoisted(() => ({ tasks: [] as Promise<unknown>[], noContext: false }))
++vi.mock('@opennextjs/cloudflare', () => ({
++  getCloudflareContext: () => {
++    if (bg.noContext) throw new Error('not in a Workers request')
++    return { ctx: { waitUntil: (p: Promise<unknown>) => bg.tasks.push(p) }, env: {} }
++  },
++}))
++async function settle() {
++  while (bg.tasks.length) await Promise.all(bg.tasks.splice(0))
++}
++
+ // Next.js request APIs.
+ vi.mock('next/navigation', () => ({
+   redirect: (url: string) => {
+     throw Object.assign(new Error('NEXT_REDIRECT'), { url })
+   },
+ }))
++const hdr = vi.hoisted(() => ({ extra: {} as Record<string, string> }))
+ vi.mock('next/headers', () => ({
+-  headers: async () => new Headers({ host: 'freeplug.example' }),
++  headers: async () => new Headers({ host: 'freeplug.example', ...hdr.extra }),
+   cookies: async () => ({ get: () => undefined, getAll: () => [], set: () => {}, delete: () => {} }),
+ }))
+ vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
+ vi.mock('@/lib/admin/guard', () => ({ assertAdminAccess: async () => {}, isAdminAccessAllowed: async () => true }))
+ 
+ // Supabase (admin generateLink for the reset; server client for the Supabase-mailer fallback).
+-const sb = vi.hoisted(() => ({ generateLink: vi.fn(), resetPasswordForEmail: vi.fn() }))
++// rate_limit_hits stand-in (the reset-fallback counter): insert + select().eq().gte().order().limit().
++const sb = vi.hoisted(() => ({
++  generateLink: vi.fn(),
++  resetPasswordForEmail: vi.fn(),
++  hits: [] as { bucket: string; key_hash: string; hit_at: string }[],
++  dbDown: false,
++  rpcDown: false,
++  rpc: vi.fn(),
++  // public.email_sends ledger (round 6): same fake as the webhook ledger tests.
++  ledger: null as null | { rpc: (fn: string, a: Record<string, unknown>) => Promise<unknown> },
++}))
+ vi.mock('@/lib/supabase/admin', () => ({
+-  createAdminClient: () => ({ auth: { admin: { generateLink: sb.generateLink } }, from: vi.fn() }),
++  createAdminClient: () => ({
++    auth: { admin: { generateLink: sb.generateLink } },
++    // public.rate_check stand-in on the same table: true (and a hit) when under the limit.
++    rpc: async (fn: string, a: { p_bucket: string; p_key: string; p_limit: number; p_window_seconds: number }) => {
++      if (fn.startsWith('email_send_')) {
++        sb.ledger ??= (await import('../../../test/fake-email-sends')).createFakeEmailSends()
++        return sb.ledger.rpc(fn, a as unknown as Record<string, unknown>)
++      }
++      sb.rpc(fn, a)
++      if (sb.rpcDown) return { data: null, error: { message: 'rate_check unavailable' } }
++      const since = new Date(Date.now() - a.p_window_seconds * 1000).toISOString()
++      const n = sb.hits.filter((h) => h.bucket === a.p_bucket && h.key_hash === a.p_key && h.hit_at >= since).length
++      if (n >= a.p_limit) return { data: false, error: null }
++      sb.hits.push({ bucket: a.p_bucket, key_hash: a.p_key, hit_at: new Date().toISOString() })
++      return { data: true, error: null }
++    },
++    from: (table: string) => {
++      if (table !== 'rate_limit_hits') throw new Error(`unexpected table ${table}`)
++      return {
++        insert: async (row: { bucket: string; key_hash: string }) => {
++          if (sb.dbDown) return { error: { message: 'db down' } }
++          sb.hits.push({ ...row, hit_at: new Date().toISOString() })
++          return { error: null }
++        },
++        select: () => {
++          const f: { eq?: [string, string]; gte?: [string, string] } = {}
++          const q = {
++            eq: (k: string, v: string) => ((f.eq = [k, v]), q),
++            gte: (k: string, v: string) => ((f.gte = [k, v]), q),
++            order: () => q,
++            limit: async () => {
++              if (sb.dbDown) return { data: null, error: { message: 'db down' } }
++              const rows = sb.hits
++                .filter((h) => (!f.eq || h.bucket === f.eq[1]) && (!f.gte || h.hit_at >= f.gte[1]))
++                .sort((a, b) => (a.hit_at < b.hit_at ? 1 : -1))
++              return { data: rows, error: null }
++            },
++          }
++          return q
++        },
++      }
++    },
++  }),
+ }))
+ vi.mock('@/lib/supabase/server', () => ({
+   createClient: async () => ({ auth: { resetPasswordForEmail: sb.resetPasswordForEmail } }),
+ }))
++// The reset fallback runs in the background, so it uses the cookie-less anon client.
++vi.mock('@/lib/supabase/anon', () => ({
++  createAnonClient: () => ({ auth: { resetPasswordForEmail: sb.resetPasswordForEmail } }),
++}))
+ 
+ // Stripe (webhook + cancel notice), in memory.
+ const st = vi.hoisted(() => ({
+@@ -69,6 +151,16 @@ import {
+   sendWelcomeEmail,
+ } from './send'
+ import { MAIL_GENERIC_ERROR, MAIL_NOT_CONFIGURED, getEmailFrom, publicMailError, sendMail } from './mailer'
++import {
++  RESET_FALLBACK_BUCKET,
++  RESET_SEND_TIMEOUT_MS,
++  __resetFallbackMemoryForTests,
++  getResetFallbackStatus,
++  resetFallbackReason,
++} from './reset-fallback'
++import { RESET_NEUTRAL_MESSAGE } from '@/lib/auth/password-reset'
++import { renderToStaticMarkup } from 'react-dom/server'
++import { AdminMailBanner } from '@/app/admin/AdminMailBanner'
+ import { SUBSCRIPTION_CANCELLED_SUBJECT } from './templates/subscription-cancelled'
+ import { requestPasswordReset } from '@/app/(auth)/actions'
+ import { adminSendCustomerEmail } from '@/app/admin/actions'
+@@ -76,7 +168,7 @@ import { GET as testEmailGET } from '@/app/api/test-email/route'
+ import { POST as stripeWebhookPOST } from '@/app/api/webhooks/stripe/route'
+ 
+ const FAKE_KEY = 're_test_fake_vitest_only'
+-const FROM = '"Freeplug" <support@freeplug-in.dev>'
++const FROM = 'Freeplug <no-reply@freeplug-in.dev>'
+ const REPLY_TO = 'support@freeplug-in.dev'
+ 
+ let n = 0
+@@ -101,6 +193,15 @@ beforeEach(() => {
+   sb.generateLink.mockReset()
+   sb.resetPasswordForEmail.mockReset()
+   sb.resetPasswordForEmail.mockResolvedValue({ error: null })
++  sb.hits.length = 0
++  sb.dbDown = false
++  sb.rpcDown = false
++  sb.rpc.mockReset()
++  rx.failRender = false
++  bg.tasks.length = 0
++  bg.noContext = false
++  hdr.extra = {}
++  __resetFallbackMemoryForTests()
+   vi.stubEnv('RESEND_API_KEY', FAKE_KEY)
+   vi.stubEnv('EMAIL_FROM', '')
+   vi.stubEnv('EMAIL_FROM_NAME', '')
+@@ -153,7 +254,8 @@ describe('send.ts helpers: one Resend call each, with to / from / subject / repl
+     expect(rs.send).toHaveBeenCalledTimes(1)
+     const [msg, opts] = rs.send.mock.calls[0]
+     expect(msg).toMatchObject({ to: 'a@example.com', from: FROM, subject, replyTo: REPLY_TO })
+-    expect(msg.from).toMatch(/<[^@<>]+@freeplug-in\.dev>$/)
++    expect(msg.from).toBe('Freeplug <no-reply@freeplug-in.dev>')
++    expect(msg.from).not.toMatch(/@send\./)
+     expect(typeof msg.html).toBe('string')
+     expect(msg.text).toEqual(expect.any(String)) // plain-text part
+     expect(opts).toBeUndefined() // no idempotency key unless asked
+@@ -173,14 +275,19 @@ describe('sender configuration', () => {
+     vi.stubEnv('EMAIL_FROM_NAME', 'Freeplug Team')
+     vi.stubEnv('EMAIL_REPLY_TO', 'help@freeplug-in.dev')
+     await sendWelcomeEmail('b@example.com')
+-    expect(sent()[0]).toMatchObject({ from: '"Freeplug Team" <hello@freeplug-in.dev>', replyTo: 'help@freeplug-in.dev' })
++    expect(sent()[0]).toMatchObject({ from: 'Freeplug Team <hello@freeplug-in.dev>', replyTo: 'help@freeplug-in.dev' })
++  })
++
++  it('a display name with special characters is quoted', () => {
++    vi.stubEnv('EMAIL_FROM_NAME', 'Freeplug, Inc.')
++    expect(getEmailFrom()).toBe('"Freeplug, Inc." <no-reply@freeplug-in.dev>')
+   })
+ 
+-  it('defaults: From on the main domain @freeplug-in.dev (never the send. return-path subdomain), Reply-To support@', async () => {
+-    expect(getEmailFrom()).toBe(FROM)
++  it('defaults: From Freeplug <no-reply@freeplug-in.dev> (never the send. subdomain), Reply-To support@', async () => {
++    expect(getEmailFrom()).toBe('Freeplug <no-reply@freeplug-in.dev>')
+     await sendWelcomeEmail('a@example.com')
+     const { from, replyTo } = sent()[0] as { from: string; replyTo: string }
+-    expect(from).toMatch(/<[^@<>]+@freeplug-in\.dev>$/)
++    expect(from).toBe('Freeplug <no-reply@freeplug-in.dev>')
+     expect(from).not.toMatch(/@send\./)
+     expect(replyTo).toBe('support@freeplug-in.dev')
+   })
+@@ -198,22 +305,39 @@ describe('missing or failing Resend: fails closed, nothing sent, no other transp
+   it('no RESEND_API_KEY: { success: false }, a clear log line, the Resend client is never built', async () => {
+     vi.stubEnv('RESEND_API_KEY', '')
+     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+-    expect(await sendWelcomeEmail('d@example.com')).toEqual({ success: false, error: MAIL_NOT_CONFIGURED })
++    expect(await sendWelcomeEmail('d@example.com')).toEqual({ success: false, reason: 'not_configured', error: MAIL_NOT_CONFIGURED })
+     expect(rs.send).not.toHaveBeenCalled()
+     expect(rs.keys).toEqual([])
+     expect(log.mock.calls.flat().join(' ')).toContain('RESEND_API_KEY is not set')
+     expect(log.mock.calls.flat().join(' ')).not.toContain('d@example.com')
+   })
+ 
+-  it('a Resend API error or a thrown SDK error is a failure, never an exception', async () => {
+-    vi.spyOn(console, 'error').mockImplementation(() => {})
+-    rs.send.mockResolvedValueOnce({ data: null, error: { message: 'API key is invalid', name: 'validation_error' } })
+-    expect(await sendWelcomeEmail('e@example.com')).toEqual({ success: false, error: 'API key is invalid' })
++  it('classifies failures: 4xx/5xx = http with status, statusCode null or a throw = network, no answer = timeout', async () => {
++    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
++    rs.send.mockResolvedValueOnce({ data: null, error: { message: 'API key is invalid', name: 'validation_error', statusCode: 403 } })
++    expect(await sendWelcomeEmail('e@example.com')).toEqual({ success: false, reason: 'http', status: 403, error: 'API key is invalid' })
++    rs.send.mockResolvedValueOnce({ data: null, error: { message: 'Internal server error', name: 'application_error', statusCode: 503 } })
++    expect(await sendWelcomeEmail('e@example.com')).toMatchObject({ success: false, reason: 'http', status: 503 })
++    rs.send.mockResolvedValueOnce({
++      data: null,
++      error: { message: 'Unable to fetch data. The request could not be resolved.', name: 'application_error', statusCode: null },
++    })
++    expect(await sendWelcomeEmail('e@example.com')).toMatchObject({ success: false, reason: 'network', status: null })
+     rs.send.mockRejectedValueOnce(new Error('network down'))
+-    expect(await sendWelcomeEmail('e@example.com')).toEqual({ success: false, error: 'network down' })
++    expect(await sendWelcomeEmail('e@example.com')).toMatchObject({ success: false, reason: 'network', error: 'network down' })
++    rs.send.mockReturnValueOnce(new Promise(() => {}))
++    expect(await sendMail({ to: 'e@example.com', subject: 's', text: 't', timeoutMs: 20 })).toMatchObject({ success: false, reason: 'timeout' })
++    // Logs carry status/name only, never the Resend message (it can echo the address) or the recipient.
++    const logged = log.mock.calls.flat().join(' ')
++    expect(logged).toContain('503')
++    expect(logged).not.toContain('e@example.com')
++    expect(logged).not.toContain('API key is invalid')
+   })
+ 
+   it('users see a generic message in production; the detail stays in the log', () => {
++    expect(MAIL_GENERIC_ERROR).toBe(
++      "We couldn't send that email right now. Please try again in a few minutes. If it still doesn't work, email support@freeplug-in.dev."
++    )
+     vi.stubEnv('NODE_ENV', 'production')
+     expect(publicMailError(MAIL_NOT_CONFIGURED)).toBe(MAIL_GENERIC_ERROR)
+     vi.stubEnv('NODE_ENV', 'test')
+@@ -221,45 +345,383 @@ describe('missing or failing Resend: fails closed, nothing sent, no other transp
+   })
+ })
+ 
+-describe('password reset (requestPasswordReset)', () => {
+-  const recovery = (email: string, identities: { provider: string }[]) => ({
++describe('password reset (requestPasswordReset): Resend first, loud Supabase fallback, rate limit first', () => {
++  const NEUTRAL = '/forgot-password?sent=1'
++  const recovery = (email: string, identities: { provider: string }[] = [{ provider: 'email' }]) => ({
+     data: { properties: { hashed_token: 'hashed_tok_1' }, user: { id: 'u1', email, identities } },
+     error: null,
+   })
+-
+-  it('email account: the reset email via Resend, neutral page', async () => {
+-    const email = uniqueEmail('reset')
+-    sb.generateLink.mockResolvedValue(recovery(email, [{ provider: 'email' }]))
++  function logs() {
++    return {
++      warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
++      error: vi.spyOn(console, 'error').mockImplementation(() => {}),
++      info: vi.spyOn(console, 'info').mockImplementation(() => {}),
++      log: vi.spyOn(console, 'log').mockImplementation(() => {}),
++    }
++  }
++  const allLogged = (l: ReturnType<typeof logs>) =>
++    [l.warn, l.error, l.info, l.log].flatMap((s) => s.mock.calls.flat().map(String)).join('\n')
++  const fallbackWarnings = (l: ReturnType<typeof logs>) =>
++    l.warn.mock.calls.map((c) => String(c[0])).filter((m) => m.includes('FALLBACK to Supabase'))
++  async function submit(email: string): Promise<string> {
+     const fd = new FormData()
+     fd.set('email', email)
+-    expect(await expectRedirect(requestPasswordReset(fd))).toBe('/forgot-password?sent=1')
+-    expect(sb.generateLink).toHaveBeenCalledWith({ type: 'recovery', email })
+-    expect(sent()).toHaveLength(1)
+-    expect(sent()[0]).toMatchObject({ to: email, from: FROM, subject: 'Reset your Freeplug password', replyTo: REPLY_TO })
+-    expect(String(sent()[0].html)).toContain('hashed_tok_1')
+-    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
++    const url = await expectRedirect(requestPasswordReset(fd))
++    await settle() // the lookup + send run after the response (ctx.waitUntil)
++    return url
++  }
++  const fallbackHits = () => sb.hits.filter((h) => h.bucket === RESET_FALLBACK_BUCKET).map((h) => [h.bucket, h.key_hash])
++
++  type Case = {
++    name: string
++    arrange: () => void
++    resendCalls: number
++    fallback: string | null // expected reason in the warning, or null = no fallback
++  }
++  const cases: Case[] = [
++    { name: 'Resend accepts (id returned): no fallback', arrange: () => {}, resendCalls: 1, fallback: null },
++    { name: 'no RESEND_API_KEY', arrange: () => vi.stubEnv('RESEND_API_KEY', ''), resendCalls: 0, fallback: 'reason=missing_key' },
++    {
++      name: 'no service role key',
++      arrange: () => vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', ''),
++      resendCalls: 0,
++      fallback: 'reason=missing_service_role',
++    },
++    {
++      name: 'Resend 5xx',
++      arrange: () => rs.send.mockResolvedValue({ data: null, error: { message: 'Internal', name: 'application_error', statusCode: 503 } }),
++      resendCalls: 1,
++      fallback: 'reason=resend_http status=503',
++    },
++    {
++      name: 'Resend 4xx',
++      arrange: () => rs.send.mockResolvedValue({ data: null, error: { message: 'Invalid from', name: 'validation_error', statusCode: 422 } }),
++      resendCalls: 1,
++      fallback: 'reason=resend_http status=422',
++    },
++    {
++      name: 'network error, no response (SDK statusCode null)',
++      arrange: () =>
++        rs.send.mockResolvedValue({ data: null, error: { message: 'Unable to fetch data.', name: 'application_error', statusCode: null } }),
++      resendCalls: 1,
++      fallback: 'reason=resend_network',
++    },
++    {
++      name: 'network error thrown by the SDK',
++      arrange: () => rs.send.mockRejectedValue(new TypeError('fetch failed')),
++      resendCalls: 1,
++      fallback: 'reason=resend_network',
++    },
++  ]
++
++  it.each(cases)('$name', async ({ arrange, resendCalls, fallback }) => {
++    arrange()
++    const l = logs()
++    const email = uniqueEmail('reset')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    expect(await submit(email)).toBe(NEUTRAL)
++    expect(rs.send).toHaveBeenCalledTimes(resendCalls)
++    if (resendCalls) {
++      expect(sent()[0]).toMatchObject({ to: email, from: FROM, subject: 'Reset your Freeplug password', replyTo: REPLY_TO })
++      expect(String(sent()[0].html)).toContain('hashed_tok_1')
++    }
++    if (fallback) {
++      expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(1)
++      expect(sb.resetPasswordForEmail).toHaveBeenCalledWith(email, expect.objectContaining({ redirectTo: expect.any(String) }))
++      expect(fallbackWarnings(l)).toHaveLength(1)
++      expect(fallbackWarnings(l)[0]).toContain(fallback)
++    } else {
++      expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
++      expect(fallbackWarnings(l)).toEqual([])
++    }
++    // Never the recipient in any log line.
++    expect(allLogged(l)).not.toContain(email)
+   })
+ 
+-  it('Google-only account: the "How to sign in" notice via Resend', async () => {
++  it('fallback decision: only when Resend clearly did not accept (an id never falls back)', () => {
++    expect(resetFallbackReason({ success: true, id: 'email_1' })).toBeNull()
++    expect(resetFallbackReason({ success: true, id: '' })).toBeNull() // 2xx without an id: accepted, no duplicate
++    expect(resetFallbackReason({ success: false, reason: 'not_configured', error: 'x' })).toEqual({ reason: 'missing_key', status: null })
++    expect(resetFallbackReason({ success: false, reason: 'http', status: 500, error: 'x' })).toEqual({ reason: 'resend_http', status: 500 })
++    expect(resetFallbackReason({ success: false, reason: 'http', status: 429, error: 'x' })).toEqual({ reason: 'resend_http', status: 429 })
++    expect(resetFallbackReason({ success: false, reason: 'network', status: null, error: 'x' })).toEqual({ reason: 'resend_network', status: null })
++    expect(resetFallbackReason({ success: false, reason: 'timeout', error: 'x' })).toEqual({ reason: 'resend_timeout', status: null })
++    expect(resetFallbackReason({ success: false, reason: 'local_error', error: 'x' })).toEqual({ reason: 'resend_local_error', status: null })
++    expect(resetFallbackReason({ success: false, reason: 'template_error', template: 'password-reset', locale: 'en', error: 'x' })).toEqual({
++      reason: 'template_error',
++      status: null,
++      template: 'password-reset',
++      locale: 'en',
++    })
++    expect(RESET_SEND_TIMEOUT_MS).toBe(8000)
++  })
++
++  it('fallbacks are counted for the admin banner (database = all isolates)', async () => {
++    logs()
++    vi.stubEnv('RESEND_API_KEY', '')
++    await submit(uniqueEmail('count'))
++    await submit(uniqueEmail('count'))
++    expect(fallbackHits()).toEqual([
++      [RESET_FALLBACK_BUCKET, 'missing_key'],
++      [RESET_FALLBACK_BUCKET, 'missing_key'],
++    ])
++    expect(await getResetFallbackStatus()).toMatchObject({ count: 2, lastReason: 'missing_key', source: 'database' })
++    const html = renderToStaticMarkup(await AdminMailBanner())
++    expect(html).toContain('Email not configured')
++    expect(html).toContain('Email degraded: 2 password resets fell back to the Supabase mailer in the last 24 h')
++    expect(html).toContain('missing_key')
++  })
++
++  it('without the service role (or with the DB down) the banner still counts this instance', async () => {
++    logs()
++    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', '')
++    await submit(uniqueEmail('inst'))
++    expect(fallbackHits()).toEqual([])
++    expect(await getResetFallbackStatus()).toMatchObject({ count: 1, lastReason: 'missing_service_role', source: 'instance' })
++    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'dummy-service-role-for-tests')
++    sb.dbDown = true
++    expect(renderToStaticMarkup(await AdminMailBanner())).toContain('counted on this server instance only')
++  })
++
++  it('no banner warning when Resend accepted every reset', async () => {
++    logs()
++    const email = uniqueEmail('ok')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    await submit(email)
++    expect(await getResetFallbackStatus()).toMatchObject({ count: 0 })
++    const html = renderToStaticMarkup(await AdminMailBanner())
++    expect(html).toContain('Email (Resend) is configured.')
++    expect(html).not.toContain('Email degraded')
++  })
++
++  it('Google-only account: the "How to sign in" notice via Resend, no Supabase reset even if it fails', async () => {
++    logs()
+     const email = uniqueEmail('google')
+     sb.generateLink.mockResolvedValue(recovery(email, [{ provider: 'google' }]))
+-    const fd = new FormData()
+-    fd.set('email', email)
+-    expect(await expectRedirect(requestPasswordReset(fd))).toBe('/forgot-password?sent=1')
+-    expect(sent()).toHaveLength(1)
++    expect(await submit(email)).toBe(NEUTRAL)
+     expect(sent()[0]).toMatchObject({ to: email, from: FROM, subject: 'How to sign in to Freeplug' })
++    const email2 = uniqueEmail('google')
++    sb.generateLink.mockResolvedValue(recovery(email2, [{ provider: 'google' }]))
++    rs.send.mockResolvedValue({ data: null, error: { message: 'x', name: 'application_error', statusCode: 500 } })
++    expect(await submit(email2)).toBe(NEUTRAL)
++    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
+   })
+ 
+-  it('no RESEND_API_KEY: nothing goes to Resend; Supabase Auth sends it (its own mailer); same neutral page', async () => {
++  it('unknown email: nothing sent anywhere, same response', async () => {
++    logs()
++    sb.generateLink.mockResolvedValue({ data: null, error: { message: 'User not found' } })
++    expect(await submit(uniqueEmail('nobody'))).toBe(NEUTRAL)
++    expect(rs.send).not.toHaveBeenCalled()
++    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
++  })
++
++  it('rate-limited (same email within a minute): neither Resend nor Supabase is called, same response', async () => {
++    logs()
++    const email = uniqueEmail('limit')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    expect(await submit(email)).toBe(NEUTRAL)
++    expect(rs.send).toHaveBeenCalledTimes(1)
++    rs.send.mockClear()
++    sb.generateLink.mockClear()
++    // Even in the fallback configuration, a limited request reaches neither path.
+     vi.stubEnv('RESEND_API_KEY', '')
+-    const email = uniqueEmail('nokey')
++    expect(await submit(email)).toBe(NEUTRAL)
++    expect(rs.send).not.toHaveBeenCalled()
++    expect(sb.generateLink).not.toHaveBeenCalled()
++    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
++    expect(fallbackHits()).toEqual([])
++    expect(bg.tasks).toEqual([]) // nothing scheduled
++  })
++
++  it('rate-limited by IP (trusted CF-Connecting-IP, 6th request in 10 min): neither path, same response', async () => {
++    logs()
++    vi.stubEnv('TRUST_CF_CONNECTING_IP', 'true')
++    vi.stubEnv('RESEND_API_KEY', '')
++    hdr.extra = { 'cf-connecting-ip': `203.0.113.${(Date.now() % 200) + 1}` }
++    for (let i = 0; i < 5; i++) expect(await submit(uniqueEmail('ip'))).toBe(NEUTRAL)
++    expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(5)
++    sb.resetPasswordForEmail.mockClear()
++    expect(await submit(uniqueEmail('ip'))).toBe(NEUTRAL)
++    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
++    expect(rs.send).not.toHaveBeenCalled()
++  })
++
++  it('the response is identical in every case (no account enumeration)', async () => {
++    logs()
++    const outcomes: string[] = []
++    const run = async (arrange: () => void, linkFor?: (e: string) => unknown) => {
++      vi.stubEnv('RESEND_API_KEY', FAKE_KEY)
++      vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'dummy-service-role-for-tests')
++      rs.send.mockReset()
++      rs.send.mockResolvedValue({ data: { id: 'email_fake_1' }, error: null })
++      arrange()
++      const email = uniqueEmail('same')
++      sb.generateLink.mockResolvedValue(linkFor ? linkFor(email) : recovery(email))
++      outcomes.push(await submit(email))
++      return email
++    }
++    await run(() => {}) // accepted
++    for (const c of cases) await run(c.arrange) // every fallback case
++    await run(() => {}, () => ({ data: null, error: { message: 'User not found' } })) // unknown account
++    await run(() => {}, (e) => recovery(e, [{ provider: 'google' }])) // Google-only
++    const limited = await run(() => {})
++    const fd = new FormData()
++    fd.set('email', limited)
++    outcomes.push(await expectRedirect(requestPasswordReset(fd))) // throttled
++    await settle()
++    sb.resetPasswordForEmail.mockRejectedValueOnce(new Error('supabase down'))
++    await run(() => vi.stubEnv('RESEND_API_KEY', '')) // fallback itself throws
++    expect(new Set(outcomes)).toEqual(new Set([NEUTRAL]))
++    expect(outcomes).toHaveLength(cases.length + 6)
++    expect(RESET_NEUTRAL_MESSAGE).toBe('If an account exists for that email, we sent a reset link.')
++  })
++})
++
++describe('password reset: template errors, DB rate limit (fail open), response before the work', () => {
++  const NEUTRAL = '/forgot-password?sent=1'
++  const recovery = (email: string, identities: { provider: string }[] = [{ provider: 'email' }]) => ({
++    data: { properties: { hashed_token: 'hashed_tok_1' }, user: { id: 'u1', email, identities } },
++    error: null,
++  })
++  const quiet = () => ({
++    warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
++    error: vi.spyOn(console, 'error').mockImplementation(() => {}),
++    info: vi.spyOn(console, 'info').mockImplementation(() => {}),
++  })
++  const form = (email: string) => {
+     const fd = new FormData()
+     fd.set('email', email)
+-    expect(await expectRedirect(requestPasswordReset(fd))).toBe('/forgot-password?sent=1')
++    return fd
++  }
++  function deferred<T>() {
++    let resolve!: (v: T) => void
++    let settled = false
++    const promise = new Promise<T>((r) => (resolve = (v) => ((settled = true), r(v))))
++    return { promise, resolve, isSettled: () => settled }
++  }
++
++  it('template render failure: falls back once, ERROR log with template + locale (no recipient), banner counts it separately', async () => {
++    const l = quiet()
++    const email = uniqueEmail('tmpl')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    rx.failRender = true
++    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
++    await settle()
+     expect(rs.send).not.toHaveBeenCalled()
+-    expect(rs.keys).toEqual([])
++    expect(sb.resetPasswordForEmail).toHaveBeenCalledTimes(1)
++    const errors = l.error.mock.calls.map((c) => c.map(String).join(' '))
++    expect(errors.some((m) => m.includes('reason=template_error template=password-reset locale=en'))).toBe(true)
++    expect(errors.some((m) => m.includes('TEMPLATE ERROR') && m.includes('template=password-reset locale=en'))).toBe(true)
++    expect(l.warn.mock.calls.flat().join(' ')).not.toContain('FALLBACK') // ERROR level, not a warning
++    expect([...l.warn.mock.calls, ...l.error.mock.calls].flat().map(String).join(' ')).not.toContain(email)
++    rx.failRender = false
++    const status = await getResetFallbackStatus()
++    expect(status).toMatchObject({ count: 0, templateErrors: 1, lastTemplateError: 'password-reset/en', source: 'database' })
++    const html = renderToStaticMarkup(await AdminMailBanner())
++    expect(html).toContain('Template errors: 1 password reset could not be')
++    expect(html).toContain('password-reset/en')
++    expect(html).not.toContain('Email degraded')
++  })
++
++  it('uses the DB-backed rate_check for the reset (hashed keys, per email and per trusted IP)', async () => {
++    quiet()
++    vi.stubEnv('TRUST_CF_CONNECTING_IP', 'true')
++    hdr.extra = { 'cf-connecting-ip': '198.51.100.7' }
++    const email = uniqueEmail('db')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    await expectRedirect(requestPasswordReset(form(email)))
++    await settle()
++    const buckets = sb.rpc.mock.calls.map(([fn, a]) => [fn, a.p_bucket, a.p_limit, a.p_window_seconds])
++    expect(buckets).toEqual([
++      ['rate_check', 'reset_ip', 5, 600],
++      ['rate_check', 'reset_email', 1, 60],
++    ])
++    expect(JSON.stringify(sb.rpc.mock.calls)).not.toContain(email)
++    expect(JSON.stringify(sb.rpc.mock.calls)).not.toContain('198.51.100.7')
++  })
++
++  it('rate_check DB error: fails OPEN for the reset (warning, in-memory limit takes over)', async () => {
++    const l = quiet()
++    sb.rpcDown = true
++    const email = uniqueEmail('open')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
++    await settle()
++    expect(rs.send).toHaveBeenCalledTimes(1) // went through despite the DB error
++    expect(l.warn.mock.calls.flat().join(' ')).toContain('rate limit database unavailable (reset_email); using the in-memory limit (fail open)')
++    // The in-memory limit now applies: the same address again within a minute is throttled.
++    rs.send.mockClear()
++    sb.generateLink.mockClear()
++    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
++    await settle()
+     expect(sb.generateLink).not.toHaveBeenCalled()
+-    expect(sb.resetPasswordForEmail).toHaveBeenCalledWith(email, expect.objectContaining({ redirectTo: expect.any(String) }))
++    expect(rs.send).not.toHaveBeenCalled()
++  })
++
++  it('answers before a stubbed send resolves (real account)', async () => {
++    quiet()
++    const email = uniqueEmail('fast')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    const d = deferred<{ data: { id: string }; error: null }>()
++    rs.send.mockReturnValue(d.promise)
++    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
++    expect(d.isSettled()).toBe(false) // the response is out while the send is still pending
++    expect(bg.tasks).toHaveLength(1) // handed to ctx.waitUntil
++    d.resolve({ data: { id: 'late_1' }, error: null })
++    await settle()
++    expect(rs.send).toHaveBeenCalledTimes(1)
++    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
++  })
++
++  it('answers before the account lookup resolves (unknown account)', async () => {
++    quiet()
++    const lookup = deferred<{ data: null; error: { message: string } }>()
++    sb.generateLink.mockReturnValue(lookup.promise)
++    expect(await expectRedirect(requestPasswordReset(form(uniqueEmail('fast-unknown'))))).toBe(NEUTRAL)
++    expect(lookup.isSettled()).toBe(false)
++    expect(bg.tasks).toHaveLength(1)
++    lookup.resolve({ data: null, error: { message: 'User not found' } })
++    await settle()
++    expect(rs.send).not.toHaveBeenCalled()
++    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
++  })
++
++  it('a failure thrown inside waitUntil is still logged (and never reaches the response)', async () => {
++    const l = quiet()
++    sb.generateLink.mockRejectedValue(new Error('supabase admin unreachable'))
++    expect(await expectRedirect(requestPasswordReset(form(uniqueEmail('throws'))))).toBe(NEUTRAL)
++    await settle()
++    expect(l.error.mock.calls.map((c) => c.map(String).join(' '))).toContain('[password-reset] background task failed: supabase admin unreachable')
++  })
++
++  it('no Workers context (next dev / tests): the work still runs, and errors are still logged', async () => {
++    const l = quiet()
++    bg.noContext = true
++    const email = uniqueEmail('local')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
++    await vi.waitFor(() => expect(rs.send).toHaveBeenCalledTimes(1))
++    sb.generateLink.mockRejectedValue(new Error('lookup failed'))
++    expect(await expectRedirect(requestPasswordReset(form(uniqueEmail('local'))))).toBe(NEUTRAL)
++    await vi.waitFor(() =>
++      expect(l.error.mock.calls.map((c) => c.map(String).join(' '))).toContain('[password-reset] background task failed: lookup failed')
++    )
++  })
++
++  it('throttled: the same response, no lookup, nothing scheduled', async () => {
++    quiet()
++    const email = uniqueEmail('thr')
++    sb.generateLink.mockResolvedValue(recovery(email))
++    await expectRedirect(requestPasswordReset(form(email)))
++    await settle()
++    sb.generateLink.mockClear()
++    rs.send.mockClear()
++    expect(await expectRedirect(requestPasswordReset(form(email)))).toBe(NEUTRAL)
++    expect(bg.tasks).toEqual([])
++    await settle()
++    expect(sb.generateLink).not.toHaveBeenCalled()
++    expect(rs.send).not.toHaveBeenCalled()
++    expect(sb.resetPasswordForEmail).not.toHaveBeenCalled()
+   })
+ })
+ 
+@@ -299,6 +761,7 @@ describe('/api/test-email (admin-only)', () => {
+ describe('Stripe webhook cancellation notice (real cancel-notice + send, fake Resend)', () => {
+   const PERIOD_END = 1792886400
+   function setToCancel() {
++    sb.ledger = null
+     st.update.mockReset()
+     st.sub = {
+       id: 'sub_1',
+diff --git a/freeplug-landing/src/lib/email/email-sends-migration.test.ts b/freeplug-landing/src/lib/email/email-sends-migration.test.ts
+new file mode 100644
+index 0000000..dc0fa14
+--- /dev/null
++++ b/freeplug-landing/src/lib/email/email-sends-migration.test.ts
+@@ -0,0 +1,64 @@
++// @vitest-environment node
++import { readFileSync } from 'node:fs'
++import path from 'node:path'
++import { describe, expect, it } from 'vitest'
++
++/**
++ * Static checks on the email_sends migration (round 6), so CI catches a regression without a database.
++ * The behaviour itself (double apply, grants, claim rules, concurrency) was run on a throwaway Postgres 17:
++ * /workspace/owen/email-sends-pgtest/run-throwaway.sh.
++ */
++const sql = readFileSync(
++  path.resolve(__dirname, '../../../supabase/migrations/20261003160000_email_sends.sql'),
++  'utf8'
++).toLowerCase()
++const code = sql.replace(/--.*$/gm, '')
++
++describe('20261003160000_email_sends.sql', () => {
++  it('is idempotent DDL', () => {
++    expect(code).toContain('create table if not exists public.email_sends')
++    expect(code).toContain('create index if not exists email_sends_created_at_idx on public.email_sends (created_at)')
++    expect(code).not.toMatch(/create (table|index) (?!if not exists)/)
++    expect(code.match(/create policy/g)?.length).toBe(code.match(/if not exists \(\s*select 1 from pg_policies/g)?.length)
++    expect(code).not.toMatch(/create function/) // only create or replace
++  })
++
++  it('has the agreed columns, the unique key, and no personal-data columns', () => {
++    for (const col of ['id uuid primary key default gen_random_uuid()', 'stripe_event_id text not null', 'template text not null',
++      "status text not null default 'pending' check (status in ('pending', 'sent', 'failed'))", 'resend_id text null',
++      'attempts integer not null default 1', 'last_error text null', 'created_at timestamptz not null default now()',
++      'updated_at timestamptz not null default now()', 'unique (stripe_event_id, template)']) {
++      expect(code).toContain(col)
++    }
++    expect(code).not.toMatch(/\b(email|recipient|to_address|customer|name|address)\b\s+text/)
++  })
++
++  it('locks the table down: RLS forced, nothing for anon / authenticated, no DELETE for service_role', () => {
++    expect(code).toContain('alter table public.email_sends enable row level security')
++    expect(code).toContain('alter table public.email_sends force row level security')
++    expect(code).toContain('revoke all on table public.email_sends from public, anon, authenticated, service_role')
++    expect(code).toContain('grant select, insert, update on table public.email_sends to service_role')
++    expect(code).not.toMatch(/grant [^;]* to [^;]*\b(anon|authenticated|public)\b/)
++    expect(code).not.toMatch(/create policy [^;]* to [^;]*\b(anon|authenticated|public)\b/)
++  })
++
++  it('every function pins search_path = \'\' and is executable by service_role only; only the prune is SECURITY DEFINER', () => {
++    const fns = [...code.matchAll(/create or replace function public\.(\w+)\(([^)]*)\)/g)].map((m) => m[1])
++    expect(fns.sort()).toEqual(['email_send_claim', 'email_send_finish', 'prune_email_sends'])
++    expect(code.match(/set search_path = ''/g)?.length).toBe(3)
++    expect(code.match(/security definer/g)?.length).toBe(1)
++    expect(code).toMatch(/function public\.prune_email_sends\(\)\s*returns integer\s*language plpgsql\s*security definer/)
++    for (const f of fns) {
++      expect(code).toMatch(new RegExp(`revoke execute on function public\\.${f}\\([^)]*\\) from public, anon, authenticated;`))
++      expect(code).toMatch(new RegExp(`grant execute on function public\\.${f}\\([^)]*\\) to service_role;`))
++    }
++    expect(code).toContain("created_at < pg_catalog.now() - interval '30 days'")
++    expect(code).not.toContain('cron.')
++  })
++
++  it('claims with ON CONFLICT DO NOTHING, then one conditional re-claim UPDATE that bumps attempts', () => {
++    expect(code).toContain('on conflict (stripe_event_id, template) do nothing')
++    expect(code).toMatch(/attempts = e\.attempts \+ 1/)
++    expect(code).toMatch(/e\.status = 'failed'\s*or \(e\.status = 'pending' and e\.updated_at < pg_catalog\.now\(\) - interval '15 minutes'\)/)
++  })
++})
+diff --git a/freeplug-landing/src/lib/email/index.ts b/freeplug-landing/src/lib/email/index.ts
+index 5b5dfa9..f1caf1e 100644
+--- a/freeplug-landing/src/lib/email/index.ts
++++ b/freeplug-landing/src/lib/email/index.ts
+@@ -12,7 +12,7 @@ export {
+   EMAIL_FROM,
+   EMAIL_REPLY_TO,
+ } from './mailer'
+-export type { MailParams, MailResult } from './mailer'
++export type { MailParams, MailResult, MailFailureReason } from './mailer'
+ export {
+   sendWelcomeEmail,
+   sendPaymentReceivedEmail,
+diff --git a/freeplug-landing/src/lib/email/locales.ts b/freeplug-landing/src/lib/email/locales.ts
+new file mode 100644
+index 0000000..9839de2
+--- /dev/null
++++ b/freeplug-landing/src/lib/email/locales.ts
+@@ -0,0 +1,8 @@
++/**
++ * Locales the app sends email in. Today every template is English-only, so this is ['en']. The template
++ * CI test (templates/edge-cases.test.tsx) renders every template for every locale listed here, so adding
++ * one extends the test automatically.
++ */
++export const EMAIL_LOCALES = ['en'] as const
++export type EmailLocale = (typeof EMAIL_LOCALES)[number]
++export const DEFAULT_EMAIL_LOCALE: EmailLocale = 'en'
+diff --git a/freeplug-landing/src/lib/email/mailer.ts b/freeplug-landing/src/lib/email/mailer.ts
+index 1b7d93e..edab05d 100644
+--- a/freeplug-landing/src/lib/email/mailer.ts
++++ b/freeplug-landing/src/lib/email/mailer.ts
+@@ -1,6 +1,7 @@
+ import type { ReactElement } from 'react'
+ import { render, toPlainText } from '@react-email/components'
+ import { getResend, isResendConfigured } from './resend'
++import { DEFAULT_EMAIL_LOCALE } from './locales'
+ 
+ /**
+  * Outbound mail for every email the app sends itself (Resend primary, Oct 3, Jace). nodemailer/SMTP is
+@@ -22,12 +23,13 @@ import { getResend, isResendConfigured } from './resend'
+  * From is on the main domain freeplug-in.dev (Aria/Rio, Oct 3). send.freeplug-in.dev is only Resend's
+  * return path (MX + SPF live there); it never appears in From.
+  */
+-export const DEFAULT_FROM_ADDRESS = 'support@freeplug-in.dev'
++export const DEFAULT_FROM_ADDRESS = 'no-reply@freeplug-in.dev'
+ /** Replies go to the real support mailbox on the root domain. */
+ export const DEFAULT_REPLY_TO = 'support@freeplug-in.dev'
+ const DEFAULT_FROM_NAME = 'Freeplug'
+ /** What a user sees when an email can't be sent (the specific reason goes to the server log only). */
+-export const MAIL_GENERIC_ERROR = 'We couldn\'t send that email right now. Please try again later.'
++export const MAIL_GENERIC_ERROR =
++  "We couldn't send that email right now. Please try again in a few minutes. If it still doesn't work, email support@freeplug-in.dev."
+ 
+ export const MAIL_NOT_CONFIGURED = 'Email is not configured: RESEND_API_KEY is not set'
+ 
+@@ -41,7 +43,10 @@ export function isMailConfigured(): boolean {
+   return isResendConfigured()
+ }
+ 
+-/** Formatted From header, e.g. `"Freeplug" <support@freeplug-in.dev>`. */
++/** RFC 5322 atext plus spaces: a display name made only of these needs no quotes. */
++const PLAIN_DISPLAY_NAME = /^[A-Za-z0-9!#$%&'*+\-/=?^_`{|}~ ]+$/
++
++/** Formatted From header, e.g. `Freeplug <no-reply@freeplug-in.dev>` (quoted only when the name needs it). */
+ export function getEmailFrom(): string {
+   const address = env('EMAIL_FROM')
+   if (!address) {
+@@ -49,8 +54,8 @@ export function getEmailFrom(): string {
+     if (legacy) return legacy
+   }
+   const addr = address ?? DEFAULT_FROM_ADDRESS
+-  const name = (env('EMAIL_FROM_NAME') ?? DEFAULT_FROM_NAME).replace(/"/g, '')
+-  return `"${name}" <${addr}>`
++  const name = (env('EMAIL_FROM_NAME') ?? DEFAULT_FROM_NAME).replace(/["\\\r\n]/g, '').trim() || DEFAULT_FROM_NAME
++  return PLAIN_DISPLAY_NAME.test(name) ? `${name} <${addr}>` : `"${name}" <${addr}>`
+ }
+ 
+ export function getDefaultReplyTo(): string {
+@@ -62,7 +67,7 @@ export function publicMailError(detail: string): string {
+   return process.env.NODE_ENV === 'production' ? MAIL_GENERIC_ERROR : detail
+ }
+ 
+-/** From header, built from EMAIL_FROM_NAME + EMAIL_FROM (e.g. `"Freeplug" <support@freeplug-in.dev>`). */
++/** From header, built from EMAIL_FROM_NAME + EMAIL_FROM (e.g. `Freeplug <no-reply@freeplug-in.dev>`). */
+ export const EMAIL_FROM = getEmailFrom()
+ /** Default Reply-To (EMAIL_REPLY_TO or support@freeplug-in.dev). */
+ export const EMAIL_REPLY_TO = getDefaultReplyTo()
+@@ -82,47 +87,126 @@ export type MailParams = {
+   bcc?: string | string[]
+   /** Resend Idempotency-Key (e.g. `<stripe event.id>:<template>` for webhook sends); repeats within 24h send once. */
+   idempotencyKey?: string
++  /**
++   * Give up waiting after this many ms (reason 'timeout'). Resend may still deliver it, so only use this
++   * where a duplicate is acceptable (the password reset).
++   */
++  timeoutMs?: number
++  /** Template name for logs (e.g. 'password-reset'); never personal data. */
++  template?: string
++  /** Template locale for logs (default DEFAULT_EMAIL_LOCALE). */
++  locale?: string
+ }
+ 
+-export type MailResult = { success: true; id: string } | { success: false; error: string }
++/**
++ * Why a send failed. Resend did NOT accept the email in every case except possibly 'timeout' (the request
++ * may have reached Resend):
++ *   not_configured  RESEND_API_KEY missing, nothing attempted
++ *   template_error  the React template threw while rendering (nothing sent; template + locale attached)
++ *   local_error     failed before any request for another reason (no content)
++ *   http            Resend answered with a 4xx/5xx (status; null if the error body had none)
++ *   network         no response at all (DNS, connection reset, the SDK's "Unable to fetch data")
++ *   timeout         no answer within timeoutMs
++ */
++export type MailFailureReason = 'not_configured' | 'template_error' | 'local_error' | 'http' | 'network' | 'timeout'
++
++export type MailResult =
++  | { success: true; id: string }
++  | {
++      success: false
++      error: string
++      reason: MailFailureReason
++      status?: number | null
++      template?: string
++      locale?: string
++    }
++
++const TIMED_OUT = Symbol('timeout')
++
++async function withTimeout<T>(p: Promise<T>, ms: number | undefined): Promise<T | typeof TIMED_OUT> {
++  if (!ms || ms <= 0) return p
++  let timer: ReturnType<typeof setTimeout> | undefined
++  try {
++    return await Promise.race([p, new Promise<typeof TIMED_OUT>((r) => (timer = setTimeout(() => r(TIMED_OUT), ms)))])
++  } finally {
++    if (timer) clearTimeout(timer)
++  }
++}
+ 
+ /** Send one email through Resend. Never throws; never falls back to another transport. */
+ export async function sendMail(p: MailParams): Promise<MailResult> {
++  let html = p.html
++  let text = p.text
+   try {
+-    let html = p.html
+-    let text = p.text
+     if (p.react) {
+       html = await render(p.react)
+       if (!text) text = toPlainText(html)
+     }
+-    if (!html && !text) {
+-      return { success: false, error: 'Email has no content' }
+-    }
+-    if (!isMailConfigured()) {
+-      // Fail closed: no other transport. Subject only (no recipient) in the log.
+-      console.error(`[email] ${MAIL_NOT_CONFIGURED}; not sent: "${p.subject}"`)
+-      return { success: false, error: MAIL_NOT_CONFIGURED }
++  } catch (err) {
++    const template = p.template ?? 'unknown'
++    const locale = p.locale ?? DEFAULT_EMAIL_LOCALE
++    console.error(
++      `[email] TEMPLATE ERROR: render failed: template=${template} locale=${locale}; not sent: "${p.subject}":`,
++      err instanceof Error ? err.message : err
++    )
++    return {
++      success: false,
++      reason: 'template_error',
++      template,
++      locale,
++      error: err instanceof Error ? err.message : 'Render failed',
+     }
++  }
++  if (!html && !text) {
++    return { success: false, reason: 'local_error', error: 'Email has no content' }
++  }
++  if (!isMailConfigured()) {
++    // Fail closed: no other transport. Subject only (no recipient) in the log.
++    console.error(`[email] ${MAIL_NOT_CONFIGURED}; not sent: "${p.subject}"`)
++    return { success: false, reason: 'not_configured', error: MAIL_NOT_CONFIGURED }
++  }
+ 
+-    const replyTo = p.replyTo === null ? undefined : (p.replyTo ?? getDefaultReplyTo())
+-    const base = {
+-      from: p.from ?? getEmailFrom(),
+-      to: p.to,
+-      subject: p.subject,
+-      ...(replyTo ? { replyTo } : {}),
+-      ...(p.cc ? { cc: p.cc } : {}),
+-      ...(p.bcc ? { bcc: p.bcc } : {}),
+-    }
+-    const payload = html ? { ...base, html, ...(text ? { text } : {}) } : { ...base, text: text! }
+-    const { data, error } = p.idempotencyKey
+-      ? await getResend().emails.send(payload, { idempotencyKey: p.idempotencyKey })
+-      : await getResend().emails.send(payload)
+-    if (error) {
+-      console.error(`[email] Resend error; not sent: "${p.subject}":`, error.message)
+-      return { success: false, error: error.message }
+-    }
+-    return { success: true, id: data?.id ?? '' }
++  const replyTo = p.replyTo === null ? undefined : (p.replyTo ?? getDefaultReplyTo())
++  const base = {
++    from: p.from ?? getEmailFrom(),
++    to: p.to,
++    subject: p.subject,
++    ...(replyTo ? { replyTo } : {}),
++    ...(p.cc ? { cc: p.cc } : {}),
++    ...(p.bcc ? { bcc: p.bcc } : {}),
++  }
++  const payload = html ? { ...base, html, ...(text ? { text } : {}) } : { ...base, text: text! }
++
++  let outcome: Awaited<ReturnType<ReturnType<typeof getResend>['emails']['send']>> | typeof TIMED_OUT
++  try {
++    const request = p.idempotencyKey
++      ? getResend().emails.send(payload, { idempotencyKey: p.idempotencyKey })
++      : getResend().emails.send(payload)
++    outcome = await withTimeout(request, p.timeoutMs)
+   } catch (err) {
+-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
++    // The SDK normally returns network failures as { error }, but a throw here also means no response.
++    console.error(`[email] Resend request failed (network); not sent: "${p.subject}"`)
++    return { success: false, reason: 'network', status: null, error: err instanceof Error ? err.message : 'Network error' }
++  }
++  if (outcome === TIMED_OUT) {
++    console.error(`[email] Resend did not answer within ${p.timeoutMs} ms: "${p.subject}"`)
++    return { success: false, reason: 'timeout', status: null, error: `Timed out after ${p.timeoutMs} ms` }
++  }
++
++  const { data, error } = outcome
++  if (error) {
++    // The resend SDK sets statusCode to the HTTP status for a 4xx/5xx and to null when no response came back.
++    // The error message is NOT logged: it can echo the recipient address.
++    const network = error.statusCode === null
++    const status = typeof error.statusCode === 'number' ? error.statusCode : null
++    console.error(
++      network
++        ? `[email] Resend network error (no response); not sent: "${p.subject}"`
++        : `[email] Resend error ${status ?? '(no status)'} ${error.name ?? ''}; not sent: "${p.subject}"`
++    )
++    return network
++      ? { success: false, reason: 'network', status: null, error: error.message }
++      : { success: false, reason: 'http', status, error: error.message }
+   }
++  return { success: true, id: data?.id ?? '' }
+ }
+diff --git a/freeplug-landing/src/lib/email/reset-fallback.ts b/freeplug-landing/src/lib/email/reset-fallback.ts
+new file mode 100644
+index 0000000..3051fd0
+--- /dev/null
++++ b/freeplug-landing/src/lib/email/reset-fallback.ts
+@@ -0,0 +1,140 @@
++import 'server-only'
++import { listEvents, recordEvent } from '@/lib/rate-limit/event-log'
++import { DEFAULT_EMAIL_LOCALE } from './locales'
++import type { MailResult } from './mailer'
++
++/**
++ * Password-reset fallback bookkeeping (Aria, round 5). The reset is sent by us through Resend; when Resend
++ * clearly did not accept it we fall back to Supabase Auth's own mailer (resetPasswordForEmail). Every
++ * fallback is logged (reason only, never the address) and counted for the admin mail banner:
++ *   - template errors (our template threw while rendering): console.error with template + locale, counted
++ *     separately as "template errors";
++ *   - everything else: console.warn, counted as "fallbacks".
++ *
++ * The count works on Workers (many isolates): each fallback inserts a row into public.rate_limit_hits via
++ * src/lib/rate-limit/event-log.ts (bucket RESET_FALLBACK_BUCKET, key_hash = the label below; the service
++ * role has select/insert and rate_check() already purges rows older than 2 days), so no migration is needed.
++ * When the service role is missing or the database is unreachable, an in-memory count for this isolate is
++ * used instead. Labels never contain personal data.
++ */
++export const RESET_FALLBACK_BUCKET = 'mail_reset_fallback'
++export const RESET_FALLBACK_WINDOW_HOURS = 24
++/** Wait at most this long for Resend on a reset before falling back (a late success may mean a duplicate: OK). */
++export const RESET_SEND_TIMEOUT_MS = 8000
++const TEMPLATE_ERROR = 'template_error'
++
++export type ResetFallbackReason =
++  | 'missing_key'
++  | 'missing_service_role'
++  | 'missing_key+missing_service_role'
++  | 'resend_http'
++  | 'resend_network'
++  | 'resend_timeout'
++  | 'resend_local_error'
++  | 'template_error'
++
++export type ResetFallback = {
++  reason: ResetFallbackReason
++  status: number | null
++  /** Set for template_error. */
++  template?: string
++  locale?: string
++}
++
++/** Fall back only when Resend clearly didn't accept the email. A returned id (success) never falls back. */
++export function resetFallbackReason(res: MailResult): ResetFallback | null {
++  if (res.success) return null
++  switch (res.reason) {
++    case 'not_configured':
++      return { reason: 'missing_key', status: null }
++    case 'http':
++      return { reason: 'resend_http', status: res.status ?? null }
++    case 'network':
++      return { reason: 'resend_network', status: null }
++    case 'timeout':
++      return { reason: 'resend_timeout', status: null }
++    case 'template_error':
++      // Nothing reached Resend (our template threw), so a fallback can't duplicate. Aria: keep it, loudly.
++      return { reason: 'template_error', status: null, template: res.template ?? 'unknown', locale: res.locale ?? DEFAULT_EMAIL_LOCALE }
++    case 'local_error':
++      return { reason: 'resend_local_error', status: null }
++  }
++}
++
++function labelFor(f: ResetFallback): string {
++  return f.reason === 'template_error'
++    ? `${TEMPLATE_ERROR}:${f.template ?? 'unknown'}:${f.locale ?? DEFAULT_EMAIL_LOCALE}`.slice(0, 128)
++    : f.reason
++}
++
++const memory = { events: [] as { at: number; label: string }[] }
++
++function windowStart(now: number): number {
++  return now - RESET_FALLBACK_WINDOW_HOURS * 3600_000
++}
++
++/** Logs the fallback (ERROR for template errors, WARN otherwise) and records it. Never throws. */
++export async function recordResetFallback(f: ResetFallback): Promise<void> {
++  const what = `[password-reset] FALLBACK to Supabase Auth mailer (resetPasswordForEmail): reason=${f.reason}`
++  if (f.reason === 'template_error') {
++    console.error(`${what} template=${f.template ?? 'unknown'} locale=${f.locale ?? DEFAULT_EMAIL_LOCALE} (TEMPLATE ERROR: fix the template)`)
++  } else {
++    console.warn(`${what}${f.status != null ? ` status=${f.status}` : ''}`)
++  }
++  const now = Date.now()
++  const label = labelFor(f)
++  memory.events = memory.events.filter((e) => e.at >= windowStart(now)).slice(-999)
++  memory.events.push({ at: now, label })
++  if (!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) return
++  const res = await recordEvent(RESET_FALLBACK_BUCKET, label)
++  if (!res.ok) console.error('[password-reset] could not record the fallback:', res.error)
++}
++
++export type ResetFallbackStatus = {
++  /** Fallbacks other than template errors in the last RESET_FALLBACK_WINDOW_HOURS hours. */
++  count: number
++  lastAt: string | null
++  lastReason: ResetFallbackReason | null
++  /** Template errors (each also fell back) in the same window, counted separately. */
++  templateErrors: number
++  /** e.g. "password-reset/en" */
++  lastTemplateError: string | null
++  lastTemplateErrorAt: string | null
++  /** 'database' = all isolates; 'instance' = only this isolate (service role missing or DB unreachable). */
++  source: 'database' | 'instance'
++}
++
++function summarize(rows: { label: string; at: string }[], source: ResetFallbackStatus['source']): ResetFallbackStatus {
++  // rows: newest first
++  const tmpl = rows.filter((r) => r.label.startsWith(`${TEMPLATE_ERROR}:`) || r.label === TEMPLATE_ERROR)
++  const other = rows.filter((r) => !tmpl.includes(r))
++  const lastTmpl = tmpl[0]?.label.split(':')
++  return {
++    count: other.length,
++    lastAt: other[0]?.at ?? null,
++    lastReason: (other[0]?.label as ResetFallbackReason | undefined) ?? null,
++    templateErrors: tmpl.length,
++    lastTemplateError: lastTmpl ? `${lastTmpl[1] ?? 'unknown'}/${lastTmpl[2] ?? DEFAULT_EMAIL_LOCALE}` : null,
++    lastTemplateErrorAt: tmpl[0]?.at ?? null,
++    source,
++  }
++}
++
++export async function getResetFallbackStatus(now: number = Date.now()): Promise<ResetFallbackStatus> {
++  const since = windowStart(now)
++  if (process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
++    const rows = await listEvents(RESET_FALLBACK_BUCKET, new Date(since).toISOString())
++    if (rows) return summarize(rows, 'database')
++    // Database unreadable: fall through to the in-memory count.
++  }
++  const events = memory.events
++    .filter((e) => e.at >= since)
++    .map((e) => ({ label: e.label, at: new Date(e.at).toISOString() }))
++    .reverse()
++  return summarize(events, 'instance')
++}
++
++/** Tests only. */
++export function __resetFallbackMemoryForTests(): void {
++  memory.events = []
++}
+diff --git a/freeplug-landing/src/lib/email/send.ts b/freeplug-landing/src/lib/email/send.ts
+index b0b09a1..f9d4645 100644
+--- a/freeplug-landing/src/lib/email/send.ts
++++ b/freeplug-landing/src/lib/email/send.ts
+@@ -2,7 +2,7 @@
+ // below as a public server action anyone could call to send mail from our address (Resend).
+ import 'server-only'
+ 
+-import { sendMail } from './mailer'
++import { sendMail, type MailResult } from './mailer'
+ import { WelcomeEmail } from './templates/welcome'
+ import { PaymentReceivedEmail } from './templates/payment-received'
+ import { RequestStatusUpdateEmail } from './templates/request-status-update'
+@@ -13,10 +13,10 @@ import {
+ import { BillingReminderEmail } from './templates/billing-reminder'
+ import { PasswordResetEmail } from './templates/password-reset'
+ 
+-type SendResult = { success: true; id: string } | { success: false; error: string }
++type SendResult = MailResult
+ 
+-/** Optional per-send overrides (replyTo, Resend idempotency key). Existing callers can omit it. */
+-type SendOptions = { replyTo?: string | string[]; idempotencyKey?: string }
++/** Optional per-send overrides (replyTo, Resend idempotency key, timeout). Existing callers can omit it. */
++type SendOptions = { replyTo?: string | string[]; idempotencyKey?: string; timeoutMs?: number }
+ 
+ export async function sendWelcomeEmail(
+   to: string,
+@@ -26,9 +26,11 @@ export async function sendWelcomeEmail(
+   return sendMail({
+     to,
+     subject: 'Welcome to Freeplug!',
++    template: 'welcome',
+     react: WelcomeEmail({ userName }),
+     replyTo: options?.replyTo,
+     idempotencyKey: options?.idempotencyKey,
++    timeoutMs: options?.timeoutMs,
+   })
+ }
+ 
+@@ -48,9 +50,11 @@ export async function sendPaymentReceivedEmail(
+   return sendMail({
+     to,
+     subject: `Payment received - ${params.amount}`,
++    template: 'payment-received',
+     react: PaymentReceivedEmail(params),
+     replyTo: options?.replyTo,
+     idempotencyKey: options?.idempotencyKey,
++    timeoutMs: options?.timeoutMs,
+   })
+ }
+ 
+@@ -67,9 +71,11 @@ export async function sendRequestStatusUpdateEmail(
+   return sendMail({
+     to,
+     subject: `Request Update: ${params.businessName}`,
++    template: 'request-status-update',
+     react: RequestStatusUpdateEmail(params),
+     replyTo: options?.replyTo,
+     idempotencyKey: options?.idempotencyKey,
++    timeoutMs: options?.timeoutMs,
+   })
+ }
+ 
+@@ -86,9 +92,11 @@ export async function sendSubscriptionCancelledEmail(
+   return sendMail({
+     to,
+     subject: SUBSCRIPTION_CANCELLED_SUBJECT,
++    template: 'subscription-cancelled',
+     react: SubscriptionCancelledEmail(params),
+     replyTo: options?.replyTo,
+     idempotencyKey: options?.idempotencyKey,
++    timeoutMs: options?.timeoutMs,
+   })
+ }
+ 
+@@ -106,9 +114,11 @@ export async function sendBillingReminderEmail(
+   return sendMail({
+     to,
+     subject: `Upcoming billing reminder - ${params.amount} on ${params.billingDate}`,
++    template: 'billing-reminder',
+     react: BillingReminderEmail(params),
+     replyTo: options?.replyTo,
+     idempotencyKey: options?.idempotencyKey,
++    timeoutMs: options?.timeoutMs,
+   })
+ }
+ 
+@@ -124,8 +134,10 @@ export async function sendPasswordResetEmail(
+   return sendMail({
+     to,
+     subject: 'Reset your Freeplug password',
++    template: 'password-reset',
+     react: PasswordResetEmail(params),
+     replyTo: options?.replyTo,
+     idempotencyKey: options?.idempotencyKey,
++    timeoutMs: options?.timeoutMs,
+   })
+ }
+diff --git a/freeplug-landing/src/lib/email/templates/edge-cases.test.tsx b/freeplug-landing/src/lib/email/templates/edge-cases.test.tsx
+new file mode 100644
+index 0000000..b64ecec
+--- /dev/null
++++ b/freeplug-landing/src/lib/email/templates/edge-cases.test.tsx
+@@ -0,0 +1,128 @@
++// @vitest-environment node
++import { readdirSync, readFileSync } from 'node:fs'
++import path from 'node:path'
++import type { ReactElement } from 'react'
++import { render, toPlainText } from '@react-email/components'
++import { describe, expect, it } from 'vitest'
++import { EMAIL_LOCALES } from '../locales'
++import { BillingReminderEmail } from './billing-reminder'
++import { GoogleSignInEmail } from './google-sign-in'
++import { PasswordResetEmail } from './password-reset'
++import { PaymentReceivedEmail } from './payment-received'
++import { RequestStatusUpdateEmail } from './request-status-update'
++import { SubscriptionCancelledEmail } from './subscription-cancelled'
++import { WelcomeEmail } from './welcome'
++
++/**
++ * Template CI (Aria, round 5): every email template the app sends through Resend renders, for every enabled
++ * locale (src/lib/email/locales.ts; English-only today), with edge-case inputs. A template that throws, or
++ * a new template that isn't listed here, fails vitest (and so CI).
++ */
++const LONG = 'A'.repeat(10_000)
++const TEXTS: Record<string, string | undefined> = {
++  missing: undefined,
++  empty: '',
++  blank: '   ',
++  long: LONG,
++  unicode: 'Zoë Ñúñez-Łódź 李小龍 Ærøskøbing',
++  rtl: 'محمد العربي \u200f שלום',
++  emoji: '👩🏽‍💻🔥🏳️‍🌈 ✨',
++  special: `<script>alert("x")</script> & 'q' "dq" \\ \${x} {{x}} <b>bold</b> %s %n`,
++}
++const REQUIRED = Object.fromEntries(Object.entries(TEXTS).map(([k, v]) => [k, v ?? ''])) as Record<string, string>
++const RESET_LINKS = [
++  'https://app.example.test/auth/confirm?token_hash=abc&type=recovery&next=/reset-password',
++  `https://app.example.test/auth/confirm?token_hash=${'f'.repeat(512)}&type=recovery&next=%2Freset-password%3Fa%3D1%26b%3D%3C%3E`,
++]
++
++type Case = { template: string; variant: string; el: () => ReactElement; expectText?: string }
++
++function cases(): Case[] {
++  const out: Case[] = []
++  for (const [variant, name] of Object.entries(TEXTS)) {
++    const req = REQUIRED[variant]
++    out.push({ template: 'welcome', variant, el: () => WelcomeEmail({ userName: name }) })
++    out.push({
++      template: 'payment-received',
++      variant,
++      el: () => PaymentReceivedEmail(
++        variant === 'missing'
++          ? { amount: '$40.00', planName: 'Hosting', paymentDate: 'Oct 3, 2026' }
++          : {
++              userName: name,
++              amount: variant === 'long' ? `$${'9'.repeat(400)}.00` : '$1,000,000.00',
++              planName: req,
++              invoiceNumber: req,
++              paymentDate: req,
++              nextBillingDate: req,
++              totalPaidToDate: req,
++            }
++      ),
++    })
++    for (const newStatus of ['submitted', 'in_review', 'closed'] as const) {
++      out.push({
++        template: 'request-status-update',
++        variant: `${variant}/${newStatus}`,
++        el: () => RequestStatusUpdateEmail(
++          variant === 'missing' ? { businessName: 'Test Co', newStatus } : { userName: name, businessName: req, newStatus, message: req }
++        ),
++      })
++    }
++    out.push({
++      template: 'subscription-cancelled',
++      variant,
++      el: () => SubscriptionCancelledEmail(
++        variant === 'missing' ? { endDate: 'Oct 25, 2026' } : { userName: name, planName: req, endDate: req, totalPaidToDate: req }
++      ),
++    })
++    for (const daysUntilBilling of [0, 1, -1, 365]) {
++      out.push({
++        template: 'billing-reminder',
++        variant: `${variant}/${daysUntilBilling}d`,
++        el: () => BillingReminderEmail({ userName: name, planName: req, amount: req || '$0.00', billingDate: req, daysUntilBilling }),
++      })
++    }
++    for (const [i, resetLink] of RESET_LINKS.entries()) {
++      out.push({
++        template: 'password-reset',
++        variant: `${variant}/link${i}`,
++        el: () => PasswordResetEmail(variant === 'missing' ? { resetLink } : { resetLink, userName: name, expiresIn: req }),
++        expectText: 'reset',
++      })
++    }
++  }
++  out.push({ template: 'google-sign-in', variant: 'default', el: () => GoogleSignInEmail({}) })
++  out.push({ template: 'google-sign-in', variant: 'baseUrl', el: () => GoogleSignInEmail({ baseUrl: 'http://localhost:3000' }) })
++  return out
++}
++
++const COVERED = ['welcome', 'payment-received', 'request-status-update', 'subscription-cancelled', 'billing-reminder', 'password-reset', 'google-sign-in']
++
++describe.each(EMAIL_LOCALES)('every email template renders with edge-case inputs (locale %s)', () => {
++  it.each(cases().map((c) => [`${c.template} [${c.variant}]`, c] as const))('%s', async (_label, c) => {
++    const html = await render(c.el())
++    expect(typeof html).toBe('string')
++    expect(html).toMatch(/<\/html>\s*$/)
++    expect(html).toContain('Freeplug')
++    // User-supplied text is escaped, never live markup.
++    expect(html).not.toContain('<script>alert')
++    expect(html).not.toContain('<b>bold</b>')
++    const text = toPlainText(html)
++    expect(text.trim().length).toBeGreaterThan(20)
++    if (c.expectText) expect(text.toLowerCase()).toContain(c.expectText)
++  })
++})
++
++describe('template coverage', () => {
++  it('every *Email template file in this folder is covered above', () => {
++    const dir = __dirname
++    const files = readdirSync(dir).filter((f) => f.endsWith('.tsx') && !f.includes('.test.') && f !== 'base-layout.tsx')
++    const withEmailExport = files.filter((f) => /export function \w+Email\(/.test(readFileSync(path.join(dir, f), 'utf8')))
++    expect(withEmailExport.map((f) => f.replace(/\.tsx$/, '')).sort()).toEqual([...COVERED].sort())
++  })
++
++  it('the password-reset template keeps the link intact (escaped only as HTML requires)', async () => {
++    const html = await render(PasswordResetEmail({ resetLink: RESET_LINKS[1] }))
++    expect(html).toContain(RESET_LINKS[1].replace(/&/g, '&amp;'))
++  })
++})
+diff --git a/freeplug-landing/src/lib/email/webhook-email-ledger.ts b/freeplug-landing/src/lib/email/webhook-email-ledger.ts
+new file mode 100644
+index 0000000..df6ac66
+--- /dev/null
++++ b/freeplug-landing/src/lib/email/webhook-email-ledger.ts
+@@ -0,0 +1,112 @@
++import 'server-only'
++import { createAdminClient } from '@/lib/supabase/admin'
++import type { MailResult } from './mailer'
++
++/**
++ * Webhook email ledger (public.email_sends, migration 20261003160000_email_sends.sql).
++ *
++ * Every webhook-driven email goes through sendWebhookEmailOnce(), so a Stripe redelivery after Resend's
++ * 24 h idempotency window, or two deliveries at once, can't send a second copy:
++ *   1. claim  (email_send_claim): INSERT … ON CONFLICT (stripe_event_id, template) DO NOTHING RETURNING id;
++ *      when nothing comes back, one conditional UPDATE re-claims a 'failed' row, or a 'pending' row older
++ *      than 15 minutes (a crash after the claim), and bumps attempts. No row back = skip the send.
++ *   2. send   (the caller's sender; it still passes the Resend idempotency key `<event.id>:<template>`).
++ *   3. finish (email_send_finish): 'sent' + Resend id, or 'failed' + a short PII-free reason.
++ *
++ * Never throws. A claim error (DB down, missing service role) is logged and the email is NOT sent: a
++ * missed notice is better than a duplicate, and the webhook still answers 2xx. No recipient, address
++ * or Resend error text ever reaches the table or these logs.
++ */
++export type WebhookEmailOutcome = 'sent' | 'skipped' | 'claim_error' | 'send_failed'
++
++export type LedgerClaim =
++  | { kind: 'claimed'; id: string; attempts: number }
++  | { kind: 'skip' }
++  | { kind: 'error'; error: string }
++
++const SAFE = /[^a-z0-9_ .:-]/gi
++
++/** A short reason that can't carry personal data: the failure class and HTTP status only. */
++export function ledgerErrorFor(result: Extract<MailResult, { success: false }>): string {
++  const parts: string[] = [result.reason]
++  if (result.status != null) parts.push(String(result.status))
++  return parts.join(' ').replace(SAFE, '').slice(0, 200)
++}
++
++function short(e: unknown): string {
++  const msg = e instanceof Error ? e.name : typeof e === 'object' && e && 'code' in e ? `db ${String((e as { code: unknown }).code)}` : 'error'
++  return msg.replace(SAFE, '').slice(0, 80) || 'error'
++}
++
++export async function claimWebhookEmail(stripeEventId: string, template: string): Promise<LedgerClaim> {
++  try {
++    const { data, error } = await createAdminClient().rpc('email_send_claim', {
++      p_stripe_event_id: stripeEventId,
++      p_template: template,
++    })
++    if (error) return { kind: 'error', error: short(error) }
++    const row = Array.isArray(data) ? (data[0] as { id?: string; attempts?: number } | undefined) : undefined
++    if (!row?.id) return { kind: 'skip' }
++    return { kind: 'claimed', id: row.id, attempts: row.attempts ?? 1 }
++  } catch (e) {
++    return { kind: 'error', error: short(e) }
++  }
++}
++
++export async function finishWebhookEmail(
++  id: string,
++  outcome: { status: 'sent'; resendId: string } | { status: 'failed'; error: string }
++): Promise<boolean> {
++  try {
++    const { data, error } = await createAdminClient().rpc('email_send_finish', {
++      p_id: id,
++      p_status: outcome.status,
++      p_resend_id: outcome.status === 'sent' ? outcome.resendId : null,
++      p_error: outcome.status === 'failed' ? outcome.error.replace(SAFE, '').slice(0, 200) : null,
++    })
++    if (error) {
++      console.error('[email-ledger] could not record the outcome', outcome.status, short(error))
++      return false
++    }
++    return data === true
++  } catch (e) {
++    console.error('[email-ledger] could not record the outcome', outcome.status, short(e))
++    return false
++  }
++}
++
++/**
++ * Claims (stripeEventId, template), runs `send` only when the claim succeeded, and records the outcome.
++ * `label` is for logs (e.g. the subscription id); never pass an email address.
++ */
++export async function sendWebhookEmailOnce(
++  stripeEventId: string,
++  template: string,
++  label: string,
++  send: () => Promise<MailResult>
++): Promise<WebhookEmailOutcome> {
++  const claim = await claimWebhookEmail(stripeEventId, template)
++  if (claim.kind === 'error') {
++    console.error(`[email-ledger] claim failed; not sending: event=${stripeEventId} template=${template} ${label} (${claim.error})`)
++    return 'claim_error'
++  }
++  if (claim.kind === 'skip') {
++    console.info(`[email-ledger] already sent or in progress; skipping: event=${stripeEventId} template=${template} ${label}`)
++    return 'skipped'
++  }
++
++  let result: MailResult
++  try {
++    result = await send()
++  } catch (e) {
++    result = { success: false, reason: 'local_error', error: e instanceof Error ? e.message : 'Unknown error' }
++  }
++  if (result.success) {
++    await finishWebhookEmail(claim.id, { status: 'sent', resendId: result.id })
++    return 'sent'
++  }
++  const reason = ledgerErrorFor(result)
++  await finishWebhookEmail(claim.id, { status: 'failed', error: reason })
++  console.error(`[email-ledger] send failed: event=${stripeEventId} template=${template} ${label} attempt=${claim.attempts} (${reason})`)
++  return 'send_failed'
++}
+diff --git a/freeplug-landing/src/lib/rate-limit/event-log.ts b/freeplug-landing/src/lib/rate-limit/event-log.ts
+new file mode 100644
+index 0000000..e05dd7b
+--- /dev/null
++++ b/freeplug-landing/src/lib/rate-limit/event-log.ts
+@@ -0,0 +1,33 @@
++import 'server-only'
++import { createAdminClient } from '@/lib/supabase/admin'
++
++/**
++ * Event counter on the shared public.rate_limit_hits table (service role has select/insert; rate_check()
++ * purges rows older than 2 days). Used for the password-reset fallback count on the admin mail banner, so
++ * the count is shared by every Workers isolate without a migration. `label` must not contain personal data.
++ */
++export async function recordEvent(bucket: string, label: string): Promise<{ ok: boolean; error?: string }> {
++  try {
++    const { error } = await createAdminClient().from('rate_limit_hits').insert({ bucket, key_hash: label })
++    return error ? { ok: false, error: error.message } : { ok: true }
++  } catch (e) {
++    return { ok: false, error: e instanceof Error ? e.message : 'unknown error' }
++  }
++}
++
++/** Newest first, at most 1000. Returns null when the database can't be read. */
++export async function listEvents(bucket: string, sinceIso: string): Promise<{ label: string; at: string }[] | null> {
++  try {
++    const { data, error } = await createAdminClient()
++      .from('rate_limit_hits')
++      .select('key_hash, hit_at')
++      .eq('bucket', bucket)
++      .gte('hit_at', sinceIso)
++      .order('hit_at', { ascending: false })
++      .limit(1000)
++    if (error || !Array.isArray(data)) return null
++    return (data as { key_hash: string; hit_at: string }[]).map((r) => ({ label: r.key_hash, at: r.hit_at }))
++  } catch {
++    return null
++  }
++}
+diff --git a/freeplug-landing/src/lib/rate-limit/index.test.ts b/freeplug-landing/src/lib/rate-limit/index.test.ts
+index c1d1fe0..be3b658 100644
+--- a/freeplug-landing/src/lib/rate-limit/index.test.ts
++++ b/freeplug-landing/src/lib/rate-limit/index.test.ts
+@@ -11,7 +11,9 @@ vi.mock('@/lib/supabase/admin', () => ({
+   },
+ }))
+ 
+-import { HELP_CHAT_LIMIT, hashRateKey, rateCheck } from './index'
++import { readFileSync, readdirSync, statSync } from 'node:fs'
++import path from 'node:path'
++import { HELP_CHAT_LIMIT, hashRateKey, rateCheck, rateDecision } from './index'
+ import { clientIpFrom } from './client-ip'
+ 
+ describe('shared rate limiter', () => {
+@@ -77,4 +79,46 @@ describe('shared rate limiter', () => {
+       expect(out).toEqual([true, true, true, false])
+     })
+   })
++
++  describe('fail-open is for the password reset ONLY (Aria, round 5)', () => {
++    it('rateDecision reports allowed / limited / error; rateCheck maps error to "limited" (fail closed, unchanged)', async () => {
++      const quiet = vi.spyOn(console, 'error').mockImplementation(() => {})
++      rpc.mockResolvedValueOnce({ data: true, error: null })
++      expect(await rateDecision(HELP_CHAT_LIMIT, 'u')).toBe('allowed')
++      rpc.mockResolvedValueOnce({ data: false, error: null })
++      expect(await rateDecision(HELP_CHAT_LIMIT, 'u')).toBe('limited')
++      rpc.mockResolvedValueOnce({ data: null, error: { message: 'boom' } })
++      expect(await rateDecision(HELP_CHAT_LIMIT, 'u')).toBe('error')
++      brokenClient = true
++      expect(await rateDecision(HELP_CHAT_LIMIT, 'u')).toBe('error')
++      expect(await rateCheck(HELP_CHAT_LIMIT, 'u')).toBe(false)
++      brokenClient = false
++      rpc.mockResolvedValueOnce({ data: null, error: { message: 'boom' } })
++      expect(await rateCheck(HELP_CHAT_LIMIT, 'u')).toBe(false)
++      quiet.mockRestore()
++    })
++
++    it('only src/lib/auth/reset-rate-limit.ts uses rateDecision; every other caller still uses rateCheck', () => {
++      const src = path.resolve(__dirname, '../..')
++      const files: string[] = []
++      const walk = (d: string) => {
++        for (const n of readdirSync(d)) {
++          const p = path.join(d, n)
++          if (statSync(p).isDirectory()) walk(p)
++          else if (/\.(ts|tsx)$/.test(n) && !/\.test\.tsx?$/.test(n)) files.push(p)
++        }
++      }
++      walk(src)
++      const rel = (f: string) => path.relative(src, f)
++      const usesDecision = files.filter((f) => /\brateDecision\((?!\))/.test(readFileSync(f, 'utf8'))).map(rel).sort()
++      expect(usesDecision).toEqual(['lib/auth/reset-rate-limit.ts', 'lib/rate-limit/index.ts'])
++      const usesCheck = files.filter((f) => /\brateCheck\((?!\))/.test(readFileSync(f, 'utf8'))).map(rel).sort()
++      expect(usesCheck).toEqual([
++        'app/(dashboard)/dashboard/request-website/actions.ts',
++        'lib/outreach/resend-confirmation.ts',
++        'lib/outreach/server.ts',
++        'lib/rate-limit/index.ts',
++      ])
++    })
++  })
+ })
+diff --git a/freeplug-landing/src/lib/rate-limit/index.ts b/freeplug-landing/src/lib/rate-limit/index.ts
+index 3b3414e..72af3a0 100644
+--- a/freeplug-landing/src/lib/rate-limit/index.ts
++++ b/freeplug-landing/src/lib/rate-limit/index.ts
+@@ -13,7 +13,14 @@ export function hashRateKey(raw: string): string {
+   return createHash('sha256').update(`fp-rate:v1:${raw}`).digest('hex')
+ }
+ 
+-export async function rateCheck(rule: RateRule, rawKey: string): Promise<boolean> {
++export type RateDecision = 'allowed' | 'limited' | 'error'
++
++/**
++ * The raw decision, so a caller can choose what a database error means. Only the password reset uses this
++ * directly (it fails OPEN to its in-memory limit, src/lib/auth/reset-rate-limit.ts); everything else calls
++ * rateCheck(), which keeps failing closed.
++ */
++export async function rateDecision(rule: RateRule, rawKey: string): Promise<RateDecision> {
+   try {
+     const { data, error } = await createAdminClient().rpc('rate_check', {
+       p_bucket: rule.bucket,
+@@ -23,14 +30,19 @@ export async function rateCheck(rule: RateRule, rawKey: string): Promise<boolean
+     })
+     if (error) {
+       console.error('[rate_check]', error.message)
+-      return false
++      return 'error'
+     }
+-    return data === true
++    return data === true ? 'allowed' : 'limited'
+   } catch (e) {
+     console.error('[rate_check]', e instanceof Error ? e.message : e)
+-    return false
++    return 'error'
+   }
+ }
+ 
++/** true = allowed. Fails CLOSED: a database error counts as "over the limit" (unchanged behaviour). */
++export async function rateCheck(rule: RateRule, rawKey: string): Promise<boolean> {
++  return (await rateDecision(rule, rawKey)) === 'allowed'
++}
++
+ /** Dashboard help chat "Send request": 10 per hour per user. */
+ export const HELP_CHAT_LIMIT: RateRule = { bucket: 'help_chat_user', limit: 10, windowSeconds: 3600 }
+diff --git a/freeplug-landing/src/lib/supabase/anon.ts b/freeplug-landing/src/lib/supabase/anon.ts
+new file mode 100644
+index 0000000..37483e9
+--- /dev/null
++++ b/freeplug-landing/src/lib/supabase/anon.ts
+@@ -0,0 +1,16 @@
++import { createClient as createSupabaseClient } from '@supabase/supabase-js'
++
++/**
++ * Anon Supabase client with no cookies or session: safe in background work (ctx.waitUntil) after the
++ * response is gone. Used for the password-reset fallback (resetPasswordForEmail). Because no PKCE code
++ * verifier cookie can be set from there, the hosted "Reset password" email template must link to
++ * /auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password (see CF-PORT-NOTES).
++ */
++export function createAnonClient() {
++  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
++  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
++  if (!url || !key) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
++  return createSupabaseClient(url, key, {
++    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, flowType: 'implicit' },
++  })
++}
+diff --git a/freeplug-landing/supabase/migrations/20261003160000_email_sends.sql b/freeplug-landing/supabase/migrations/20261003160000_email_sends.sql
+new file mode 100644
+index 0000000..681d291
+--- /dev/null
++++ b/freeplug-landing/supabase/migrations/20261003160000_email_sends.sql
+@@ -0,0 +1,174 @@
++-- Webhook email ledger (Aria, Oct 3 2026).
++--
++-- Stops a webhook-driven email (today: the Stripe cancellation notice) going out twice when Stripe
++-- redelivers an event after Resend's 24 h idempotency window, or when two deliveries arrive at once.
++-- One row per (stripe_event_id, template). No recipient or other personal data is stored.
++--
++-- Claim protocol (src/lib/email/webhook-email-ledger.ts):
++--   1. email_send_claim(): INSERT ... ON CONFLICT (stripe_event_id, template) DO NOTHING RETURNING id.
++--      If nothing is returned, one conditional UPDATE re-claims the row only when it is 'failed', or
++--      'pending' with updated_at older than 15 minutes (a crash after the claim), bumping attempts.
++--      Zero rows back = someone else has it (or it was sent): skip the send.
++--   2. After the send, email_send_finish() marks the row 'sent' (with the Resend id) or 'failed'
++--      (short, PII-free error).
++-- Both run as the caller (service_role). Only the 30-day prune is SECURITY DEFINER.
++--
++-- Idempotent: IF NOT EXISTS / CREATE OR REPLACE / guarded policies; re-running changes nothing.
++
++create table if not exists public.email_sends (
++  id uuid primary key default gen_random_uuid(),
++  stripe_event_id text not null check (length(stripe_event_id) between 1 and 255),
++  template text not null check (length(template) between 1 and 64),
++  status text not null default 'pending' check (status in ('pending', 'sent', 'failed')),
++  resend_id text null check (resend_id is null or length(resend_id) <= 128),
++  attempts integer not null default 1 check (attempts >= 1),
++  last_error text null check (last_error is null or length(last_error) <= 200),
++  created_at timestamptz not null default now(),
++  updated_at timestamptz not null default now(),
++  constraint email_sends_stripe_event_id_template_key unique (stripe_event_id, template)
++);
++
++create index if not exists email_sends_created_at_idx on public.email_sends (created_at);
++
++comment on table public.email_sends is
++  'Webhook email ledger: one row per (Stripe event, template). No recipient or personal data. Pruned after 30 days.';
++
++-- RLS on and forced; no policies for anon or authenticated, so they can never see or write a row.
++alter table public.email_sends enable row level security;
++alter table public.email_sends force row level security;
++
++-- Privileges: nothing for PUBLIC / anon / authenticated (this also undoes Supabase's default
++-- "grant all on tables" in public). service_role gets only what the claim and finish need:
++-- SELECT (for RETURNING and the WHERE), INSERT and UPDATE. No DELETE: only the prune deletes.
++revoke all on table public.email_sends from public, anon, authenticated, service_role;
++grant select, insert, update on table public.email_sends to service_role;
++
++-- Policies (guarded so a re-run is a no-op):
++--  * service_role: has BYPASSRLS on Supabase; this policy keeps the ledger working even if it didn't.
++--  * the owner (the role running this migration): FORCE applies RLS to the owner too, so the
++--    SECURITY DEFINER prune gets a delete policy limited to rows older than 30 days.
++do $$
++begin
++  if not exists (
++    select 1 from pg_policies
++    where schemaname = 'public' and tablename = 'email_sends' and policyname = 'email_sends_service_role_all'
++  ) then
++    create policy email_sends_service_role_all on public.email_sends
++      for all to service_role using (true) with check (true);
++  end if;
++  if not exists (
++    select 1 from pg_policies
++    where schemaname = 'public' and tablename = 'email_sends' and policyname = 'email_sends_owner_prune'
++  ) then
++    create policy email_sends_owner_prune on public.email_sends
++      for delete to current_user using (created_at < now() - interval '30 days');
++  end if;
++  -- The prune's DELETE ... WHERE needs to read the rows it deletes.
++  if not exists (
++    select 1 from pg_policies
++    where schemaname = 'public' and tablename = 'email_sends' and policyname = 'email_sends_owner_prune_select'
++  ) then
++    create policy email_sends_owner_prune_select on public.email_sends
++      for select to current_user using (created_at < now() - interval '30 days');
++  end if;
++end
++$$;
++
++-- 30-day prune (same style as rate_check()'s occasional cleanup; the repo has no pg_cron). Called
++-- now and then from email_send_claim(); can also be called by the service role.
++create or replace function public.prune_email_sends()
++returns integer
++language plpgsql
++security definer
++set search_path = ''
++as $$
++declare
++  n integer;
++begin
++  delete from public.email_sends where created_at < pg_catalog.now() - interval '30 days';
++  get diagnostics n = row_count;
++  return n;
++end;
++$$;
++
++revoke execute on function public.prune_email_sends() from public, anon, authenticated;
++grant execute on function public.prune_email_sends() to service_role;
++
++-- Claim a (Stripe event, template) send. Returns one row (id, attempts) when the caller may send,
++-- zero rows when it must skip.
++create or replace function public.email_send_claim(p_stripe_event_id text, p_template text)
++returns table (id uuid, attempts integer)
++language plpgsql
++security invoker
++set search_path = ''
++as $$
++#variable_conflict use_column
++begin
++  if p_stripe_event_id is null or p_template is null
++     or length(p_stripe_event_id) = 0 or length(p_template) = 0 then
++    raise exception using message = 'email_send_claim: invalid arguments', errcode = '22023';
++  end if;
++
++  return query
++    insert into public.email_sends as e (stripe_event_id, template, status)
++    values (p_stripe_event_id, p_template, 'pending')
++    on conflict (stripe_event_id, template) do nothing
++    returning e.id, e.attempts;
++
++  if found then
++    if pg_catalog.random() < 0.01 then
++      perform public.prune_email_sends();
++    end if;
++    return;
++  end if;
++
++  -- Re-claim only a failed send or a stale pending one (crash after the claim). One statement, so
++  -- two concurrent retries can't both win.
++  return query
++    update public.email_sends as e
++       set status = 'pending',
++           attempts = e.attempts + 1,
++           last_error = null,
++           updated_at = pg_catalog.now()
++     where e.stripe_event_id = p_stripe_event_id
++       and e.template = p_template
++       and (e.status = 'failed'
++            or (e.status = 'pending' and e.updated_at < pg_catalog.now() - interval '15 minutes'))
++    returning e.id, e.attempts;
++end;
++$$;
++
++revoke execute on function public.email_send_claim(text, text) from public, anon, authenticated;
++grant execute on function public.email_send_claim(text, text) to service_role;
++
++-- Record the outcome of a claimed send. Only a 'pending' row changes; returns whether it did.
++create or replace function public.email_send_finish(
++  p_id uuid,
++  p_status text,
++  p_resend_id text default null,
++  p_error text default null
++)
++returns boolean
++language plpgsql
++security invoker
++set search_path = ''
++as $$
++begin
++  if p_id is null or p_status is null or p_status not in ('sent', 'failed') then
++    raise exception using message = 'email_send_finish: invalid arguments', errcode = '22023';
++  end if;
++
++  update public.email_sends
++     set status = p_status,
++         resend_id = case when p_status = 'sent' then pg_catalog.left(p_resend_id, 128) else resend_id end,
++         last_error = case when p_status = 'failed'
++                           then pg_catalog.left(coalesce(nullif(p_error, ''), 'failed'), 200)
++                           else null end,
++         updated_at = pg_catalog.now()
++   where id = p_id and status = 'pending';
++  return found;
++end;
++$$;
++
++revoke execute on function public.email_send_finish(uuid, text, text, text) from public, anon, authenticated;
++grant execute on function public.email_send_finish(uuid, text, text, text) to service_role;
+diff --git a/freeplug-landing/test/fake-email-sends.ts b/freeplug-landing/test/fake-email-sends.ts
+new file mode 100644
+index 0000000..7ba2fee
+--- /dev/null
++++ b/freeplug-landing/test/fake-email-sends.ts
+@@ -0,0 +1,75 @@
++/**
++ * In-memory stand-in for public.email_sends and its two RPCs (email_send_claim / email_send_finish),
++ * with the same rules as the SQL in supabase/migrations/20261003160000_email_sends.sql (checked against
++ * a real Postgres 17 by /workspace/owen/email-sends-pgtest/run-throwaway.sh). Each RPC call is atomic,
++ * like the single SQL statement it mirrors. The clock is controllable.
++ */
++export type FakeEmailSendRow = {
++  id: string
++  stripe_event_id: string
++  template: string
++  status: 'pending' | 'sent' | 'failed'
++  resend_id: string | null
++  attempts: number
++  last_error: string | null
++  created_at: number
++  updated_at: number
++}
++
++export function createFakeEmailSends() {
++  const rows = new Map<string, FakeEmailSendRow>()
++  let clock = Date.parse('2026-10-03T16:00:00Z')
++  let seq = 0
++  const state = {
++    rows,
++    /** 'error' = the RPC returns a PostgREST error; 'throw' = the client throws (e.g. no service role). */
++    claimFailure: null as null | 'error' | 'throw',
++    calls: [] as string[],
++    advance(ms: number) {
++      clock += ms
++    },
++    byEvent(eventId: string, template = 'subscription-cancelled') {
++      return rows.get(`${eventId}|${template}`)
++    },
++    async rpc(fn: string, args: Record<string, unknown>) {
++      state.calls.push(fn)
++      if (fn === 'email_send_claim') {
++        if (state.claimFailure === 'throw') throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY')
++        if (state.claimFailure === 'error') return { data: null, error: { code: '08006', message: 'connection refused' } }
++        const key = `${args.p_stripe_event_id}|${args.p_template}`
++        const existing = rows.get(key)
++        if (!existing) {
++          const row: FakeEmailSendRow = {
++            id: `00000000-0000-4000-8000-${String(++seq).padStart(12, '0')}`,
++            stripe_event_id: String(args.p_stripe_event_id),
++            template: String(args.p_template),
++            status: 'pending',
++            resend_id: null,
++            attempts: 1,
++            last_error: null,
++            created_at: clock,
++            updated_at: clock,
++          }
++          rows.set(key, row)
++          return { data: [{ id: row.id, attempts: row.attempts }], error: null }
++        }
++        const stale = existing.status === 'pending' && existing.updated_at < clock - 15 * 60_000
++        if (existing.status === 'failed' || stale) {
++          Object.assign(existing, { status: 'pending', attempts: existing.attempts + 1, last_error: null, updated_at: clock })
++          return { data: [{ id: existing.id, attempts: existing.attempts }], error: null }
++        }
++        return { data: [], error: null }
++      }
++      if (fn === 'email_send_finish') {
++        const row = [...rows.values()].find((r) => r.id === args.p_id)
++        if (!row || row.status !== 'pending') return { data: false, error: null }
++        if (args.p_status === 'sent') Object.assign(row, { status: 'sent', resend_id: args.p_resend_id ?? null, last_error: null })
++        else Object.assign(row, { status: 'failed', last_error: String(args.p_error ?? 'failed').slice(0, 200) })
++        row.updated_at = clock
++        return { data: true, error: null }
++      }
++      return { data: null, error: { code: 'PGRST202', message: `unknown function ${fn}` } }
++    },
++  }
++  return state
++}
+diff --git a/freeplug-landing/wrangler.jsonc b/freeplug-landing/wrangler.jsonc
+index dc18871..b80f751 100644
+--- a/freeplug-landing/wrangler.jsonc
++++ b/freeplug-landing/wrangler.jsonc
+@@ -55,5 +55,5 @@
+   // Email: Resend is the only app sender (src/lib/email/mailer.ts sendMail(); nodemailer removed).
+   // The Resend key is a Worker SECRET only (`wrangler versions secret put`, see CF-PORT-NOTES.md); its
+   // name must never appear in this file (the upload guard and src/lib/email/no-nodemailer.test.ts check).
+-  // EMAIL_FROM / EMAIL_FROM_NAME / EMAIL_REPLY_TO may go in "vars" (defaults: Freeplug <support@freeplug-in.dev>).
++  // EMAIL_FROM / EMAIL_FROM_NAME / EMAIL_REPLY_TO may go in "vars" (defaults: Freeplug <no-reply@freeplug-in.dev>, Reply-To support@freeplug-in.dev).
+ }
