@@ -1,6 +1,8 @@
 import type { CatalogSource } from '@/lib/merch/catalog-filter-types'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
-import { catalogShirtSkipsPreviewWordmarkOverlay, isPlainCatalogGarment } from './preview-overlay-eligibility'
+import { getSupremePreviewSpec, isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
+import { isPlainCatalogGarment } from './preview-overlay-eligibility'
+import { wordmarkScaleFromPlacement } from './preview-overlay-layout'
 import { inferProductTypeFromCatalog, placementForProductType, type PreviewPlacement } from './placement-defaults'
 import {
   DEFAULT_BUYER_WORDMARK_BRAND,
@@ -79,7 +81,30 @@ export type ResolvePreviewWordmarkInput = {
 
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
   if (isDigitalMerchHref(input.href)) return null
-  if (catalogShirtSkipsPreviewWordmarkOverlay(input.source)) {
+
+  if (input.source === 't-shirts') {
+    if (isVerseShirtSlug(input.slug) || isGivingCampaignShirtSlug(input.slug)) {
+      return null
+    }
+    if (isSupremeStyleShirtSlug(input.slug)) {
+      const spec = getSupremePreviewSpec(input.slug)!
+      const blankKind =
+        input.garmentColor != null ? blankKindFromColor(input.garmentColor) : 'dark'
+      const p = spec.placement
+      const placement: PreviewPlacement = {
+        top: p.top,
+        left: p.left,
+        width: p.width,
+        scale: wordmarkScaleFromPlacement({ width: p.width }),
+      }
+      return {
+        variationId: spec.variationId,
+        placement,
+        blankKind,
+        mode: 'full',
+        printSurface: true,
+      }
+    }
     return null
   }
 

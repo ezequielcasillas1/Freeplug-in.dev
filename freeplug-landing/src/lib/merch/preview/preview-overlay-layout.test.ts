@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getSupremePreviewSpec, supremeWordmarkPlacement } from '@/lib/merch/shirts/supreme-preview'
 import { placementToSvgPoint, wordmarkScaleFromPlacement } from './preview-overlay-layout'
-import { resolvePreviewWordmark } from './preview-wordmark-resolve'
+import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
 
 describe('preview overlay layout', () => {
   it('places slogan tee badges on wearers left upper chest', () => {
@@ -21,16 +21,16 @@ describe('preview overlay layout', () => {
     expect(scale).toBeCloseTo(0.25, 2)
   })
 
-  it('does not overlay wordmarks on catalog t-shirts', () => {
-    expect(
-      resolvePreviewWordmark({
-        source: 't-shirts',
-        slug: '28-world-taste-the-charge',
-        href: '/merch/t-shirts/28-world-taste-the-charge',
-        productType: 't-shirt',
-        catalogKey: 'tshirts/28-world-taste-the-charge',
-        garmentColor: 'Black',
-      })
-    ).toBeNull()
+  it('overlays print-surface wordmarks on init/world rectangular tees', () => {
+    const r = resolvePreviewWordmark({
+      source: 't-shirts',
+      slug: '28-world-taste-the-charge',
+      href: '/merch/t-shirts/28-world-taste-the-charge',
+      productType: 't-shirt',
+      catalogKey: 'tshirts/28-world-taste-the-charge',
+      garmentColor: 'Black',
+    })
+    expect(r?.printSurface).toBe(true)
+    expect(r?.placement.top).toBeCloseTo(0.577, 2)
   })
 })

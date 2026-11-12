@@ -14,6 +14,7 @@ export function isPlainCatalogGarment(source: CatalogSource | null): boolean {
   return false
 }
 
+/** Catalog filter “rectangular style” previews — not designed init/world tee chest art (see resolvePreviewWordmark). */
 export function catalogShirtSkipsPreviewWordmarkOverlay(source: CatalogSource | null): boolean {
   return source === 't-shirts'
 }

@@ -16,7 +16,6 @@ import {
   formatUsdFromCents,
   getShirtBySlug,
   shirtDefaultSelectedColor,
-  shirtMockupPublicPath,
   shirtPriceCents,
   shirtShippingCents,
   type PublicShirtProduct,
@@ -24,6 +23,8 @@ import {
   type ShirtSize,
 } from '@/lib/merch/shirts/catalog'
 import { MERCH_PAGE_TITLE_SCROLL_MT, MERCH_TSHIRT_MAIN_CLASS } from '@/features/merch/merch-main-layout'
+import { usePreviewOverlaysEnabled } from '@/features/merch/hooks/usePreviewOverlaysEnabled'
+import { shirtGarmentDisplayMockupSrc } from '@/lib/merch/shirts/shirt-display-mockup'
 import { cn } from '@/lib/utils/cn'
 
 const SWATCH: Record<ShirtColor, string> = {
@@ -59,12 +60,13 @@ export function ShirtProductClient({
   const [size, setSize] = useState<ShirtSize>('M')
   const [quantity, setQuantity] = useState(1)
   const [view, setView] = useState<'front' | 'back'>('front')
+  const layersOn = usePreviewOverlaysEnabled()
 
   const canToggleBack = product.backPrint
   const mockupSrc = useMemo(() => {
-    if (view === 'back' && canToggleBack) return shirtMockupPublicPath(product.slug, color, 'back')
-    return shirtMockupPublicPath(product.slug, color, 'front')
-  }, [canToggleBack, color, product.slug, view])
+    const side = view === 'back' && canToggleBack ? 'back' : 'front'
+    return shirtGarmentDisplayMockupSrc(product.slug, color, side, { designedSvgFront: layersOn })
+  }, [canToggleBack, color, layersOn, product.slug, view])
 
   const unitCents = shirtPriceCents(entry, size)
   const shippingCents = shirtShippingCents(quantity)

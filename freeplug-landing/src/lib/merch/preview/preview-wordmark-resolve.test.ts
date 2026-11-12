@@ -29,9 +29,24 @@ describe('resolvePreviewWordmark', () => {
     ).toBeNull()
   })
 
-  it('skips preview overlays on all catalog t-shirts (designed front art)', () => {
+  it('renders print-surface SVG for init/world rectangular tees', () => {
+    const r = resolvePreviewWordmark({
+      source: 't-shirts',
+      slug: '11-init-open-hand-give',
+      href: '/merch/t-shirts/11-init-open-hand-give',
+      productType: 't-shirt',
+      catalogKey: 'tshirts/11-init-open-hand-give',
+      garmentColor: 'Black',
+    })
+    expect(r?.variationId).toBe('v01-fpid-code-panel')
+    expect(r?.printSurface).toBe(true)
+    expect(r?.chestBadge).toBeFalsy()
+  })
+
+  it('skips overlays on giving, verse, and other baked-art tees', () => {
     for (const slug of [
-      '11-init-open-hand-give',
+      '01-know-a-plug',
+      '07-verse-psalm-82-3',
       '31-world-plugs-dont-work',
       '35-world-straight-after-the-freeplug',
       'patience-undefined',
