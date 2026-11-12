@@ -1,9 +1,12 @@
 import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { resolvePreviewWordmark, type ResolvedPreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
+import { getShopItem } from '@/lib/merch/shop/catalog'
 import {
-  blankKindForShopBlankSrc,
+  blankKindForCatalogColor,
   galleryIndexForSrc,
   resolveShopPreviewBlankKind,
+  shopDefaultPreviewColor,
+  shopHeroImageSrc,
 } from '@/lib/merch/shop/shop-gallery-blank-kind'
 import { isRemoteShopImage } from '@/lib/merch/shop/shop-listing-image'
 import type { ShopCatalogItem } from './types'
@@ -22,32 +25,46 @@ function slugFromCatalogKey(key: string): string {
 
 function previewItemFromFilter(
   item: CatalogFilterItem
-): Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'> {
+): Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds' | 'variants'> {
   return {
     gallery: [...(item.gallery ?? [])],
     galleryBlankKinds: item.galleryBlankKinds ? [...item.galleryBlankKinds] : undefined,
+    variants: [],
   }
 }
 
-/** Blank kind for the grid hero image (per-slide analysis from #63). */
+/** Blank kind for the grid hero (default preview color + visible slide). */
 export function shopGridGarmentBlankKind(item: CatalogFilterItem): 'light' | 'dark' {
-  const previewItem = previewItemFromFilter(item)
-  const galleryIndex = galleryIndexForSrc(previewItem, item.image)
-  const fromSlide =
-    previewItem.galleryBlankKinds?.length && galleryIndex >= 0
-      ? blankKindForShopBlankSrc(previewItem, item.image)
-      : null
-  if (fromSlide) return fromSlide
+  const slug = slugFromCatalogKey(item.key)
+  const catalogItem = getShopItem(slug)
+  const previewItem = catalogItem ?? previewItemFromFilter(item)
+  const imageSrc = catalogItem ? shopHeroImageSrc(catalogItem) : item.image
+  const galleryIndex = galleryIndexForSrc(previewItem, imageSrc)
+  const garmentColor = catalogItem
+    ? shopDefaultPreviewColor(catalogItem)
+    : item.colors[0] ?? null
+  if (catalogItem && garmentColor) {
+    const variant = catalogItem.variants.find((v) => v.color === garmentColor)
+    if (variant?.blankKind) return variant.blankKind
+    return blankKindForCatalogColor(catalogItem, garmentColor)
+  }
   return resolveShopPreviewBlankKind({
-    item: previewItem,
-    garmentColor: item.colors[0] ?? null,
-    displayImageSrc: item.image,
+    item: catalogItem ?? previewItem,
+    garmentColor,
+    displayImageSrc: imageSrc,
     galleryIndex,
   })
 }
 
 export function shopGridMockupPropsForItem(item: CatalogFilterItem): ShopGridMockupProps {
   const slug = slugFromCatalogKey(item.key)
+  const catalogItem = getShopItem(slug)
+  const previewItem = catalogItem ?? previewItemFromFilter(item)
+  const imageSrc = catalogItem ? shopHeroImageSrc(catalogItem) : item.image
+  const galleryIndex = galleryIndexForSrc(previewItem, imageSrc)
+  const garmentColor = catalogItem
+    ? shopDefaultPreviewColor(catalogItem)
+    : item.colors[0] ?? null
   const garmentBlankKind = shopGridGarmentBlankKind(item)
   const overlay = resolvePreviewWordmark({
     source: item.source,
@@ -55,12 +72,15 @@ export function shopGridMockupPropsForItem(item: CatalogFilterItem): ShopGridMoc
     href: item.href,
     productType: item.productType,
     catalogKey: item.key,
-    garmentColor: item.colors[0] ?? null,
+    garmentColor,
     garmentBlankKind,
+    galleryIndex,
+    galleryLength: previewItem.gallery?.length ?? 1,
+    shopPrintArea: catalogItem?.printArea ?? null,
   })
-  const remoteImage = isRemoteShopImage(item.image)
+  const remoteImage = isRemoteShopImage(imageSrc)
   return {
-    imageSrc: item.image,
+    imageSrc,
     garmentBlankKind,
     overlay,
     remoteImage,

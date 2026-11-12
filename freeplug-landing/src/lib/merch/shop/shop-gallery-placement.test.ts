@@ -1,0 +1,53 @@
+import { describe, expect, it } from 'vitest'
+import { resolveShopGalleryPlacement } from './shop-gallery-placement'
+
+const CHEKE_SLUGS = [
+  'cotton-canvas-tote-bag-1313',
+  'canvas-tote-bag-5-color-straps-507',
+  'zippered-canvas-tote-1990',
+  'tote-bag-aop-1389',
+  'action-snapback-cap-5284',
+  'dad-hat-with-leather-patch-rectangle-1221',
+  'snapback-trucker-cap-1743',
+  'mid-profile-baseball-cap-with-leather-patch-rect-2707',
+  'classic-cuffed-beanie-embroidery-1691',
+] as const
+
+describe('shopGalleryPlacement', () => {
+  it.each(CHEKE_SLUGS)('%s has a placement entry on slide 0', (slug) => {
+    const p = resolveShopGalleryPlacement({
+      slug,
+      productType: null,
+      catalogKey: `shop/${slug}`,
+      galleryIndex: 0,
+      galleryLength: 2,
+    })
+    expect(p).not.toBeNull()
+    expect(p!.left).toBeGreaterThan(0.2)
+    expect(p!.left).toBeLessThan(0.8)
+    expect(p!.width).toBeGreaterThan(0.12)
+  })
+
+  it('caps place wordmark on crown (upper mockup)', () => {
+    const p = resolveShopGalleryPlacement({
+      slug: 'action-snapback-cap-5284',
+      productType: 'hat',
+      catalogKey: 'shop/action-snapback-cap-5284',
+      galleryIndex: 0,
+      galleryLength: 2,
+    })
+    expect(p!.top).toBeLessThan(0.28)
+    expect(p!.width).toBeLessThan(0.26)
+  })
+
+  it('totes place wordmark on bag body (mid–lower mockup)', () => {
+    const p = resolveShopGalleryPlacement({
+      slug: 'cotton-canvas-tote-bag-1313',
+      productType: 'bag',
+      catalogKey: 'shop/cotton-canvas-tote-bag-1313',
+      galleryIndex: 0,
+      galleryLength: 2,
+    })
+    expect(p!.top).toBeGreaterThan(0.5)
+  })
+})

@@ -5,7 +5,11 @@ import { CatalogPreviewWordmarkOverlay } from '@/features/merch/components/Catal
 import { MerchMockupArtboard } from '@/features/merch/components/MerchMockupArtboard'
 import type { CatalogFilterItem } from '@/lib/merch/catalog-filter-types'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
-import { blankKindForShopBlankSrc, resolveShopPreviewBlankKind } from '@/lib/merch/shop/shop-gallery-blank-kind'
+import {
+  blankKindForShopBlankSrc,
+  galleryIndexForSrc,
+  resolveShopPreviewBlankKind,
+} from '@/lib/merch/shop/shop-gallery-blank-kind'
 
 function slugFromCatalogKey(key: string): string {
   const slash = key.indexOf('/')
@@ -39,6 +43,8 @@ export function CatalogCardWithPreview({
           garmentColor: item.colors[0] ?? null,
           displayImageSrc: item.image,
         })
+  const galleryIndex =
+    shopPreviewItem && item.image ? galleryIndexForSrc(shopPreviewItem, item.image) : 0
   const overlay = resolvePreviewWordmark({
     source: item.source,
     slug,
@@ -47,6 +53,8 @@ export function CatalogCardWithPreview({
     catalogKey: item.key,
     garmentColor: item.colors[0] ?? null,
     garmentBlankKind,
+    galleryIndex,
+    galleryLength: item.gallery?.length ?? 1,
   })
 
   return (

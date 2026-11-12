@@ -188,17 +188,15 @@ export function ShopProductClient({
   const canBuyCustom = designMode === 'custom' && Boolean(customPath) && Boolean(uploadToken) && rightsConfirmed && !customSoldOut
   const buyDisabled = !checkoutEnabled || (designMode === 'freeplug' ? !canBuyFreeplug : !canBuyCustom)
 
-  const previewGarmentBlankKind = useMemo(
-    () =>
-      resolveShopPreviewBlankKind({
-        item,
-        garmentColor: color || null,
-        variantBlankKind: variant?.blankKind,
-        displayImageSrc: productSrc,
-        galleryIndex,
-      }),
-    [color, galleryIndex, item, productSrc, variant?.blankKind]
-  )
+  const previewGarmentBlankKind = useMemo(() => {
+    if (variant?.blankKind) return variant.blankKind
+    return resolveShopPreviewBlankKind({
+      item,
+      garmentColor: color || null,
+      displayImageSrc: productSrc,
+      galleryIndex,
+    })
+  }, [color, galleryIndex, item, productSrc, variant?.blankKind])
 
   function syncWordmarkQuery(brand: BuyerWordmarkBrandKey, style: BuyerWordmarkStyleKey) {
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
@@ -221,11 +219,17 @@ export function ShopProductClient({
             garmentBlankKind: previewGarmentBlankKind,
             buyerWordmarkBrand: wordmarkBrand,
             buyerWordmarkStyle: wordmarkStyle,
+            galleryIndex,
+            galleryLength: item.gallery.length,
+            shopPrintArea: item.printArea,
           })
         : null,
     [
       color,
       designMode,
+      galleryIndex,
+      item.gallery.length,
+      item.printArea,
       item.productType,
       item.slug,
       previewGarmentBlankKind,

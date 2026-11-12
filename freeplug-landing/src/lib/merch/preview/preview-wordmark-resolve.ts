@@ -15,6 +15,8 @@ import {
 import { variationIdForBuyerWordmark } from './buyer-wordmark-variation'
 import { buyerShopUsesPreviewWordmarkOverlay } from './preview-overlay-eligibility'
 import { classifyBlankColor } from '@/lib/merch/shop/contrast'
+import { resolveShopGalleryPlacement } from '@/lib/merch/shop/shop-gallery-placement'
+import type { ShopPrintArea } from '@/lib/merch/shop/types'
 import { stableCatalogIndex, variationIdForStableIndex } from './wordmark-variations'
 
 export type PreviewWordmarkMode = 'full' | 'skip'
@@ -75,6 +77,10 @@ export type ResolvePreviewWordmarkInput = {
   buyerWordmarkStyle?: BuyerWordmarkStyleKey | null
   /** When set (buyer-shop), ink follows the visible mockup, not only the color label. */
   garmentBlankKind?: 'light' | 'dark' | null
+  /** Buyer-shop: which gallery slide is visible (per-image placement table). */
+  galleryIndex?: number
+  galleryLength?: number
+  shopPrintArea?: ShopPrintArea | null
 }
 
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
@@ -92,9 +98,29 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
   const blankKind =
       input.garmentBlankKind ??
       (input.garmentColor ? classifyBlankColor(input.garmentColor) : 'light')
+    const galleryIndex = input.galleryIndex ?? 0
+    const placementResolved = resolveShopGalleryPlacement({
+      slug: input.slug,
+      productType: input.productType,
+      catalogKey: input.catalogKey,
+      galleryIndex,
+      galleryLength: input.galleryLength ?? Math.max(1, galleryIndex + 1),
+      printArea: input.shopPrintArea ?? undefined,
+    })
+    const fallbackPlacement = placementForProductType(productType)
+    if (placementResolved === null) {
+      return {
+        variationId: variationIdForBuyerWordmark(brand, style),
+        placement: fallbackPlacement,
+        blankKind,
+        mode: 'skip',
+        printSurface: !plateStyle,
+      }
+    }
+    const { hide: _hide, ...placement } = placementResolved
     return {
       variationId: variationIdForBuyerWordmark(brand, style),
-      placement: placementForProductType(productType),
+      placement,
       blankKind,
       mode: 'full',
       printSurface: !plateStyle,

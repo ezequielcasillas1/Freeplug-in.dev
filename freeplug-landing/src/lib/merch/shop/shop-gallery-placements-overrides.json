@@ -1,0 +1,58 @@
+{
+  "bySlug": {
+    "cotton-canvas-tote-bag-1313": {
+      "slides": [
+        { "top": 0.61, "left": 0.48, "width": 0.26 },
+        { "top": 0.58, "left": 0.5, "width": 0.28 }
+      ]
+    },
+    "canvas-tote-bag-5-color-straps-507": {
+      "slides": [
+        { "top": 0.6, "left": 0.5, "width": 0.28 },
+        { "top": 0.58, "left": 0.5, "width": 0.28 }
+      ]
+    },
+    "zippered-canvas-tote-1990": {
+      "slides": [
+        { "top": 0.59, "left": 0.5, "width": 0.27 },
+        { "top": 0.58, "left": 0.5, "width": 0.27 }
+      ]
+    },
+    "tote-bag-aop-1389": {
+      "slides": [
+        { "top": 0.57, "left": 0.5, "width": 0.3 },
+        { "top": 0.56, "left": 0.5, "width": 0.3 }
+      ]
+    },
+    "action-snapback-cap-5284": {
+      "slides": [
+        { "top": 0.18, "left": 0.49, "width": 0.2 },
+        { "top": 0.17, "left": 0.49, "width": 0.2 }
+      ]
+    },
+    "dad-hat-with-leather-patch-rectangle-1221": {
+      "slides": [
+        { "top": 0.19, "left": 0.5, "width": 0.19 },
+        { "top": 0.18, "left": 0.5, "width": 0.19 }
+      ]
+    },
+    "snapback-trucker-cap-1743": {
+      "slides": [
+        { "top": 0.17, "left": 0.5, "width": 0.21 },
+        { "top": 0.17, "left": 0.5, "width": 0.21 }
+      ]
+    },
+    "mid-profile-baseball-cap-with-leather-patch-rect-2707": {
+      "slides": [
+        { "top": 0.18, "left": 0.5, "width": 0.2 },
+        { "top": 0.18, "left": 0.5, "width": 0.2 }
+      ]
+    },
+    "classic-cuffed-beanie-embroidery-1691": {
+      "slides": [
+        { "top": 0.23, "left": 0.5, "width": 0.2 },
+        { "top": 0.24, "left": 0.5, "width": 0.2 }
+      ]
+    }
+  }
+}

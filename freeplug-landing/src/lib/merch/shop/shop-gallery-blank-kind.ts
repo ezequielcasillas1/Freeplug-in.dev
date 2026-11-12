@@ -38,13 +38,29 @@ export function blankKindForShopBlankSrc(
   return blankKindForGallerySlide(item, idx)
 }
 
+/** Blank kind for a catalog color row (variant metadata wins over name heuristics). */
+export function blankKindForCatalogColor(
+  item: Partial<Pick<ShopCatalogItem, 'variants'>>,
+  garmentColor: string | null | undefined
+): BlankKind {
+  if (garmentColor && item.variants?.length) {
+    const variant = item.variants.find((v) => v.color === garmentColor)
+    if (variant?.blankKind) return variant.blankKind
+  }
+  return classifyBlankColor(garmentColor)
+}
+
 /** Pick the slide whose analyzed blank kind matches the target color (e.g. Black → dark hoodie photo). */
 export function shopGalleryIndexForColor(item: ShopCatalogItem, garmentColor: string | null | undefined): number {
-  const target = classifyBlankColor(garmentColor)
+  const target = blankKindForCatalogColor(item, garmentColor)
   const kinds = item.galleryBlankKinds
   if (kinds?.length) {
     const exact = kinds.findIndex((k) => k === target)
     if (exact >= 0) return exact
+    const uniformKind = kinds.length >= 2 && kinds.every((k) => k === kinds[0])
+    if (uniformKind) {
+      return target === 'dark' ? kinds.length - 1 : 0
+    }
     return 0
   }
   if (item.gallery.length < 2) return 0
@@ -58,6 +74,16 @@ export function shopGalleryIndexForBlankKind(item: ShopCatalogItem, blankKind: B
 const HERO_COLOR_PRIORITY = ['sand', 'natural', 'arctic white', 'white', 'ash', 'athletic heather']
 
 /** Prefer a catalog color that matches the hero slide's blank kind. */
+export function shopHeroGalleryIndex(item: ShopCatalogItem): number {
+  const color = shopDefaultPreviewColor(item)
+  return shopGalleryIndexForColor(item, color)
+}
+
+export function shopHeroImageSrc(item: ShopCatalogItem): string {
+  const idx = shopHeroGalleryIndex(item)
+  return item.gallery[idx] ?? item.gridImage
+}
+
 export function shopDefaultPreviewColor(item: ShopCatalogItem): string | null {
   const heroIdx = galleryIndexForSrc(item, item.gridImage)
   const heroKind = blankKindForGallerySlide(item, heroIdx) ?? blankKindForShopBlankSrc(item, item.gridImage)
@@ -75,7 +101,7 @@ export function shopDefaultPreviewColor(item: ShopCatalogItem): string | null {
 }
 
 export function resolveShopPreviewBlankKind(opts: {
-  item?: Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'> | null
+  item?: (Pick<ShopCatalogItem, 'gallery' | 'galleryBlankKinds'> & Partial<Pick<ShopCatalogItem, 'variants'>>) | null
   garmentColor?: string | null
   variantBlankKind?: BlankKind | null
   displayImageSrc?: string | null
@@ -92,6 +118,9 @@ export function resolveShopPreviewBlankKind(opts: {
     }
   }
   if (opts.variantBlankKind) return opts.variantBlankKind
+  if (opts.item?.variants && opts.item.variants.length > 0) {
+    return blankKindForCatalogColor({ variants: opts.item.variants }, opts.garmentColor)
+  }
   return classifyBlankColor(opts.garmentColor)
 }
 
