@@ -1018,13 +1018,13 @@
     "posicharge-competitor-7-pocketed-short-4616": {
       "slides": [
         {
-          "hide": true
-        },
-        {
-          "top": 0.5,
-          "left": 0.28,
+          "top": 0.46,
+          "left": 0.38,
           "width": 0.17,
           "inkBlankKind": "light"
+        },
+        {
+          "hide": true
         }
       ]
     },

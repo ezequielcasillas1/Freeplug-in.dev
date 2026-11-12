@@ -13,7 +13,14 @@
     "kiss-cut-stickers-400": "Both slides show YOUR DESIGN / sample sticker art in the hero frame; no slide without Printify text.",
     "colored-frame-posters-5651": "Slide 0 and slide 1 both exceed placeholder-text band (~44–65%) with YOUR DESIGN in frame.",
     "natural-stone-stretch-bar-bracelet-engraving-2651": "Slide 1 (cleanest) still shows ENGRAVE slogan band (~15%+) in lifestyle hero.",
-    "wooden-ornaments-697": "Hero slide 1: baked sample pattern and placeholder text band (~47%); no clean wood-only hero."
+    "wooden-ornaments-697": "Hero slide 1: baked sample pattern and placeholder text band (~47%); no clean wood-only hero.",
+    "circle-necklace-engraving-2341": "Pendant bar still shows baked YOUR DESIGN / engrave sample text on every visible slide.",
+    "heart-necklace-engraving-2655": "Pendant shows baked sample engrave text on hero slide.",
+    "horizontal-bar-necklace-engraving-2654": "Pendant shows baked sample engrave text on hero slide.",
+    "cutout-heart-bar-necklace-engraving-2659": "Pendant shows baked sample engrave text on hero slide.",
+    "cutout-paw-bar-necklace-engraving-2652": "Pendant shows baked sample engrave text on hero slide.",
+    "clip-on-pet-bandana-1672": "Purple Printify sample pattern on bandana; mark not visible in rendered hero.",
+    "snapback-trucker-cap-1446": "Only gallery slides are worn/lifestyle; mark straddles mesh and navy or overlaps skin — no flat mock hero."
   },
   "slugs": [
     "12-solid-cuffed-beanie-5665",
@@ -27,7 +34,14 @@
     "kiss-cut-stickers-400",
     "colored-frame-posters-5651",
     "natural-stone-stretch-bar-bracelet-engraving-2651",
-    "wooden-ornaments-697"
+    "wooden-ornaments-697",
+    "circle-necklace-engraving-2341",
+    "heart-necklace-engraving-2655",
+    "horizontal-bar-necklace-engraving-2654",
+    "cutout-heart-bar-necklace-engraving-2659",
+    "cutout-paw-bar-necklace-engraving-2652",
+    "clip-on-pet-bandana-1672",
+    "snapback-trucker-cap-1446"
   ],
   "ownerNoVisibleMark": []
 }

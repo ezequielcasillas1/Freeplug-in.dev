@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T10:03:31.946Z",
+  "generatedAt": "2026-11-12T10:26:06.947Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -1463,13 +1463,13 @@
     "posicharge-competitor-7-pocketed-short-4616": {
       "slides": [
         {
-          "hide": true
-        },
-        {
-          "top": 0.5,
-          "left": 0.28,
+          "top": 0.46,
+          "left": 0.38,
           "width": 0.17,
           "inkBlankKind": "light"
+        },
+        {
+          "hide": true
         }
       ]
     },
