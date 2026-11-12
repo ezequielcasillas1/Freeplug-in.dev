@@ -3,7 +3,7 @@
  * PDP/grid overlay QA sheets — full hero mockup + visible overlay + slug label (~40 tiles/page).
  * Usage: BASE_URL=http://127.0.0.1:3013 node scripts/render-shop-overlay-contact-sheet.mjs
  */
-import { mkdirSync, readFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
@@ -56,7 +56,17 @@ function printableHeroSlideIndex(slug, galleryLength) {
   return 0
 }
 
-const slugs = catalog.items.map((i) => i.slug)
+const noCleanDoc = JSON.parse(
+  readFileSync(path.join(ROOT, 'src/lib/merch/shop/shop-no-clean-mockup.json'), 'utf8')
+)
+const noClean = new Set(noCleanDoc.slugs ?? [])
+const excludeNoClean = process.env.SHOP_EXCLUDE_NO_CLEAN_MOCKUP !== 'false'
+const slugs = catalog.items
+  .map((i) => i.slug)
+  .filter((slug) => !(excludeNoClean && noClean.has(slug)))
+
+const overlayDebugLog = path.join(ARTIFACTS, 'shop-overlay-contact-debug.log')
+appendFileSync(overlayDebugLog, `\n--- render ${new Date().toISOString()} excludeNoClean=${excludeNoClean} tiles=${slugs.length} ---\n`)
 
 async function slugLabelSvg(slug, width) {
   const short = slug.length > 42 ? `${slug.slice(0, 40)}…` : slug
@@ -142,6 +152,43 @@ async function capturePdpHero(slug) {
         await btn.click({ timeout: 8000 }).catch(() => {})
         await page.waitForTimeout(450)
       }
+    }
+  }
+  const slidePl = placementsDoc.bySlug[slug]?.slides?.[heroIdx]
+  const diag = await page.evaluate(() => {
+    const root = document.querySelector('[data-testid="shop-pdp-hero-mockup"]')
+    const svg = root?.querySelector('svg')
+    const g = svg?.querySelector('g')
+    const rb = root?.getBoundingClientRect()
+    const gb = g?.getBoundingClientRect()
+    const ink =
+      svg?.querySelector('[fill="#1c1c1c"], [fill="#000"], [fill="black"]') != null
+        ? 'dark'
+        : svg?.querySelector('[fill="#fff"], [fill="#ffffff"], [fill="white"]') != null
+          ? 'light'
+          : 'unknown'
+    return {
+      hasSvg: Boolean(svg),
+      hasOverlayGroup: Boolean(g),
+      inkGuess: ink,
+      bboxNorm:
+        gb && rb && rb.width > 0
+          ? {
+              left: (gb.x - rb.x) / rb.width,
+              top: (gb.y - rb.y) / rb.height,
+              width: gb.width / rb.width,
+              height: gb.height / rb.height,
+            }
+          : null,
+    }
+  })
+  if (slidePl && !slidePl.hide && typeof slidePl.top === 'number') {
+    appendFileSync(
+      overlayDebugLog,
+      `${slug} slide=${heroIdx} placement=${JSON.stringify(slidePl)} dom=${JSON.stringify(diag)}\n`
+    )
+    if (!diag.hasOverlayGroup) {
+      console.warn(`[overlay-missing] ${slug} slide ${heroIdx}`, diag)
     }
   }
   const el = await page.$('[data-testid="shop-pdp-hero-mockup"]')

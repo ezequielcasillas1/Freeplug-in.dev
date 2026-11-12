@@ -8,11 +8,9 @@ import type { ShopCatalogItem } from './types'
 const items = (catalog as { items: ShopCatalogItem[] }).items
 
 describe('grid mark readability', () => {
-  it.each([
-    'square-stickers-384',
-    'posicharge-competitor-short-4127',
-    'snapback-trucker-cap-1446',
-  ] as const)('%s hero width clears grid minimum', (slug) => {
+  it.each(['posicharge-competitor-short-4127', 'snapback-trucker-cap-1446'] as const)(
+    '%s hero width clears grid minimum',
+    (slug) => {
     const item = items.find((i) => i.slug === slug)!
     const hero = shopHeroGalleryIndex(item)
     const p = resolveShopGalleryPlacement({

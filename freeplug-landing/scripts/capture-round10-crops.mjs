@@ -11,7 +11,7 @@ const PER_PAGE = 40
 const COLS = 5
 const CELL_W = 380
 const CELL_H = 420
-const PREFIX = 'round10'
+const PREFIX = process.env.CROP_PREFIX ?? 'round11'
 
 /** Page-3 regressions + grid-readability + tumbler */
 const TARGET_SLUGS = [
@@ -26,6 +26,10 @@ const TARGET_SLUGS = [
   'square-stickers-384',
   'posicharge-competitor-short-4127',
   'snapback-trucker-cap-1446',
+  'natural-stone-stretch-bar-bracelet-engraving-2651',
+  'picnic-blanket-1124',
+  'kiss-cut-stickers-400',
+  'tough-phone-cases-269',
 ]
 
 const catalog = JSON.parse(

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T05:12:13.078Z",
+  "generatedAt": "2026-11-12T05:21:25.890Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -1163,13 +1163,13 @@
         {
           "top": 0.36,
           "left": 0.5,
-          "width": 0.16,
+          "width": 0.12,
           "inkBlankKind": "dark"
         },
         {
           "top": 0.36,
           "left": 0.5,
-          "width": 0.16,
+          "width": 0.12,
           "inkBlankKind": "dark"
         }
       ]
@@ -1177,9 +1177,9 @@
     "classic-cuffed-beanie-embroidery-1691": {
       "slides": [
         {
-          "top": 0.3,
+          "top": 0.28,
           "left": 0.5,
-          "width": 0.22,
+          "width": 0.28,
           "inkBlankKind": "light"
         },
         {
@@ -1206,15 +1206,15 @@
     "cuff-beanie-5385": {
       "slides": [
         {
-          "top": 0.3,
+          "top": 0.28,
           "left": 0.48,
-          "width": 0.22,
+          "width": 0.28,
           "inkBlankKind": "light"
         },
         {
           "top": 0.72,
           "left": 0.5,
-          "width": 0.2,
+          "width": 0.24,
           "inkBlankKind": "light"
         }
       ]
@@ -1289,9 +1289,9 @@
           "hide": true
         },
         {
-          "top": 0.2,
+          "top": 0.19,
           "left": 0.5,
-          "width": 0.15,
+          "width": 0.12,
           "inkBlankKind": "dark"
         }
       ]
@@ -1299,15 +1299,15 @@
     "snapback-trucker-cap-1446": {
       "slides": [
         {
-          "top": 0.31,
-          "left": 0.48,
-          "width": 0.28,
+          "top": 0.35,
+          "left": 0.44,
+          "width": 0.26,
           "inkBlankKind": "dark"
         },
         {
-          "top": 0.22,
-          "left": 0.48,
-          "width": 0.28,
+          "top": 0.33,
+          "left": 0.44,
+          "width": 0.26,
           "inkBlankKind": "dark"
         }
       ]
@@ -1330,7 +1330,7 @@
         {
           "top": 0.36,
           "left": 0.5,
-          "width": 0.18,
+          "width": 0.2,
           "inkBlankKind": "dark"
         },
         {
@@ -1472,10 +1472,10 @@
           "hide": true
         },
         {
-          "top": 0.58,
-          "left": 0.4,
-          "width": 0.28,
-          "inkBlankKind": "dark"
+          "top": 0.54,
+          "left": 0.42,
+          "width": 0.34,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1624,13 +1624,13 @@
     "natural-stone-stretch-bar-bracelet-engraving-2651": {
       "slides": [
         {
-          "top": 0.56,
-          "left": 0.48,
-          "width": 0.17,
-          "inkBlankKind": "dark"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.14,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1869,9 +1869,10 @@
     "picnic-blanket-1124": {
       "slides": [
         {
-          "top": 0.031,
-          "left": 0.156,
-          "width": 0.32
+          "top": 0.48,
+          "left": 0.52,
+          "width": 0.24,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -2155,7 +2156,7 @@
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.26,
+          "width": 0.3,
           "inkBlankKind": "light"
         }
       ]
@@ -2277,9 +2278,9 @@
     "tough-phone-cases-269": {
       "slides": [
         {
-          "top": 0.52,
-          "left": 0.5,
-          "width": 0.18,
+          "top": 0.54,
+          "left": 0.62,
+          "width": 0.16,
           "inkBlankKind": "light"
         },
         {
