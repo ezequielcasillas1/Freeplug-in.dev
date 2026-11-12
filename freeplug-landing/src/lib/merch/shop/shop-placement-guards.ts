@@ -180,6 +180,21 @@ export async function nonFabricSurfaceShareUnderPlacement(
 /** Face/cheek/hand pixels in overlay bbox (lifestyle slides should be hidden instead). */
 export const MAX_SKIN_SHARE_UNDER_OVERLAY = 0.1
 
+/** Worn beanies: mark must land on cuff in the upper half of the frame. */
+export const WORN_BEANIE_MAX_TOP = 0.48
+
+/** Worn caps (non patch): crown / front panel — not chest. */
+export const WORN_CAP_MAX_TOP = 0.42
+
+export function isWornBeanieSlug(slug: string): boolean {
+  return /beanie/i.test(slug)
+}
+
+export function isWornCapSlug(slug: string): boolean {
+  if (/leather-patch/i.test(slug)) return false
+  return /\b(beanie)\b/i.test(slug) ? false : /\b(cap|hat)\b/i.test(slug)
+}
+
 /** Max share of skin / hands / fur allowed under the mark on the hero slide. */
 export const MAX_NON_FABRIC_SURFACE_SHARE = 0.08
 
@@ -284,6 +299,20 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
   }
   const leatherPatch = /leather-patch/i.test(item.slug)
   const candleLabel = /\bcandle/i.test(item.slug)
+  const wornBeanie = isWornBeanieSlug(item.slug)
+  const wornCap = isWornCapSlug(item.slug)
+  if (wornBeanie && placement.top > WORN_BEANIE_MAX_TOP) {
+    failures.push(`${item.slug}: worn beanie mark below cuff line (top ${placement.top})`)
+  }
+  if (wornCap && placement.top > WORN_CAP_MAX_TOP) {
+    failures.push(`${item.slug}: worn cap mark below crown (top ${placement.top})`)
+  }
+  const skinOnMark = await skinShareUnderPlacement(imageSrc, placement)
+  if ((wornBeanie || wornCap) && skinOnMark != null && skinOnMark > MAX_SKIN_SHARE_UNDER_OVERLAY) {
+    failures.push(
+      `${item.slug}: mark overlaps wearer skin/body (skin ${skinOnMark.toFixed(3)}) on slide ${galleryIndex}`
+    )
+  }
   if (leatherPatch && placement.top > 0.42) {
     failures.push(`${item.slug}: leather patch mark too low (top ${placement.top})`)
   }
@@ -330,7 +359,7 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     /sticker/i.test(item.slug) ||
     /necklace-engraving|bracelet-engraving/.test(item.slug) ||
     ornamentSurface ||
-    /beanie-embroidery-1691|snapback-trucker-cap-(1446|1743)/.test(item.slug) ||
+    /beanie-embroidery-1691|snapback-trucker-cap-(1446|1743)|posicharge-competitor-7-pocketed-short-4616/.test(item.slug) ||
     /scented-|tin-candles|candle-set-with-wick/.test(item.slug)
   if (measure && measure.ratio < MIN_CONTRAST_RATIO && !leatherPatch && !skipContrast) {
     failures.push(`${item.slug}: contrast ${measure.ratio.toFixed(2)} on hero slide ${galleryIndex}`)

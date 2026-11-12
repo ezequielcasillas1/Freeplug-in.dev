@@ -13,7 +13,8 @@ const OVERRIDES = path.join(__dirname, '../src/lib/merch/shop/shop-gallery-place
 const MUG_BODY = { top: 0.5, left: 0.5, width: 0.22, inkBlankKind: 'light' }
 const CAP_LIGHT = { top: 0.19, left: 0.5, width: 0.2, inkBlankKind: 'light' }
 const CAP_DARK = { top: 0.19, left: 0.5, width: 0.2, inkBlankKind: 'dark' }
-const BEANIE_CUFF = { top: 0.78, left: 0.5, width: 0.18, inkBlankKind: 'light' }
+/** @deprecated use merge-round10 worn cuff coords (0.26) for lifestyle beanies */
+const BEANIE_CUFF = { top: 0.26, left: 0.5, width: 0.22, inkBlankKind: 'light' }
 /** Front-panel leather patch (below crown button, above brim). */
 const LEATHER_PATCH = { top: 0.36, left: 0.5, width: 0.16, inkBlankKind: 'dark' }
 /** Jar/tin wrap label center on square mockups. */
@@ -30,7 +31,7 @@ const PAGE3 = {
     slides: [{ ...LEATHER_PATCH }, { ...LEATHER_PATCH }],
   },
   'dad-hat-with-leather-patch-round-1287': {
-    slides: [{ ...LEATHER_PATCH }, { hide: true }],
+    slides: [{ top: 0.28, left: 0.5, width: 0.17, inkBlankKind: 'dark' }, { hide: true }],
   },
   'mid-profile-baseball-cap-with-leather-patch-rect-2707': {
     slides: [{ hide: true }, { ...LEATHER_PATCH, width: 0.13 }],
@@ -49,7 +50,7 @@ const PAGE3 = {
     slides: [{ hide: true }, { top: 0.42, left: 0.5, width: 0.2, inkBlankKind: 'dark' }],
   },
   'vacuum-insulated-tumbler-11oz-604': {
-    slides: [{ top: 0.48, left: 0.5, width: 0.2, inkBlankKind: 'light' }, { hide: true }],
+    slides: [{ top: 0.5, left: 0.5, width: 0.38, inkBlankKind: 'light' }, { hide: true }],
   },
   'hardboard-coasters-with-cork-bottom-set-of-4-2764': {
     slides: [{ top: 0.5, left: 0.5, width: 0.22, inkBlankKind: 'light' }, { hide: true }],
@@ -64,7 +65,7 @@ const PAGE3 = {
   'scented-soy-candle-multi-size-amber-jar-1468': { slides: [{ ...CANDLE_LABEL }, { hide: true }] },
   'tin-candles-1379': { slides: [{ ...TIN_CANDLE_LABEL }, { hide: true }] },
   'posicharge-competitor-7-pocketed-short-4616': {
-    slides: [{ top: 0.7, left: 0.28, width: 0.18, inkBlankKind: 'dark' }, { hide: true }],
+    slides: [{ hide: true }, { top: 0.58, left: 0.4, width: 0.28, inkBlankKind: 'dark' }],
   },
   'posicharge-competitor-short-4127': {
     slides: [{ hide: true }, { ...THIGH_LIGHT }],

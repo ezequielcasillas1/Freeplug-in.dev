@@ -34,7 +34,10 @@ import {
   shopDefaultPreviewColor,
   shopGalleryIndexForColor,
 } from '@/lib/merch/shop/shop-gallery-blank-kind'
-import { isShopGallerySlideHidden } from '@/lib/merch/shop/shop-gallery-placement'
+import {
+  isShopGallerySlideHidden,
+  shopGalleryIndexWithPrintablePlacement,
+} from '@/lib/merch/shop/shop-gallery-placement'
 import { useRouter } from 'next/navigation'
 
 export function ShopProductClient({
@@ -70,7 +73,13 @@ export function ShopProductClient({
   const [color, setColor] = useState(defaultColor)
   const [size, setSize] = useState(() => sizesForColor(item.variants, defaultColor || null)[0] ?? '')
   const [titleVariantId, setTitleVariantId] = useState(item.variants[0]?.id ?? 0)
-  const [galleryIndex, setGalleryIndex] = useState(() => shopGalleryIndexForColor(item, defaultColor))
+  const [galleryIndex, setGalleryIndex] = useState(() =>
+    shopGalleryIndexWithPrintablePlacement(
+      item.slug,
+      item.gallery.length,
+      shopGalleryIndexForColor(item, defaultColor)
+    )
+  )
   const [quantity, setQuantity] = useState(1)
   const [designMode, setDesignMode] = useState<'freeplug' | 'custom'>('freeplug')
   const [wordmarkBrand, setWordmarkBrand] = useState<BuyerWordmarkBrandKey>(initialWordmarkBrand)

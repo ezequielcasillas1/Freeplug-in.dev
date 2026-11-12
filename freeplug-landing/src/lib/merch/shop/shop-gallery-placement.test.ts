@@ -113,7 +113,7 @@ describe('shopGalleryPlacement', () => {
     expect(p!.top).toBeGreaterThan(0.55)
   })
 
-  it('beanie embroidery targets cuff band', () => {
+  it('beanie embroidery targets cuff band (upper frame, not chest)', () => {
     const p = resolveShopGalleryPlacement({
       slug: 'classic-cuffed-beanie-embroidery-1691',
       productType: 'hat',
@@ -121,7 +121,8 @@ describe('shopGalleryPlacement', () => {
       galleryIndex: 0,
       galleryLength: 2,
     })
-    expect(p!.top).toBeGreaterThan(0.65)
+    expect(p!.top).toBeLessThan(0.48)
+    expect(p!.top).toBeGreaterThan(0.18)
     expect(resolveShopGalleryPlacement({
       slug: 'classic-cuffed-beanie-embroidery-1691',
       productType: 'hat',

@@ -106,9 +106,9 @@
     "classic-cuffed-beanie-embroidery-1691": {
       "slides": [
         {
-          "top": 0.78,
+          "top": 0.3,
           "left": 0.5,
-          "width": 0.18,
+          "width": 0.22,
           "inkBlankKind": "light"
         },
         {
@@ -121,7 +121,7 @@
         {
           "top": 0.36,
           "left": 0.5,
-          "width": 0.16,
+          "width": 0.18,
           "inkBlankKind": "dark"
         },
         {
@@ -135,9 +135,9 @@
           "hide": true
         },
         {
-          "top": 0.36,
+          "top": 0.2,
           "left": 0.5,
-          "width": 0.13,
+          "width": 0.15,
           "inkBlankKind": "dark"
         }
       ]
@@ -431,9 +431,9 @@
     "vacuum-insulated-tumbler-11oz-604": {
       "slides": [
         {
-          "top": 0.48,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.2,
+          "width": 0.38,
           "inkBlankKind": "light"
         },
         {
@@ -570,9 +570,9 @@
           "hide": true
         },
         {
-          "top": 0.66,
-          "left": 0.34,
-          "width": 0.18,
+          "top": 0.62,
+          "left": 0.36,
+          "width": 0.26,
           "inkBlankKind": "dark"
         }
       ]
@@ -877,8 +877,8 @@
         {
           "top": 0.5,
           "left": 0.5,
-          "width": 0.28,
-          "inkBlankKind": "dark"
+          "width": 0.4,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -912,19 +912,6 @@
       ]
     },
     "accent-coffee-mug-11-15oz-635": {
-      "slides": [
-        {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
-        },
-        {
-          "hide": true
-        }
-      ]
-    },
-    "accent-rim-handle-mug-2692": {
       "slides": [
         {
           "top": 0.5,
@@ -985,15 +972,15 @@
     "cuff-beanie-5385": {
       "slides": [
         {
-          "top": 0.78,
-          "left": 0.5,
-          "width": 0.18,
+          "top": 0.3,
+          "left": 0.48,
+          "width": 0.22,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.78,
+          "top": 0.72,
           "left": 0.5,
-          "width": 0.18,
+          "width": 0.2,
           "inkBlankKind": "light"
         }
       ]
@@ -1001,15 +988,15 @@
     "snapback-trucker-cap-1446": {
       "slides": [
         {
-          "top": 0.19,
-          "left": 0.5,
-          "width": 0.2,
+          "top": 0.31,
+          "left": 0.48,
+          "width": 0.28,
           "inkBlankKind": "dark"
         },
         {
-          "top": 0.19,
-          "left": 0.5,
-          "width": 0.2,
+          "top": 0.22,
+          "left": 0.48,
+          "width": 0.28,
           "inkBlankKind": "dark"
         }
       ]
@@ -1033,13 +1020,13 @@
     "posicharge-competitor-7-pocketed-short-4616": {
       "slides": [
         {
-          "top": 0.7,
-          "left": 0.28,
-          "width": 0.18,
-          "inkBlankKind": "dark"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.58,
+          "left": 0.4,
+          "width": 0.28,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1205,6 +1192,35 @@
           "top": 0.54,
           "left": 0.5,
           "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "chill-wine-tumbler-620": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.38,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.38,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "accent-rim-handle-mug-11oz-15oz-2692": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.24,
           "inkBlankKind": "light"
         },
         {

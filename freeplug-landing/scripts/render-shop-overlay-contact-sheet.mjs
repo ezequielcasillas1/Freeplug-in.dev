@@ -37,6 +37,25 @@ mkdirSync(ARTIFACTS, { recursive: true })
 const catalog = JSON.parse(
   readFileSync(path.join(ROOT, 'src/lib/merch/shop/shop-catalog.json'), 'utf8')
 )
+const placementsDoc = JSON.parse(
+  readFileSync(path.join(ROOT, 'src/lib/merch/shop/shop-gallery-placements.json'), 'utf8')
+)
+
+/** First non-hidden slide with printable coords (matches buyer PDP hero). */
+function printableHeroSlideIndex(slug, galleryLength) {
+  const slides = placementsDoc.bySlug[slug]?.slides
+  if (!slides?.length) return 0
+  for (let i = 0; i < galleryLength; i++) {
+    const s = slides[i]
+    if (!s || s.hide) continue
+    if (typeof s.top === 'number' && typeof s.left === 'number' && typeof s.width === 'number') return i
+  }
+  for (let i = 0; i < galleryLength; i++) {
+    if (slides[i] && !slides[i].hide) return i
+  }
+  return 0
+}
+
 const slugs = catalog.items.map((i) => i.slug)
 
 async function slugLabelSvg(slug, width) {
@@ -111,6 +130,20 @@ async function capturePdpHero(slug) {
       { timeout: 45_000 }
     )
     .catch(() => {})
+  await page.waitForTimeout(400)
+  const item = catalog.items.find((i) => i.slug === slug)
+  const heroIdx = item ? printableHeroSlideIndex(slug, item.gallery?.length ?? 2) : 0
+  {
+    const thumbs = page.locator('button.rounded-lg.border.p-1')
+    const count = await thumbs.count().catch(() => 0)
+    if (count > heroIdx) {
+      const btn = thumbs.nth(heroIdx)
+      if (!(await btn.isDisabled().catch(() => true))) {
+        await btn.click({ timeout: 8000 }).catch(() => {})
+        await page.waitForTimeout(450)
+      }
+    }
+  }
   const el = await page.$('[data-testid="shop-pdp-hero-mockup"]')
   if (!el) throw new Error(`hero missing: ${slug}`)
   return el.screenshot({ type: 'png' })
