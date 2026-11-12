@@ -9,7 +9,11 @@
     "sticker-sheets-661": "Slide 0: baked money-themed sample stickers; slide 1: four YOUR DESIGN placeholders with arrow art.",
     "transparent-outdoor-stickers-square-1pc-794": "Slide 0: green starburst with baked arrow sample; slide 1: orange Printify grid with YOUR DESIGN.",
     "square-stickers-384": "Slide 0: baked green magnifier sample in sticker preview; slide 1: folded corner only — no clean hero for overlay QA.",
-    "mid-profile-baseball-cap-with-leather-patch-rect-2707": "Slide 0: tan cap mock with ~68% placeholder text band on front panel — no clean hero for overlay QA."
+    "mid-profile-baseball-cap-with-leather-patch-rect-2707": "Slide 0: tan cap mock with ~68% placeholder text band on front panel — no clean hero for overlay QA.",
+    "kiss-cut-stickers-400": "Both slides show YOUR DESIGN / sample sticker art in the hero frame; no slide without Printify text.",
+    "colored-frame-posters-5651": "Slide 0 and slide 1 both exceed placeholder-text band (~44–65%) with YOUR DESIGN in frame.",
+    "natural-stone-stretch-bar-bracelet-engraving-2651": "Slide 1 (cleanest) still shows ENGRAVE slogan band (~15%+) in lifestyle hero.",
+    "wooden-ornaments-697": "Hero slide 1: baked sample pattern and placeholder text band (~47%); no clean wood-only hero."
   },
   "slugs": [
     "12-solid-cuffed-beanie-5665",
@@ -19,7 +23,11 @@
     "sticker-sheets-661",
     "transparent-outdoor-stickers-square-1pc-794",
     "square-stickers-384",
-    "mid-profile-baseball-cap-with-leather-patch-rect-2707"
+    "mid-profile-baseball-cap-with-leather-patch-rect-2707",
+    "kiss-cut-stickers-400",
+    "colored-frame-posters-5651",
+    "natural-stone-stretch-bar-bracelet-engraving-2651",
+    "wooden-ornaments-697"
   ],
   "ownerNoVisibleMark": []
 }

@@ -12,6 +12,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
 import sharp from 'sharp'
+import { analyzeBakedMockArt } from './lib/shop-blank-baked-art.mjs'
+import {
+  auditRenderedHeroPng,
+  CATALOG_SAMPLE_TEXT_FAIL,
+  RENDER_PRINTIFY_SAMPLE_FAIL,
+} from './lib/shop-rendered-audit.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(__dirname, '..')
@@ -152,20 +158,45 @@ for (let i = 0; i < slugs.length; i++) {
     const offBuf = await captureHero(page, slug, false)
     const placement = heroPlacement(slug)
     const st = await diffStats(onBuf, offBuf, placement)
-    const tileOk = st.changedShare >= 0.004
-    const markOk = st.markRegionChangedShare >= MIN_MARK_REGION_CHANGED
-    const pass = (tileOk || markOk) && st.contrastRatio >= MIN_CONTRAST
+    const markVisible = st.markRegionChangedShare >= MIN_MARK_REGION_CHANGED && st.contrastRatio >= MIN_CONTRAST
+    const qaOff = await auditRenderedHeroPng(offBuf, placement, slug)
+    const item = catalog.items.find((i) => i.slug === slug)
+    const heroIdx = item ? printableHeroSlideIndex(slug, item.gallery?.length ?? 2) : 0
+    const blankScan = item?.gallery?.[heroIdx]
+      ? await analyzeBakedMockArt(item.gallery[heroIdx], ROOT)
+      : null
+    const sampleSensitive = /poster|sticker|bracelet|ornament|kiss-cut|frame-posters/i.test(slug)
+    const blankTextFail =
+      blankScan &&
+      sampleSensitive &&
+      (blankScan.definiteBaked || (blankScan.textBandShare ?? 0) >= CATALOG_SAMPLE_TEXT_FAIL)
+    const renderSampleFail = qaOff.printifyShare >= RENDER_PRINTIFY_SAMPLE_FAIL
+    const overlayReasons = [
+      ...qaOff.reasons,
+      ...(blankTextFail ? [`catalog-slide-text-band:${blankScan.textBandShare.toFixed(3)}`] : []),
+      ...(renderSampleFail ? [`render-printify-sample:${qaOff.printifyShare.toFixed(4)}`] : []),
+      ...(!markVisible
+        ? [
+            st.markRegionChangedShare < MIN_MARK_REGION_CHANGED
+              ? `mark-not-visible:${st.markRegionChangedShare.toFixed(3)}`
+              : `low-contrast:${st.contrastRatio.toFixed(2)}`,
+          ]
+        : []),
+    ]
+    const pass = markVisible && qaOff.pass && !blankTextFail && !renderSampleFail
     const row = {
       slug,
       pass,
+      heroSlide: heroIdx,
       changedShare: st.changedShare,
       markRegionChangedShare: st.markRegionChangedShare,
       contrastRatio: st.contrastRatio,
+      qaOff,
+      catalogTextBand: blankScan?.textBandShare ?? null,
+      failReasons: overlayReasons,
     }
     results.push(row)
-    if (!pass) {
-      failures.push(row)
-    }
+    if (!pass) failures.push(row)
   } catch (err) {
     const row = { slug, pass: false, error: err.message }
     results.push(row)
@@ -191,6 +222,7 @@ console.log(`\n${report.passed}/${report.tileCount} passed → ${path.join(ARTIF
 if (failures.length) {
   for (const f of failures.slice(0, 40)) {
     if (f.error) console.error(` ${f.slug}: ${f.error}`)
+  else if (f.failReasons?.length) console.error(` ${f.slug}: ${f.failReasons.join('; ')}`)
     else
       console.error(
         ` ${f.slug}: tile=${(f.changedShare * 100).toFixed(2)}% mark=${((f.markRegionChangedShare ?? 0) * 100).toFixed(0)}% contrast=${f.contrastRatio.toFixed(2)}`

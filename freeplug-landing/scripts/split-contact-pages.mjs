@@ -9,11 +9,12 @@ import path from 'node:path'
 import sharp from 'sharp'
 
 const ARTIFACTS = '/opt/cursor/artifacts'
-const PREFIX = process.env.ROUND_PREFIX ?? 'round12'
+const CONTACT_PREFIX = process.env.CONTACT_PREFIX ?? process.env.SHEET_PREFIX ?? 'round14-contact-pdp'
+const PREFIX = process.env.ROUND_PREFIX ?? 'round14'
 const MIN_HALF_W = 1600
 
 for (let p = 1; p <= 5; p++) {
-  const src = path.join(ARTIFACTS, `shop-overlay-contact-pdp-page${p}.png`)
+  const src = path.join(ARTIFACTS, `${CONTACT_PREFIX}-page${p}.png`)
   if (!existsSync(src)) {
     console.warn(`Missing ${src}`)
     continue

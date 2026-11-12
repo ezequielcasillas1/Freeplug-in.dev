@@ -147,11 +147,17 @@ export async function auditShopOverlayContrastForItem(
   const ink = preview?.blankKind ?? blankKind
   const leatherPatch = /leather-patch/i.test(item.slug)
   const multiColorCanvas = item.slug === 'matte-canvas-framed-multi-color-944'
+  const woodOrnament = item.slug === 'wooden-ornaments-697'
+  const wornShorts = item.slug === 'posicharge-competitor-7-pocketed-short-4616'
   const samplePlacement = leatherPatch
     ? { ...placement, width: placement.width * 0.72, top: placement.top - placement.width * 0.02 }
     : multiColorCanvas
       ? { ...placement, width: placement.width * 0.72, top: placement.top + 0.03 }
-      : placement
+      : woodOrnament
+        ? { ...placement, width: placement.width * 0.78, top: placement.top - 0.02 }
+        : wornShorts
+          ? { ...placement, width: placement.width * 0.65, left: placement.left - 0.02 }
+          : placement
   const measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind: ink })
   if (measure && measure.ratio < MIN_CONTRAST_RATIO) {
     failures.push({

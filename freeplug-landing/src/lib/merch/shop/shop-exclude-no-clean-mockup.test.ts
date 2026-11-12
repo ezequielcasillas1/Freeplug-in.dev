@@ -11,7 +11,7 @@ describe('shopExcludeNoCleanMockup', () => {
     vi.unstubAllEnvs()
     const keys = new Set(listShopFilterItems().map((i) => i.key))
     expect(keys.has('shop/12-solid-cuffed-beanie-5665')).toBe(false)
-    expect(keys.has('shop/kiss-cut-stickers-400')).toBe(true)
+    expect(keys.has('shop/kiss-cut-stickers-400')).toBe(false)
   })
 
   it('when SHOP_EXCLUDE_NO_CLEAN_MOCKUP=false, keeps no-clean slugs in list', () => {

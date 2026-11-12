@@ -707,65 +707,65 @@
     "circle-necklace-engraving-2341": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.5,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
         }
       ]
     },
     "heart-necklace-engraving-2655": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.5,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.68,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
         }
       ]
     },
     "horizontal-bar-necklace-engraving-2654": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.5,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
         }
       ]
     },
     "cutout-heart-bar-necklace-engraving-2659": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.5,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
         }
       ]
     },
     "cutout-paw-bar-necklace-engraving-2652": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.5,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.71,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -941,15 +941,15 @@
     "dad-hat-with-leather-patch-rectangle-1221": {
       "slides": [
         {
-          "top": 0.36,
+          "top": 0.345,
           "left": 0.5,
-          "width": 0.16,
+          "width": 0.11,
           "inkBlankKind": "dark"
         },
         {
-          "top": 0.36,
+          "top": 0.345,
           "left": 0.5,
-          "width": 0.16,
+          "width": 0.11,
           "inkBlankKind": "dark"
         }
       ]
@@ -989,16 +989,13 @@
     "snapback-trucker-cap-1446": {
       "slides": [
         {
-          "top": 0.33,
-          "left": 0.4,
+          "top": 0.34,
+          "left": 0.49,
           "width": 0.26,
-          "inkBlankKind": "light"
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.31,
-          "left": 0.42,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1024,9 +1021,9 @@
           "hide": true
         },
         {
-          "top": 0.38,
-          "left": 0.42,
-          "width": 0.32,
+          "top": 0.5,
+          "left": 0.28,
+          "width": 0.17,
           "inkBlankKind": "light"
         }
       ]
@@ -1102,8 +1099,8 @@
           "hide": true
         },
         {
-          "top": 0.38,
-          "left": 0.62,
+          "top": 0.42,
+          "left": 0.56,
           "width": 0.17,
           "inkBlankKind": "light"
         }
@@ -1232,10 +1229,10 @@
     "picnic-blanket-1124": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.52,
-          "width": 0.32,
-          "inkBlankKind": "light"
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
         },
         {
           "hide": true
@@ -1424,6 +1421,35 @@
         },
         {
           "hide": true
+        }
+      ]
+    },
+    "unisex-joggers-embroidery-1903": {
+      "slides": [
+        {
+          "top": 0.56,
+          "left": 0.4,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.56,
+          "left": 0.62,
+          "width": 0.17,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "clip-on-pet-bandana-1672": {
+      "slides": [
+        {
+          "hide": true
+        },
+        {
+          "top": 0.66,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
         }
       ]
     }
