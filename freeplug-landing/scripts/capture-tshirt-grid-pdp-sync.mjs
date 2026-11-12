@@ -125,15 +125,36 @@ async function auditGridMarks(page) {
       if (!fig) continue
       const img = fig.querySelector('img')
       const src = img?.getAttribute('src') ?? ''
-      if (!src.includes('-blank-front')) continue
+      const supreme = /\/(1[1-9]|2\d|30)-/.test(slug)
+      if (!supreme) continue
       const slogan = fig.querySelector('[data-testid="designed-tee-slogan-overlay"]')
       const brandOverlay = fig.querySelectorAll(
         ':scope svg:not([data-testid="designed-tee-slogan-overlay"])'
       ).length
-      if (!src.includes('-blank-front')) issues.push(`${slug}: expected blank-front base, got ${src}`)
+      if (!/-front\.jpg/i.test(src) || /blank-front/.test(src)) {
+        issues.push(`${slug}: expected *-front.jpg base, got ${src}`)
+      }
       if (!slogan) issues.push(`${slug}: missing slogan overlay`)
       if (brandOverlay > 0) issues.push(`${slug}: extra brand overlay svg (${brandOverlay})`)
       if (slogan) {
+        const printMaxW = Number(slogan.getAttribute('data-print-max-w') ?? 0)
+        const stripW = Number(slogan.getAttribute('data-strip-w') ?? 0)
+        const stripH = Number(slogan.getAttribute('data-strip-h') ?? 0)
+        if (stripW > printMaxW + 0.6) {
+          issues.push(`${slug}: strip width ${stripW.toFixed(1)} > print ${printMaxW.toFixed(1)}`)
+        }
+        for (const rect of slogan.querySelectorAll('rect')) {
+          const fill = rect.getAttribute('fill') ?? ''
+          if (!fill || fill === 'none' || fill === 'transparent') continue
+          const rw = Number(rect.getAttribute('width') ?? 0)
+          const rh = Number(rect.getAttribute('height') ?? 0)
+          if (rw > printMaxW + 0.6) {
+            issues.push(`${slug}: opaque panel too wide ${rw.toFixed(1)} > ${printMaxW.toFixed(1)}`)
+          }
+          if (rh > stripH * 1.4 + 0.5) {
+            issues.push(`${slug}: opaque panel too tall ${rh.toFixed(1)} > strip ${stripH.toFixed(1)}`)
+          }
+        }
         const inner = slogan.querySelector('g')
         const bbox = (inner ?? slogan).getBBox()
         if (bbox.x < -3 || bbox.y < -1 || bbox.x + bbox.width > 103 || bbox.y + bbox.height > 101) {
@@ -255,7 +276,10 @@ const critical = audit.issues.filter(
     i.includes('missing slogan') ||
     i.includes('brand wordmark') ||
     i.includes('extra brand') ||
-    i.includes('clipped text')
+    i.includes('clipped text') ||
+    i.includes('opaque panel') ||
+    i.includes('strip width') ||
+    i.includes('expected *-front')
 )
 if (critical.length) {
   console.error('critical grid audit issues:', critical)

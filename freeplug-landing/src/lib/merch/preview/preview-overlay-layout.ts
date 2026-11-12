@@ -35,12 +35,14 @@ export function supremeBakedPrintMask(
   blank: 'light' | 'dark'
 ): BakedPrintMask {
   const p = spec.placement
-  const boxH = p.width * (spec.style === 'boxed' ? 0.4 : 0.22)
+  const lineCount = spec.lines?.length ?? 1
+  const relH =
+    (lineCount >= 3 ? 0.075 : lineCount === 2 ? 0.065 : 0.055) * (spec.style === 'boxed' ? 1.1 : 1)
   return {
     top: p.top,
-    left: p.left,
-    width: p.width * 1.1,
-    height: boxH,
+    left: p.left + p.width / 2,
+    width: p.width,
+    height: relH,
     fill: shirtFabricMaskFill(blank),
   }
 }

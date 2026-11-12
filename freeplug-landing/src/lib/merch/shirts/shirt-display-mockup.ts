@@ -1,8 +1,7 @@
 import { shirtMockupPublicPath, type ShirtColor } from '@/lib/merch/shirts/catalog'
-import { supremeBlankFrontMockupPath } from '@/lib/merch/shirts/supreme-blank-mockup'
 import { isSupremeStyleShirtSlug } from '@/lib/merch/shirts/supreme-preview'
 
-/** Init/world rectangular wordmark tees: crisp SVG on blank-front (not baked Printify chest raster). */
+/** Init/world rectangular slogan tees: full art on *-front.jpg + live slogan SVG (not *-blank-front patch). */
 export function shirtUsesDesignedSvgFront(slug: string, side: 'front' | 'back'): boolean {
   return side === 'front' && isSupremeStyleShirtSlug(slug)
 }
@@ -12,10 +11,8 @@ export function shirtGarmentDisplayMockupSrc(
   slug: string,
   color: ShirtColor,
   side: 'front' | 'back',
-  opts?: { designedSvgFront?: boolean }
+  _opts?: { designedSvgFront?: boolean }
 ): string {
-  const useDesigned = opts?.designedSvgFront !== false && shirtUsesDesignedSvgFront(slug, side)
-  if (useDesigned) return supremeBlankFrontMockupPath(slug, color)
   return shirtMockupPublicPath(slug, color, side)
 }
 

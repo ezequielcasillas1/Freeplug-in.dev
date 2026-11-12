@@ -164,7 +164,7 @@ export function shirtListCardFrontMockup(p: Pick<PublicShirtProduct, 'slug'>): {
   color: ShirtColor
   src: string
 } {
-  const color = shirtLeadListColor(p.slug)
+  const color = shirtDefaultSelectedColor(p.slug)
   const src = shirtGarmentDisplayMockupSrc(p.slug, color, 'front')
   return { color, src }
 }

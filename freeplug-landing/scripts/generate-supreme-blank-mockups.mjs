@@ -22,14 +22,22 @@ const FABRIC = {
   white: { r: 248, g: 248, b: 248 },
 }
 
+/** Tight strip over legacy baked slogan only (matches supreme-slogan-strip.ts). */
 function bakedBoxPixels(spec, size) {
   const p = spec.placement
-  const lines = spec.bakedLineCount ?? 2
-  const w = Math.round(p.width * size * 1.06)
-  const h = Math.round(p.width * size * (0.28 * lines + 0.04))
-  const x = Math.round(p.left * size) - 4
-  const y = Math.round(p.top * size - h / 2) - 4
-  return { x: Math.max(0, x), y: Math.max(0, y), w: Math.min(size - x, w), h: Math.min(size - y, h) }
+  const lineCount = spec.lines?.length ?? 2
+  const relH = (lineCount >= 3 ? 0.075 : lineCount === 2 ? 0.065 : 0.055) * (spec.style === 'boxed' ? 1.1 : 1)
+  const w = Math.round(p.width * size * 1.0)
+  const h = Math.round(relH * size)
+  const cx = (p.left + p.width / 2) * size
+  const x = Math.round(cx - w / 2)
+  const y = Math.round(p.top * size - h / 2)
+  return {
+    x: Math.max(0, x),
+    y: Math.max(0, y),
+    w: Math.min(size - x, w),
+    h: Math.min(size - y, h),
+  }
 }
 
 for (const spec of specs) {
