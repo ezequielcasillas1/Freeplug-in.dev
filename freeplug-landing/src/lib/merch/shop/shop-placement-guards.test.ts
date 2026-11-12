@@ -72,6 +72,20 @@ describe('shop placement guards', () => {
     expect(apparelWidthWithinSpec(slug, item.productType, placement, item.printArea)).toBe(true)
   })
 
+  it('hero placements never bake plate wordmarkStyle (picker-only)', () => {
+    for (const item of catalog.items) {
+      const hero = shopHeroGalleryIndex(item)
+      const slide = resolveShopGalleryPlacement({
+        slug: item.slug,
+        productType: item.productType,
+        catalogKey: `shop/${item.slug}`,
+        galleryIndex: hero,
+        galleryLength: item.gallery.length,
+      })
+      expect(slide?.wordmarkStyle, item.slug).toBeUndefined()
+    }
+  })
+
   it('every catalog hero passes skin, contrast, width, and visibility guards', async () => {
     const failures = await auditAllHeroPlacementGuards(catalog.items)
     expect(failures, failures.join('\n')).toEqual([])

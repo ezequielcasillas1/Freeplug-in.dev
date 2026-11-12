@@ -120,27 +120,18 @@ for (const item of catalog.items) {
     if (typeof top !== 'number' || typeof left !== 'number' || typeof width !== 'number') continue
     const imageSrc = item.gallery[idx] ?? item.gridImage
     const placement = { top, left, width }
-  const lockedInk = overrideDoc[item.slug]?.slides?.[idx]?.inkBlankKind
-  const lockedStyle = overrideDoc[item.slug]?.slides?.[idx]?.wordmarkStyle
-    let plate = slide.wordmarkStyle === 'cursive-plate' || slide.wordmarkStyle === 'pop-plate-v2'
-    let ink = lockedInk ?? (await bestInk(imageSrc, placement, plate))
-    let ok =
-      (await contrastOk(imageSrc, placement, ink, plate)) ||
-      (plate && (await contrastOk(imageSrc, placement, ink, true)))
-    if (!ok && !lockedStyle) {
-      plate = true
-      slide.wordmarkStyle = 'cursive-plate'
-      ink = lockedInk ?? (await bestInk(imageSrc, placement, true))
-      ok = await contrastOk(imageSrc, placement, ink, true)
-    }
+    const lockedInk = overrideDoc[item.slug]?.slides?.[idx]?.inkBlankKind
+    let ink = lockedInk ?? (await bestInk(imageSrc, placement, false))
+    let ok = await contrastOk(imageSrc, placement, ink, false)
     if (!ok && !lockedInk) {
       const flip = ink === 'light' ? 'dark' : 'light'
-      if (await contrastOk(imageSrc, placement, flip, plate)) ink = flip
+      if (await contrastOk(imageSrc, placement, flip, false)) ink = flip
     }
+    delete slide.wordmarkStyle
     if (slide.inkBlankKind !== ink) {
       slide.inkBlankKind = ink
       fixed++
-      console.log(item.slug, `slide ${idx}`, 'ink ->', ink, plate ? '+plate' : '')
+      console.log(item.slug, `slide ${idx}`, 'ink ->', ink)
     }
   }
 }

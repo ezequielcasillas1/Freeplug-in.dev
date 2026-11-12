@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_BUYER_WORDMARK_STYLE } from '@/lib/merch/preview/buyer-wordmark-style'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
 import catalogDoc from '@/lib/merch/shop/shop-catalog.json'
 import { listShopFilterItems } from '@/lib/merch/shop/shop-filter-items'
@@ -40,6 +41,28 @@ describe('shop visible wordmark overlay', () => {
       }
     }
     expect(missing).toEqual([])
+  })
+
+  it('default grid overlay is plain cursive (never plate raster)', () => {
+    const item = listShopFilterItems().find((i) => i.key === 'shop/women-s-favorite-tee-9')!
+    const props = shopGridMockupPropsForItem(item)
+    expect(props.overlay?.variationId).toBe('buyer-cursive-freeplug-dev')
+    expect(props.overlay?.printSurface).toBe(true)
+    const tieDye = catalog.items.find((i) => i.slug === 'tie-dye-tee-crystal-630')!
+    const idx = shopHeroGalleryIndex(tieDye)
+    const resolved = resolvePreviewWordmark({
+      source: 'buyer-shop',
+      slug: tieDye.slug,
+      href: `/shop/${tieDye.slug}`,
+      productType: tieDye.productType,
+      catalogKey: `shop/${tieDye.slug}`,
+      galleryIndex: idx,
+      galleryLength: tieDye.gallery.length,
+      shopPrintArea: tieDye.printArea,
+      buyerWordmarkStyle: DEFAULT_BUYER_WORDMARK_STYLE,
+    })
+    expect(resolved?.variationId).toBe('buyer-cursive-freeplug-dev')
+    expect(resolved?.blankKind).toBe('dark')
   })
 
   it('leather-patch 1221 uses on-dark (light) wordmark art', () => {

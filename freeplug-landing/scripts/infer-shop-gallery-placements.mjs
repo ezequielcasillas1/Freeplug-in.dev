@@ -576,7 +576,6 @@ function roundPlacement(p) {
   if (p.rotate != null) out.rotate = Math.round(p.rotate * 10) / 10
   if (p.hide) out.hide = true
   if (p.inkBlankKind) out.inkBlankKind = p.inkBlankKind
-  if (p.wordmarkStyle) out.wordmarkStyle = p.wordmarkStyle
   return out
 }
 

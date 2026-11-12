@@ -2,10 +2,10 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import sharp from 'sharp'
 import type { PreviewPlacement } from '@/lib/merch/preview/placement-defaults'
-import { DEFAULT_BUYER_WORDMARK_STYLE, type BuyerWordmarkStyleKey } from '@/lib/merch/preview/buyer-wordmark-style'
+import { DEFAULT_BUYER_WORDMARK_STYLE } from '@/lib/merch/preview/buyer-wordmark-style'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
 import { shopHeroGalleryIndex } from '@/lib/merch/shop/shop-gallery-blank-kind'
-import { shopGalleryPlacementsForSlug, resolveShopGalleryPlacement } from '@/lib/merch/shop/shop-gallery-placement'
+import { resolveShopGalleryPlacement } from '@/lib/merch/shop/shop-gallery-placement'
 import type { ShopCatalogItem } from '@/lib/merch/shop/types'
 
 const WORDMARK_HALF_HEIGHT_RATIO = 0.11
@@ -115,13 +115,6 @@ export type ContrastAuditRow = {
   backgroundLum: number
 }
 
-function slideWordmarkStyle(slug: string, slide: number): BuyerWordmarkStyleKey {
-  const slides = shopGalleryPlacementsForSlug(slug)
-  const style = slides?.[slide]?.wordmarkStyle
-  if (style && typeof style === 'string') return style as BuyerWordmarkStyleKey
-  return DEFAULT_BUYER_WORDMARK_STYLE
-}
-
 export async function auditShopOverlayContrastForItem(
   item: ShopCatalogItem
 ): Promise<ContrastAuditRow[]> {
@@ -140,8 +133,6 @@ export async function auditShopOverlayContrastForItem(
 
   const { inkBlankKind: _i, ...placement } = placementResolved
   const blankKind = placementResolved.inkBlankKind ?? 'light'
-  const style = slideWordmarkStyle(item.slug, galleryIndex)
-  const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
   const preview = resolvePreviewWordmark({
     source: 'buyer-shop',
     slug: item.slug,
@@ -151,24 +142,14 @@ export async function auditShopOverlayContrastForItem(
     galleryIndex,
     galleryLength: item.gallery.length,
     shopPrintArea: item.printArea,
-    buyerWordmarkStyle: style,
+    buyerWordmarkStyle: DEFAULT_BUYER_WORDMARK_STYLE,
   })
   const ink = preview?.blankKind ?? blankKind
   const leatherPatch = /leather-patch/i.test(item.slug)
   const samplePlacement = leatherPatch
     ? { ...placement, width: placement.width * 0.72, top: placement.top - placement.width * 0.02 }
     : placement
-  let measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind: ink })
-  if (plateStyle && measure) {
-    const bg = Math.max(measure.backgroundLum, 0.84)
-    const plateInk = 0.06
-    measure = {
-      ...measure,
-      backgroundLum: bg,
-      inkLum: plateInk,
-      ratio: contrastRatio(plateInk, bg),
-    }
-  }
+  const measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind: ink })
   if (measure && measure.ratio < MIN_CONTRAST_RATIO) {
     failures.push({
       slug: item.slug,

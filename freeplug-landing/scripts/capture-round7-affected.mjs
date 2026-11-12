@@ -8,6 +8,25 @@ const base = process.env.BASE_URL ?? 'http://127.0.0.1:3018'
 const ARTIFACTS = '/opt/cursor/artifacts'
 mkdirSync(ARTIFACTS, { recursive: true })
 
+const CLOSEUP = [
+  'unisex-softstyle-t-shirt-145',
+  'unisex-heather-cvc-short-sleeve-tee-3013',
+  'easy-cotton-tee-3127',
+  'district-perfect-tri-tee-2027',
+  'women-s-favorite-tee-9',
+  'tie-dye-tee-crystal-630',
+  'tie-dye-tee-cyclone-631',
+  'the-concert-tee-2835',
+  'canvas-tote-bag-5-color-straps-507',
+  'cotton-tote-bag-553',
+  'cotton-canvas-tote-bag-1313',
+  'pint-glass-16oz-633',
+  'unisex-fleece-zip-up-hoodie-1925',
+  'unisex-tri-blend-long-sleeve-colorblock-raglan-3004',
+  'insulated-lunch-tote-5123',
+  'day-tote-5096',
+]
+
 const PDP = [
   'unisex-jersey-short-sleeve-tee-12',
   'paper-gift-bag-2729',
@@ -35,6 +54,18 @@ for (const slug of PDP) {
   const hero = await page.waitForSelector('[data-testid="shop-pdp-hero-mockup"]', { timeout: 90_000 })
   await page.waitForTimeout(700)
   await hero.screenshot({ path: path.join(ARTIFACTS, `round7-pdp-${slug}.png`) })
+  if (CLOSEUP.includes(slug)) {
+    const box = await hero.boundingBox()
+    if (box) {
+      const crop = {
+        x: box.x + box.width * 0.2,
+        y: box.y + box.height * 0.22,
+        width: box.width * 0.6,
+        height: box.height * 0.42,
+      }
+      await page.screenshot({ path: path.join(ARTIFACTS, `round7-crop-${slug}.png`), clip: crop })
+    }
+  }
   await page.close()
 }
 

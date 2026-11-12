@@ -2,50 +2,115 @@
   "bySlug": {
     "cotton-canvas-tote-bag-1313": {
       "slides": [
-        { "top": 0.578, "left": 0.432, "width": 0.15 },
-        { "top": 0.56, "left": 0.44, "width": 0.15 }
+        {
+          "top": 0.56,
+          "left": 0.46,
+          "width": 0.16,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.56,
+          "left": 0.44,
+          "width": 0.16,
+          "inkBlankKind": "light"
+        }
       ]
     },
     "canvas-tote-bag-5-color-straps-507": {
       "slides": [
-        { "top": 0.57, "left": 0.44, "width": 0.16 },
-        { "top": 0.56, "left": 0.44, "width": 0.16 }
+        {
+          "top": 0.64,
+          "left": 0.46,
+          "width": 0.16,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.56,
+          "left": 0.44,
+          "width": 0.16,
+          "inkBlankKind": "light"
+        }
       ]
     },
     "zippered-canvas-tote-1990": {
       "slides": [
-        { "hide": true },
-        { "top": 0.66, "left": 0.5, "width": 0.17 }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.66,
+          "left": 0.5,
+          "width": 0.17
+        }
       ]
     },
     "colored-frame-posters-5651": {
       "slides": [
-        { "hide": true },
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
       ]
     },
     "tote-bag-aop-1389": {
       "slides": [
-        { "top": 0.56, "left": 0.48, "width": 0.18 },
-        { "top": 0.55, "left": 0.48, "width": 0.18 }
+        {
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.18
+        },
+        {
+          "top": 0.55,
+          "left": 0.48,
+          "width": 0.18
+        }
       ]
     },
     "action-snapback-cap-5284": {
       "slides": [
-        { "top": 0.18, "left": 0.49, "width": 0.19 },
-        { "top": 0.17, "left": 0.49, "width": 0.19 }
+        {
+          "top": 0.18,
+          "left": 0.49,
+          "width": 0.19
+        },
+        {
+          "top": 0.17,
+          "left": 0.49,
+          "width": 0.19
+        }
       ]
     },
     "snapback-trucker-cap-1743": {
       "slides": [
-        { "top": 0.17, "left": 0.5, "width": 0.2 },
-        { "top": 0.17, "left": 0.5, "width": 0.2 }
+        {
+          "top": 0.17,
+          "left": 0.5,
+          "width": 0.2
+        },
+        {
+          "top": 0.17,
+          "left": 0.5,
+          "width": 0.2
+        }
       ]
     },
     "classic-cuffed-beanie-embroidery-1691": {
       "slides": [
-        { "top": 0.336, "left": 0.5, "width": 0.14 },
-        { "top": 0.34, "left": 0.5, "width": 0.14 }
+        {
+          "top": 0.336,
+          "left": 0.5,
+          "width": 0.14
+        },
+        {
+          "top": 0.34,
+          "left": 0.5,
+          "width": 0.14
+        }
       ]
     },
     "dad-hat-with-leather-patch-round-1287": {
@@ -54,70 +119,135 @@
           "top": 0.168,
           "left": 0.5,
           "width": 0.125,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "mid-profile-baseball-cap-with-leather-patch-rect-2707": {
       "slides": [
-        { "hide": true },
-        { "top": 0.158, "left": 0.438, "width": 0.088, "inkBlankKind": "dark" }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.158,
+          "left": 0.438,
+          "width": 0.088,
+          "inkBlankKind": "dark"
+        }
       ]
     },
     "copper-vacuum-insulated-bottle-22oz-572": {
       "slides": [
-        { "top": 0.48, "left": 0.498, "width": 0.23, "inkBlankKind": "light" },
-        { "hide": true }
+        {
+          "top": 0.48,
+          "left": 0.498,
+          "width": 0.23,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "district-v-i-t-men-s-fleece-hoodie-1979": {
       "slides": [
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" },
-        { "hide": true }
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "women-s-perfect-tri-midi-long-sleeve-hoodie-3809": {
       "slides": [
-        { "hide": true },
-        { "top": 0.42, "left": 0.5, "width": 0.2 }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.2
+        }
       ]
     },
     "beach-wash-tote-5106": {
       "slides": [
-        { "hide": true },
-        { "top": 0.58, "left": 0.44, "width": 0.22 }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.58,
+          "left": 0.44,
+          "width": 0.22
+        }
       ]
     },
     "canvas-mesh-back-cap-4802": {
       "slides": [
-        { "top": 0.19, "left": 0.5, "width": 0.19, "inkBlankKind": "dark" },
-        { "hide": true }
+        {
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.19,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "unisex-garment-dyed-tank-top-1459": {
       "slides": [
-        { "hide": true },
-        { "top": 0.42, "left": 0.5, "width": 0.22 }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
       ]
     },
     "the-concert-tank-3076": {
       "slides": [
-        { "hide": true },
-        { "top": 0.42, "left": 0.5, "width": 0.22 }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        }
       ]
     },
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
-        { "top": 0.42, "left": 0.5, "width": 0.22 },
-        { "hide": true }
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "women-s-cotton-tank-top-5478": {
       "slides": [
-        { "top": 0.54, "left": 0.5, "width": 0.22 },
-        { "hide": true }
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.22
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "value-cabana-stripe-beach-towel-5583": {
@@ -126,64 +256,121 @@
           "top": 0.44,
           "left": 0.5,
           "width": 0.34,
-          "inkBlankKind": "light",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "top": 0.44,
           "left": 0.5,
           "width": 0.32,
-          "inkBlankKind": "light",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         }
       ]
     },
     "women-s-ideal-racerback-tank-18": {
       "slides": [
-        { "top": 0.54, "left": 0.5, "width": 0.2, "inkBlankKind": "light" },
-        { "hide": true }
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "unisex-cvc-jersey-t-shirt-1317": {
       "slides": [
-        { "top": 0.54, "left": 0.5, "width": 0.2, "inkBlankKind": "light" },
-        { "hide": true }
+        {
+          "top": 0.54,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "unisex-jersey-short-sleeve-tee-12": {
       "slides": [
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" },
-        { "hide": true }
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "posicharge-competitor-2-button-henley-4129": {
       "slides": [
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" },
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "light" }
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
       ]
     },
     "black-mug-11oz-15oz-479": {
       "slides": [
-        { "top": 0.42, "left": 0.5, "width": 0.18, "inkBlankKind": "dark" },
-        { "hide": true }
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "toddler-full-zip-fleece-hoodie-2728": {
       "slides": [
-        { "hide": true },
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        }
       ]
     },
     "kids-relax-hoodie-1617": {
       "slides": [
-        { "hide": true },
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "dark" }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        }
       ]
     },
     "leatherette-ornament-3-shapes-engraving-2756": {
       "slides": [
-        { "top": 0.45, "left": 0.5, "width": 0.12, "inkBlankKind": "dark" },
-        { "hide": true }
+        {
+          "top": 0.45,
+          "left": 0.5,
+          "width": 0.12,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "paper-gift-bag-2729": {
@@ -192,28 +379,50 @@
           "top": 0.46,
           "left": 0.42,
           "width": 0.15,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "scented-soy-candles-with-black-lid-4-and-9oz-1943": {
       "slides": [
-        { "top": 0.38, "left": 0.5, "width": 0.18, "inkBlankKind": "dark" },
-        { "hide": true }
+        {
+          "top": 0.38,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "scented-candles-coconut-apricot-wax-4oz-9oz-1488": {
       "slides": [
-        { "top": 0.38, "left": 0.5, "width": 0.18, "inkBlankKind": "dark" },
-        { "hide": true }
+        {
+          "top": 0.38,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "cotton-tote-bag-553": {
       "slides": [
-        { "top": 0.48, "left": 0.36, "width": 0.11, "inkBlankKind": "dark", "wordmarkStyle": "cursive-plate" },
-        { "hide": true }
+        {
+          "top": 0.46,
+          "left": 0.58,
+          "width": 0.14,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "vacuum-insulated-tumbler-11oz-604": {
@@ -222,10 +431,11 @@
           "top": 0.46,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "hardboard-coasters-with-cork-bottom-set-of-4-2764": {
@@ -234,10 +444,11 @@
           "top": 0.45,
           "left": 0.5,
           "width": 0.14,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "scented-soy-candle-multi-size-amber-jar-1468": {
@@ -246,10 +457,11 @@
           "top": 0.4,
           "left": 0.5,
           "width": 0.16,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "women-s-favorite-tee-9": {
@@ -258,10 +470,11 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "tie-dye-tee-cyclone-631": {
@@ -270,15 +483,13 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -288,15 +499,13 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -306,16 +515,24 @@
           "top": 0.54,
           "left": 0.46,
           "width": 0.16,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "day-tote-5096": {
       "slides": [
-        { "hide": true },
-        { "top": 0.54, "left": 0.46, "width": 0.17, "inkBlankKind": "dark", "wordmarkStyle": "cursive-plate" }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.54,
+          "left": 0.46,
+          "width": 0.17,
+          "inkBlankKind": "dark"
+        }
       ]
     },
     "scented-soy-candles-with-white-lid-9oz-755": {
@@ -324,34 +541,108 @@
           "top": 0.38,
           "left": 0.5,
           "width": 0.17,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
-        { "hide": true }
+        {
+          "hide": true
+        }
       ]
     },
     "unisex-flyer-jogger-4628": {
       "slides": [
-        { "hide": true },
-        { "top": 0.62, "left": 0.38, "width": 0.14, "inkBlankKind": "dark" }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.62,
+          "left": 0.38,
+          "width": 0.14,
+          "inkBlankKind": "dark"
+        }
       ]
     },
     "posicharge-competitor-short-4127": {
       "slides": [
-        { "hide": true },
-        { "top": 0.62, "left": 0.38, "width": 0.14, "inkBlankKind": "dark" }
+        {
+          "hide": true
+        },
+        {
+          "top": 0.62,
+          "left": 0.38,
+          "width": 0.14,
+          "inkBlankKind": "dark"
+        }
       ]
     },
     "women-s-dare-shorts-5786": {
       "slides": [
-        { "top": 0.62, "left": 0.38, "width": 0.14, "inkBlankKind": "dark" },
-        { "hide": true }
+        {
+          "top": 0.62,
+          "left": 0.38,
+          "width": 0.14,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
       ]
     },
     "women-s-ultimate-performance-v-neck-3151": {
       "slides": [
-        { "top": 0.42, "left": 0.5, "width": 0.22, "inkBlankKind": "dark", "wordmarkStyle": "cursive-plate" },
-        { "hide": true }
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "pint-glass-16oz-633": {
+      "slides": [
+        {
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.45,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "light"
+        }
+      ]
+    },
+    "unisex-fleece-zip-up-hoodie-1925": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
+        },
+        {
+          "hide": true
+        }
+      ]
+    },
+    "unisex-tri-blend-long-sleeve-colorblock-raglan-3004": {
+      "slides": [
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        },
+        {
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
+        }
       ]
     }
   }

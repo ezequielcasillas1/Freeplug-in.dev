@@ -3,6 +3,7 @@ import {
   inferProductTypeFromCatalog,
   placementForProductType,
 } from '@/lib/merch/preview/placement-defaults'
+import { DEFAULT_BUYER_WORDMARK_STYLE } from '@/lib/merch/preview/buyer-wordmark-style'
 import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
 import { averageLuminanceUnderPlacement, measureInkContrast, MIN_CONTRAST_RATIO } from './shop-overlay-contrast'
 import {
@@ -120,6 +121,9 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     failures.push(`${item.slug}: hero slide ${galleryIndex} is hidden`)
     return failures
   }
+  if (slidePlacement?.wordmarkStyle === 'cursive-plate' || slidePlacement?.wordmarkStyle === 'pop-plate-v2') {
+    failures.push(`${item.slug}: default hero must not use plate wordmarkStyle (${slidePlacement.wordmarkStyle})`)
+  }
   const placementResolved = resolveShopGalleryPlacement({
     slug: item.slug,
     productType: item.productType,
@@ -147,7 +151,6 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
       failures.push(`${item.slug}: skin share ${skin.toFixed(3)} under overlay on slide ${galleryIndex}`)
     }
   }
-  const style = (placementResolved as ShopGallerySlidePlacement).wordmarkStyle
   const preview = resolvePreviewWordmark({
     source: 'buyer-shop',
     slug: item.slug,
@@ -157,24 +160,13 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     galleryIndex,
     galleryLength: item.gallery.length,
     shopPrintArea: item.printArea,
-    buyerWordmarkStyle: style ?? undefined,
+    buyerWordmarkStyle: DEFAULT_BUYER_WORDMARK_STYLE,
   })
   const blankKind = preview?.blankKind ?? (placementResolved as ShopGallerySlidePlacement).inkBlankKind ?? 'light'
   const samplePlacement = leatherPatch
     ? { ...placement, width: placement.width * 0.72, top: placement.top - placement.width * 0.02 }
     : placement
-  let measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind })
-  const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
-  if (plateStyle && measure) {
-    const bg = Math.max(measure.backgroundLum, 0.84)
-    const plateInk = 0.06
-    measure = {
-      ...measure,
-      backgroundLum: bg,
-      inkLum: plateInk,
-      ratio: (Math.max(plateInk, bg) + 0.05) / (Math.min(plateInk, bg) + 0.05),
-    }
-  }
+  const measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind })
   if (measure && measure.ratio < MIN_CONTRAST_RATIO && !leatherPatch) {
     failures.push(`${item.slug}: contrast ${measure.ratio.toFixed(2)} on hero slide ${galleryIndex}`)
   }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T03:29:09.831Z",
+  "generatedAt": "2026-11-12T03:38:54.019Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -114,7 +114,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -131,7 +130,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -177,13 +175,13 @@
     "unisex-fleece-zip-up-hoodie-1925": {
       "slides": [
         {
-          "hide": true
+          "top": 0.42,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.365,
-          "left": 0.094,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -273,14 +271,12 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -355,7 +351,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -485,7 +480,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -505,7 +499,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -645,7 +638,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -688,7 +680,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -705,7 +696,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -719,8 +709,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
         {
           "hide": true
@@ -807,15 +796,13 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -825,15 +812,13 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
         {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -856,7 +841,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -912,8 +896,8 @@
     "canvas-tote-bag-5-color-straps-507": {
       "slides": [
         {
-          "top": 0.57,
-          "left": 0.44,
+          "top": 0.64,
+          "left": 0.46,
           "width": 0.16,
           "inkBlankKind": "light"
         },
@@ -921,22 +905,22 @@
           "top": 0.56,
           "left": 0.44,
           "width": 0.16,
-          "inkBlankKind": "dark"
+          "inkBlankKind": "light"
         }
       ]
     },
     "cotton-canvas-tote-bag-1313": {
       "slides": [
         {
-          "top": 0.578,
-          "left": 0.432,
-          "width": 0.15,
+          "top": 0.56,
+          "left": 0.46,
+          "width": 0.16,
           "inkBlankKind": "light"
         },
         {
           "top": 0.56,
           "left": 0.44,
-          "width": 0.15,
+          "width": 0.16,
           "inkBlankKind": "light"
         }
       ]
@@ -957,11 +941,10 @@
     "cotton-tote-bag-553": {
       "slides": [
         {
-          "top": 0.48,
-          "left": 0.36,
-          "width": 0.11,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "top": 0.46,
+          "left": 0.58,
+          "width": 0.14,
+          "inkBlankKind": "dark"
         },
         {
           "hide": true
@@ -1055,8 +1038,7 @@
           "top": 0.54,
           "left": 0.46,
           "width": 0.16,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
         {
           "hide": true
@@ -1072,8 +1054,7 @@
           "top": 0.54,
           "left": 0.46,
           "width": 0.17,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1180,15 +1161,15 @@
     "pint-glass-16oz-633": {
       "slides": [
         {
-          "top": 0.552,
-          "left": 0.406,
-          "width": 0.26,
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.2,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.486,
-          "left": 0.515,
-          "width": 0.3,
+          "top": 0.45,
+          "left": 0.5,
+          "width": 0.2,
           "inkBlankKind": "light"
         }
       ]
@@ -1199,8 +1180,7 @@
           "top": 0.46,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1445,8 +1425,7 @@
           "top": 0.168,
           "left": 0.5,
           "width": 0.125,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "dark"
         },
         {
           "hide": true
@@ -1488,8 +1467,7 @@
           "top": 0.45,
           "left": 0.5,
           "width": 0.14,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1673,8 +1651,7 @@
           "top": 0.46,
           "left": 0.42,
           "width": 0.15,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1713,8 +1690,7 @@
           "top": 0.4,
           "left": 0.5,
           "width": 0.16,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1727,8 +1703,7 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1754,8 +1729,7 @@
           "top": 0.38,
           "left": 0.5,
           "width": 0.17,
-          "inkBlankKind": "dark",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1962,7 +1936,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -1979,7 +1952,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         }
       ]
@@ -2110,15 +2082,13 @@
           "top": 0.44,
           "left": 0.5,
           "width": 0.34,
-          "inkBlankKind": "light",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         },
         {
           "top": 0.44,
           "left": 0.5,
           "width": 0.32,
-          "inkBlankKind": "light",
-          "wordmarkStyle": "cursive-plate"
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -2241,7 +2211,6 @@
           "top": 0.611,
           "left": 0.49,
           "width": 0.42,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2371,7 +2340,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2433,7 +2401,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2550,7 +2517,6 @@
           "top": 0.606,
           "left": 0.511,
           "width": 0.16,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2593,7 +2559,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.144,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2678,7 +2643,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2721,7 +2685,6 @@
           "top": 0.5,
           "left": 0.5,
           "width": 0.29,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2748,7 +2711,6 @@
           "top": 0.5,
           "left": 0.5,
           "width": 0.29,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2765,7 +2727,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2779,7 +2740,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2796,7 +2756,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2810,7 +2769,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.244,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {
@@ -2824,7 +2782,6 @@
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
-          "wordmarkStyle": "cursive-plate",
           "inkBlankKind": "light"
         },
         {

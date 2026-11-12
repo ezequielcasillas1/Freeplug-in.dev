@@ -108,9 +108,8 @@ export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): Reso
     if (placementResolved === null) {
       return null
     }
-    const style = placementResolved.wordmarkStyle
-      ? parseBuyerWordmarkStyle(placementResolved.wordmarkStyle)
-      : parseBuyerWordmarkStyle(input.buyerWordmarkStyle ?? DEFAULT_BUYER_WORDMARK_STYLE)
+    // Buyer grid/hero default is plain cursive; plate styles are picker-only (never from placement table).
+    const style = parseBuyerWordmarkStyle(input.buyerWordmarkStyle ?? DEFAULT_BUYER_WORDMARK_STYLE)
     const plateStyle = style === 'cursive-plate' || style === 'pop-plate-v2'
     const inkBlankKind = placementResolved.inkBlankKind ?? blankKind
     const { inkBlankKind: _ink, wordmarkStyle: _ws, ...placement } = placementResolved
