@@ -29,9 +29,11 @@ describe('resolvePreviewWordmark', () => {
     ).toBeNull()
   })
 
-  it('skips preview overlays on all catalog t-shirts (designed front art)', () => {
+  it('skips catalog preview wordmarks on all t-shirts (slogan art is separate)', () => {
     for (const slug of [
+      '01-know-a-plug',
       '11-init-open-hand-give',
+      '07-verse-psalm-82-3',
       '31-world-plugs-dont-work',
       '35-world-straight-after-the-freeplug',
       'patience-undefined',

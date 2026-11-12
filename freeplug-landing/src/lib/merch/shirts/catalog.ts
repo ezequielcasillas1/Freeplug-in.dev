@@ -1,4 +1,5 @@
 import rawCatalog from './shirts-catalog.json'
+import { shirtGarmentDisplayMockupSrc } from '@/lib/merch/shirts/shirt-display-mockup'
 
 export const SHIRT_CURRENCY = 'usd' as const
 export const SHIRT_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL'] as const
@@ -159,12 +160,12 @@ export function shirtDefaultSelectedColor(slug: string): ShirtColor {
   return shirtLeadListColor(slug)
 }
 
-export function shirtListCardFrontMockup(p: Pick<PublicShirtProduct, 'slug' | 'mockups'>): {
+export function shirtListCardFrontMockup(p: Pick<PublicShirtProduct, 'slug'>): {
   color: ShirtColor
   src: string
 } {
-  const color = shirtLeadListColor(p.slug)
-  const src = p.mockups[`${color}-front`] ?? p.mockups['White-front'] ?? p.mockups['Black-front'] ?? ''
+  const color = shirtDefaultSelectedColor(p.slug)
+  const src = shirtGarmentDisplayMockupSrc(p.slug, color, 'front')
   return { color, src }
 }
 
@@ -181,9 +182,9 @@ export function listPublicShirtProducts(): PublicShirtProduct[] {
   return catalog.map((entry) => {
     const mockups: PublicShirtProduct['mockups'] = {}
     for (const color of SHIRT_COLORS) {
-      mockups[`${color}-front`] = shirtMockupPublicPath(entry.slug, color, 'front')
+      mockups[`${color}-front`] = shirtGarmentDisplayMockupSrc(entry.slug, color, 'front')
       if (entry.back_print) {
-        mockups[`${color}-back`] = shirtMockupPublicPath(entry.slug, color, 'back')
+        mockups[`${color}-back`] = shirtGarmentDisplayMockupSrc(entry.slug, color, 'back')
       }
     }
     const fromPriceCents = entry.back_print ? FRONT_BACK_PRICE.S : FRONT_ONLY_PRICE.S

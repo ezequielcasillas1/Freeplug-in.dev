@@ -5,12 +5,14 @@ import type { ShirtColor } from './catalog'
 
 export type SupremePreviewSpec = {
   slug: string
-  variationId: string
+  lines: string[]
   style: 'boxed' | 'plain'
   ink: 'white-on-black-box' | 'white-on-charcoal-box'
   /** Baked Printify slogan box on the JPEG (left = left edge, top = vertical center). */
   placement: { top: number; left: number; width: number; lineHeight: number }
   bakedLineCount?: number
+  /** Buyer-shop garment map only — not used on catalog tee heroes. */
+  variationId?: string
 }
 
 const bySlug = new Map((specs as SupremePreviewSpec[]).map((s) => [s.slug, s]))
@@ -65,7 +67,8 @@ const SLOGAN_TEE_CHEST_LEFT_BY_SLUG: Partial<Record<string, Partial<PreviewPlace
  */
 export function supremeWordmarkPlacement(spec: SupremePreviewSpec): PreviewPlacement {
   const patch = SLOGAN_TEE_CHEST_LEFT_BY_SLUG[spec.slug] ?? {}
-  const def = getWordmarkVariation(spec.variationId)
+  const variationId = spec.variationId
+  const def = variationId ? getWordmarkVariation(variationId) : null
   const compact = def?.treatment === 'wide-stretched' || def?.treatment === 'wide-tracking-caps'
   return {
     ...SLOGAN_TEE_CHEST_LEFT_DEFAULT,

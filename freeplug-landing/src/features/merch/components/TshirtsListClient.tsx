@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { MerchPageChrome } from '@/features/merch/components/MerchPageChrome'
 import { CatalogFilterPanel } from '@/features/merch/components/CatalogFilterPanel'
-import { ShirtMockupFigure } from '@/features/merch/components/ShirtMockupFigure'
+import { ShirtHeroMockup } from '@/features/merch/components/ShirtHeroMockup'
 import { fadeInUp, staggerContainer } from '@/features/landing/animations/landing.variants'
 import { useLocale, useTranslations } from 'next-intl'
 import { toAppLocale } from '@/i18n/config'
@@ -85,27 +85,23 @@ export function TshirtsListClient({ products }: { products: PublicShirtProduct[]
                 {filtered.map((row) => {
                   const p = bySlug.get(row.key.replace('tshirts/', ''))
                   if (!p) return null
-                  const { color: listColor, src: img } = shirtListCardFrontMockup(p)
+                  const { color: listColor } = shirtListCardFrontMockup(p)
                   const title = t(`products.${p.titleKey}`)
                   return (
                     <motion.li key={p.slug} variants={fadeInUp} className="min-w-0">
                       <Link
                         href={publicHref(`/merch/t-shirts/${p.slug}`, locale)}
-                        className="block rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-[#ba3d3d]/40 transition-colors min-h-[44px]"
+                        className="block rounded-2xl border border-gray-200 bg-white hover:border-[#ba3d3d]/40 transition-colors min-h-[44px]"
                       >
-                        {img ? (
-                          <ShirtMockupFigure
-                            slug={p.slug}
-                            src={img}
-                            alt={t('cardAlt', { title })}
-                            width={1000}
-                            height={1200}
-                            shirtColor={listColor}
-                            className="border-0 rounded-none"
-                            sizes="(max-width: 640px) 100vw, 320px"
-                            showOverlay={state.previewOverlays}
-                          />
-                        ) : null}
+                        <ShirtHeroMockup
+                          slug={p.slug}
+                          shirtColor={listColor}
+                          side="front"
+                          alt={t('cardAlt', { title })}
+                          className="border-0 rounded-none rounded-t-2xl"
+                          sizes="(max-width: 640px) 100vw, 320px"
+                          showOverlay={state.previewOverlays}
+                        />
                         <div className="p-3.5 sm:p-4 min-w-0">
                           <h2 className="font-semibold text-gray-900 text-[0.95rem] min-[360px]:text-base leading-snug break-words">
                             {title}

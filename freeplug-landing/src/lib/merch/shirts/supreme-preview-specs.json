@@ -1,7 +1,10 @@
 [
   {
     "slug": "11-init-open-hand-give",
-    "variationId": "v01-fpid-code-panel",
+    "lines": [
+      "OPEN HANDS FOR THE",
+      "NEEDY"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -9,24 +12,32 @@
       "left": 0.31,
       "width": 0.38,
       "lineHeight": 1.08
-    }
+    },
+    "variationId": "v01-fpid-code-panel"
   },
   {
     "slug": "12-init-bridge-the-gap",
-    "variationId": "v06-fp-red-cursive",
+    "lines": [
+      "CONNECTING NEIGHBORS",
+      "WHO HAVE WITH",
+      "NEIGHBORS WHO NEED"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
-    "bakedLineCount": 3,
     "placement": {
       "top": 0.532,
       "left": 0.345,
       "width": 0.31,
       "lineHeight": 1.12
-    }
+    },
+    "variationId": "v06-fp-red-cursive"
   },
   {
     "slug": "13-init-daily-bread-share",
-    "variationId": "v12-fplgn-wide",
+    "lines": [
+      "SHARE YOUR BREAD -",
+      "FREEPLUG GIVING"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -34,11 +45,14 @@
       "left": 0.34,
       "width": 0.32,
       "lineHeight": 1.08
-    }
+    },
+    "variationId": "v12-fplgn-wide"
   },
   {
     "slug": "14-init-plug-in-kindness",
-    "variationId": "v17-fpd-stacked-dot",
+    "lines": [
+      "STAY PLUGGED INTO KINDNESS"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -46,11 +60,15 @@
       "left": 0.36,
       "width": 0.28,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v17-fpd-stacked-dot"
   },
   {
     "slug": "15-init-lift-together",
-    "variationId": "v21-fpin-outline",
+    "lines": [
+      "WE LIFT THE NEEDY",
+      "TOGETHER"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -58,23 +76,30 @@
       "left": 0.36,
       "width": 0.28,
       "lineHeight": 1.08
-    }
+    },
+    "variationId": "v21-fpin-outline"
   },
   {
     "slug": "16-init-running-over",
-    "variationId": "v25-fplgn-stamp",
+    "lines": [
+      "RUNNING OVER WITH MERCY"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
-      "top": 0.558,
+      "top": 0.592,
       "left": 0.34,
       "width": 0.32,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v25-fplgn-stamp"
   },
   {
     "slug": "17-init-neighbor-net",
-    "variationId": "v02-fpid-invert-white",
+    "lines": [
+      "A NET THAT CATCHES",
+      "THE FALLING"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -82,23 +107,30 @@
       "left": 0.36,
       "width": 0.28,
       "lineHeight": 1.08
-    }
+    },
+    "variationId": "v02-fpid-invert-white"
   },
   {
     "slug": "18-init-charge-forward-care",
-    "variationId": "v07-fp-white-invert",
+    "lines": [
+      "CHARGE FORWARD WITH CARE"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
-      "top": 0.568,
+      "top": 0.605,
       "left": 0.355,
       "width": 0.29,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v07-fp-white-invert"
   },
   {
     "slug": "19-init-house-of-help",
-    "variationId": "v13-fplgn-stacked",
+    "lines": [
+      "A HOUSE OPEN TO THE",
+      "CAST OUT"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -106,11 +138,14 @@
       "left": 0.32,
       "width": 0.36,
       "lineHeight": 1.08
-    }
+    },
+    "variationId": "v13-fplgn-stacked"
   },
   {
     "slug": "20-init-fp-shield-care",
-    "variationId": "v18-fpd-red-box",
+    "lines": [
+      "FREEPLUG SHIELD OF CARE"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -118,11 +153,14 @@
       "left": 0.355,
       "width": 0.29,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v18-fpd-red-box"
   },
   {
     "slug": "21-world-stay-charged",
-    "variationId": "v22-fpin-thick-box",
+    "lines": [
+      "STAY CHARGED"
+    ],
     "style": "boxed",
     "ink": "white-on-black-box",
     "placement": {
@@ -130,11 +168,14 @@
       "left": 0.36,
       "width": 0.28,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v22-fpin-thick-box"
   },
   {
     "slug": "22-world-fully-charged",
-    "variationId": "v26-fplgn-condensed-red",
+    "lines": [
+      "FULLY CHARGED"
+    ],
     "style": "boxed",
     "ink": "white-on-black-box",
     "placement": {
@@ -142,11 +183,14 @@
       "left": 0.35,
       "width": 0.3,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v26-fplgn-condensed-red"
   },
   {
     "slug": "23-world-know-a-plug",
-    "variationId": "v03-fpid-outline",
+    "lines": [
+      "KNOW A PLUG"
+    ],
     "style": "boxed",
     "ink": "white-on-black-box",
     "placement": {
@@ -154,11 +198,14 @@
       "left": 0.36,
       "width": 0.28,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v03-fpid-outline"
   },
   {
     "slug": "24-world-day-one",
-    "variationId": "v08-fp-outline-box",
+    "lines": [
+      "DAY ONE"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -166,23 +213,29 @@
       "left": 0.29,
       "width": 0.42,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v08-fp-outline-box"
   },
   {
     "slug": "25-world-free-refills",
-    "variationId": "v14-fplgn-strike",
+    "lines": [
+      "FREE REFILLS"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
-      "top": 0.578,
+      "top": 0.65,
       "left": 0.33,
       "width": 0.34,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v14-fplgn-strike"
   },
   {
     "slug": "26-world-senses-alive",
-    "variationId": "v19-fpd-chest-left",
+    "lines": [
+      "SENSES ALIVE"
+    ],
     "style": "boxed",
     "ink": "white-on-black-box",
     "placement": {
@@ -190,11 +243,14 @@
       "left": 0.35,
       "width": 0.3,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v19-fpd-chest-left"
   },
   {
     "slug": "27-world-pride-pulse",
-    "variationId": "v23-fpin-pill",
+    "lines": [
+      "PRIDE PULSE"
+    ],
     "style": "boxed",
     "ink": "white-on-black-box",
     "placement": {
@@ -202,11 +258,14 @@
       "left": 0.36,
       "width": 0.28,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v23-fpin-pill"
   },
   {
     "slug": "28-world-taste-the-charge",
-    "variationId": "v09-fp-slanted",
+    "lines": [
+      "TASTE THE CHARGE"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -214,11 +273,14 @@
       "left": 0.36,
       "width": 0.28,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v09-fp-slanted"
   },
   {
     "slug": "29-world-sound-on",
-    "variationId": "v04-fpid-underline",
+    "lines": [
+      "SOUND ON"
+    ],
     "style": "boxed",
     "ink": "white-on-black-box",
     "placement": {
@@ -226,11 +288,14 @@
       "left": 0.325,
       "width": 0.35,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v04-fpid-underline"
   },
   {
     "slug": "30-world-good-trouble-fun",
-    "variationId": "v10-fp-stamp",
+    "lines": [
+      "GOOD TROUBLE FUN"
+    ],
     "style": "boxed",
     "ink": "white-on-charcoal-box",
     "placement": {
@@ -238,6 +303,7 @@
       "left": 0.35,
       "width": 0.3,
       "lineHeight": 1.05
-    }
+    },
+    "variationId": "v10-fp-stamp"
   }
 ]

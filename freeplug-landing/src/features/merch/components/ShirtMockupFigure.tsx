@@ -1,6 +1,10 @@
 import { MerchPreviewFigure } from '@/features/merch/components/MerchPreviewFigure'
 import { usePreviewOverlaysEnabled } from '@/features/merch/hooks/usePreviewOverlaysEnabled'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
+import {
+  shirtGarmentDisplayMockupSideFromPublicPath,
+  shirtGarmentDisplayMockupSrc,
+} from '@/lib/merch/shirts/shirt-display-mockup'
 
 type ShirtMockupFigureProps = {
   slug: string
@@ -9,6 +13,7 @@ type ShirtMockupFigureProps = {
   width: number
   height: number
   shirtColor: ShirtColor
+  side?: 'front' | 'back'
   className?: string
   priority?: boolean
   sizes?: string
@@ -22,16 +27,21 @@ export function ShirtMockupFigure({
   width,
   height,
   shirtColor,
+  side: sideProp,
   className,
   priority,
   sizes = '(max-width: 1024px) 100vw, 480px',
   showOverlay = true,
 }: ShirtMockupFigureProps) {
-  const previewOn = usePreviewOverlaysEnabled() && showOverlay
+  const layersOn = usePreviewOverlaysEnabled()
+  const side = sideProp ?? shirtGarmentDisplayMockupSideFromPublicPath(src)
+  const displaySrc = shirtGarmentDisplayMockupSrc(slug, shirtColor, side)
+  const overlayOn = layersOn && showOverlay
+
   return (
     <MerchPreviewFigure
-      showOverlay={previewOn}
-      src={src}
+      showOverlay={overlayOn}
+      src={displaySrc}
       alt={alt}
       width={width}
       height={height}

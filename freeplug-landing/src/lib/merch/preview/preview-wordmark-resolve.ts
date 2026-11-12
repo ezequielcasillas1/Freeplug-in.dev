@@ -1,6 +1,6 @@
 import type { CatalogSource } from '@/lib/merch/catalog-filter-types'
 import type { ShirtColor } from '@/lib/merch/shirts/catalog'
-import { catalogShirtSkipsPreviewWordmarkOverlay, isPlainCatalogGarment } from './preview-overlay-eligibility'
+import { isPlainCatalogGarment } from './preview-overlay-eligibility'
 import { inferProductTypeFromCatalog, placementForProductType, type PreviewPlacement } from './placement-defaults'
 import {
   DEFAULT_BUYER_WORDMARK_BRAND,
@@ -79,7 +79,8 @@ export type ResolvePreviewWordmarkInput = {
 
 export function resolvePreviewWordmark(input: ResolvePreviewWordmarkInput): ResolvedPreviewWordmark | null {
   if (isDigitalMerchHref(input.href)) return null
-  if (catalogShirtSkipsPreviewWordmarkOverlay(input.source)) {
+
+  if (input.source === 't-shirts') {
     return null
   }
 

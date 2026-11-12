@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getSupremePreviewSpec, supremeWordmarkPlacement } from '@/lib/merch/shirts/supreme-preview'
 import { placementToSvgPoint, wordmarkScaleFromPlacement } from './preview-overlay-layout'
-import { resolvePreviewWordmark } from './preview-wordmark-resolve'
+import { resolvePreviewWordmark } from '@/lib/merch/preview/preview-wordmark-resolve'
 
 describe('preview overlay layout', () => {
   it('places slogan tee badges on wearers left upper chest', () => {
@@ -21,7 +21,7 @@ describe('preview overlay layout', () => {
     expect(scale).toBeCloseTo(0.25, 2)
   })
 
-  it('does not overlay wordmarks on catalog t-shirts', () => {
+  it('does not use catalog wordmark overlays on init/world tees', () => {
     expect(
       resolvePreviewWordmark({
         source: 't-shirts',

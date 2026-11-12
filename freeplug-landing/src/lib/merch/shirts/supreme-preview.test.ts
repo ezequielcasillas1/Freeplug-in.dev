@@ -15,20 +15,26 @@ describe('supreme preview overlays', () => {
     expect(isSupremeStyleShirtSlug('01-know-a-plug')).toBe(false)
   })
 
-  it('maps every supreme slug to a known variation id', () => {
+  it('maps every supreme slug to slogan lines for mockup overlay', () => {
     const specs = listSupremePreviewSpecs()
     expect(specs).toHaveLength(20)
-    const ids = new Set(WORDMARK_VARIATIONS.map((v) => v.id))
     for (const s of specs) {
-      expect(ids.has(s.variationId)).toBe(true)
+      expect(s.lines.length).toBeGreaterThan(0)
+      expect(s.lines.join(' ').toUpperCase()).toMatch(/[A-Z]/)
     }
-    expect(new Set(specs.map((s) => s.variationId)).size).toBe(20)
   })
 
-  it('raises placement only on shirts that sat low on mockups', () => {
-    expect(getSupremePreviewSpec('25-world-free-refills')!.placement.top).toBe(0.578)
-    expect(getSupremePreviewSpec('18-init-charge-forward-care')!.placement.top).toBe(0.568)
-    expect(getSupremePreviewSpec('16-init-running-over')!.placement.top).toBe(0.558)
+  it('optionally maps shop garment wordmarks when variationId is set', () => {
+    const ids = new Set(WORDMARK_VARIATIONS.map((v) => v.id))
+    for (const s of listSupremePreviewSpecs()) {
+      if (s.variationId) expect(ids.has(s.variationId)).toBe(true)
+    }
+  })
+
+  it('anchors placement from Printify baked box metrics', () => {
+    expect(getSupremePreviewSpec('25-world-free-refills')!.placement.top).toBe(0.65)
+    expect(getSupremePreviewSpec('18-init-charge-forward-care')!.placement.top).toBe(0.605)
+    expect(getSupremePreviewSpec('16-init-running-over')!.placement.top).toBe(0.592)
     expect(getSupremePreviewSpec('11-init-open-hand-give')!.placement.top).toBe(0.578)
   })
 
