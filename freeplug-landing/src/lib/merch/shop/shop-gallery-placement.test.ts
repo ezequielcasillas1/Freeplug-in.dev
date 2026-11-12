@@ -64,7 +64,7 @@ describe('shopGalleryPlacement', () => {
     expect(p!.top).toBeGreaterThan(0.62)
   })
 
-  it('leather-patch dad hat uses patch ink', () => {
+  it('leather-patch dad hat centers on patch with light ink', () => {
     const p = resolveShopGalleryPlacement({
       slug: 'dad-hat-with-leather-patch-rectangle-1221',
       productType: 'hat',
@@ -72,10 +72,21 @@ describe('shopGalleryPlacement', () => {
       galleryIndex: 0,
       galleryLength: 2,
     })
-    expect(p!.top).toBeGreaterThan(0.3)
-    expect(p!.top).toBeLessThan(0.36)
-    expect(p!.width).toBeLessThanOrEqual(0.11)
-    expect(p!.inkBlankKind).toBe('dark')
+    expect(p!.left).toBeGreaterThan(0.46)
+    expect(p!.left).toBeLessThan(0.54)
+    expect(p!.width).toBeGreaterThanOrEqual(0.16)
+    expect(p!.inkBlankKind).toBe('light')
+  })
+
+  it('pet bandana lifestyle slide avoids upper fur', () => {
+    const p = resolveShopGalleryPlacement({
+      slug: 'pet-bandana-562',
+      productType: 'pets',
+      catalogKey: 'shop/pet-bandana-562',
+      galleryIndex: 0,
+      galleryLength: 2,
+    })
+    expect(p!.top).toBeGreaterThan(0.55)
   })
 
   it('beanie embroidery targets cuff band', () => {

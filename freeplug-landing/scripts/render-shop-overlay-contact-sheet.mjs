@@ -101,13 +101,19 @@ const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } })
 
 async function capturePdpHero(slug) {
   await page.goto(`${base}/shop/${slug}?wordmark_brand=freeplug-dev&wordmark_style=cursive`, {
-    waitUntil: 'networkidle',
-    timeout: 120_000,
+    waitUntil: 'load',
+    timeout: 90_000,
   })
-  await page.getByTestId('shop-pdp-hero-mockup').waitFor({ state: 'visible', timeout: 30_000 })
-  await page.locator('svg image').first().waitFor({ state: 'attached', timeout: 15_000 }).catch(() => {})
-  await page.waitForTimeout(200)
-  return page.getByTestId('shop-pdp-hero-mockup').screenshot({ type: 'png' })
+  await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {})
+  await page
+    .waitForFunction(
+      () => Boolean(document.querySelector('[data-testid="shop-pdp-hero-mockup"] svg, [data-testid="shop-pdp-hero-mockup"] img')),
+      { timeout: 45_000 }
+    )
+    .catch(() => {})
+  const el = await page.$('[data-testid="shop-pdp-hero-mockup"]')
+  if (!el) throw new Error(`hero missing: ${slug}`)
+  return el.screenshot({ type: 'png' })
 }
 
 for (const slug of CHEKE_SLUGS) {
@@ -119,8 +125,12 @@ const pdpTiles = []
 for (let si = 0; si < slugs.length; si++) {
   const slug = slugs[si]
   process.stdout.write(`PDP ${si + 1}/${slugs.length}\r`)
-  const hero = await capturePdpHero(slug)
-  pdpTiles.push(await makeTile(hero, slug))
+  try {
+    const hero = await capturePdpHero(slug)
+    pdpTiles.push(await makeTile(hero, slug))
+  } catch (err) {
+    console.warn(`\nSkip ${slug}:`, err.message)
+  }
 }
 
 await stitchPages(pdpTiles, 'shop-overlay-contact-pdp')

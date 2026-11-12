@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T00:47:54.414Z",
+  "generatedAt": "2026-11-12T00:52:50.692Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -232,9 +232,9 @@
     "garment-dyed-crewneck-sweatshirt-3607": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.556,
+          "left": 0.455,
+          "width": 0.398
         },
         {
           "top": 0.42,
@@ -347,37 +347,37 @@
     "laguna-raglan-sweatshirt-3554": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.577,
+          "left": 0.469,
+          "width": 0.398
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.584,
+          "left": 0.458,
+          "width": 0.398
         }
       ]
     },
     "featherweight-french-terry-long-sleeve-crewneck-3472": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.188
+          "top": 0.554,
+          "left": 0.527,
+          "width": 0.298
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.551,
+          "left": 0.545,
+          "width": 0.298
         }
       ]
     },
     "halftime-long-sleeve-hoodie-3155": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.565,
+          "left": 0.506,
+          "width": 0.321
         },
         {
           "top": 0.42,
@@ -403,9 +403,9 @@
     "long-sleeve-ultimate-performance-crew-3157": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.549,
+          "left": 0.496,
+          "width": 0.398
         },
         {
           "top": 0.42,
@@ -417,37 +417,37 @@
     "repeat-1-2-zip-long-sleeve-hooded-jacket-4397": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.567,
+          "left": 0.466,
+          "width": 0.398
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.602,
+          "left": 0.458,
+          "width": 0.398
         }
       ]
     },
     "unisex-jersey-tank-39": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.546,
+          "left": 0.502,
+          "width": 0.38
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.547,
+          "left": 0.501,
+          "width": 0.42
         }
       ]
     },
     "women-s-cotton-tee-472": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.536,
+          "left": 0.516,
+          "width": 0.4
         },
         {
           "top": 0.42,
@@ -459,99 +459,98 @@
     "unisex-garment-dyed-tank-top-1459": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.44,
-          "width": 0.098
+          "top": 0.55,
+          "left": 0.519,
+          "width": 0.33
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.545,
+          "left": 0.487,
+          "width": 0.42
         }
       ]
     },
     "pet-tank-top-571": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.534,
+          "left": 0.513,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.36,
+          "left": 0.44,
+          "width": 0.138
         }
       ]
     },
     "posicharge-reversible-mesh-tank-4135": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.556,
+          "left": 0.496,
+          "width": 0.328
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.551,
+          "left": 0.503,
+          "width": 0.348
         }
       ]
     },
     "women-s-ideal-racerback-tank-18": {
       "slides": [
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.12,
-          "hide": true
+          "top": 0.541,
+          "left": 0.466,
+          "width": 0.42
         },
         {
-          "top": 0.44,
+          "top": 0.549,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.39
         }
       ]
     },
     "the-concert-tank-3076": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
+          "top": 0.589,
+          "left": 0.441,
           "width": 0.198
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.545,
+          "left": 0.448,
+          "width": 0.268
         }
       ]
     },
     "women-s-cotton-tank-top-5478": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.624,
+          "left": 0.465,
+          "width": 0.208
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.188
+          "top": 0.623,
+          "left": 0.436,
+          "width": 0.388
         }
       ]
     },
     "unisex-jersey-short-sleeve-tee-12": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.539,
+          "left": 0.491,
+          "width": 0.27
         },
         {
-          "top": 0.46,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.551,
+          "left": 0.505,
+          "width": 0.3
         }
       ]
     },
@@ -563,23 +562,23 @@
           "width": 0.198
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.548,
+          "left": 0.501,
+          "width": 0.29
         }
       ]
     },
     "unisex-softstyle-t-shirt-145": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.559,
+          "left": 0.509,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.46,
-          "width": 0.138
+          "top": 0.552,
+          "left": 0.541,
+          "width": 0.39
         }
       ]
     },
@@ -605,18 +604,18 @@
           "width": 0.198
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.551,
+          "left": 0.497,
+          "width": 0.3
         }
       ]
     },
     "unisex-ultra-cotton-tee-36": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.55,
+          "left": 0.504,
+          "width": 0.23
         },
         {
           "top": 0.42,
@@ -628,14 +627,14 @@
     "unisex-cotton-crew-tee-5": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.532,
+          "left": 0.533,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.542,
+          "left": 0.538,
+          "width": 0.42
         }
       ]
     },
@@ -748,46 +747,46 @@
           "width": 0.198
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.551,
+          "left": 0.501,
+          "width": 0.29
         }
       ]
     },
     "tie-dye-tee-cyclone-631": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.535,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.538,
+          "left": 0.515,
+          "width": 0.42
         }
       ]
     },
     "tie-dye-tee-crystal-630": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.541,
+          "left": 0.51,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.532,
+          "left": 0.504,
+          "width": 0.42
         }
       ]
     },
     "infant-fine-jersey-tee-34": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.546,
+          "left": 0.491,
+          "width": 0.42
         },
         {
           "top": 0.5,
@@ -814,9 +813,9 @@
     "toddler-s-fine-jersey-tee-32": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.541,
+          "left": 0.455,
+          "width": 0.42
         },
         {
           "top": 0.36,
@@ -828,14 +827,14 @@
     "unisex-moisture-wicking-tee-1121": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.537,
+          "left": 0.501,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.542,
+          "left": 0.496,
+          "width": 0.28
         }
       ]
     },
@@ -903,9 +902,9 @@
           "width": 0.098
         },
         {
-          "top": 0.44,
-          "left": 0.56,
-          "width": 0.138
+          "top": 0.571,
+          "left": 0.506,
+          "width": 0.2
         }
       ]
     },
@@ -946,9 +945,9 @@
           "width": 0.198
         },
         {
-          "top": 0.42,
+          "top": 0.51,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.42
         }
       ]
     },
@@ -1031,28 +1030,30 @@
     "ceramic-mug-11oz-15oz-478": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.138
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "mug-11oz-68": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
@@ -1065,18 +1066,32 @@
           "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.292
         }
       ]
     },
     "mug-15oz-425": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
+        },
+        {
+          "top": 0.521,
+          "left": 0.713,
+          "width": 0.15
+        }
+      ]
+    },
+    "white-ceramic-mug-11oz-503": {
+      "slides": [
+        {
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.383
         },
         {
           "top": 0.5,
@@ -1086,68 +1101,56 @@
         }
       ]
     },
-    "white-ceramic-mug-11oz-503": {
-      "slides": [
-        {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
-        },
-        {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
-        }
-      ]
-    },
     "enamel-camping-mug-483": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.38,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.168
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "coffee-mug-tumbler-15oz-1511": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.383
         },
         {
-          "top": 0.46,
-          "left": 0.46,
-          "width": 0.138
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.12,
+          "hide": true
         }
       ]
     },
     "pint-glass-16oz-633": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.486,
+          "left": 0.515,
+          "width": 0.3
         }
       ]
     },
     "vacuum-insulated-tumbler-11oz-604": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.52,
-          "width": 0.188
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.383
         },
         {
           "top": 0.5,
@@ -1160,23 +1163,23 @@
     "chill-wine-tumbler-620": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         }
       ]
     },
     "colorful-mugs-11oz-15oz-1151": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
           "top": 0.5,
@@ -1189,37 +1192,37 @@
     "accent-coffee-mug-11-15oz-635": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
-          "left": 0.48,
-          "width": 0.218
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.383
         }
       ]
     },
     "two-tone-accent-mug-11oz-15oz-2693": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         }
       ]
     },
     "accent-rim-handle-mug-11oz-15oz-2692": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
           "top": 0.5,
@@ -1232,16 +1235,16 @@
     "dad-hat-with-leather-patch-rectangle-1221": {
       "slides": [
         {
-          "top": 0.328,
-          "left": 0.391,
-          "width": 0.1,
-          "inkBlankKind": "dark"
+          "top": 0.375,
+          "left": 0.5,
+          "width": 0.204,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.325,
-          "left": 0.391,
-          "width": 0.1,
-          "inkBlankKind": "dark"
+          "top": 0.354,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1267,9 +1270,9 @@
           "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.46,
-          "width": 0.138
+          "top": 0.543,
+          "left": 0.497,
+          "width": 0.38
         }
       ]
     },
@@ -1348,16 +1351,16 @@
     "mid-profile-baseball-cap-with-leather-patch-rect-2707": {
       "slides": [
         {
-          "top": 0.328,
-          "left": 0.39,
-          "width": 0.1,
-          "inkBlankKind": "dark"
+          "top": 0.396,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.325,
-          "left": 0.39,
-          "width": 0.1,
-          "inkBlankKind": "dark"
+          "top": 0.427,
+          "left": 0.51,
+          "width": 0.22,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1392,25 +1395,25 @@
     "dad-hat-with-leather-patch-round-1287": {
       "slides": [
         {
-          "top": 0.32,
-          "left": 0.4,
-          "width": 0.09,
-          "inkBlankKind": "dark"
+          "top": 0.375,
+          "left": 0.51,
+          "width": 0.19,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.318,
-          "left": 0.4,
-          "width": 0.09,
-          "inkBlankKind": "dark"
+          "top": 0.24,
+          "left": 0.469,
+          "width": 0.22,
+          "inkBlankKind": "light"
         }
       ]
     },
     "full-length-apron-5541": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.557,
+          "left": 0.501,
+          "width": 0.398
         },
         {
           "top": 0.5,
@@ -1423,14 +1426,14 @@
     "tea-towel-677": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.383
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.554,
+          "left": 0.408,
+          "width": 0.366
         }
       ]
     },
@@ -1456,23 +1459,23 @@
           "width": 0.218
         },
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.546,
+          "left": 0.502,
+          "width": 0.42
         }
       ]
     },
     "velveteen-plush-blanket-522": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.383
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.383
         }
       ]
     },
@@ -1493,28 +1496,28 @@
     "posicharge-competitor-2-button-henley-4129": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.521,
+          "left": 0.493,
+          "width": 0.318
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.523,
+          "left": 0.495,
+          "width": 0.398
         }
       ]
     },
     "competitor-united-crew-4118": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.553,
+          "left": 0.452,
+          "width": 0.178
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.564,
+          "left": 0.468,
+          "width": 0.168
         }
       ]
     },
@@ -1550,14 +1553,14 @@
     "posicharge-competitor-7-pocketed-short-4616": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.423,
+          "left": 0.494,
+          "width": 0.368
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.178
+          "top": 0.401,
+          "left": 0.501,
+          "width": 0.398
         }
       ]
     },
@@ -1569,9 +1572,9 @@
           "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.553,
+          "left": 0.333,
+          "width": 0.32
         }
       ]
     },
@@ -1608,9 +1611,9 @@
     "rally-towel-5577": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.5,
+          "left": 0.51,
+          "width": 0.367
         },
         {
           "top": 0.5,
@@ -1655,9 +1658,9 @@
     "unisex-pique-gym-shorts-6173": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.538,
+          "left": 0.503,
+          "width": 0.42
         },
         {
           "top": 0.42,
@@ -1684,9 +1687,9 @@
     "women-s-ultimate-performance-v-neck-3151": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.54,
+          "left": 0.485,
+          "width": 0.208
         },
         {
           "top": 0.5,
@@ -1719,9 +1722,9 @@
           "width": 0.218
         },
         {
-          "top": 0.44,
-          "left": 0.52,
-          "width": 0.138
+          "top": 0.544,
+          "left": 0.547,
+          "width": 0.25
         }
       ]
     },
@@ -1749,9 +1752,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.524,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.19
         }
       ]
     },
@@ -1764,9 +1767,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.526,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.39
         }
       ]
     },
@@ -1779,9 +1782,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.514,
+          "left": 0.501,
+          "width": 0.42
         }
       ]
     },
@@ -1794,9 +1797,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.515,
+          "left": 0.502,
+          "width": 0.42
         }
       ]
     },
@@ -1809,9 +1812,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.514,
+          "left": 0.501,
+          "width": 0.42
         }
       ]
     },
@@ -1832,9 +1835,9 @@
     "toddler-short-sleeve-tee-580": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.548,
+          "left": 0.476,
+          "width": 0.42
         },
         {
           "top": 0.42,
@@ -1846,28 +1849,28 @@
     "baby-short-sleeve-onesie-568": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.539,
+          "left": 0.499,
+          "width": 0.29
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.537,
+          "left": 0.499,
+          "width": 0.29
         }
       ]
     },
     "11oz-accent-mug-583": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.543,
+          "left": 0.527,
+          "width": 0.42
         }
       ]
     },
@@ -1890,9 +1893,9 @@
     "infant-baby-rib-bodysuit-561": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.554,
+          "left": 0.506,
+          "width": 0.42
         },
         {
           "top": 0.42,
@@ -1925,19 +1928,18 @@
           "width": 0.198
         },
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.12,
-          "hide": true
+          "top": 0.546,
+          "left": 0.527,
+          "width": 0.26
         }
       ]
     },
     "youth-midweight-tee-750": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.543,
+          "left": 0.455,
+          "width": 0.33
         },
         {
           "top": 0.42,
@@ -1949,14 +1951,14 @@
     "youth-competitor-tee-1142": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.537,
+          "left": 0.499,
+          "width": 0.29
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.535,
+          "left": 0.503,
+          "width": 0.28
         }
       ]
     },
@@ -1992,23 +1994,24 @@
     "beach-towel-352": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.521,
+          "left": 0.516,
+          "width": 0.42
         }
       ]
     },
     "picnic-blanket-1124": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.12,
+          "hide": true
         },
         {
           "top": 0.5,
@@ -2042,9 +2045,9 @@
           "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.542,
+          "left": 0.435,
+          "width": 0.42
         }
       ]
     },
@@ -2081,9 +2084,9 @@
     "value-beach-towel-5582": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.198
+          "width": 0.32
         },
         {
           "top": 0.5,
@@ -2096,23 +2099,24 @@
     "value-cabana-stripe-beach-towel-5583": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.188
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.281,
           "left": 0.5,
-          "width": 0.138
+          "width": 0.32
         }
       ]
     },
     "beach-towel-5580": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.51,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.32
         },
         {
           "top": 0.5,
@@ -2125,9 +2129,9 @@
     "flag-1347": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.383
         },
         {
           "top": 0.5,
@@ -2140,37 +2144,38 @@
     "pet-bandana-562": {
       "slides": [
         {
-          "top": 0.4,
-          "left": 0.46,
-          "width": 0.218
+          "top": 0.686,
+          "left": 0.504,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.44,
-          "width": 0.138
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.36
         }
       ]
     },
     "copper-vacuum-insulated-bottle-22oz-572": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.12,
+          "hide": true
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.188
+          "top": 0.562,
+          "left": 0.546,
+          "width": 0.18
         }
       ]
     },
     "pet-bowl-570": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.577,
+          "left": 0.477,
+          "width": 0.42
         },
         {
           "top": 0.5,
@@ -2183,9 +2188,9 @@
     "pet-bed-419": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.519,
           "left": 0.5,
-          "width": 0.218
+          "width": 0.42
         },
         {
           "top": 0.5,
@@ -2198,24 +2203,23 @@
     "clip-on-pet-bandana-1672": {
       "slides": [
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.12,
-          "hide": true
+          "top": 0.743,
+          "left": 0.596,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.709,
+          "left": 0.501,
+          "width": 0.42
         }
       ]
     },
     "pet-bowl-18oz-engraving-1520": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.534,
+          "left": 0.447,
+          "width": 0.42
         },
         {
           "top": 0.42,
@@ -2227,9 +2231,9 @@
     "pet-feeding-mats-623": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.611,
+          "left": 0.49,
+          "width": 0.42
         },
         {
           "top": 0.5,
@@ -2247,18 +2251,18 @@
           "width": 0.166
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.166
+          "top": 0.56,
+          "left": 0.588,
+          "width": 0.42
         }
       ]
     },
     "sublimation-crew-socks-1433": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.166
+          "top": 0.552,
+          "left": 0.503,
+          "width": 0.15
         },
         {
           "top": 0.42,
@@ -2298,9 +2302,9 @@
     "cushioned-crew-socks-574": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.166
+          "top": 0.539,
+          "left": 0.423,
+          "width": 0.42
         },
         {
           "top": 0.42,
@@ -2312,14 +2316,14 @@
     "recycled-poly-socks-452": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.166
+          "top": 0.54,
+          "left": 0.494,
+          "width": 0.42
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.146
+          "top": 0.51,
+          "left": 0.483,
+          "width": 0.28
         }
       ]
     },
@@ -2526,9 +2530,9 @@
     "laptop-sleeve-429": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.188
+          "top": 0.606,
+          "left": 0.511,
+          "width": 0.16
         },
         {
           "top": 0.36,
@@ -2604,18 +2608,18 @@
           "width": 0.218
         },
         {
-          "top": 0.46,
-          "left": 0.46,
-          "width": 0.138
+          "top": 0.562,
+          "left": 0.44,
+          "width": 0.42
         }
       ]
     },
     "colored-frame-posters-5651": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.198
+          "top": 0.543,
+          "left": 0.516,
+          "width": 0.35
         },
         {
           "top": 0.42,
@@ -2747,9 +2751,9 @@
           "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.558,
+          "left": 0.443,
+          "width": 0.42
         }
       ]
     },
@@ -2761,9 +2765,9 @@
           "width": 0.218
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.218
+          "top": 0.521,
+          "left": 0.498,
+          "width": 0.42
         }
       ]
     },
