@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { analyzeBakedMockArt, bakedSlideHeuristic } from './lib/shop-blank-baked-art.mjs'
+import { analyzeBakedMockArt, bakedSlideHeuristic, placeholderTextBandShare } from './lib/shop-blank-baked-art.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(__dirname, '..')
@@ -431,9 +431,29 @@ async function slideHasBakedArt(src) {
 async function rebalanceTwoSlideHides(item, productType, slides) {
   const gallery = item.gallery ?? []
   if (gallery.length !== 2) return
+  const ovSlides = overrides[item.slug]?.slides
+  if (ovSlides?.length && ovSlides.some((s, i) => s && i < gallery.length)) return
   const ov0 = overrides[item.slug]?.slides?.[0]
   const ov1 = overrides[item.slug]?.slides?.[1]
   if (ov0?.hide || ov1?.hide) return
+  const text0 = await placeholderTextBandShare(gallery[0], ROOT)
+  const text1 = await placeholderTextBandShare(gallery[1], ROOT)
+  if (text0 >= 0.32 && text1 < text0 - 0.08 && !slides[1]?.hide && slides[0] && !slides[0].hide) {
+    const flat = await inferSafeFlatPlacement(item.slug, productType, gallery[1], item.printArea?.position)
+    if (!flat.hide) {
+      slides[1] = roundPlacement(flat)
+      slides[0] = { hide: true }
+      return
+    }
+  }
+  if (text1 >= 0.32 && text0 < text1 - 0.08 && !slides[0]?.hide && slides[1] && !slides[1].hide) {
+    const flat = await inferSafeFlatPlacement(item.slug, productType, gallery[0], item.printArea?.position)
+    if (!flat.hide) {
+      slides[0] = roundPlacement(flat)
+      slides[1] = { hide: true }
+      return
+    }
+  }
   const baked0 = await slideHasBakedArt(gallery[0])
   const baked1 = await slideHasBakedArt(gallery[1])
   if (baked0 && !baked1 && slides[1]?.hide) {

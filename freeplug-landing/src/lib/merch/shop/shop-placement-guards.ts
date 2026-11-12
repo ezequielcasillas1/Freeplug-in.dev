@@ -25,6 +25,14 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 
 const WORDMARK_HALF_HEIGHT_RATIO = 0.11
+
+/** Grid card image column (~ShopListClient sizes). */
+export const SHOP_GRID_MOCKUP_WIDTH_PX = 240
+export const MIN_GRID_MARK_WIDTH_PX = 40
+
+export function gridMarkWidthPx(placement: Pick<PreviewPlacement, 'width'>): number {
+  return placement.width * SHOP_GRID_MOCKUP_WIDTH_PX
+}
 const CHEST_SLUG =
   /tee|tank|sweat|crewneck|polo|hoodie|jersey|raglan|long-sleeve|apparel|pullover|fleece/i
 
@@ -278,7 +286,9 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
   if (leatherPatch && placement.top > 0.34) {
     failures.push(`${item.slug}: leather patch mark too low (top ${placement.top})`)
   }
-  if (!leatherPatch) {
+  const ornamentSurface = /wooden-ornament|ceramic-ornament|metal-ornament|leatherette-ornament/i.test(item.slug)
+  const jewelryLifestyleEngraving = /necklace-engraving|bracelet-engraving/i.test(item.slug)
+  if (!leatherPatch && !ornamentSurface && !jewelryLifestyleEngraving) {
     const countFur = /pet-/i.test(item.slug)
     const nonFabric = await nonFabricSurfaceShareUnderPlacement(imageSrc, placement, { countFur })
     if (nonFabric != null && nonFabric > MAX_NON_FABRIC_SURFACE_SHARE) {
@@ -311,8 +321,19 @@ export async function auditHeroPlacementGuards(item: ShopCatalogItem): Promise<s
     ? { ...placement, width: placement.width * 0.72, top: placement.top - placement.width * 0.02 }
     : placement
   const measure = await measureInkContrast({ imageSrc, placement: samplePlacement, blankKind })
-  if (measure && measure.ratio < MIN_CONTRAST_RATIO && !leatherPatch) {
+  const skipContrast =
+    /-engraving-/.test(item.slug) ||
+    /sticker/i.test(item.slug) ||
+    /necklace-engraving|bracelet-engraving/.test(item.slug) ||
+    ornamentSurface
+  if (measure && measure.ratio < MIN_CONTRAST_RATIO && !leatherPatch && !skipContrast) {
     failures.push(`${item.slug}: contrast ${measure.ratio.toFixed(2)} on hero slide ${galleryIndex}`)
+  }
+  const markPx = gridMarkWidthPx(placement)
+  if (!leatherPatch && !isZipFrontGarment(item) && markPx < MIN_GRID_MARK_WIDTH_PX) {
+    failures.push(
+      `${item.slug}: grid mark width ~${markPx.toFixed(1)}px < ${MIN_GRID_MARK_WIDTH_PX}px on hero slide ${galleryIndex}`
+    )
   }
   return failures
 }

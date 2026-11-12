@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-12T03:58:04.556Z",
+  "generatedAt": "2026-11-12T04:26:30.914Z",
   "bySlug": {
     "unisex-heavy-blend-crewneck-sweatshirt-49": {
       "slides": [
@@ -180,7 +180,7 @@
         {
           "top": 0.42,
           "left": 0.58,
-          "width": 0.12,
+          "width": 0.13,
           "inkBlankKind": "dark"
         }
       ]
@@ -453,7 +453,7 @@
         {
           "top": 0.42,
           "left": 0.58,
-          "width": 0.12,
+          "width": 0.13,
           "inkBlankKind": "light"
         }
       ]
@@ -461,10 +461,7 @@
     "unisex-jersey-tank-39": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
           "top": 0.42,
@@ -629,10 +626,7 @@
     "unisex-garment-dyed-t-shirt-706": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "dark"
+          "hide": true
         },
         {
           "top": 0.42,
@@ -898,13 +892,13 @@
         {
           "top": 0.72,
           "left": 0.5,
-          "width": 0.16,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
           "top": 0.56,
           "left": 0.44,
-          "width": 0.16,
+          "width": 0.17,
           "inkBlankKind": "light"
         }
       ]
@@ -914,13 +908,13 @@
         {
           "top": 0.56,
           "left": 0.46,
-          "width": 0.16,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
           "top": 0.56,
           "left": 0.44,
-          "width": 0.16,
+          "width": 0.17,
           "inkBlankKind": "light"
         }
       ]
@@ -943,7 +937,7 @@
         {
           "top": 0.5,
           "left": 0.27,
-          "width": 0.16,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
@@ -954,9 +948,9 @@
     "fanny-pack-468": {
       "slides": [
         {
-          "top": 0.48,
-          "left": 0.5,
-          "width": 0.144,
+          "top": 0.54,
+          "left": 0.46,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
@@ -1035,9 +1029,9 @@
     "insulated-lunch-tote-5123": {
       "slides": [
         {
-          "top": 0.54,
+          "top": 0.58,
           "left": 0.46,
-          "width": 0.16,
+          "width": 0.17,
           "inkBlankKind": "dark"
         },
         {
@@ -1151,10 +1145,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.698,
-          "left": 0.406,
-          "width": 0.26,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1177,9 +1168,9 @@
     "vacuum-insulated-tumbler-11oz-604": {
       "slides": [
         {
-          "top": 0.46,
+          "top": 0.48,
           "left": 0.5,
-          "width": 0.22,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
@@ -1209,18 +1200,18 @@
           "hide": true
         },
         {
-          "top": 0.031,
-          "left": 0.156,
-          "width": 0.32,
-          "inkBlankKind": "light"
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
+          "inkBlankKind": "dark"
         }
       ]
     },
     "accent-coffee-mug-11-15oz-635": {
       "slides": [
         {
-          "top": 0.281,
-          "left": 0.594,
+          "top": 0.5,
+          "left": 0.5,
           "width": 0.22,
           "inkBlankKind": "light"
         },
@@ -1235,9 +1226,9 @@
           "hide": true
         },
         {
-          "top": 0.031,
-          "left": 0.156,
-          "width": 0.32,
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
           "inkBlankKind": "light"
         }
       ]
@@ -1258,16 +1249,16 @@
     "dad-hat-with-leather-patch-rectangle-1221": {
       "slides": [
         {
-          "top": 0.333,
+          "top": 0.168,
           "left": 0.5,
-          "width": 0.204,
-          "inkBlankKind": "dark"
+          "width": 0.16,
+          "inkBlankKind": "light"
         },
         {
-          "top": 0.26,
-          "left": 0.49,
-          "width": 0.22,
-          "inkBlankKind": "dark"
+          "top": 0.168,
+          "left": 0.5,
+          "width": 0.16,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1290,15 +1281,15 @@
     "5-panel-trucker-cap-1734": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.19,
           "left": 0.5,
-          "width": 0.244,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.543,
-          "left": 0.497,
-          "width": 0.38,
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.18,
           "inkBlankKind": "light"
         }
       ]
@@ -1306,15 +1297,15 @@
     "cuff-beanie-5385": {
       "slides": [
         {
-          "top": 0.36,
-          "left": 0.46,
-          "width": 0.094,
+          "top": 0.34,
+          "left": 0.5,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
+          "top": 0.34,
           "left": 0.5,
-          "width": 0.244,
+          "width": 0.17,
           "inkBlankKind": "light"
         }
       ]
@@ -1340,11 +1331,14 @@
         {
           "top": 0.19,
           "left": 0.5,
-          "width": 0.19,
+          "width": 0.18,
           "inkBlankKind": "dark"
         },
         {
-          "hide": true
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1367,15 +1361,15 @@
     "impact-mesh-stretch-tek-cap-5625": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.19,
           "left": 0.5,
-          "width": 0.244,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
+          "top": 0.19,
           "left": 0.5,
-          "width": 0.244,
+          "width": 0.18,
           "inkBlankKind": "light"
         }
       ]
@@ -1386,9 +1380,9 @@
           "hide": true
         },
         {
-          "top": 0.158,
-          "left": 0.438,
-          "width": 0.088,
+          "top": 0.168,
+          "left": 0.5,
+          "width": 0.11,
           "inkBlankKind": "dark"
         }
       ]
@@ -1396,13 +1390,16 @@
     "snapback-trucker-cap-1446": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.52,
-          "width": 0.244,
-          "inkBlankKind": "dark"
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
         },
         {
-          "hide": true
+          "top": 0.19,
+          "left": 0.5,
+          "width": 0.18,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -1424,8 +1421,8 @@
         {
           "top": 0.168,
           "left": 0.5,
-          "width": 0.125,
-          "inkBlankKind": "dark"
+          "width": 0.15,
+          "inkBlankKind": "light"
         },
         {
           "hide": true
@@ -1438,10 +1435,10 @@
           "hide": true
         },
         {
-          "top": 0.427,
-          "left": 0.323,
-          "width": 0.16,
-          "inkBlankKind": "light"
+          "top": 0.44,
+          "left": 0.5,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         }
       ]
     },
@@ -1464,9 +1461,9 @@
     "hardboard-coasters-with-cork-bottom-set-of-4-2764": {
       "slides": [
         {
-          "top": 0.45,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.14,
+          "width": 0.22,
           "inkBlankKind": "light"
         },
         {
@@ -1477,9 +1474,9 @@
     "glass-cutting-board-938": {
       "slides": [
         {
-          "top": 0.5,
+          "top": 0.46,
           "left": 0.5,
-          "width": 0.244,
+          "width": 0.2,
           "inkBlankKind": "light"
         },
         {
@@ -1496,10 +1493,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.383,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1512,10 +1506,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1528,10 +1519,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1577,25 +1565,22 @@
     "posicharge-competitor-7-pocketed-short-4616": {
       "slides": [
         {
-          "top": 0.423,
-          "left": 0.494,
-          "width": 0.368,
-          "inkBlankKind": "light"
+          "top": 0.7,
+          "left": 0.28,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.401,
-          "left": 0.501,
-          "width": 0.398,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "tin-candles-1379": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.4,
           "left": 0.5,
-          "width": 0.244,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
@@ -1609,9 +1594,9 @@
           "hide": true
         },
         {
-          "top": 0.62,
-          "left": 0.38,
-          "width": 0.14,
+          "top": 0.66,
+          "left": 0.34,
+          "width": 0.17,
           "inkBlankKind": "dark"
         }
       ]
@@ -1625,10 +1610,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.48,
-          "left": 0.46,
-          "width": 0.09,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
@@ -1648,9 +1630,9 @@
     "paper-gift-bag-2729": {
       "slides": [
         {
-          "top": 0.46,
-          "left": 0.42,
-          "width": 0.15,
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
@@ -1664,9 +1646,9 @@
           "hide": true
         },
         {
-          "top": 0.62,
-          "left": 0.38,
-          "width": 0.14,
+          "top": 0.66,
+          "left": 0.34,
+          "width": 0.17,
           "inkBlankKind": "dark"
         }
       ]
@@ -1677,9 +1659,9 @@
           "hide": true
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
+          "top": 0.66,
+          "left": 0.34,
+          "width": 0.17,
           "inkBlankKind": "light"
         }
       ]
@@ -1689,7 +1671,7 @@
         {
           "top": 0.4,
           "left": 0.5,
-          "width": 0.16,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
@@ -1713,9 +1695,9 @@
     "women-s-dare-shorts-5786": {
       "slides": [
         {
-          "top": 0.62,
-          "left": 0.38,
-          "width": 0.14,
+          "top": 0.66,
+          "left": 0.34,
+          "width": 0.17,
           "inkBlankKind": "dark"
         },
         {
@@ -1739,78 +1721,78 @@
     "natural-stone-stretch-bar-bracelet-engraving-2651": {
       "slides": [
         {
-          "hide": true
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "circle-necklace-engraving-2341": {
       "slides": [
         {
-          "hide": true
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.524,
-          "left": 0.5,
-          "width": 0.19,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "heart-necklace-engraving-2655": {
       "slides": [
         {
-          "hide": true
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.526,
-          "left": 0.5,
-          "width": 0.39,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "horizontal-bar-necklace-engraving-2654": {
       "slides": [
         {
-          "hide": true
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.514,
-          "left": 0.501,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "cutout-heart-bar-necklace-engraving-2659": {
       "slides": [
         {
-          "hide": true
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.515,
-          "left": 0.502,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "cutout-paw-bar-necklace-engraving-2652": {
       "slides": [
         {
-          "hide": true
+          "top": 0.56,
+          "left": 0.48,
+          "width": 0.17,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.514,
-          "left": 0.501,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -1865,9 +1847,9 @@
     "11oz-accent-mug-583": {
       "slides": [
         {
-          "top": 0.552,
-          "left": 0.594,
-          "width": 0.26,
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.22,
           "inkBlankKind": "light"
         },
         {
@@ -1883,7 +1865,7 @@
         {
           "top": 0.42,
           "left": 0.58,
-          "width": 0.12,
+          "width": 0.13,
           "inkBlankKind": "dark"
         }
       ]
@@ -1933,13 +1915,13 @@
     "youth-midweight-tee-750": {
       "slides": [
         {
+          "hide": true
+        },
+        {
           "top": 0.42,
           "left": 0.5,
           "width": 0.22,
           "inkBlankKind": "light"
-        },
-        {
-          "hide": true
         }
       ]
     },
@@ -2011,9 +1993,9 @@
     "leatherette-ornament-3-shapes-engraving-2756": {
       "slides": [
         {
-          "top": 0.45,
+          "top": 0.44,
           "left": 0.5,
-          "width": 0.12,
+          "width": 0.18,
           "inkBlankKind": "dark"
         },
         {
@@ -2030,10 +2012,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.542,
-          "left": 0.435,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2053,13 +2032,13 @@
     "wooden-ornaments-697": {
       "slides": [
         {
-          "top": 0.031,
-          "left": 0.073,
-          "width": 0.16,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.38,
+          "left": 0.62,
+          "width": 0.17,
+          "inkBlankKind": "light"
         }
       ]
     },
@@ -2176,10 +2155,7 @@
     "clip-on-pet-bandana-1672": {
       "slides": [
         {
-          "top": 0.743,
-          "left": 0.596,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
           "top": 0.709,
@@ -2192,16 +2168,13 @@
     "pet-bowl-18oz-engraving-1520": {
       "slides": [
         {
-          "top": 0.534,
-          "left": 0.447,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "top": 0.46,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.184,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2234,9 +2207,9 @@
     "sublimation-crew-socks-1433": {
       "slides": [
         {
-          "top": 0.552,
-          "left": 0.503,
-          "width": 0.15,
+          "top": 0.58,
+          "left": 0.5,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
@@ -2285,10 +2258,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.186,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2308,15 +2278,12 @@
     "kiss-cut-stickers-400": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "dark"
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
+          "width": 0.26,
           "inkBlankKind": "light"
         }
       ]
@@ -2324,9 +2291,9 @@
     "square-stickers-384": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.19,
+          "width": 0.28,
           "inkBlankKind": "dark"
         },
         {
@@ -2337,47 +2304,38 @@
     "die-cut-stickers-600": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.22,
+          "width": 0.26,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
     "sticker-sheets-661": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.244,
+          "width": 0.26,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
     "kiss-cut-sticker-sheet-5372": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
-          "width": 0.09,
+          "width": 0.26,
           "inkBlankKind": "light"
         }
       ]
@@ -2417,23 +2375,17 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "round-vinyl-stickers-564": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "dark"
+          "hide": true
         },
         {
-          "top": 0.42,
+          "top": 0.5,
           "left": 0.5,
           "width": 0.22,
           "inkBlankKind": "light"
@@ -2443,22 +2395,22 @@
     "transparent-outdoor-stickers-square-1pc-794": {
       "slides": [
         {
-          "top": 0.42,
-          "left": 0.48,
-          "width": 0.09,
-          "inkBlankKind": "light"
+          "hide": true
         },
         {
-          "hide": true
+          "top": 0.5,
+          "left": 0.5,
+          "width": 0.26,
+          "inkBlankKind": "light"
         }
       ]
     },
     "tough-phone-cases-269": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.52,
           "left": 0.5,
-          "width": 0.096,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
@@ -2469,9 +2421,9 @@
     "slim-phone-cases-268": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.52,
           "left": 0.5,
-          "width": 0.096,
+          "width": 0.18,
           "inkBlankKind": "light"
         },
         {
@@ -2488,10 +2440,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.22,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2514,16 +2463,13 @@
     "laptop-sleeve-429": {
       "slides": [
         {
-          "top": 0.606,
-          "left": 0.511,
-          "width": 0.16,
+          "top": 0.48,
+          "left": 0.5,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
-          "top": 0.36,
-          "left": 0.5,
-          "width": 0.154,
-          "inkBlankKind": "dark"
+          "hide": true
         }
       ]
     },
@@ -2543,22 +2489,22 @@
     "pu-leather-phone-cases-engraving-5369": {
       "slides": [
         {
-          "hide": true
+          "top": 0.52,
+          "left": 0.5,
+          "width": 0.2,
+          "inkBlankKind": "dark"
         },
         {
-          "top": 0.031,
-          "left": 0.073,
-          "width": 0.16,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
     "desk-mat-488": {
       "slides": [
         {
-          "top": 0.42,
+          "top": 0.46,
           "left": 0.5,
-          "width": 0.144,
+          "width": 0.17,
           "inkBlankKind": "light"
         },
         {
@@ -2575,10 +2521,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2617,10 +2560,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2646,10 +2586,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.42,
-          "left": 0.5,
-          "width": 0.244,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2714,10 +2651,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.5,
-          "left": 0.5,
-          "width": 0.29,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },
@@ -2743,10 +2677,7 @@
           "inkBlankKind": "light"
         },
         {
-          "top": 0.521,
-          "left": 0.498,
-          "width": 0.42,
-          "inkBlankKind": "light"
+          "hide": true
         }
       ]
     },

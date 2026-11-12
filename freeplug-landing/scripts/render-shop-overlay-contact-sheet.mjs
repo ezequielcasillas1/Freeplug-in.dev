@@ -117,8 +117,12 @@ async function capturePdpHero(slug) {
 }
 
 for (const slug of CHEKE_SLUGS) {
-  const buf = await capturePdpHero(slug)
-  await sharp(buf).png().toFile(path.join(ARTIFACTS, `pdp-overlay-${slug}.png`))
+  try {
+    const buf = await capturePdpHero(slug)
+    await sharp(buf).png().toFile(path.join(ARTIFACTS, `pdp-overlay-${slug}.png`))
+  } catch (err) {
+    console.warn(`Skip checke ${slug}:`, err.message)
+  }
 }
 
 const pdpTiles = []
